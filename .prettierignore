@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+reports/
+bun.lock
+src/content/index.gen.json
+src/routeTree.gen.ts

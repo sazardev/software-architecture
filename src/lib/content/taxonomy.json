@@ -1,0 +1,22 @@
+{
+  "sections": [
+    {
+      "id": "fundamentos",
+      "label": "Fundamentos",
+      "description": "Bases conceptuales y principios que sostienen cualquier arquitectura sólida.",
+      "order": 1
+    },
+    {
+      "id": "diseno",
+      "label": "Diseño de sistemas",
+      "description": "Modelado, diagramas y decisiones para comunicar arquitectura compleja.",
+      "order": 2
+    },
+    {
+      "id": "practicas",
+      "label": "Prácticas y calidad",
+      "description": "Hábitos, refactoring continuo y estándares que mantienen el sistema sano.",
+      "order": 3
+    }
+  ]
+}

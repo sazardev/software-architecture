@@ -1,0 +1,51 @@
+import { Link } from '@tanstack/react-router';
+
+import { cn } from '@/lib/utils/cn';
+
+type BreadcrumbItem = Readonly<{
+  label: string;
+  params?: Record<string, string>;
+  to?: string;
+}>;
+
+type BreadcrumbsProps = Readonly<{
+  className?: string;
+  items: BreadcrumbItem[];
+}>;
+
+export function Breadcrumbs({ className, items }: BreadcrumbsProps) {
+  return (
+    <nav
+      aria-label="Migas de pan"
+      className={cn('mb-6 text-sm text-neutral-500 dark:text-neutral-400', className)}
+    >
+      <ol className="flex flex-wrap items-center gap-2">
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+
+          return (
+            <li className="flex items-center gap-2" key={item.label}>
+              {index > 0 ? <span aria-hidden="true">/</span> : null}
+              {!isLast && item.to !== undefined ? (
+                <Link
+                  className="transition-colors hover:text-brand-600 dark:hover:text-brand-400"
+                  params={item.params as never}
+                  to={item.to as never}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <span
+                  aria-current={isLast ? 'page' : undefined}
+                  className={isLast ? 'text-neutral-700 dark:text-neutral-200' : undefined}
+                >
+                  {item.label}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}

@@ -1,0 +1,42 @@
+.prose :where(h2, h3, h4, h5, h6) {
+  scroll-margin-top: calc(var(--spacing) * 24);
+}
+
+.prose .heading-anchor {
+  margin-inline-start: 0.5ch;
+  color: var(--color-brand-500);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.prose :where(h2, h3, h4, h5, h6):hover .heading-anchor {
+  opacity: 1;
+}
+
+.prose .mermaid-diagram {
+  margin-block: calc(var(--spacing) * 6);
+  display: flex;
+  justify-content: center;
+}
+
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+}
+
+.shiki {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  padding: calc(var(--spacing) * 4);
+  background-color: var(--shiki-light-bg);
+}
+
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
+}
+
+.dark .shiki {
+  background-color: var(--shiki-dark-bg);
+}

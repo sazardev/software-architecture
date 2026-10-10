@@ -1,0 +1,47 @@
+---
+title: Principios SOLID
+description: Los cinco principios SOLID explicados con ejemplos concretos y enlaces para profundizar en cada uno.
+category: fundamentos
+tags:
+  - solid
+  - diseno
+  - oop
+order: 2
+updatedAt: 2026-10-10
+---
+
+# Principios SOLID
+
+SOLID es un acrónimo de cinco principios de diseño orientado a objetos que reducen el
+acoplamiento y aumentan la cohesión. Aplicarlos en serio es la base de una
+[arquitectura limpia](/docs/clean-code).
+
+## Principio de responsabilidad única
+
+Cada módulo debe tener una única razón para cambiar. Si una clase mezcla reglas de
+negocio y persistencia, sepáralas en colaboradores distintos.
+
+## Principio de abierto/cerrado
+
+Las entidades deben estar abiertas a extensión y cerradas a modificación. Prefiere
+composición y polimorfismo antes que cadenas de condicionales crecientes.
+
+## Principio de sustitución de Liskov
+
+Un subtipo debe poder reemplazar a su tipo base sin romper el contrato: mismas
+precondiciones o más débiles, mismas postcondiciones o más fuertes.
+
+## Principio de segregación de interfaces
+
+Es mejor varias interfaces específicas que una interfaz general. Un cliente no debería
+depender de métodos que no usa.
+
+## Principio de inversión de dependencias
+
+Los módulos de alto nivel no deben depender de los de bajo nivel; ambos deben depender de
+abstracciones. Este principio es la puerta de entrada a la
+[arquitectura hexagonal](/docs/c4-model#componentes).
+
+<Callout tone="info" title="Placeholder">
+  Documento de ejemplo: sustituye los párrafos por explicaciones y ejemplos reales.
+</Callout>

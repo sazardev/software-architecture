@@ -1,0 +1,176 @@
+{
+  "docs": [
+    {
+      "category": "fundamentos",
+      "description": "Cómo está organizado el sitio, cómo navegar los recursos y cómo crear tu primera página MDX.",
+      "order": 1,
+      "tags": [
+        "guia",
+        "roadmap"
+      ],
+      "title": "Primeros pasos",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "primeros-pasos",
+          "level": 1,
+          "text": "Primeros pasos"
+        },
+        {
+          "id": "recorrido-recomendado",
+          "level": 2,
+          "text": "Recorrido recomendado"
+        },
+        {
+          "id": "código-resaltado",
+          "level": 2,
+          "text": "Código resaltado"
+        },
+        {
+          "id": "diagrama-mermaid",
+          "level": 2,
+          "text": "Diagrama Mermaid"
+        },
+        {
+          "id": "siguientes-pasos",
+          "level": 2,
+          "text": "Siguientes pasos"
+        }
+      ],
+      "readingMinutes": 1,
+      "route": "/docs/getting-started",
+      "slug": "getting-started"
+    },
+    {
+      "category": "fundamentos",
+      "description": "Los cinco principios SOLID explicados con ejemplos concretos y enlaces para profundizar en cada uno.",
+      "order": 2,
+      "tags": [
+        "solid",
+        "diseno",
+        "oop"
+      ],
+      "title": "Principios SOLID",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "principios-solid",
+          "level": 1,
+          "text": "Principios SOLID"
+        },
+        {
+          "id": "principio-de-responsabilidad-única",
+          "level": 2,
+          "text": "Principio de responsabilidad única"
+        },
+        {
+          "id": "principio-de-abiertocerrado",
+          "level": 2,
+          "text": "Principio de abierto/cerrado"
+        },
+        {
+          "id": "principio-de-sustitución-de-liskov",
+          "level": 2,
+          "text": "Principio de sustitución de Liskov"
+        },
+        {
+          "id": "principio-de-segregación-de-interfaces",
+          "level": 2,
+          "text": "Principio de segregación de interfaces"
+        },
+        {
+          "id": "principio-de-inversión-de-dependencias",
+          "level": 2,
+          "text": "Principio de inversión de dependencias"
+        }
+      ],
+      "readingMinutes": 1,
+      "route": "/docs/solid",
+      "slug": "solid"
+    },
+    {
+      "category": "diseno",
+      "description": "Cómo documentar arquitectura con los cuatro niveles del modelo C4 y diagramas que permanecen vivos.",
+      "order": 1,
+      "tags": [
+        "c4",
+        "diagramas",
+        "documentacion"
+      ],
+      "title": "Modelo C4",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "modelo-c4",
+          "level": 1,
+          "text": "Modelo C4"
+        },
+        {
+          "id": "niveles",
+          "level": 2,
+          "text": "Niveles"
+        },
+        {
+          "id": "contexto",
+          "level": 2,
+          "text": "Contexto"
+        },
+        {
+          "id": "contenedores",
+          "level": 2,
+          "text": "Contenedores"
+        },
+        {
+          "id": "componentes",
+          "level": 2,
+          "text": "Componentes"
+        },
+        {
+          "id": "código",
+          "level": 2,
+          "text": "Código"
+        }
+      ],
+      "readingMinutes": 1,
+      "route": "/docs/c4-model",
+      "slug": "c4-model"
+    },
+    {
+      "category": "practicas",
+      "description": "Reglas prácticas de legibilidad, nombres claros, funciones pequeñas y refactoring continuo en equipos grandes.",
+      "order": 1,
+      "tags": [
+        "clean-code",
+        "calidad",
+        "refactoring"
+      ],
+      "title": "Clean code para arquitectos",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "clean-code-para-arquitectos",
+          "level": 1,
+          "text": "Clean code para arquitectos"
+        },
+        {
+          "id": "nombres-que-explican",
+          "level": 2,
+          "text": "Nombres que explican"
+        },
+        {
+          "id": "funciones-pequeñas",
+          "level": 2,
+          "text": "Funciones pequeñas"
+        },
+        {
+          "id": "refactoring-continuo",
+          "level": 2,
+          "text": "Refactoring continuo"
+        }
+      ],
+      "readingMinutes": 1,
+      "route": "/docs/clean-code",
+      "slug": "clean-code"
+    }
+  ]
+}

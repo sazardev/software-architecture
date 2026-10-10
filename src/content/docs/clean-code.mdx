@@ -1,0 +1,46 @@
+---
+title: Clean code para arquitectos
+description: Reglas prácticas de legibilidad, nombres claros, funciones pequeñas y refactoring continuo en equipos grandes.
+category: practicas
+tags:
+  - clean-code
+  - calidad
+  - refactoring
+order: 1
+updatedAt: 2026-10-10
+---
+
+# Clean code para arquitectos
+
+La arquitectura empieza en el código: si el día a día es caótico, ningún diagrama lo
+salva. Estas reglas dialogan con los [principios SOLID](/docs/solid).
+
+## Nombres que explican
+
+Un nombre debe revelar intención. Si necesitas un comentario para explicar una variable,
+la variable tiene el nombre equivocado.
+
+## Funciones pequeñas
+
+Cada función hace una sola cosa, con un solo nivel de abstracción. Los
+[checkers del repositorio](/docs/getting-started) también lo vigilan.
+
+```ts title="nombres.ts"
+function calc(a: number, b: number): number {
+  return a * b * 0.21;
+}
+
+function calculateVatAmount(netPrice: number, quantity: number): number {
+  return netPrice * quantity * VAT_RATE;
+}
+```
+
+<Callout tone="warning" title="Deuda técnica">
+  Un atajo puntual es aceptable; un atajo permanente es una decisión de arquitectura que nadie
+  firmó.
+</Callout>
+
+## Refactoring continuo
+
+Refactoriza en pasos pequeños respaldados por tests. La deuda no se paga en una semana de
+héroes: se evita todos los días.
