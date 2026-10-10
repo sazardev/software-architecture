@@ -10,7 +10,7 @@ import { absoluteUrl } from '@/lib/seo/absolute-url';
 
 type HeadLinkEntry = {
   href: string;
-  hreflang?: string;
+  hrefLang?: string;
   rel: string;
 };
 
@@ -42,13 +42,13 @@ export function buildPageHead(input: PageHeadInput): PageHead {
 
   const alternateLinks: HeadLinkEntry[] = locales.map((code) => ({
     href: absoluteUrl(switchLocalePath(input.path, code)),
-    hreflang: code,
+    hrefLang: code,
     rel: 'alternate',
   }));
 
   alternateLinks.push({
     href: absoluteUrl(switchLocalePath(input.path, defaultLocale)),
-    hreflang: 'x-default',
+    hrefLang: 'x-default',
     rel: 'alternate',
   });
 

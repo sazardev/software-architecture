@@ -139,6 +139,39 @@
       "slug": "c4-model"
     },
     {
+      "category": "diseno",
+      "description": "Cómo incrustar mapas interactivos con MapLibre GL en la documentación y conectarlos con tus diagramas de arquitectura.",
+      "order": 2,
+      "tags": [
+        "mapas",
+        "maplibre",
+        "componentes"
+      ],
+      "title": "Mapa interactivo",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "mapa-interactivo",
+          "level": 1,
+          "text": "Mapa interactivo"
+        },
+        {
+          "id": "ejemplo-incrustado",
+          "level": 2,
+          "text": "Ejemplo incrustado"
+        },
+        {
+          "id": "cómo-usarlo",
+          "level": 2,
+          "text": "Cómo usarlo"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 1,
+      "route": "/es/docs/interactive-map",
+      "slug": "interactive-map"
+    },
+    {
       "category": "practicas",
       "description": "Reglas prácticas de legibilidad, nombres claros, funciones pequeñas y refactoring continuo en equipos grandes.",
       "order": 1,
@@ -313,6 +346,39 @@
       "readingMinutes": 1,
       "route": "/en/docs/c4-model",
       "slug": "c4-model"
+    },
+    {
+      "category": "diseno",
+      "description": "How to embed interactive maps with MapLibre GL in the documentation and connect them with your architecture diagrams.",
+      "order": 2,
+      "tags": [
+        "maps",
+        "maplibre",
+        "components"
+      ],
+      "title": "Interactive map",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "interactive-map",
+          "level": 1,
+          "text": "Interactive map"
+        },
+        {
+          "id": "embedded-example",
+          "level": 2,
+          "text": "Embedded example"
+        },
+        {
+          "id": "how-to-use-it",
+          "level": 2,
+          "text": "How to use it"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 1,
+      "route": "/en/docs/interactive-map",
+      "slug": "interactive-map"
     },
     {
       "category": "practicas",

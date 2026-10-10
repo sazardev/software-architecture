@@ -129,9 +129,18 @@ Frontmatter obligatorio (validado con zod en la auditoría):
 Reglas de cuerpo: al menos un `h2`, sin saltos de nivel (h2 → h4), anclas únicas, enlaces
 internos `/docs/<slug>#ancla` existentes, bloques de código cerrados.
 
-Disponible sin importar dentro de MDX: `<Callout>`, bloques ` ```mermaid ` (se convierten
-en diagramas interactivos lazy). Los componentes del sistema de diseño se añaden en
-`src/mdx/mdx-components.tsx`.
+Disponible sin importar dentro de MDX: `<Callout>`, `<InteractiveMap>`, bloques ` ```mermaid `
+(se convierten en diagramas interactivos lazy). Los componentes del sistema de diseño se añaden
+en `src/mdx/mdx-components.tsx`.
+
+### Mapas interactivos
+
+- `<InteractiveMap center zoom markers>` (MapLibre GL) embebible en MDX; se registra con
+  `lazy()` en `src/mdx/mdx-components.tsx`, así el chunk (JS + CSS de MapLibre) solo se
+  descarga en páginas con mapas (y queda precacheado por la PWA).
+- Estilos libres sin API key: OpenFreeMap (`positron` claro / `dark` oscuro) que cambian con el
+  tema global; la atribución viene incluida en el estilo.
+- Props tipadas y marcadores con popup en `src/components/organisms/InteractiveMap`.
 
 ### Pipeline de contenido (Bun)
 

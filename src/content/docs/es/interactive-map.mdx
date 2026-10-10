@@ -1,0 +1,40 @@
+---
+title: Mapa interactivo
+description: Cómo incrustar mapas interactivos con MapLibre GL en la documentación y conectarlos con tus diagramas de arquitectura.
+category: diseno
+tags:
+  - mapas
+  - maplibre
+  - componentes
+order: 2
+updatedAt: 2026-10-10
+---
+
+# Mapa interactivo
+
+Los mapas permiten ubicar sistemas, equipos o centros de datos y complementan los diagramas
+del [modelo C4](/docs/c4-model). El componente se carga de forma diferida: solo descarga
+MapLibre cuando una página incluye un mapa.
+
+## Ejemplo incrustado
+
+<InteractiveMap
+  center={[-3.7, 40.42]}
+  markers={[
+    { label: 'Madrid', coordinates: [-3.7, 40.42] },
+    { label: 'Barcelona', coordinates: [2.17, 41.39] },
+    { label: 'Lisboa', coordinates: [-9.14, 38.72] },
+  ]}
+  zoom={4}
+/>
+
+## Cómo usarlo
+
+- `center`: coordenadas `[longitud, latitud]` iniciales.
+- `zoom`: nivel de acercamiento (0–20).
+- `markers`: lista de `{ label, coordinates }`; cada marcador abre un popup con su etiqueta.
+
+<Callout tone="tip" title="Tema claro/oscuro">
+  El mapa cambia de estilo automáticamente con el tema global del sitio y sus tiles son libres
+  (OpenFreeMap sobre datos de OpenStreetMap).
+</Callout>

@@ -19,12 +19,20 @@ describe('registro de contenido', () => {
     const groups = getDocsBySection('es', 'diseno');
 
     expect(groups).toHaveLength(1);
-    expect(groups[0]?.docs.map((doc) => doc.slug)).toEqual(['c4-model']);
+    expect(groups[0]?.docs.map((doc) => doc.slug)).toEqual(['c4-model', 'interactive-map']);
+  });
+
+  it('mantiene la paridad de documentos entre idiomas', () => {
+    const spanish = getDocsByLocale('es').map((doc) => doc.slug);
+    const english = getDocsByLocale('en').map((doc) => doc.slug);
+
+    expect(spanish.length).toBeGreaterThan(0);
+    expect(english.toSorted((a, b) => a.localeCompare(b))).toEqual(
+      spanish.toSorted((a, b) => a.localeCompare(b)),
+    );
   });
 
   it('aísla el contenido por idioma', () => {
-    expect(getDocsByLocale('es')).toHaveLength(4);
-    expect(getDocsByLocale('en')).toHaveLength(4);
     expect(getDocBySlug('en', 'solid')?.locale).toBe('en');
     expect(getDocBySlug('es', 'solid')?.title).not.toBe(getDocBySlug('en', 'solid')?.title);
   });

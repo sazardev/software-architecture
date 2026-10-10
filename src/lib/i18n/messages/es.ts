@@ -31,6 +31,10 @@ export const es = {
   languageSwitcher: {
     label: 'Idioma',
   },
+  map: {
+    error: 'No se pudo cargar el mapa interactivo.',
+    label: 'Mapa interactivo',
+  },
   nav: {
     docs: 'Documentación',
     home: 'Inicio',

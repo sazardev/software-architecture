@@ -33,6 +33,10 @@ export const en: Messages = {
   languageSwitcher: {
     label: 'Language',
   },
+  map: {
+    error: 'The interactive map could not be loaded.',
+    label: 'Interactive map',
+  },
   nav: {
     docs: 'Documentation',
     home: 'Home',
