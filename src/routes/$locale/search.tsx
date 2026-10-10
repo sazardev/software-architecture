@@ -45,9 +45,12 @@ function SearchPage() {
       <h1 className="mb-2 text-3xl font-semibold tracking-tight">{messages.search.title}</h1>
       <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
         {messages.search.hint}{' '}
-        <kbd className="rounded border border-neutral-300 px-1.5 text-xs dark:border-neutral-700">
-          /
-        </kbd>
+        <span className="hidden sm:inline">
+          {messages.search.shortcut}{' '}
+          <kbd className="rounded border border-neutral-300 px-1.5 text-xs dark:border-neutral-700">
+            /
+          </kbd>
+        </span>
       </p>
 
       <SearchField

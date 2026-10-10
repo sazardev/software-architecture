@@ -90,7 +90,7 @@ function DocPage() {
   const DocContent = docModule.default;
 
   return (
-    <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[minmax(0,1fr)_14rem]">
+    <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-10">
       <div className="min-w-0">
         <Breadcrumbs
           items={[
@@ -125,6 +125,9 @@ function DocPage() {
               <Badge tone="outline">#{tag}</Badge>
             </Link>
           ))}
+        </div>
+        <div className="mb-8 lg:hidden">
+          <TableOfContents collapsible headings={entry.headings} />
         </div>
         <article className="prose prose-neutral dark:prose-invert">
           <DocContent />

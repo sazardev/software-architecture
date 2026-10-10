@@ -17,7 +17,7 @@ export function NotFoundPage({ className, description, title }: NotFoundPageProp
   return (
     <section
       className={cn(
-        'mx-auto flex max-w-xl flex-col items-center gap-4 py-24 text-center',
+        'mx-auto flex max-w-xl flex-col items-center gap-4 py-16 text-center sm:py-24',
         className,
       )}
     >

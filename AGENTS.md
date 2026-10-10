@@ -160,6 +160,18 @@ siempre rutas absolutas y anclas del idioma correspondiente.
 - Idiomas en `src/lib/i18n/locales.json` (código, etiqueta, `ogLocale`); añadir uno nuevo =
   crear `messages/<code>.ts` + carpeta `content/docs/<code>/` (la auditoría lo exige).
 
+### Responsive y móvil
+
+- Mobile-first: estilos base para 360–390 px y mejoras con `sm:` / `md:` / `lg:` (640 / 768 /
+  1024). Toda sección nueva debe verificarse a 390 px sin overflow horizontal.
+- Header en dos filas en móvil (marca + selectores arriba, navegación debajo) y una sola fila
+  desde `md` (`SiteShell`).
+- Los bloques de código y diagramas Mermaid hacen scroll interno (`.shiki`, `.mermaid-diagram`),
+  nunca la página: verifica `document.documentElement.scrollWidth <= window.innerWidth`.
+- En punteros táctiles (`pointer: coarse`) no hay autofocus de inputs y los atajos de teclado
+  se ocultan (`SearchField`, página de búsqueda).
+- El índice del documento (TOC) es colapsable (`<details>`) en móvil y fijo en `lg+`.
+
 ### Tema global (claro/oscuro/sistema)
 
 - Núcleo en `src/lib/theme/` (tipos, resolución y `ThemeProvider` montado en `__root`).

@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import type { ContentEntry } from '@/lib/content/types';
 import { useLocale } from '@/lib/i18n/locale-context';
 import { useMessages } from '@/lib/i18n/use-messages';
+import { cn } from '@/lib/utils/cn';
 
 type DocPagerProps = Readonly<{
   next: ContentEntry | undefined;
@@ -38,7 +39,10 @@ export function DocPager({ next, previous }: DocPagerProps) {
       )}
       {next === undefined ? null : (
         <Link
-          className="group rounded-lg border border-neutral-200 p-4 text-right transition-colors hover:border-brand-400 sm:col-start-2 dark:border-neutral-800 dark:hover:border-brand-600"
+          className={cn(
+            'group rounded-lg border border-neutral-200 p-4 text-right transition-colors hover:border-brand-400 dark:border-neutral-800 dark:hover:border-brand-600',
+            previous === undefined ? 'sm:col-span-2' : 'sm:col-start-2',
+          )}
           params={{ locale, slug: next.slug }}
           to="/$locale/docs/$slug"
         >

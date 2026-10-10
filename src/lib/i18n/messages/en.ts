@@ -49,7 +49,8 @@ export const en: Messages = {
   search: {
     allCategories: 'All',
     available: (count: number) => `${count} resources available`,
-    hint: 'Local search across titles, tags, descriptions and headings. Keyboard shortcut:',
+    hint: 'Local search across titles, tags, descriptions and headings.',
+    shortcut: 'Keyboard shortcut:',
     metaDescription:
       'Instant search across titles, descriptions, tags and headings of every resource.',
     noResults: (query: string) => `No results for “${query}”.`,

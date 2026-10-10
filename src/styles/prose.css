@@ -40,3 +40,16 @@
 .dark .shiki {
   background-color: var(--shiki-dark-bg);
 }
+
+.prose {
+  overflow-wrap: break-word;
+}
+
+.prose .mermaid-diagram {
+  overflow-x: auto;
+}
+
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}

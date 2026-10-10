@@ -1,9 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Input } from '@/components/atoms';
 import { useMessages } from '@/lib/i18n/use-messages';
 
 const typingElementTags = new Set(['INPUT', 'TEXTAREA']);
+
+function isCoarsePointer(): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+}
 
 function isTypingTarget(target: EventTarget | null): boolean {
   return (
@@ -26,6 +30,7 @@ export function SearchField({
   value,
 }: SearchFieldProps) {
   const messages = useMessages();
+  const [shouldAutoFocus] = useState(() => autoFocus && !isCoarsePointer());
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -53,7 +58,7 @@ export function SearchField({
       <div className="relative">
         <Input
           aria-keyshortcuts="/"
-          autoFocus={autoFocus}
+          autoFocus={shouldAutoFocus}
           id={id}
           onChange={(event) => {
             onValueChange(event.currentTarget.value);

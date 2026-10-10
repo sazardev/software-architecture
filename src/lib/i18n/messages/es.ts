@@ -47,7 +47,8 @@ export const es = {
   search: {
     allCategories: 'Todas',
     available: (count: number) => `${count} recursos disponibles`,
-    hint: 'Búsqueda local sobre títulos, etiquetas, descripciones y encabezados. Atajo de teclado:',
+    hint: 'Búsqueda local sobre títulos, etiquetas, descripciones y encabezados.',
+    shortcut: 'Atajo de teclado:',
     metaDescription:
       'Búsqueda instantánea sobre títulos, descripciones, etiquetas y encabezados de todos los recursos.',
     noResults: (query: string) => `Sin resultados para «${query}».`,

@@ -36,11 +36,17 @@ export function SiteShell({ children }: SiteShellProps) {
         {messages.a11y.skipToContent}
       </a>
       <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/80 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/80">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4">
-          <Link className="font-semibold tracking-tight" params={{ locale }} to="/$locale">
-            {site.name}
-          </Link>
-          <nav className="flex items-center gap-5 text-sm text-neutral-600 dark:text-neutral-300">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-3 md:h-14 md:flex-row md:items-center md:justify-between md:gap-4 md:py-0">
+          <div className="flex items-center justify-between gap-4">
+            <Link className="font-semibold tracking-tight" params={{ locale }} to="/$locale">
+              {site.name}
+            </Link>
+            <div className="flex items-center gap-3 md:hidden">
+              <LanguageSwitcher />
+              <ThemeSwitcher />
+            </div>
+          </div>
+          <nav className="flex items-center gap-4 text-sm text-neutral-600 md:gap-5 dark:text-neutral-300">
             {navItems.map((item) => (
               <Link
                 className={cn(
@@ -55,8 +61,10 @@ export function SiteShell({ children }: SiteShellProps) {
                 {messages.nav[item.id]}
               </Link>
             ))}
-            <LanguageSwitcher />
-            <ThemeSwitcher />
+            <div className="hidden items-center gap-3 md:flex">
+              <LanguageSwitcher />
+              <ThemeSwitcher />
+            </div>
           </nav>
         </div>
       </header>

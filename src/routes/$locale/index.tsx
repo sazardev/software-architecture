@@ -27,8 +27,10 @@ function HomePage() {
   const messages = useMessages();
 
   return (
-    <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 py-16 text-center">
-      <h1 className="text-4xl font-semibold tracking-tight text-balance">{messages.home.title}</h1>
+    <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 py-10 text-center sm:py-16">
+      <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+        {messages.home.title}
+      </h1>
       <p className="max-w-2xl text-lg text-pretty text-neutral-600 dark:text-neutral-300">
         {messages.site.description}
       </p>
