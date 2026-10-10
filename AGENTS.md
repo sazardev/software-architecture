@@ -202,5 +202,8 @@ Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes
   lo toma de `import.meta.env.BASE_URL` (`basepath` en `src/app/router.tsx`).
 - SPA en Pages: el plugin `static-seo` copia `index.html` a `404.html` (fallback de rutas
   profundas) y genera `.nojekyll`, `sitemap.xml` y `robots.txt`.
+- Limitación conocida: GitHub Pages responde HTTP 404 (aunque renderiza la app) en deeplinks
+  directos. Inicio y `/docs` son indexables; si se necesita SEO perfecto en rutas profundas,
+  añadir prerender/SSG (p. ej. `vite-plugin-prerender` o mover el hosting a uno con rewrites).
 - Sin secretos: todo se configura con variables `VITE_*` en el workflow. Para un dominio propio,
   añade `public/CNAME` y actualiza `VITE_SITE_URL` (ver §8).
