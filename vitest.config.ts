@@ -20,7 +20,7 @@ export default defineConfig({
       reportsDirectory: 'coverage',
     },
     environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: ['src/**/*.test.{ts,tsx}', 'tools/**/*.test.ts'],
     restoreMocks: true,
     setupFiles: ['./src/test/setup.ts'],
   },

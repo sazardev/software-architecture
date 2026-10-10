@@ -137,6 +137,9 @@ src/content/index.gen.json  (commiteado)
 
 Tras editar o crear contenido: `bun run content:index` y `bun run audit`.
 
+Los enlaces internos de MDX (`/docs/...`, `/search`, `/`) se prefijan automáticamente con el
+base path del hosting en build (`tools/rehype-base-links.ts`); escribe siempre rutas absolutas.
+
 ## 7. Búsqueda e indexación
 
 - El índice incluye slug, título, descripción, categoría, tags, headings, minutos de lectura y
