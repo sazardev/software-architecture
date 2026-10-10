@@ -7,9 +7,6 @@ function readSiteUrl(): string {
 }
 
 export const site = {
-  description:
-    'Recursos ultra interactivos, diagramas vivos y documentación profunda para diseñar sistemas que escalan.',
-  locale: 'es',
   name: 'Software Architecture',
   url: readSiteUrl(),
 } as const;

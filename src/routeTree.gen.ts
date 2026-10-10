@@ -10,63 +10,96 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SearchRouteImport } from './routes/search'
-import { Route as DocsIndexRouteImport } from './routes/docs/index'
-import { Route as DocsSlugRouteImport } from './routes/docs/$slug'
+import { Route as LocaleRouteImport } from './routes/$locale'
+import { Route as LocaleIndexRouteImport } from './routes/$locale/index'
+import { Route as LocaleSearchRouteImport } from './routes/$locale/search'
+import { Route as LocaleDocsIndexRouteImport } from './routes/$locale/docs/index'
+import { Route as LocaleDocsSlugRouteImport } from './routes/$locale/docs/$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SearchRoute = SearchRouteImport.update({
+const LocaleRoute = LocaleRouteImport.update({
+  id: '/$locale',
+  path: '/$locale',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LocaleIndexRoute = LocaleIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LocaleRoute,
+} as any)
+const LocaleSearchRoute = LocaleSearchRouteImport.update({
   id: '/search',
   path: '/search',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LocaleRoute,
 } as any)
-const DocsIndexRoute = DocsIndexRouteImport.update({
+const LocaleDocsIndexRoute = LocaleDocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LocaleRoute,
 } as any)
-const DocsSlugRoute = DocsSlugRouteImport.update({
+const LocaleDocsSlugRoute = LocaleDocsSlugRouteImport.update({
   id: '/docs/$slug',
   path: '/docs/$slug',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LocaleRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/search': typeof SearchRoute
-  '/docs/$slug': typeof DocsSlugRoute
-  '/docs/': typeof DocsIndexRoute
+  '/$locale': typeof LocaleRouteWithChildren
+  '/$locale/search': typeof LocaleSearchRoute
+  '/$locale/': typeof LocaleIndexRoute
+  '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
+  '/$locale/docs/': typeof LocaleDocsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/search': typeof SearchRoute
-  '/docs/$slug': typeof DocsSlugRoute
-  '/docs': typeof DocsIndexRoute
+  '/$locale/search': typeof LocaleSearchRoute
+  '/$locale': typeof LocaleIndexRoute
+  '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
+  '/$locale/docs': typeof LocaleDocsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/search': typeof SearchRoute
-  '/docs/$slug': typeof DocsSlugRoute
-  '/docs/': typeof DocsIndexRoute
+  '/$locale': typeof LocaleRouteWithChildren
+  '/$locale/search': typeof LocaleSearchRoute
+  '/$locale/': typeof LocaleIndexRoute
+  '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
+  '/$locale/docs/': typeof LocaleDocsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/search' | '/docs/$slug' | '/docs/'
+  fullPaths:
+    | '/'
+    | '/$locale'
+    | '/$locale/search'
+    | '/$locale/'
+    | '/$locale/docs/$slug'
+    | '/$locale/docs/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/search' | '/docs/$slug' | '/docs'
-  id: '__root__' | '/' | '/search' | '/docs/$slug' | '/docs/'
+  to:
+    | '/'
+    | '/$locale/search'
+    | '/$locale'
+    | '/$locale/docs/$slug'
+    | '/$locale/docs'
+  id:
+    | '__root__'
+    | '/'
+    | '/$locale'
+    | '/$locale/search'
+    | '/$locale/'
+    | '/$locale/docs/$slug'
+    | '/$locale/docs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  SearchRoute: typeof SearchRoute
-  DocsSlugRoute: typeof DocsSlugRoute
-  DocsIndexRoute: typeof DocsIndexRoute
+  LocaleRoute: typeof LocaleRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -78,35 +111,64 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/search': {
-      id: '/search'
+    '/$locale': {
+      id: '/$locale'
+      path: '/$locale'
+      fullPath: '/$locale'
+      preLoaderRoute: typeof LocaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$locale/': {
+      id: '/$locale/'
+      path: '/'
+      fullPath: '/$locale/'
+      preLoaderRoute: typeof LocaleIndexRouteImport
+      parentRoute: typeof LocaleRoute
+    }
+    '/$locale/search': {
+      id: '/$locale/search'
       path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
+      fullPath: '/$locale/search'
+      preLoaderRoute: typeof LocaleSearchRouteImport
+      parentRoute: typeof LocaleRoute
     }
-    '/docs/': {
-      id: '/docs/'
+    '/$locale/docs/': {
+      id: '/$locale/docs/'
       path: '/docs'
-      fullPath: '/docs/'
-      preLoaderRoute: typeof DocsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      fullPath: '/$locale/docs/'
+      preLoaderRoute: typeof LocaleDocsIndexRouteImport
+      parentRoute: typeof LocaleRoute
     }
-    '/docs/$slug': {
-      id: '/docs/$slug'
+    '/$locale/docs/$slug': {
+      id: '/$locale/docs/$slug'
       path: '/docs/$slug'
-      fullPath: '/docs/$slug'
-      preLoaderRoute: typeof DocsSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      fullPath: '/$locale/docs/$slug'
+      preLoaderRoute: typeof LocaleDocsSlugRouteImport
+      parentRoute: typeof LocaleRoute
     }
   }
 }
 
+interface LocaleRouteChildren {
+  LocaleSearchRoute: typeof LocaleSearchRoute
+  LocaleIndexRoute: typeof LocaleIndexRoute
+  LocaleDocsSlugRoute: typeof LocaleDocsSlugRoute
+  LocaleDocsIndexRoute: typeof LocaleDocsIndexRoute
+}
+
+const LocaleRouteChildren: LocaleRouteChildren = {
+  LocaleSearchRoute: LocaleSearchRoute,
+  LocaleIndexRoute: LocaleIndexRoute,
+  LocaleDocsSlugRoute: LocaleDocsSlugRoute,
+  LocaleDocsIndexRoute: LocaleDocsIndexRoute,
+}
+
+const LocaleRouteWithChildren =
+  LocaleRoute._addFileChildren(LocaleRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  SearchRoute: SearchRoute,
-  DocsSlugRoute: DocsSlugRoute,
-  DocsIndexRoute: DocsIndexRoute,
+  LocaleRoute: LocaleRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

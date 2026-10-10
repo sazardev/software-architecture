@@ -1,4 +1,6 @@
-import { sections } from '@/lib/content/taxonomy';
+import { getSectionText, sections } from '@/lib/content/taxonomy';
+import { useLocale } from '@/lib/i18n/locale-context';
+import { useMessages } from '@/lib/i18n/use-messages';
 import { cn } from '@/lib/utils/cn';
 
 type CategoryFilterProps = Readonly<{
@@ -8,14 +10,19 @@ type CategoryFilterProps = Readonly<{
 }>;
 
 export function CategoryFilter({ active, className, onSelect }: CategoryFilterProps) {
+  const locale = useLocale();
+  const messages = useMessages();
   const options = [
-    { id: undefined, label: 'Todas' },
-    ...sections.map((s) => ({ id: s.id, label: s.label })),
+    { id: undefined, label: messages.search.allCategories },
+    ...sections.map((section) => ({
+      id: section.id,
+      label: getSectionText(section, locale).label,
+    })),
   ];
 
   return (
     <div
-      aria-label="Filtrar por sección"
+      aria-label={messages.a11y.categoryFilter}
       className={cn('flex flex-wrap gap-2', className)}
       role="group"
     >

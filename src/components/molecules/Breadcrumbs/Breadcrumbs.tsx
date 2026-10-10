@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { useMessages } from '@/lib/i18n/use-messages';
 import { cn } from '@/lib/utils/cn';
 
 type BreadcrumbItem = Readonly<{
@@ -14,9 +15,11 @@ type BreadcrumbsProps = Readonly<{
 }>;
 
 export function Breadcrumbs({ className, items }: BreadcrumbsProps) {
+  const messages = useMessages();
+
   return (
     <nav
-      aria-label="Migas de pan"
+      aria-label={messages.a11y.breadcrumbs}
       className={cn('mb-6 text-sm text-neutral-500 dark:text-neutral-400', className)}
     >
       <ol className="flex flex-wrap items-center gap-2">

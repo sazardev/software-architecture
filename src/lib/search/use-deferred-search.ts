@@ -9,11 +9,11 @@ export type DeferredSearch = {
 
 export function useDeferredSearch(query: string, filters: SearchFilters): DeferredSearch {
   const deferredQuery = useDeferredValue(query);
-  const { category, tag } = filters;
+  const { category, locale, tag } = filters;
 
   const results = useMemo(
-    () => searchDocs(deferredQuery, { category, tag }),
-    [deferredQuery, category, tag],
+    () => searchDocs(deferredQuery, { category, locale, tag }),
+    [deferredQuery, category, locale, tag],
   );
 
   return { isStale: deferredQuery !== query, results };

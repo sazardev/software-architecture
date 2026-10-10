@@ -51,11 +51,12 @@ src/
   lib/
     config/    # site, nav (constantes tipadas)
     content/   # taxonomía, tipos, registry (índice generado)
+    i18n/      # locales.json, mensajes tipados (es/en), provider y hooks
     search/    # motor de búsqueda, params de URL, hook de búsqueda diferida
     seo/       # URLs absolutas, meta builders, JSON-LD
     utils/     # utilidades puras (cn, format-date…)
   mdx/         # provider + mapa de componentes disponibles en MDX
-  content/     # docs .mdx + taxonomy + index.gen.json (generado)
+  content/     # docs/<locale>/*.mdx + taxonomy + index.gen.json (generado)
   styles/      # entry de Tailwind, tokens (@theme), prose
 tools/         # tooling Bun: auditoría, indexación, plugins de build (no va al bundle)
 ```
@@ -96,24 +97,32 @@ Reglas de dependencia (aplicadas por `import-x/no-restricted-paths` en `eslint.c
   (`validateSearch`). Los tipos usan `clave?: string | undefined` para convivir con
   `exactOptionalPropertyTypes`. La URL es el estado: filtros y búsquedas son compartibles.
 - **SEO**: cada ruta construye su head con `buildPageHead()` (title, description, canonical,
-  OG/Twitter). Añade JSON-LD (`articleJsonLd`, `breadcrumbJsonLd`) cuando el contenido lo
-  justifique. `/search` es `noindex`.
+  alternates `hreflang` + `x-default`, OG/Twitter con `og:locale`). Añade JSON-LD
+  (`articleJsonLd`, `breadcrumbJsonLd`) cuando el contenido lo justifique. `/search` es
+  `noindex`.
+- **i18n en rutas**: las páginas viven bajo `/$locale/...` (`/es/...`, `/en/...`); `/` redirige
+  al idioma preferido del navegador. El layout `$locale.tsx` valida el idioma, provee el
+  contexto (`LocaleProvider`) y actualiza `<html lang>`. Nunca escribas textos de UI en un
+  componente: usa `useMessages()`. `resolveLocaleParam()` convierte el param (string) al tipo
+  `Locale` en heads y componentes.
 - 404: `notFoundComponent` (root o por ruta) con `NotFoundPage`.
 
 ## 6. Contenido MDX
 
-Un documento = un archivo `src/content/docs/<slug>.mdx` (slug kebab-case = nombre del archivo).
+Un documento = un archivo `src/content/docs/<locale>/<slug>.mdx` (slug kebab-case = nombre del
+archivo, idéntico entre idiomas). Cada idioma de `locales.json` debe tener su mismo set de
+slugs (la auditoría avisa con `W-TRANSLATION` si falta una traducción).
 
 Frontmatter obligatorio (validado con zod en la auditoría):
 
-| Campo         | Regla                                           |
-| ------------- | ----------------------------------------------- |
-| `title`       | 3–60 caracteres                                 |
-| `description` | 40–160 caracteres (se usa en SEO y búsqueda)    |
-| `category`    | id existente en `src/lib/content/taxonomy.json` |
-| `tags`        | hasta 5, kebab-case, únicos                     |
-| `order`       | entero ≥ 0 (orden dentro de la sección)         |
-| `updatedAt`   | `YYYY-MM-DD`, no puede ser futuro               |
+| Campo         | Regla                                                                 |
+| ------------- | --------------------------------------------------------------------- |
+| `title`       | 3–60 caracteres                                                       |
+| `description` | 40–160 caracteres (se usa en SEO y búsqueda)                          |
+| `category`    | id existente en `src/lib/content/taxonomy.json` (`labels` por idioma) |
+| `tags`        | hasta 5, kebab-case, únicos                                           |
+| `order`       | entero ≥ 0 (orden dentro de la sección)                               |
+| `updatedAt`   | `YYYY-MM-DD`, no puede ser futuro                                     |
 
 Reglas de cuerpo: al menos un `h2`, sin saltos de nivel (h2 → h4), anclas únicas, enlaces
 internos `/docs/<slug>#ancla` existentes, bloques de código cerrados.
@@ -125,20 +134,29 @@ en diagramas interactivos lazy). Los componentes del sistema de diseño se añad
 ### Pipeline de contenido (Bun)
 
 ```
-src/content/docs/*.mdx
+src/content/docs/<locale>/*.mdx
       │  bun run content:index   (tools/content/content-index.ts)
       ▼
-src/content/index.gen.json  (commiteado)
+src/content/index.gen.json  (commiteado, incluye locale)
       │
-      ├─→ src/lib/content/registry.ts   (registro tipado)
-      └─→ src/lib/search/search.ts      (búsqueda local)
-      └─→ tools/seo/plugin-static-seo.ts (sitemap.xml + robots.txt en build)
+      ├─→ src/lib/content/registry.ts   (registro tipado, filtrado por idioma)
+      └─→ src/lib/search/search.ts      (búsqueda local por idioma)
+      └─→ tools/seo/plugin-static-seo.ts (sitemap.xml con hreflang + robots.txt en build)
 ```
 
 Tras editar o crear contenido: `bun run content:index` y `bun run audit`.
 
-Los enlaces internos de MDX (`/docs/...`, `/search`, `/`) se prefijan automáticamente con el
-base path del hosting en build (`tools/rehype-base-links.ts`); escribe siempre rutas absolutas.
+Los enlaces internos de MDX (`/docs/...`, `/search`, `/`) se localizan automáticamente en build
+(`tools/rehype-internal-links.ts`): prefija base path del hosting + idioma del archivo. Escribe
+siempre rutas absolutas y anclas del idioma correspondiente.
+
+### Mensajes de UI (i18n)
+
+- Diccionarios tipados en `src/lib/i18n/messages/{es,en}.ts`; `en.ts` satisface el tipo derivado
+  de `es.ts` (si añades una clave en `es`, el `check` exige la traducción en `en`).
+- En componentes: `useMessages()` (reactivo al idioma actual) y `useLocale()`.
+- Idiomas en `src/lib/i18n/locales.json` (código, etiqueta, `ogLocale`); añadir uno nuevo =
+  crear `messages/<code>.ts` + carpeta `content/docs/<code>/` (la auditoría lo exige).
 
 ## 7. Búsqueda e indexación
 
@@ -147,29 +165,34 @@ base path del hosting en build (`tools/rehype-base-links.ts`); escribe siempre r
 - Búsqueda: normaliza acentos, puntúa título (8) > tags (6) > headings (5) > slug (4) > descripción
   (3), exige que todos los tokens coincidan y devuelve el heading para enlazar
   `/docs/<slug>#<ancla>`.
-- Estado en URL: `/search?q=&tag=&category=`, `/docs?category=`. Nunca estado oculto.
+- Estado en URL: `/<locale>/search?q=&tag=&category=`, `/<locale>/docs?category=`. Nunca
+  estado oculto. La búsqueda filtra por `locale`: cada idioma indexa solo sus documentos.
 
 ## 8. SEO
 
 - `buildPageHead()` en `src/lib/seo/meta.ts`: canonical absoluto, OG y Twitter.
 - JSON-LD: `websiteJsonLd` (root), `articleJsonLd` + `breadcrumbJsonLd` (docs).
 - `sitemap.xml` y `robots.txt` se generan en el build desde el índice + `VITE_SITE_URL`
-  (copia `.env.example` → `.env.local`). `/search` queda fuera del sitemap y bloqueada en robots.
+  (copia `.env.example` → `.env.local`). El sitemap agrupa cada documento con alternates
+  `hreflang` (y `x-default`); `/search` queda fuera del sitemap y bloqueada en robots.
 
 ## 9. Auditoría (`bun run audit`)
 
-| Código                        | Nivel   | Regla                                          |
-| ----------------------------- | ------- | ---------------------------------------------- |
-| E-FRONTMATTER                 | error   | frontmatter inválido (zod)                     |
-| E-SLUG / E-CATEGORY           | error   | slug kebab / categoría existente               |
-| E-TITLE / E-DESCRIPTION       | error   | longitudes SEO                                 |
-| E-UPDATED-AT                  | error   | fecha ISO válida y no futura                   |
-| E-HEADINGS / -UNIQUE / -LEVEL | error   | estructura de encabezados                      |
-| E-LINK / E-ANCHOR             | error   | enlaces internos y anclas existentes           |
-| E-INDEX                       | error   | `index.gen.json` actualizado                   |
-| E-TAXONOMY-ID / -ORDER        | error   | ids y órdenes de sección únicos                |
-| E-ROUTE-*                     | error   | rutas: id ↔ archivo, root correcto             |
-| W-FENCE / W-ROUTE-DEFAULT     | warning | bloques sin cerrar / `export default` en rutas |
+| Código                        | Nivel   | Regla                                           |
+| ----------------------------- | ------- | ----------------------------------------------- |
+| E-FRONTMATTER                 | error   | frontmatter inválido (zod)                      |
+| E-SLUG / E-CATEGORY           | error   | slug kebab / categoría existente                |
+| E-TITLE / E-DESCRIPTION       | error   | longitudes SEO                                  |
+| E-UPDATED-AT                  | error   | fecha ISO válida y no futura                    |
+| E-HEADINGS / -UNIQUE / -LEVEL | error   | estructura de encabezados                       |
+| E-LINK / E-ANCHOR             | error   | enlaces internos y anclas existentes            |
+| E-INDEX                       | error   | `index.gen.json` actualizado                    |
+| E-TAXONOMY-ID / -ORDER        | error   | ids y órdenes de sección únicos                 |
+| E-TAXONOMY-LABELS             | error   | cada sección tiene label/description por idioma |
+| E-LOCALE / E-LOCALE-MESSAGES  | error   | carpeta de idioma y diccionario de mensajes     |
+| E-ROUTE-*                     | error   | rutas: id ↔ archivo, root correcto              |
+| W-FENCE / W-ROUTE-DEFAULT     | warning | bloques sin cerrar / `export default` en rutas  |
+| W-TRANSLATION                 | warning | falta la traducción de un documento             |
 
 Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes/`) que devuelva
 `Issue[]` y enlázala en `tools/audit.ts`. Los errores bloquean `check` y el push.
@@ -187,7 +210,10 @@ Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes
   description, order) y usa ese `category` en el frontmatter.
 - **Nuevo componente**: crea la carpeta en la capa correcta con `Componente.tsx` + `index.ts`
   y expórtalo en el barril de la capa. Si es usable en MDX, mapea en `src/mdx/mdx-components.tsx`.
-- **Nueva ruta**: crea el archivo en `src/routes/` (la auditoría verifica la coherencia).
+- **Nueva ruta**: crea el archivo en `src/routes/$locale/` (la auditoría verifica la coherencia).
+- **Nuevo idioma**: añade la entrada en `src/lib/i18n/locales.json`, crea
+  `src/lib/i18n/messages/<code>.ts` (copia `es.ts` y traduce), traduce la taxonomía y los docs
+  en `src/content/docs/<code>/`, y ejecuta `bun run content:index` + `bun run check`.
 - **Nuevo check**: ver §9. Si cambias una regla, actualiza este documento en el mismo commit.
 
 ## 12. Despliegue (GitHub Pages)

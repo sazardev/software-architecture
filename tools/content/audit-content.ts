@@ -5,8 +5,10 @@ import { Glob } from 'bun';
 import type { Issue } from '../report';
 
 import { collectLinkIssues } from './audit-links';
+import { collectLocaleIssues } from './audit-locales';
 import { buildContentIndex, getIndexPath } from './content-index';
 import { extractHeadings, type ContentHeading } from './extract-headings';
+import { isLocale, locales } from './locales';
 import { parseFrontmatter } from './parse-frontmatter';
 import type { ParsedDoc } from './parsed-doc';
 import { frontmatterSchema, taxonomySchema, type ContentTaxonomy } from './schema';
@@ -172,12 +174,21 @@ function parseDocument(
   categoryIds: Set<string>,
 ): { doc: ParsedDoc | undefined; issues: Issue[] } {
   const issues: Issue[] = [];
-  const slug =
-    relativeFile
-      .split('/')
-      .at(-1)
-      ?.replace(/\.mdx$/, '') ?? '';
+  const filename = relativeFile.split('/').at(-1) ?? '';
+  const locale = relativeFile.split('/').at(-2) ?? '';
+  const slug = filename.replace(/\.mdx$/, '');
   const { body, frontmatter } = parseFrontmatter(source);
+
+  if (!isLocale(locale)) {
+    issues.push({
+      code: 'E-LOCALE',
+      file: relativeFile,
+      level: 'error',
+      message: `locale desconocido "${locale}" (válidos: ${locales.join(', ')})`,
+    });
+    return { doc: undefined, issues };
+  }
+
   const parsed = frontmatterSchema.safeParse(frontmatter);
 
   if (!parsed.success) {
@@ -198,7 +209,7 @@ function parseDocument(
   const headingCheck = collectHeadingIssues(body, relativeFile);
 
   return {
-    doc: { body, headings: headingCheck.headings, relativeFile, slug },
+    doc: { body, headings: headingCheck.headings, locale, relativeFile, slug },
     issues: [...issues, ...headingCheck.issues],
   };
 }
@@ -235,7 +246,7 @@ export async function auditContent(): Promise<ContentAuditResult> {
   const issues: Issue[] = [...collectTaxonomyIssues(taxonomy)];
   const parsedDocs = new Map<string, ParsedDoc>();
 
-  const glob = new Glob('*.mdx');
+  const glob = new Glob('*/*.mdx');
 
   for await (const file of glob.scan(docsDir)) {
     const relativeFile = `src/content/docs/${file}`;
@@ -256,15 +267,16 @@ export async function auditContent(): Promise<ContentAuditResult> {
     const parsed = parseDocument(relativeFile, source, categoryIds);
 
     if (parsed.doc !== undefined) {
-      parsedDocs.set(parsed.doc.slug, parsed.doc);
+      parsedDocs.set(`${parsed.doc.locale}/${parsed.doc.slug}`, parsed.doc);
     }
 
     issues.push(...parsed.issues);
   }
 
   const linkIssues = collectLinkIssues(parsedDocs);
+  const localeIssues = await collectLocaleIssues(taxonomy, parsedDocs);
   const indexIssues = await collectIndexIssues();
-  issues.push(...linkIssues, ...indexIssues);
+  issues.push(...linkIssues, ...localeIssues, ...indexIssues);
 
   return { docCount: parsedDocs.size, issues };
 }

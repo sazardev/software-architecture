@@ -37,8 +37,9 @@
           "text": "Siguientes pasos"
         }
       ],
+      "locale": "es",
       "readingMinutes": 1,
-      "route": "/docs/getting-started",
+      "route": "/es/docs/getting-started",
       "slug": "getting-started"
     },
     {
@@ -84,8 +85,9 @@
           "text": "Principio de inversión de dependencias"
         }
       ],
+      "locale": "es",
       "readingMinutes": 1,
-      "route": "/docs/solid",
+      "route": "/es/docs/solid",
       "slug": "solid"
     },
     {
@@ -131,8 +133,9 @@
           "text": "Código"
         }
       ],
+      "locale": "es",
       "readingMinutes": 1,
-      "route": "/docs/c4-model",
+      "route": "/es/docs/c4-model",
       "slug": "c4-model"
     },
     {
@@ -168,8 +171,185 @@
           "text": "Refactoring continuo"
         }
       ],
+      "locale": "es",
       "readingMinutes": 1,
-      "route": "/docs/clean-code",
+      "route": "/es/docs/clean-code",
+      "slug": "clean-code"
+    },
+    {
+      "category": "fundamentos",
+      "description": "How the site is organized, how to navigate the resources and how to create your first MDX page.",
+      "order": 1,
+      "tags": [
+        "guide",
+        "roadmap"
+      ],
+      "title": "Getting started",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "getting-started",
+          "level": 1,
+          "text": "Getting started"
+        },
+        {
+          "id": "recommended-path",
+          "level": 2,
+          "text": "Recommended path"
+        },
+        {
+          "id": "highlighted-code",
+          "level": 2,
+          "text": "Highlighted code"
+        },
+        {
+          "id": "mermaid-diagram",
+          "level": 2,
+          "text": "Mermaid diagram"
+        },
+        {
+          "id": "next-steps",
+          "level": 2,
+          "text": "Next steps"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 1,
+      "route": "/en/docs/getting-started",
+      "slug": "getting-started"
+    },
+    {
+      "category": "fundamentos",
+      "description": "The five SOLID principles explained with concrete examples and links to go deeper on each one.",
+      "order": 2,
+      "tags": [
+        "solid",
+        "design",
+        "oop"
+      ],
+      "title": "SOLID principles",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "solid-principles",
+          "level": 1,
+          "text": "SOLID principles"
+        },
+        {
+          "id": "single-responsibility-principle",
+          "level": 2,
+          "text": "Single responsibility principle"
+        },
+        {
+          "id": "openclosed-principle",
+          "level": 2,
+          "text": "Open/closed principle"
+        },
+        {
+          "id": "liskov-substitution-principle",
+          "level": 2,
+          "text": "Liskov substitution principle"
+        },
+        {
+          "id": "interface-segregation-principle",
+          "level": 2,
+          "text": "Interface segregation principle"
+        },
+        {
+          "id": "dependency-inversion-principle",
+          "level": 2,
+          "text": "Dependency inversion principle"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 1,
+      "route": "/en/docs/solid",
+      "slug": "solid"
+    },
+    {
+      "category": "diseno",
+      "description": "How to document architecture with the four levels of the C4 model and diagrams that stay alive.",
+      "order": 1,
+      "tags": [
+        "c4",
+        "diagrams",
+        "documentation"
+      ],
+      "title": "C4 model",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "c4-model",
+          "level": 1,
+          "text": "C4 model"
+        },
+        {
+          "id": "levels",
+          "level": 2,
+          "text": "Levels"
+        },
+        {
+          "id": "context",
+          "level": 2,
+          "text": "Context"
+        },
+        {
+          "id": "containers",
+          "level": 2,
+          "text": "Containers"
+        },
+        {
+          "id": "components",
+          "level": 2,
+          "text": "Components"
+        },
+        {
+          "id": "code",
+          "level": 2,
+          "text": "Code"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 1,
+      "route": "/en/docs/c4-model",
+      "slug": "c4-model"
+    },
+    {
+      "category": "practicas",
+      "description": "Practical rules for readability, clear names, small functions and continuous refactoring in large teams.",
+      "order": 1,
+      "tags": [
+        "clean-code",
+        "quality",
+        "refactoring"
+      ],
+      "title": "Clean code for architects",
+      "updatedAt": "2026-10-10",
+      "headings": [
+        {
+          "id": "clean-code-for-architects",
+          "level": 1,
+          "text": "Clean code for architects"
+        },
+        {
+          "id": "names-that-explain",
+          "level": 2,
+          "text": "Names that explain"
+        },
+        {
+          "id": "small-functions",
+          "level": 2,
+          "text": "Small functions"
+        },
+        {
+          "id": "continuous-refactoring",
+          "level": 2,
+          "text": "Continuous refactoring"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 1,
+      "route": "/en/docs/clean-code",
       "slug": "clean-code"
     }
   ]

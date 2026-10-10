@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { Input } from '@/components/atoms';
+import { useMessages } from '@/lib/i18n/use-messages';
 
 const typingElementTags = new Set(['INPUT', 'TEXTAREA']);
 
@@ -24,6 +25,7 @@ export function SearchField({
   onValueChange,
   value,
 }: SearchFieldProps) {
+  const messages = useMessages();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export function SearchField({
   return (
     <search className="block">
       <label className="sr-only" htmlFor={id}>
-        Buscar recursos
+        {messages.a11y.searchField}
       </label>
       <div className="relative">
         <Input
@@ -56,7 +58,7 @@ export function SearchField({
           onChange={(event) => {
             onValueChange(event.currentTarget.value);
           }}
-          placeholder="Buscar en la documentación…"
+          placeholder={messages.search.placeholder}
           ref={inputRef}
           type="search"
           value={value}

@@ -13,7 +13,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import { compression } from 'vite-plugin-compression2';
 
-import { rehypeBaseLinks } from './tools/rehype-base-links.ts';
+import { rehypeInternalLinks } from './tools/rehype-internal-links.ts';
 import { remarkMermaid } from './tools/remark-mermaid.ts';
 import { staticSeoPlugin } from './tools/seo/plugin-static-seo.ts';
 
@@ -30,7 +30,7 @@ export default defineConfig({
       ...mdx({
         providerImportSource: '@mdx-js/react',
         rehypePlugins: [
-          [rehypeBaseLinks, { base: basePath }],
+          [rehypeInternalLinks, { base: basePath }],
           rehypeSlug,
           [
             rehypeAutolinkHeadings,

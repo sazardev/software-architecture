@@ -1,4 +1,5 @@
 import type { ContentHeading } from '@/lib/content/types';
+import { useMessages } from '@/lib/i18n/use-messages';
 import { cn } from '@/lib/utils/cn';
 
 type TableOfContentsProps = Readonly<{
@@ -6,6 +7,7 @@ type TableOfContentsProps = Readonly<{
 }>;
 
 export function TableOfContents({ headings }: TableOfContentsProps) {
+  const messages = useMessages();
   const visible = headings.filter((heading) => heading.level >= 2 && heading.level <= 3);
 
   if (visible.length === 0) {
@@ -15,7 +17,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
   return (
     <nav aria-label="En esta página">
       <p className="mb-3 text-xs font-semibold tracking-wider text-neutral-500 uppercase">
-        En esta página
+        {messages.a11y.tableOfContents}
       </p>
       <ul className="space-y-2 text-sm">
         {visible.map((heading) => (

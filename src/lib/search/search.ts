@@ -1,5 +1,6 @@
 import { docs } from '@/lib/content/registry';
 import type { ContentEntry, ContentHeading } from '@/lib/content/types';
+import type { Locale } from '@/lib/i18n/locales';
 
 export type SearchResult = {
   entry: ContentEntry;
@@ -9,6 +10,7 @@ export type SearchResult = {
 
 export type SearchFilters = {
   category?: string | undefined;
+  locale: Locale;
   tag?: string | undefined;
 };
 
@@ -74,13 +76,14 @@ function scoreEntry(
   return { heading, score };
 }
 
-export function searchDocs(query: string, filters: SearchFilters = {}): SearchResult[] {
+export function searchDocs(query: string, filters: SearchFilters): SearchResult[] {
   const tokens = normalize(query)
     .split(/\s+/)
     .filter((token) => token.length > 0);
 
   const candidates = docs.filter(
     (entry) =>
+      entry.locale === filters.locale &&
       (filters.category === undefined || entry.category === filters.category) &&
       (filters.tag === undefined || entry.tags.includes(filters.tag)),
   );

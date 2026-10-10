@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { Glob } from 'bun';
 
 import { extractHeadings, type ContentHeading } from './extract-headings';
+import { isLocale, locales } from './locales';
 import { parseFrontmatter } from './parse-frontmatter';
 import { frontmatterSchema, taxonomySchema } from './schema';
 
@@ -10,6 +11,7 @@ export type ContentEntry = {
   category: string;
   description: string;
   headings: ContentHeading[];
+  locale: string;
   order: number;
   readingMinutes: number;
   route: string;
@@ -43,13 +45,25 @@ export function getIndexPath(): string {
 export async function buildContentIndex(): Promise<string> {
   const taxonomy = taxonomySchema.parse(JSON.parse(await Bun.file(taxonomyFile).text()) as unknown);
   const categoryOrder = new Map(
-    taxonomy.sections.map((section, index) => [section.id, index] satisfies [string, number]),
+    taxonomy.sections.map((section, index) => [section.id, index] as [string, number]),
   );
 
   const entries: ContentEntry[] = [];
-  const glob = new Glob('*.mdx');
+  const glob = new Glob('*/*.mdx');
 
   for await (const file of glob.scan(docsDir)) {
+    const [localeSegment, filename] = file.split('/', 2);
+
+    if (localeSegment === undefined || filename === undefined) {
+      throw new Error(`src/content/docs/${file} → estructura esperada: <locale>/<slug>.mdx`);
+    }
+
+    if (!isLocale(localeSegment)) {
+      throw new Error(
+        `src/content/docs/${file} → locale desconocido "${localeSegment}" (válidos: ${locales.join(', ')})`,
+      );
+    }
+
     const source = await Bun.file(join(docsDir, file)).text();
     const { body, frontmatter } = parseFrontmatter(source);
     const result = frontmatterSchema.safeParse(frontmatter);
@@ -71,19 +85,22 @@ export async function buildContentIndex(): Promise<string> {
 
     const words = countWords(body);
     const minutes = Math.ceil(words / wordsPerMinute);
+    const slug = filename.replace(/\.mdx$/, '');
 
     entries.push({
       ...data,
       headings: extractHeadings(body),
+      locale: localeSegment,
       readingMinutes: Math.max(1, minutes),
-      route: `/docs/${file.replace(/\.mdx$/, '')}`,
-      slug: file.replace(/\.mdx$/, ''),
+      route: `/${localeSegment}/docs/${slug}`,
+      slug,
     });
   }
 
   entries.sort((a, b) => {
+    const byLocale = locales.indexOf(a.locale) - locales.indexOf(b.locale);
     const byCategory = (categoryOrder.get(a.category) ?? 0) - (categoryOrder.get(b.category) ?? 0);
-    return byCategory || a.order - b.order || a.title.localeCompare(b.title, 'es');
+    return byLocale || byCategory || a.order - b.order || a.title.localeCompare(b.title, 'es');
   });
 
   const data: ContentIndexData = { docs: entries };

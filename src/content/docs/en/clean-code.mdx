@@ -1,0 +1,46 @@
+---
+title: Clean code for architects
+description: Practical rules for readability, clear names, small functions and continuous refactoring in large teams.
+category: practicas
+tags:
+  - clean-code
+  - quality
+  - refactoring
+order: 1
+updatedAt: 2026-10-10
+---
+
+# Clean code for architects
+
+Architecture starts in the code: if the day-to-day is chaotic, no diagram will save it.
+These rules dialogue with the [SOLID principles](/docs/solid).
+
+## Names that explain
+
+A name should reveal intent. If you need a comment to explain a variable, the variable has
+the wrong name.
+
+## Small functions
+
+Every function does one thing, at a single level of abstraction. The
+[repository checkers](/docs/getting-started) keep an eye on it too.
+
+```ts title="names.ts"
+function calc(a: number, b: number): number {
+  return a * b * 0.21;
+}
+
+function calculateVatAmount(netPrice: number, quantity: number): number {
+  return netPrice * quantity * VAT_RATE;
+}
+```
+
+<Callout tone="warning" title="Technical debt">
+  A one-off shortcut is acceptable; a permanent shortcut is an architecture decision nobody signed
+  off on.
+</Callout>
+
+## Continuous refactoring
+
+Refactor in small steps backed by tests. Debt is not paid in a heroic week: it is avoided
+every day.

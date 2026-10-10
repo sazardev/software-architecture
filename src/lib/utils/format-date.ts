@@ -1,7 +1,20 @@
-import { site } from '@/lib/config/site';
+import type { Locale } from '@/lib/i18n/locales';
 
-const formatter = new Intl.DateTimeFormat(site.locale, { dateStyle: 'medium' });
+const formatters = new Map<Locale, Intl.DateTimeFormat>();
 
-export function formatDate(isoDate: string): string {
-  return formatter.format(new Date(`${isoDate}T00:00:00`));
+function getFormatter(locale: Locale): Intl.DateTimeFormat {
+  const existing = formatters.get(locale);
+
+  if (existing !== undefined) {
+    return existing;
+  }
+
+  const formatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
+  formatters.set(locale, formatter);
+
+  return formatter;
+}
+
+export function formatDate(isoDate: string, locale: Locale): string {
+  return getFormatter(locale).format(new Date(`${isoDate}T00:00:00`));
 }

@@ -1,7 +1,7 @@
 import type { Element, Root } from 'hast';
 import { describe, expect, it } from 'vitest';
 
-import { rehypeBaseLinks } from './rehype-base-links';
+import { rehypeInternalLinks } from './rehype-internal-links';
 
 function createTree(href: string): Root {
   return {
@@ -23,13 +23,24 @@ function readHref(tree: Root): unknown {
   return child === undefined ? undefined : (child as Element).properties.href;
 }
 
-describe('rehypeBaseLinks', () => {
-  it('prefija enlaces internos con el base path de Pages', () => {
+const spanishFile = { path: '/project/src/content/docs/es/solid.mdx' };
+const englishFile = { path: '/project/src/content/docs/en/solid.mdx' };
+
+describe('rehypeInternalLinks', () => {
+  it('prefija base path e idioma en producción', () => {
     const tree = createTree('/docs/solid');
 
-    rehypeBaseLinks({ base: '/software-architecture/' })(tree);
+    rehypeInternalLinks({ base: '/software-architecture/' })(tree, spanishFile);
 
-    expect(readHref(tree)).toBe('/software-architecture/docs/solid');
+    expect(readHref(tree)).toBe('/software-architecture/es/docs/solid');
+  });
+
+  it('prefija solo el idioma en desarrollo', () => {
+    const tree = createTree('/docs/solid');
+
+    rehypeInternalLinks({ base: '/' })(tree, englishFile);
+
+    expect(readHref(tree)).toBe('/en/docs/solid');
   });
 
   it('no toca enlaces externos, protocolo-relativos ni anclas', () => {
@@ -37,20 +48,20 @@ describe('rehypeBaseLinks', () => {
     const protocolRelative = createTree('//cdn.example.com/x');
     const anchor = createTree('#seccion');
 
-    const transform = rehypeBaseLinks({ base: '/software-architecture/' });
-    transform(external);
-    transform(protocolRelative);
-    transform(anchor);
+    const transform = rehypeInternalLinks({ base: '/software-architecture/' });
+    transform(external, spanishFile);
+    transform(protocolRelative, spanishFile);
+    transform(anchor, spanishFile);
 
     expect(readHref(external)).toBe('https://example.com/x');
     expect(readHref(protocolRelative)).toBe('//cdn.example.com/x');
     expect(readHref(anchor)).toBe('#seccion');
   });
 
-  it('no modifica nada cuando el base es la raíz', () => {
+  it('no modifica nada sin base ni idioma detectado', () => {
     const tree = createTree('/docs/solid');
 
-    rehypeBaseLinks({ base: '/' })(tree);
+    rehypeInternalLinks({ base: '/' })(tree, { path: '/project/other/file.mdx' });
 
     expect(readHref(tree)).toBe('/docs/solid');
   });

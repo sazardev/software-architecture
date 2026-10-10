@@ -33,9 +33,9 @@ function auditLink(
 
   if (link.startsWith('#')) {
     const anchor = link.slice(1);
-    const hasAnchor = doc.headings.some((heading) => heading.id === anchor);
+    const isAnchorExists = doc.headings.some((heading) => heading.id === anchor);
 
-    if (!hasAnchor) {
+    if (!isAnchorExists) {
       return {
         code: 'E-ANCHOR',
         file: doc.relativeFile,
@@ -49,21 +49,21 @@ function auditLink(
 
   if (link.startsWith('/docs/')) {
     const [targetSlug = '', anchor] = link.slice('/docs/'.length).split('#', 2);
-    const target = parsedDocs.get(targetSlug);
+    const target = parsedDocs.get(`${doc.locale}/${targetSlug}`);
 
     if (target === undefined) {
       return {
         code: 'E-LINK',
         file: doc.relativeFile,
         level: 'error',
-        message: `enlace a documento inexistente "${link}"`,
+        message: `enlace a documento inexistente "${link}" en el idioma "${doc.locale}"`,
       };
     }
 
     if (anchor !== undefined) {
-      const hasAnchor = target.headings.some((heading) => heading.id === anchor);
+      const isAnchorExists = target.headings.some((heading) => heading.id === anchor);
 
-      if (!hasAnchor) {
+      if (!isAnchorExists) {
         return {
           code: 'E-ANCHOR',
           file: doc.relativeFile,

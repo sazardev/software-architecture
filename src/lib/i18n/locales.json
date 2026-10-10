@@ -1,0 +1,7 @@
+{
+  "default": "es",
+  "locales": [
+    { "code": "es", "label": "Español", "ogLocale": "es_ES" },
+    { "code": "en", "label": "English", "ogLocale": "en_US" }
+  ]
+}

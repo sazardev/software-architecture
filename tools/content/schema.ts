@@ -1,9 +1,13 @@
 import { z } from 'zod';
 
-export const sectionSchema = z.object({
+const localizedTextSchema = z.object({
   description: z.string().min(10),
-  id: z.string().regex(/^[a-z][a-z0-9-]*$/),
   label: z.string().min(2),
+});
+
+export const sectionSchema = z.object({
+  id: z.string().regex(/^[a-z][a-z0-9-]*$/),
+  labels: z.record(z.string(), localizedTextSchema),
   order: z.number().int().positive(),
 });
 

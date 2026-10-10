@@ -2,21 +2,45 @@
   "sections": [
     {
       "id": "fundamentos",
-      "label": "Fundamentos",
-      "description": "Bases conceptuales y principios que sostienen cualquier arquitectura sólida.",
-      "order": 1
+      "order": 1,
+      "labels": {
+        "es": {
+          "label": "Fundamentos",
+          "description": "Bases conceptuales y principios que sostienen cualquier arquitectura sólida."
+        },
+        "en": {
+          "label": "Foundations",
+          "description": "Conceptual foundations and principles that sustain any solid architecture."
+        }
+      }
     },
     {
       "id": "diseno",
-      "label": "Diseño de sistemas",
-      "description": "Modelado, diagramas y decisiones para comunicar arquitectura compleja.",
-      "order": 2
+      "order": 2,
+      "labels": {
+        "es": {
+          "label": "Diseño de sistemas",
+          "description": "Modelado, diagramas y decisiones para comunicar arquitectura compleja."
+        },
+        "en": {
+          "label": "System design",
+          "description": "Modeling, diagrams and decisions to communicate complex architecture."
+        }
+      }
     },
     {
       "id": "practicas",
-      "label": "Prácticas y calidad",
-      "description": "Hábitos, refactoring continuo y estándares que mantienen el sistema sano.",
-      "order": 3
+      "order": 3,
+      "labels": {
+        "es": {
+          "label": "Prácticas y calidad",
+          "description": "Hábitos, refactoring continuo y estándares que mantienen el sistema sano."
+        },
+        "en": {
+          "label": "Practices & quality",
+          "description": "Habits, continuous refactoring and standards that keep the system healthy."
+        }
+      }
     }
   ]
 }

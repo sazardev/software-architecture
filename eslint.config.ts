@@ -144,6 +144,7 @@ export default defineConfig([
       'unicorn/import-style': 'off',
       'unicorn/no-process-exit': 'off',
       'unicorn/no-top-level-side-effects': 'off',
+      'unicorn/prefer-iterator-to-array': 'off',
     },
   },
   {

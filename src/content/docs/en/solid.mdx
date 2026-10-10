@@ -1,0 +1,47 @@
+---
+title: SOLID principles
+description: The five SOLID principles explained with concrete examples and links to go deeper on each one.
+category: fundamentos
+tags:
+  - solid
+  - design
+  - oop
+order: 2
+updatedAt: 2026-10-10
+---
+
+# SOLID principles
+
+SOLID is an acronym for five object-oriented design principles that reduce coupling and
+increase cohesion. Applying them seriously is the foundation of
+[clean architecture](/docs/clean-code).
+
+## Single responsibility principle
+
+Every module should have a single reason to change. If a class mixes business rules and
+persistence, split it into separate collaborators.
+
+## Open/closed principle
+
+Entities should be open for extension and closed for modification. Prefer composition and
+polymorphism over ever-growing conditional chains.
+
+## Liskov substitution principle
+
+A subtype must be able to replace its base type without breaking the contract: same or
+weaker preconditions, same or stronger postconditions.
+
+## Interface segregation principle
+
+Several specific interfaces are better than one general-purpose interface. A client should
+not depend on methods it does not use.
+
+## Dependency inversion principle
+
+High-level modules should not depend on low-level ones; both should depend on abstractions.
+This principle is the gateway to
+[hexagonal architecture](/docs/c4-model#components).
+
+<Callout tone="info" title="Placeholder">
+  Example document: replace the paragraphs with real explanations and examples.
+</Callout>

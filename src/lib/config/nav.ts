@@ -1,5 +1,5 @@
 export const navItems = [
-  { exact: true, label: 'Inicio', to: '/' },
-  { exact: false, label: 'Documentación', to: '/docs' },
-  { exact: false, label: 'Buscar', to: '/search' },
+  { exact: true, id: 'home', path: '', to: '/$locale' },
+  { exact: false, id: 'docs', path: '/docs', to: '/$locale/docs' },
+  { exact: false, id: 'search', path: '/search', to: '/$locale/search' },
 ] as const;

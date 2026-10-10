@@ -1,6 +1,7 @@
 import contentIndexJson from '@/content/index.gen.json';
 import { sections } from '@/lib/content/taxonomy';
 import type { ContentEntry, Section } from '@/lib/content/types';
+import type { Locale } from '@/lib/i18n/locales';
 
 export type SectionWithDocs = {
   docs: ContentEntry[];
@@ -14,37 +15,44 @@ export type DocNeighbors = {
 
 const contentIndex = contentIndexJson;
 
-export const docs: ContentEntry[] = contentIndex.docs;
+export const docs: ContentEntry[] = contentIndex.docs as ContentEntry[];
 
-export function getDocBySlug(slug: string): ContentEntry | undefined {
-  return docs.find((doc) => doc.slug === slug);
+export function getDocsByLocale(locale: Locale): ContentEntry[] {
+  return docs.filter((doc) => doc.locale === locale);
 }
 
-export function getDocsBySection(category?: string): SectionWithDocs[] {
+export function getDocBySlug(locale: Locale, slug: string): ContentEntry | undefined {
+  return getDocsByLocale(locale).find((doc) => doc.slug === slug);
+}
+
+export function getDocsBySection(locale: Locale, category?: string): SectionWithDocs[] {
+  const localized = getDocsByLocale(locale);
+
   return sections
     .filter((section) => category === undefined || section.id === category)
     .map((section) => ({
-      docs: docs.filter((doc) => doc.category === section.id),
+      docs: localized.filter((doc) => doc.category === section.id),
       section,
     }))
     .filter((group) => group.docs.length > 0);
 }
 
-export function getDocNeighbors(slug: string): DocNeighbors {
-  const index = docs.findIndex((doc) => doc.slug === slug);
+export function getDocNeighbors(locale: Locale, slug: string): DocNeighbors {
+  const localized = getDocsByLocale(locale);
+  const index = localized.findIndex((doc) => doc.slug === slug);
   const neighbors: DocNeighbors = {};
 
   if (index === -1) {
     return neighbors;
   }
 
-  const next = docs[index + 1];
+  const next = localized[index + 1];
 
   if (next !== undefined) {
     neighbors.next = next;
   }
 
-  const previous = docs[index - 1];
+  const previous = localized[index - 1];
 
   if (previous !== undefined) {
     neighbors.previous = previous;
