@@ -151,6 +151,8 @@ export default defineConfig([
     files: ['src/**/*.test.{ts,tsx}', 'src/test/**/*.ts'],
     rules: {
       'sonarjs/no-duplicate-string': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      'unicorn/no-global-object-property-assignment': 'off',
     },
   },
   {

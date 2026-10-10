@@ -52,6 +52,7 @@ src/
     config/    # site, nav (constantes tipadas)
     content/   # taxonomía, tipos, registry (índice generado)
     i18n/      # locales.json, mensajes tipados (es/en), provider y hooks
+    theme/     # preferencias de tema (claro/oscuro/sistema), provider y hooks
     search/    # motor de búsqueda, params de URL, hook de búsqueda diferida
     seo/       # URLs absolutas, meta builders, JSON-LD
     utils/     # utilidades puras (cn, format-date…)
@@ -82,7 +83,8 @@ Reglas de dependencia (aplicadas por `import-x/no-restricted-paths` en `eslint.c
   blanco entre grupos; alias `@/` siempre; prohibido `../../../*`.
 - **Tipado estricto**: sin `any` (usa `unknown` + narrowing), sin `!` non-null, `type` sobre
   `interface` (excepción: augmentación de `Register` en `src/app/router.tsx`).
-- **Clases CSS**: siempre con `cn()` + variantes `cva` (nunca concatenación de strings).
+- **Clases CSS**: siempre con `cn()` + variantes `cva` (nunca concatenación de strings); todo
+  color con tokens y su variante `dark:` correspondiente.
 - Los generados (`src/routeTree.gen.ts`, `src/content/index.gen.json`) **no se editan a mano**
   y se commitean para que el typecheck funcione en un clon limpio.
 
@@ -157,6 +159,17 @@ siempre rutas absolutas y anclas del idioma correspondiente.
 - En componentes: `useMessages()` (reactivo al idioma actual) y `useLocale()`.
 - Idiomas en `src/lib/i18n/locales.json` (código, etiqueta, `ogLocale`); añadir uno nuevo =
   crear `messages/<code>.ts` + carpeta `content/docs/<code>/` (la auditoría lo exige).
+
+### Tema global (claro/oscuro/sistema)
+
+- Núcleo en `src/lib/theme/` (tipos, resolución y `ThemeProvider` montado en `__root`).
+- La preferencia se persiste en `localStorage` con la clave `sa:theme`; el script inline de
+  `index.html` la aplica antes del primer pintado (anti-FOUC) y **debe mantenerse en sync**
+  con `THEME_STORAGE_KEY`.
+- El tema efectivo se aplica como clase `dark` en `<html>` (la variante `dark:` de Tailwind 4
+  depende de `.dark`); nunca uses `prefers-color-scheme` directamente en CSS.
+- Todo color nuevo usa tokens y su variante `dark:`; Shiki y Mermaid reaccionan a la clase.
+- El selector del header (`ThemeSwitcher`) cicla claro → oscuro → sistema y es bilingüe.
 
 ## 7. Búsqueda e indexación
 

@@ -62,4 +62,11 @@ export const en: Messages = {
     description:
       'Ultra interactive resources, living diagrams and deep documentation to design systems that scale.',
   },
+  theme: {
+    dark: 'dark',
+    label: 'Theme',
+    light: 'light',
+    switchTo: (next: string) => `Switch to ${next} theme`,
+    system: 'system',
+  },
 };

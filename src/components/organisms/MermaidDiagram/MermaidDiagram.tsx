@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useTheme } from '@/lib/theme/theme-context';
+
 type MermaidDiagramProps = Readonly<{
   chart: string;
 }>;
 
 export function MermaidDiagram({ chart }: MermaidDiagramProps) {
+  const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +19,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
         const { default: mermaid } = await import('mermaid');
         mermaid.initialize({
           startOnLoad: false,
-          theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
+          theme: resolvedTheme === 'dark' ? 'dark' : 'default',
         });
 
         const { svg } = await mermaid.render(`mermaid-${crypto.randomUUID()}`, chart);
@@ -40,7 +43,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
     return () => {
       isCancelled = true;
     };
-  }, [chart]);
+  }, [chart, resolvedTheme]);
 
   if (error) {
     return (

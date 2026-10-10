@@ -5,3 +5,4 @@ export { DocPager } from './DocPager';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export { SearchField } from './SearchField';
 export { TableOfContents } from './TableOfContents';
+export { ThemeSwitcher } from './ThemeSwitcher';

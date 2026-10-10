@@ -60,6 +60,13 @@ export const es = {
     description:
       'Recursos ultra interactivos, diagramas vivos y documentación profunda para diseñar sistemas que escalan.',
   },
+  theme: {
+    dark: 'oscuro',
+    label: 'Tema',
+    light: 'claro',
+    switchTo: (next: string) => `Cambiar a tema ${next}`,
+    system: 'sistema',
+  },
 };
 
 export type Messages = typeof es;

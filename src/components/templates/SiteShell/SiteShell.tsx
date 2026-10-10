@@ -1,7 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
-import { LanguageSwitcher } from '@/components/molecules';
+import { LanguageSwitcher, ThemeSwitcher } from '@/components/molecules';
 import { navItems } from '@/lib/config/nav';
 import { site } from '@/lib/config/site';
 import { useLocale } from '@/lib/i18n/locale-context';
@@ -56,6 +56,7 @@ export function SiteShell({ children }: SiteShellProps) {
               </Link>
             ))}
             <LanguageSwitcher />
+            <ThemeSwitcher />
           </nav>
         </div>
       </header>

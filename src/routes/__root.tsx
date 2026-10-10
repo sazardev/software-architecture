@@ -6,6 +6,7 @@ import { site } from '@/lib/config/site';
 import { LocaleProvider } from '@/lib/i18n/locale-provider';
 import { localeFromPathname, defaultLocale } from '@/lib/i18n/locales';
 import { getMessages } from '@/lib/i18n/messages';
+import { ThemeProvider } from '@/lib/theme/theme-provider';
 import { MdxProvider } from '@/mdx';
 
 const RouterDevtools = import.meta.env.DEV
@@ -29,15 +30,17 @@ function RootRoute() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   return (
-    <LocaleProvider locale={localeFromPathname(pathname)}>
-      <SiteShell>
-        <HeadContent />
-        <MdxProvider>
-          <Outlet />
-        </MdxProvider>
-        {RouterDevtools ? <RouterDevtools /> : null}
-      </SiteShell>
-    </LocaleProvider>
+    <ThemeProvider>
+      <LocaleProvider locale={localeFromPathname(pathname)}>
+        <SiteShell>
+          <HeadContent />
+          <MdxProvider>
+            <Outlet />
+          </MdxProvider>
+          {RouterDevtools ? <RouterDevtools /> : null}
+        </SiteShell>
+      </LocaleProvider>
+    </ThemeProvider>
   );
 }
 

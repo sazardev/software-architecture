@@ -8,6 +8,21 @@
     <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Recursos interactivos para arquitectos de software." />
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem('sa:theme');
+          const preference = stored === 'light' || stored === 'dark' ? stored : 'system';
+          const dark =
+            preference === 'dark' ||
+            (preference === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        } catch {
+          /* sin almacenamiento: se aplica el tema del sistema */
+        }
+      })();
+    </script>
     <title>Software Architecture</title>
   </head>
   <body class="min-h-full">
