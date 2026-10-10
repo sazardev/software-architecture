@@ -241,6 +241,17 @@ Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes
   en `src/content/docs/<code>/`, y ejecuta `bun run content:index` + `bun run check`.
 - **Nuevo check**: ver §9. Si cambias una regla, actualiza este documento en el mismo commit.
 
+### PWA y cache offline
+
+- `vite-plugin-pwa` (Workbox) con `registerType: autoUpdate`: precache completo del build
+  (js/css/html/svg/png/json) y fallback de navegación SPA (`index.html`), así el sitio funciona
+  offline, incluidos los deeplinks.
+- Iconos: fuentes SVG en `public/icons/` y PNG generados con `bun run icons:generate`
+  (requiere `rsvg-convert`); los PNG se commitean.
+- Manifest en español por defecto (`lang: es`) con `start_url`/`scope` relativos (compatibles
+  con el base path de Pages).
+- Tras tocar manifest o iconos: rebuild y verifica `dist/sw.js` y `dist/manifest.webmanifest`.
+
 ## 12. Despliegue (GitHub Pages)
 
 - Repositorio público: `https://github.com/sazardev/software-architecture`.

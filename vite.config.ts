@@ -12,6 +12,7 @@ import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import { compression } from 'vite-plugin-compression2';
+import { VitePWA } from 'vite-plugin-pwa';
 
 import { rehypeInternalLinks } from './tools/rehype-internal-links.ts';
 import { remarkMermaid } from './tools/remark-mermaid.ts';
@@ -65,6 +66,45 @@ export default defineConfig({
       threshold: 1024,
     }),
     staticSeoPlugin({ siteUrl }),
+    VitePWA({
+      includeAssets: [
+        'apple-touch-icon.png',
+        'favicon.svg',
+        'icons/icon-maskable.svg',
+        'icons/icon.svg',
+      ],
+      manifest: {
+        background_color: '#fafafa',
+        categories: ['education', 'productivity', 'developer'],
+        description:
+          'Recursos ultra interactivos, diagramas vivos y documentación profunda para diseñar sistemas que escalan.',
+        display: 'standalone',
+        icons: [
+          { sizes: '192x192', src: 'icons/icon-192.png', type: 'image/png' },
+          { sizes: '512x512', src: 'icons/icon-512.png', type: 'image/png' },
+          {
+            purpose: 'maskable',
+            sizes: '512x512',
+            src: 'icons/icon-maskable-512.png',
+            type: 'image/png',
+          },
+          { sizes: 'any', src: 'icons/icon.svg', type: 'image/svg+xml' },
+        ],
+        lang: 'es',
+        name: 'Software Architecture',
+        scope: '.',
+        short_name: 'Software Arch.',
+        start_url: '.',
+        theme_color: '#4f46e5',
+      },
+      registerType: 'autoUpdate',
+      workbox: {
+        cleanupOutdatedCaches: true,
+        globIgnores: ['**/404.html'],
+        globPatterns: ['**/*.{js,css,html,svg,png,json,webmanifest}'],
+        navigateFallback: 'index.html',
+      },
+    }),
     ...(isAnalyze
       ? [visualizer({ brotliSize: true, filename: 'reports/bundle.html', gzipSize: true })]
       : []),
