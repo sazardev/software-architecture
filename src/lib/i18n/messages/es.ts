@@ -48,6 +48,11 @@ export const es = {
     search: 'Buscar',
     title: '404 · No encontrado',
   },
+  solid: {
+    fragileInheritanceBody:
+      'La herencia comparte mucho más que métodos: comparte expectativas. Si una subclase necesita desactivar comportamiento heredado, la jerarquía está invertida o sobra. Ante la duda, prefiere componer antes que heredar.',
+    fragileInheritanceTitle: 'Herencia frágil',
+  },
   search: {
     allCategories: 'Todas',
     available: (count: number) => `${count} recursos disponibles`,

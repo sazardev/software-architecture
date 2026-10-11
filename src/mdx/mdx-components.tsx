@@ -1,7 +1,14 @@
 import type { MDXComponents } from 'mdx/types';
 import { lazy, Suspense } from 'react';
 
-import { Callout } from '@/components/molecules';
+import {
+  Callout,
+  Checklist,
+  ExerciseCard,
+  Faq,
+  FaqItem,
+  FragileInheritanceNote,
+} from '@/components/molecules';
 import { MermaidDiagram } from '@/components/organisms';
 import type { InteractiveMapProps } from '@/components/organisms/InteractiveMap';
 
@@ -24,6 +31,11 @@ function InteractiveMap(props: InteractiveMapProps) {
 
 export const mdxComponents: MDXComponents = {
   Callout,
+  Checklist,
+  ExerciseCard,
+  Faq,
+  FaqItem,
+  FragileInheritanceNote,
   InteractiveMap,
   MermaidDiagram,
 };

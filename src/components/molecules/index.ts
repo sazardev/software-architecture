@@ -1,7 +1,11 @@
 export { Breadcrumbs } from './Breadcrumbs';
 export { Callout } from './Callout';
 export { CategoryFilter } from './CategoryFilter';
+export { Checklist } from './Checklist';
 export { DocPager } from './DocPager';
+export { ExerciseCard } from './ExerciseCard';
+export { Faq, FaqItem } from './Faq';
+export { FragileInheritanceNote } from './FragileInheritanceNote';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export { SearchField } from './SearchField';
 export { TableOfContents } from './TableOfContents';

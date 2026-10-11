@@ -50,6 +50,11 @@ export const en: Messages = {
     search: 'Search',
     title: '404 · Not found',
   },
+  solid: {
+    fragileInheritanceBody:
+      'Inheritance shares much more than methods: it shares expectations. If a subclass needs to disable inherited behavior, the hierarchy is inverted or unnecessary. When in doubt, prefer composing over inheriting.',
+    fragileInheritanceTitle: 'Fragile inheritance',
+  },
   search: {
     allCategories: 'All',
     available: (count: number) => `${count} resources available`,

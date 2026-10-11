@@ -1,0 +1,1 @@
+export { FragileInheritanceNote } from './FragileInheritanceNote';
