@@ -49,10 +49,12 @@
       "tags": [
         "solid",
         "diseno",
-        "oop"
+        "oop",
+        "arquitectura",
+        "principios"
       ],
       "title": "Principios SOLID",
-      "updatedAt": "2026-10-10",
+      "updatedAt": "2026-10-11",
       "headings": [
         {
           "id": "principios-solid",
@@ -60,9 +62,34 @@
           "text": "Principios SOLID"
         },
         {
+          "id": "qué-problema-resuelve-solid",
+          "level": 2,
+          "text": "Qué problema resuelve SOLID"
+        },
+        {
+          "id": "mapa-general-de-los-cinco-principios",
+          "level": 2,
+          "text": "Mapa general de los cinco principios"
+        },
+        {
           "id": "principio-de-responsabilidad-única",
           "level": 2,
           "text": "Principio de responsabilidad única"
+        },
+        {
+          "id": "síntomas-de-que-violas-la-responsabilidad-única",
+          "level": 3,
+          "text": "Síntomas de que violas la responsabilidad única"
+        },
+        {
+          "id": "ejemplo-antes-y-después",
+          "level": 3,
+          "text": "Ejemplo: antes y después"
+        },
+        {
+          "id": "cómo-aplicarlo-sin-sobrediseñar",
+          "level": 3,
+          "text": "Cómo aplicarlo sin sobrediseñar"
         },
         {
           "id": "principio-de-abiertocerrado",
@@ -70,9 +97,34 @@
           "text": "Principio de abierto/cerrado"
         },
         {
+          "id": "síntomas-de-que-violas-el-principio-abierto-y-cerrado",
+          "level": 3,
+          "text": "Síntomas de que violas el principio abierto y cerrado"
+        },
+        {
+          "id": "ejemplo-estrategia-en-lugar-de-condicionales",
+          "level": 3,
+          "text": "Ejemplo: estrategia en lugar de condicionales"
+        },
+        {
+          "id": "cuándo-no-forzar-la-abstracción",
+          "level": 3,
+          "text": "Cuándo no forzar la abstracción"
+        },
+        {
           "id": "principio-de-sustitución-de-liskov",
           "level": 2,
           "text": "Principio de sustitución de Liskov"
+        },
+        {
+          "id": "síntomas-de-que-violas-la-sustitución-de-liskov",
+          "level": 3,
+          "text": "Síntomas de que violas la sustitución de Liskov"
+        },
+        {
+          "id": "ejemplo-el-cuadrado-no-es-un-rectángulo-mutable",
+          "level": 3,
+          "text": "Ejemplo: el cuadrado no es un rectángulo mutable"
         },
         {
           "id": "principio-de-segregación-de-interfaces",
@@ -80,13 +132,53 @@
           "text": "Principio de segregación de interfaces"
         },
         {
+          "id": "síntomas-de-que-violas-la-segregación-de-interfaces",
+          "level": 3,
+          "text": "Síntomas de que violas la segregación de interfaces"
+        },
+        {
+          "id": "ejemplo-interfaces-por-rol",
+          "level": 3,
+          "text": "Ejemplo: interfaces por rol"
+        },
+        {
           "id": "principio-de-inversión-de-dependencias",
           "level": 2,
           "text": "Principio de inversión de dependencias"
+        },
+        {
+          "id": "síntomas-de-que-violas-la-inversión-de-dependencias",
+          "level": 3,
+          "text": "Síntomas de que violas la inversión de dependencias"
+        },
+        {
+          "id": "ejemplo-el-dominio-define-el-puerto",
+          "level": 3,
+          "text": "Ejemplo: el dominio define el puerto"
+        },
+        {
+          "id": "cómo-se-combinan-los-cinco-principios",
+          "level": 2,
+          "text": "Cómo se combinan los cinco principios"
+        },
+        {
+          "id": "errores-comunes-al-aplicar-solid",
+          "level": 2,
+          "text": "Errores comunes al aplicar SOLID"
+        },
+        {
+          "id": "checklist-para-tu-próxima-pull-request",
+          "level": 2,
+          "text": "Checklist para tu próxima pull request"
+        },
+        {
+          "id": "para-seguir-profundizando",
+          "level": 2,
+          "text": "Para seguir profundizando"
         }
       ],
       "locale": "es",
-      "readingMinutes": 1,
+      "readingMinutes": 11,
       "route": "/es/docs/solid",
       "slug": "solid"
     },
@@ -258,10 +350,12 @@
       "tags": [
         "solid",
         "design",
-        "oop"
+        "oop",
+        "architecture",
+        "principles"
       ],
       "title": "SOLID principles",
-      "updatedAt": "2026-10-10",
+      "updatedAt": "2026-10-11",
       "headings": [
         {
           "id": "solid-principles",
@@ -269,9 +363,34 @@
           "text": "SOLID principles"
         },
         {
+          "id": "what-problem-solid-solves",
+          "level": 2,
+          "text": "What problem SOLID solves"
+        },
+        {
+          "id": "big-picture-of-the-five-principles",
+          "level": 2,
+          "text": "Big picture of the five principles"
+        },
+        {
           "id": "single-responsibility-principle",
           "level": 2,
           "text": "Single responsibility principle"
+        },
+        {
+          "id": "symptoms-you-are-violating-single-responsibility",
+          "level": 3,
+          "text": "Symptoms you are violating single responsibility"
+        },
+        {
+          "id": "example-before-and-after",
+          "level": 3,
+          "text": "Example: before and after"
+        },
+        {
+          "id": "how-to-apply-it-without-overdesign",
+          "level": 3,
+          "text": "How to apply it without overdesign"
         },
         {
           "id": "openclosed-principle",
@@ -279,9 +398,34 @@
           "text": "Open/closed principle"
         },
         {
+          "id": "symptoms-you-are-violating-open-and-closed",
+          "level": 3,
+          "text": "Symptoms you are violating open and closed"
+        },
+        {
+          "id": "example-strategy-instead-of-conditionals",
+          "level": 3,
+          "text": "Example: strategy instead of conditionals"
+        },
+        {
+          "id": "when-not-to-force-the-abstraction",
+          "level": 3,
+          "text": "When not to force the abstraction"
+        },
+        {
           "id": "liskov-substitution-principle",
           "level": 2,
           "text": "Liskov substitution principle"
+        },
+        {
+          "id": "symptoms-you-are-violating-liskov-substitution",
+          "level": 3,
+          "text": "Symptoms you are violating Liskov substitution"
+        },
+        {
+          "id": "example-a-square-is-not-a-mutable-rectangle",
+          "level": 3,
+          "text": "Example: a square is not a mutable rectangle"
         },
         {
           "id": "interface-segregation-principle",
@@ -289,13 +433,53 @@
           "text": "Interface segregation principle"
         },
         {
+          "id": "symptoms-you-are-violating-interface-segregation",
+          "level": 3,
+          "text": "Symptoms you are violating interface segregation"
+        },
+        {
+          "id": "example-role-interfaces",
+          "level": 3,
+          "text": "Example: role interfaces"
+        },
+        {
           "id": "dependency-inversion-principle",
           "level": 2,
           "text": "Dependency inversion principle"
+        },
+        {
+          "id": "symptoms-you-are-violating-dependency-inversion",
+          "level": 3,
+          "text": "Symptoms you are violating dependency inversion"
+        },
+        {
+          "id": "example-the-domain-defines-the-port",
+          "level": 3,
+          "text": "Example: the domain defines the port"
+        },
+        {
+          "id": "how-the-five-principles-combine",
+          "level": 2,
+          "text": "How the five principles combine"
+        },
+        {
+          "id": "common-mistakes-when-applying-solid",
+          "level": 2,
+          "text": "Common mistakes when applying SOLID"
+        },
+        {
+          "id": "checklist-for-your-next-pull-request",
+          "level": 2,
+          "text": "Checklist for your next pull request"
+        },
+        {
+          "id": "going-deeper",
+          "level": 2,
+          "text": "Going deeper"
         }
       ],
       "locale": "en",
-      "readingMinutes": 1,
+      "readingMinutes": 10,
       "route": "/en/docs/solid",
       "slug": "solid"
     },
