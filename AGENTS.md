@@ -278,3 +278,19 @@ Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes
   añadir prerender/SSG (p. ej. `vite-plugin-prerender` o mover el hosting a uno con rewrites).
 - Sin secretos: todo se configura con variables `VITE_*` en el workflow. Para un dominio propio,
   añade `public/CNAME` y actualiza `VITE_SITE_URL` (ver §8).
+
+## 13. Harness de agentes (OpenCode)
+
+El cumplimiento se refuerza mecánicamente, no con buena voluntad:
+
+- `opencode.json`: inyecta este documento en toda sesión (`instructions`), deniega la
+  edición de generados y bloquea `npm/yarn/pnpm/npx`, `--no-verify` y `--force` en bash.
+- `.opencode/plugin/rule-harness.js`: aborta (throw en `tool.execute.before`) ediciones a
+  generados y comandos prohibidos, indicando el motivo y la alternativa correcta.
+- `.opencode/agents/strict-builder.md`: implementador que obedece este documento y exige
+  `bun run check` en verde. `.opencode/agents/rule-auditor.md`: revisor read-only
+  (`edit: deny`) que audita diffs y dictamina APTO/NO APTO.
+- `.opencode/command/check.md` y `revisar.md`: atajos de verificación y auditoría.
+
+Tras cambiar cualquier pieza del harness, reinicia OpenCode (la config se carga al
+arrancar) y valida con `bun run check`.

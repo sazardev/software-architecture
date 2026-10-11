@@ -54,7 +54,7 @@ const architectureZones = [
 
 export default defineConfig([
   {
-    ignores: ['coverage/**', 'dist/**', 'reports/**', 'src/routeTree.gen.ts'],
+    ignores: ['coverage/**', 'dist/**', 'reports/**', 'src/routeTree.gen.ts', '.opencode/**'],
   },
   eslint.configs.recommended,
   ...tseslintConfigs.strictTypeChecked,

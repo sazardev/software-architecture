@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "permission": {
+    "edit": {
+      "*": "allow",
+      "**/routeTree.gen.ts": "deny",
+      "**/index.gen.json": "deny"
+    },
+    "bash": {
+      "*": "ask",
+      "bun *": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "npm *": "deny",
+      "yarn *": "deny",
+      "pnpm *": "deny",
+      "npx *": "deny",
+      "*--no-verify*": "deny",
+      "*--force*": "deny"
+    }
+  }
+}
