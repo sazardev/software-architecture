@@ -9,7 +9,7 @@
         "roadmap"
       ],
       "title": "Primeros pasos",
-      "updatedAt": "2026-10-10",
+      "updatedAt": "2026-10-11",
       "headings": [
         {
           "id": "primeros-pasos",
@@ -62,9 +62,29 @@
           "text": "Principios SOLID"
         },
         {
+          "id": "cómo-leer-este-artículo",
+          "level": 2,
+          "text": "Cómo leer este artículo"
+        },
+        {
           "id": "qué-problema-resuelve-solid",
           "level": 2,
           "text": "Qué problema resuelve SOLID"
+        },
+        {
+          "id": "las-cuatro-enfermedades-del-diseño",
+          "level": 3,
+          "text": "Las cuatro enfermedades del diseño"
+        },
+        {
+          "id": "acoplamiento-y-cohesión-en-dos-frases",
+          "level": 3,
+          "text": "Acoplamiento y cohesión en dos frases"
+        },
+        {
+          "id": "historia-del-acrónimo-en-30-segundos",
+          "level": 3,
+          "text": "Historia del acrónimo en 30 segundos"
         },
         {
           "id": "mapa-general-de-los-cinco-principios",
@@ -77,6 +97,11 @@
           "text": "Principio de responsabilidad única"
         },
         {
+          "id": "qué-dice-exactamente-la-responsabilidad-única",
+          "level": 3,
+          "text": "Qué dice exactamente la responsabilidad única"
+        },
+        {
           "id": "síntomas-de-que-violas-la-responsabilidad-única",
           "level": 3,
           "text": "Síntomas de que violas la responsabilidad única"
@@ -87,14 +112,34 @@
           "text": "Ejemplo: antes y después"
         },
         {
+          "id": "otro-ejemplo-el-informe-que-hacía-de-todo",
+          "level": 3,
+          "text": "Otro ejemplo: el informe que hacía de todo"
+        },
+        {
+          "id": "analogía-cotidiana-de-la-responsabilidad-única",
+          "level": 3,
+          "text": "Analogía cotidiana de la responsabilidad única"
+        },
+        {
           "id": "cómo-aplicarlo-sin-sobrediseñar",
           "level": 3,
           "text": "Cómo aplicarlo sin sobrediseñar"
         },
         {
+          "id": "error-típico-al-buscar-la-responsabilidad-única",
+          "level": 3,
+          "text": "Error típico al buscar la responsabilidad única"
+        },
+        {
           "id": "principio-de-abiertocerrado",
           "level": 2,
           "text": "Principio de abierto/cerrado"
+        },
+        {
+          "id": "qué-dice-exactamente-el-principio-abierto-y-cerrado",
+          "level": 3,
+          "text": "Qué dice exactamente el principio abierto y cerrado"
         },
         {
           "id": "síntomas-de-que-violas-el-principio-abierto-y-cerrado",
@@ -107,14 +152,34 @@
           "text": "Ejemplo: estrategia en lugar de condicionales"
         },
         {
+          "id": "otro-ejemplo-registro-de-medios-de-pago",
+          "level": 3,
+          "text": "Otro ejemplo: registro de medios de pago"
+        },
+        {
+          "id": "analogía-cotidiana-del-principio-abierto-y-cerrado",
+          "level": 3,
+          "text": "Analogía cotidiana del principio abierto y cerrado"
+        },
+        {
           "id": "cuándo-no-forzar-la-abstracción",
           "level": 3,
           "text": "Cuándo no forzar la abstracción"
         },
         {
+          "id": "error-típico-al-abrir-a-extensión",
+          "level": 3,
+          "text": "Error típico al abrir a extensión"
+        },
+        {
           "id": "principio-de-sustitución-de-liskov",
           "level": 2,
           "text": "Principio de sustitución de Liskov"
+        },
+        {
+          "id": "qué-dice-exactamente-la-sustitución",
+          "level": 3,
+          "text": "Qué dice exactamente la sustitución"
         },
         {
           "id": "síntomas-de-que-violas-la-sustitución-de-liskov",
@@ -127,9 +192,34 @@
           "text": "Ejemplo: el cuadrado no es un rectángulo mutable"
         },
         {
+          "id": "otro-ejemplo-versiones-de-api-compatibles",
+          "level": 3,
+          "text": "Otro ejemplo: versiones de API compatibles"
+        },
+        {
+          "id": "analogía-cotidiana-de-la-sustitución",
+          "level": 3,
+          "text": "Analogía cotidiana de la sustitución"
+        },
+        {
+          "id": "cómo-corregir-una-jerarquía-rota-paso-a-paso",
+          "level": 3,
+          "text": "Cómo corregir una jerarquía rota paso a paso"
+        },
+        {
+          "id": "error-típico-al-modelar-jerarquías",
+          "level": 3,
+          "text": "Error típico al modelar jerarquías"
+        },
+        {
           "id": "principio-de-segregación-de-interfaces",
           "level": 2,
           "text": "Principio de segregación de interfaces"
+        },
+        {
+          "id": "qué-dice-exactamente-la-segregación-de-interfaces",
+          "level": 3,
+          "text": "Qué dice exactamente la segregación de interfaces"
         },
         {
           "id": "síntomas-de-que-violas-la-segregación-de-interfaces",
@@ -142,9 +232,34 @@
           "text": "Ejemplo: interfaces por rol"
         },
         {
+          "id": "otro-ejemplo-permisos-por-rol-en-una-api",
+          "level": 3,
+          "text": "Otro ejemplo: permisos por rol en una API"
+        },
+        {
+          "id": "analogía-cotidiana-de-las-interfaces-pequeñas",
+          "level": 3,
+          "text": "Analogía cotidiana de las interfaces pequeñas"
+        },
+        {
+          "id": "cómo-segregar-sin-pasarte-de-frenada",
+          "level": 3,
+          "text": "Cómo segregar sin pasarte de frenada"
+        },
+        {
+          "id": "error-típico-al-segregar-interfaces",
+          "level": 3,
+          "text": "Error típico al segregar interfaces"
+        },
+        {
           "id": "principio-de-inversión-de-dependencias",
           "level": 2,
           "text": "Principio de inversión de dependencias"
+        },
+        {
+          "id": "qué-dice-exactamente-la-inversión-de-dependencias",
+          "level": 3,
+          "text": "Qué dice exactamente la inversión de dependencias"
         },
         {
           "id": "síntomas-de-que-violas-la-inversión-de-dependencias",
@@ -157,9 +272,39 @@
           "text": "Ejemplo: el dominio define el puerto"
         },
         {
+          "id": "otro-ejemplo-notificaciones-intercambiables",
+          "level": 3,
+          "text": "Otro ejemplo: notificaciones intercambiables"
+        },
+        {
+          "id": "analogía-cotidiana-de-la-dependencia-invertida",
+          "level": 3,
+          "text": "Analogía cotidiana de la dependencia invertida"
+        },
+        {
+          "id": "cómo-invertir-una-dependencia-existente-paso-a-paso",
+          "level": 3,
+          "text": "Cómo invertir una dependencia existente paso a paso"
+        },
+        {
+          "id": "error-típico-al-invertir-dependencias",
+          "level": 3,
+          "text": "Error típico al invertir dependencias"
+        },
+        {
           "id": "cómo-se-combinan-los-cinco-principios",
           "level": 2,
           "text": "Cómo se combinan los cinco principios"
+        },
+        {
+          "id": "solid-en-go-moderno-sin-dogmas-de-estructuras",
+          "level": 2,
+          "text": "SOLID en Go moderno sin dogmas de estructuras"
+        },
+        {
+          "id": "solid-y-tests-cada-principio-te-ahorra-un-dolor",
+          "level": 2,
+          "text": "SOLID y tests: cada principio te ahorra un dolor"
         },
         {
           "id": "errores-comunes-al-aplicar-solid",
@@ -172,13 +317,23 @@
           "text": "Checklist para tu próxima pull request"
         },
         {
+          "id": "ejercicios-guiados-de-15-minutos",
+          "level": 2,
+          "text": "Ejercicios guiados de 15 minutos"
+        },
+        {
+          "id": "preguntas-frecuentes",
+          "level": 2,
+          "text": "Preguntas frecuentes"
+        },
+        {
           "id": "para-seguir-profundizando",
           "level": 2,
           "text": "Para seguir profundizando"
         }
       ],
       "locale": "es",
-      "readingMinutes": 11,
+      "readingMinutes": 36,
       "route": "/es/docs/solid",
       "slug": "solid"
     },
@@ -310,7 +465,7 @@
         "roadmap"
       ],
       "title": "Getting started",
-      "updatedAt": "2026-10-10",
+      "updatedAt": "2026-10-11",
       "headings": [
         {
           "id": "getting-started",
@@ -363,9 +518,29 @@
           "text": "SOLID principles"
         },
         {
+          "id": "how-to-read-this-article",
+          "level": 2,
+          "text": "How to read this article"
+        },
+        {
           "id": "what-problem-solid-solves",
           "level": 2,
           "text": "What problem SOLID solves"
+        },
+        {
+          "id": "the-four-diseases-of-design",
+          "level": 3,
+          "text": "The four diseases of design"
+        },
+        {
+          "id": "coupling-and-cohesion-in-two-sentences",
+          "level": 3,
+          "text": "Coupling and cohesion in two sentences"
+        },
+        {
+          "id": "history-of-the-acronym-in-30-seconds",
+          "level": 3,
+          "text": "History of the acronym in 30 seconds"
         },
         {
           "id": "big-picture-of-the-five-principles",
@@ -378,6 +553,11 @@
           "text": "Single responsibility principle"
         },
         {
+          "id": "what-exactly-single-responsibility-says",
+          "level": 3,
+          "text": "What exactly single responsibility says"
+        },
+        {
           "id": "symptoms-you-are-violating-single-responsibility",
           "level": 3,
           "text": "Symptoms you are violating single responsibility"
@@ -388,14 +568,34 @@
           "text": "Example: before and after"
         },
         {
+          "id": "second-example-the-report-that-did-everything",
+          "level": 3,
+          "text": "Second example: the report that did everything"
+        },
+        {
+          "id": "everyday-analogy-of-single-responsibility",
+          "level": 3,
+          "text": "Everyday analogy of single responsibility"
+        },
+        {
           "id": "how-to-apply-it-without-overdesign",
           "level": 3,
           "text": "How to apply it without overdesign"
         },
         {
+          "id": "typical-mistake-when-chasing-single-responsibility",
+          "level": 3,
+          "text": "Typical mistake when chasing single responsibility"
+        },
+        {
           "id": "openclosed-principle",
           "level": 2,
           "text": "Open/closed principle"
+        },
+        {
+          "id": "what-exactly-the-open-and-closed-principle-says",
+          "level": 3,
+          "text": "What exactly the open and closed principle says"
         },
         {
           "id": "symptoms-you-are-violating-open-and-closed",
@@ -408,14 +608,34 @@
           "text": "Example: strategy instead of conditionals"
         },
         {
+          "id": "second-example-payment-method-registry",
+          "level": 3,
+          "text": "Second example: payment method registry"
+        },
+        {
+          "id": "everyday-analogy-of-the-open-and-closed-principle",
+          "level": 3,
+          "text": "Everyday analogy of the open and closed principle"
+        },
+        {
           "id": "when-not-to-force-the-abstraction",
           "level": 3,
           "text": "When not to force the abstraction"
         },
         {
+          "id": "typical-mistake-when-opening-for-extension",
+          "level": 3,
+          "text": "Typical mistake when opening for extension"
+        },
+        {
           "id": "liskov-substitution-principle",
           "level": 2,
           "text": "Liskov substitution principle"
+        },
+        {
+          "id": "what-exactly-substitution-says",
+          "level": 3,
+          "text": "What exactly substitution says"
         },
         {
           "id": "symptoms-you-are-violating-liskov-substitution",
@@ -428,9 +648,34 @@
           "text": "Example: a square is not a mutable rectangle"
         },
         {
+          "id": "second-example-compatible-api-versions",
+          "level": 3,
+          "text": "Second example: compatible API versions"
+        },
+        {
+          "id": "everyday-analogy-of-substitution",
+          "level": 3,
+          "text": "Everyday analogy of substitution"
+        },
+        {
+          "id": "how-to-fix-a-broken-hierarchy-step-by-step",
+          "level": 3,
+          "text": "How to fix a broken hierarchy step by step"
+        },
+        {
+          "id": "typical-mistake-when-modeling-hierarchies",
+          "level": 3,
+          "text": "Typical mistake when modeling hierarchies"
+        },
+        {
           "id": "interface-segregation-principle",
           "level": 2,
           "text": "Interface segregation principle"
+        },
+        {
+          "id": "what-exactly-interface-segregation-says",
+          "level": 3,
+          "text": "What exactly interface segregation says"
         },
         {
           "id": "symptoms-you-are-violating-interface-segregation",
@@ -443,9 +688,34 @@
           "text": "Example: role interfaces"
         },
         {
+          "id": "second-example-role-split-service-api",
+          "level": 3,
+          "text": "Second example: role-split service API"
+        },
+        {
+          "id": "everyday-analogy-of-small-interfaces",
+          "level": 3,
+          "text": "Everyday analogy of small interfaces"
+        },
+        {
+          "id": "how-to-segregate-without-overshooting",
+          "level": 3,
+          "text": "How to segregate without overshooting"
+        },
+        {
+          "id": "typical-mistake-when-segregating-interfaces",
+          "level": 3,
+          "text": "Typical mistake when segregating interfaces"
+        },
+        {
           "id": "dependency-inversion-principle",
           "level": 2,
           "text": "Dependency inversion principle"
+        },
+        {
+          "id": "what-exactly-dependency-inversion-says",
+          "level": 3,
+          "text": "What exactly dependency inversion says"
         },
         {
           "id": "symptoms-you-are-violating-dependency-inversion",
@@ -458,9 +728,39 @@
           "text": "Example: the domain defines the port"
         },
         {
+          "id": "second-example-swappable-notifications",
+          "level": 3,
+          "text": "Second example: swappable notifications"
+        },
+        {
+          "id": "everyday-analogy-of-inverted-dependency",
+          "level": 3,
+          "text": "Everyday analogy of inverted dependency"
+        },
+        {
+          "id": "how-to-invert-an-existing-dependency-step-by-step",
+          "level": 3,
+          "text": "How to invert an existing dependency step by step"
+        },
+        {
+          "id": "typical-mistake-when-inverting-dependencies",
+          "level": 3,
+          "text": "Typical mistake when inverting dependencies"
+        },
+        {
           "id": "how-the-five-principles-combine",
           "level": 2,
           "text": "How the five principles combine"
+        },
+        {
+          "id": "solid-in-modern-go-without-struct-dogma",
+          "level": 2,
+          "text": "SOLID in modern Go without struct dogma"
+        },
+        {
+          "id": "solid-and-tests-each-principle-saves-one-pain",
+          "level": 2,
+          "text": "SOLID and tests: each principle saves one pain"
         },
         {
           "id": "common-mistakes-when-applying-solid",
@@ -473,13 +773,23 @@
           "text": "Checklist for your next pull request"
         },
         {
+          "id": "guided-15-minute-exercises",
+          "level": 2,
+          "text": "Guided 15-minute exercises"
+        },
+        {
+          "id": "frequently-asked-questions",
+          "level": 2,
+          "text": "Frequently asked questions"
+        },
+        {
           "id": "going-deeper",
           "level": 2,
           "text": "Going deeper"
         }
       ],
       "locale": "en",
-      "readingMinutes": 10,
+      "readingMinutes": 34,
       "route": "/en/docs/solid",
       "slug": "solid"
     },
