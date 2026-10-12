@@ -104,6 +104,18 @@
     color: var(--color-neutral-50);
   }
 
+  /*
+   * Miniaturas de figura en listados: el movimiento ambiente (flujo, pulso) queda en pausa y solo
+   * corre con el cursor o el foco sobre el enlace (ancestro `group`): cero coste de animación en reposo.
+   */
+  .figure-thumb [class*='animate-'] {
+    animation-play-state: paused;
+  }
+
+  .group:is(:hover, :focus-visible) .figure-thumb [class*='animate-'] {
+    animation-play-state: running;
+  }
+
   /* Revelado al hacer scroll (ver atom Reveal). */
   .reveal {
     opacity: 0;

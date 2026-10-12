@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 
 import { Badge, Container, Eyebrow, Reveal, SectionGlyph } from '@/components/atoms';
-import { CategoryFilter, TopicNav } from '@/components/molecules';
+import { CategoryFilter, FigureThumb, TopicNav } from '@/components/molecules';
 import { parseDocsSearchParams } from '@/lib/content/docs-search-params';
 import { getDocsBySection } from '@/lib/content/registry';
 import { getSectionText } from '@/lib/content/taxonomy';
@@ -92,10 +92,14 @@ function DocsIndexPage() {
                       <li key={doc.slug}>
                         <Reveal delay={index * 70}>
                           <Link
-                            className="group grid gap-x-8 gap-y-2 py-7 sm:grid-cols-[1fr_auto]"
+                            className="group grid items-start gap-x-8 gap-y-4 py-7 sm:grid-cols-[11rem_1fr_auto]"
                             params={{ locale, slug: doc.slug }}
                             to="/$locale/docs/$slug"
                           >
+                            <FigureThumb
+                              className="w-full max-w-[16rem] sm:max-w-none"
+                              slug={doc.slug}
+                            />
                             <div className="min-w-0">
                               <h3 className="font-display text-2xl leading-snug font-medium tracking-tight text-neutral-950 transition-colors group-hover:text-brand-700 dark:text-neutral-50 dark:group-hover:text-brand-300">
                                 {doc.title}

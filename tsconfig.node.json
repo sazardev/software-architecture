@@ -38,7 +38,12 @@
     "tools/seo/postbuild.ts",
     "tools/seo/feed.ts",
     "tools/seo/og-card.ts",
+    "tools/seo/og-figure-card.ts",
+    "tools/seo/og-figure-text.ts",
+    "tools/seo/og-inputs.ts",
+    "tools/seo/og-kit.ts",
     "tools/seo/prerender.ts",
-    "tools/seo/*.test.ts"
+    "tools/seo/*.test.ts",
+    "tools/figures/preview.ts"
   ]
 }

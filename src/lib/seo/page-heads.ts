@@ -94,7 +94,7 @@ export function docSeo(entry: ContentEntry): PageSeo {
         tags: entry.tags,
       },
       description: entry.description,
-      image: { alt: entry.title, url: ogImageUrl(locale, entry.slug) },
+      image: { alt: entry.figureCaption, url: ogImageUrl(locale, entry.slug) },
       locale,
       path: entry.route,
       title: `${entry.title} · ${site.name}`,

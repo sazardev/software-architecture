@@ -36,6 +36,7 @@ describe('SEO por página', () => {
       entry.tags.length,
     );
     expect(metaContent(seo, 'og:image')).toContain(`/og/es/${entry.slug}.png`);
+    expect(metaContent(seo, 'og:image:alt')).toBe(entry.figureCaption);
 
     const [article, breadcrumbs] = seo.jsonLd.map(
       (json) => JSON.parse(json) as { '@type': string },

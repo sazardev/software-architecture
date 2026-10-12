@@ -1,54 +1,28 @@
-import { Badge, Container } from '@/components/atoms';
-import { Breadcrumbs, TitleBlock } from '@/components/molecules';
+import { Container } from '@/components/atoms';
+import { ArticleFigure } from '@/components/molecules';
 import { getDocSheet } from '@/lib/content/registry';
 import { getSectionLabel } from '@/lib/content/taxonomy';
 import type { ContentEntry } from '@/lib/content/types';
-import { useMessages } from '@/lib/i18n/use-messages';
-import { useCommandPalette } from '@/lib/search/palette-context';
-import { readingGridClass } from '@/lib/ui/reading-layout';
-import { cn } from '@/lib/utils/cn';
-import { formatDate } from '@/lib/utils/format-date';
+import { getFigure } from '@/lib/figures/registry';
 
 type DocHeaderProps = Readonly<{
   entry: ContentEntry;
 }>;
 
-function pad(value: number): string {
-  return String(value).padStart(2, '0');
-}
-
 export function DocHeader({ entry }: DocHeaderProps) {
-  const messages = useMessages();
-  const { open } = useCommandPalette();
-  const { blueprint } = messages;
   const sheet = getDocSheet(entry.locale, entry.slug);
   const sectionLabel = getSectionLabel(entry.category, entry.locale);
+  const figure = getFigure(entry.slug);
 
   return (
     <header className="bp-grid border-b border-neutral-200 dark:border-neutral-800">
-      <Container className={cn(readingGridClass, 'pt-10 pb-12 sm:pt-14 sm:pb-14')}>
-        <div className="lg:col-start-2">
-          <Breadcrumbs
-            className="animate-fade"
-            items={[
-              {
-                label: messages.docs.breadcrumbHome,
-                params: { locale: entry.locale },
-                to: '/$locale/',
-              },
-              {
-                label: messages.docs.breadcrumbDocs,
-                params: { locale: entry.locale },
-                to: '/$locale/docs',
-              },
-              { label: entry.title },
-            ]}
-          />
-          <p className="mt-8 animate-rise font-mono text-xs font-medium tracking-[0.18em] text-accent-700 uppercase dark:text-accent-400">
+      <Container className="grid items-center gap-x-12 gap-y-9 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr]">
+        <div>
+          <p className="animate-rise font-mono text-xs font-medium tracking-[0.18em] text-accent-700 uppercase dark:text-accent-400">
             {sectionLabel}
           </p>
           <h1
-            className="mt-4 animate-rise font-display text-[clamp(2.3rem,5vw,3.9rem)] leading-[1.06] font-medium tracking-[-0.03em] text-balance text-neutral-950 dark:text-neutral-50"
+            className="mt-4 animate-rise font-display text-[clamp(2.1rem,4.4vw,3.5rem)] leading-[1.06] font-medium tracking-[-0.03em] text-balance text-neutral-950 dark:text-neutral-50"
             style={{ animationDelay: '100ms', fontVariationSettings: "'opsz' 144" }}
           >
             {entry.title}
@@ -59,34 +33,15 @@ export function DocHeader({ entry }: DocHeaderProps) {
           >
             {entry.description}
           </p>
-          <TitleBlock
-            className="mt-9 animate-fade bg-neutral-50 dark:bg-neutral-950"
-            layout="row"
-            rows={[
-              { label: blueprint.topic, value: sectionLabel },
-              { label: blueprint.sheet, value: `${pad(sheet.index)}/${pad(sheet.total)}` },
-              { label: blueprint.reading, value: messages.docs.minutesShort(entry.readingMinutes) },
-              { label: blueprint.rev, value: formatDate(entry.updatedAt, entry.locale) },
-            ]}
-          />
-          <ul
-            className="mt-5 flex animate-rise flex-wrap gap-2"
-            style={{ animationDelay: '340ms' }}
-          >
-            {entry.tags.map((tag) => (
-              <li key={tag}>
-                <button
-                  onClick={() => {
-                    open(`#${tag}`);
-                  }}
-                  type="button"
-                >
-                  <Badge tone="outline">#{tag}</Badge>
-                </button>
-              </li>
-            ))}
-          </ul>
         </div>
+        {figure === undefined ? null : (
+          <ArticleFigure
+            caption={entry.figureCaption}
+            className="mx-auto w-full max-w-xl lg:max-w-none"
+            figure={figure}
+            number={sheet.index}
+          />
+        )}
       </Container>
     </header>
   );

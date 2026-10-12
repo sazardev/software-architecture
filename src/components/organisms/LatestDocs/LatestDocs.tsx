@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
 import { BlueprintFrame, Container, Eyebrow, Reveal } from '@/components/atoms';
+import { FigureThumb } from '@/components/molecules';
 import { getSectionLabel } from '@/lib/content/taxonomy';
 import type { ContentEntry } from '@/lib/content/types';
 import { useLocale } from '@/lib/i18n/locale-context';
@@ -82,7 +83,7 @@ export function LatestDocs({ docs }: LatestDocsProps) {
                   >
                     {String(index + 2).padStart(2, '0')}
                   </span>
-                  <span className="min-w-0">
+                  <span className="min-w-0 flex-1">
                     <span className="font-mono text-[0.68rem] tracking-[0.14em] text-neutral-500 uppercase">
                       {getSectionLabel(doc.category, locale)} ·{' '}
                       {messages.docs.minutesShort(doc.readingMinutes)}
@@ -94,6 +95,10 @@ export function LatestDocs({ docs }: LatestDocsProps) {
                       {doc.description}
                     </span>
                   </span>
+                  <FigureThumb
+                    className="hidden w-28 shrink-0 self-center sm:block"
+                    slug={doc.slug}
+                  />
                 </Link>
               </Reveal>
             </li>

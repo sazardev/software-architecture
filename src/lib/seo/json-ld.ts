@@ -2,7 +2,7 @@ import { site } from '@/lib/config/site';
 import type { ContentEntry } from '@/lib/content/types';
 import type { Locale } from '@/lib/i18n/locales';
 import { absoluteUrl } from '@/lib/seo/absolute-url';
-import { ogImageUrl } from '@/lib/seo/og';
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH, ogImageUrl } from '@/lib/seo/og';
 
 export type BreadcrumbItem = {
   name: string;
@@ -32,7 +32,13 @@ export function articleJsonLd(entry: ContentEntry, sectionLabel: string): string
     datePublished: entry.publishedAt,
     description: entry.description,
     headline: entry.title,
-    image: ogImageUrl(entry.locale, entry.slug),
+    image: {
+      '@type': 'ImageObject',
+      caption: entry.figureCaption,
+      height: OG_IMAGE_HEIGHT,
+      url: ogImageUrl(entry.locale, entry.slug),
+      width: OG_IMAGE_WIDTH,
+    },
     inLanguage: entry.locale,
     isAccessibleForFree: true,
     keywords: entry.tags.join(', '),

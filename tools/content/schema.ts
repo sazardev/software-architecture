@@ -23,6 +23,7 @@ export const frontmatterSchema = z
   .object({
     category: z.string().regex(/^[a-z][a-z0-9-]*$/),
     description: z.string(),
+    figureCaption: z.string(),
     order: z.number().int().nonnegative(),
     publishedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'formato esperado: YYYY-MM-DD'),
     tags: z

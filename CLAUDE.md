@@ -68,7 +68,10 @@ Hooks Husky: `pre-commit` (lint-staged), `commit-msg` (commitlint, Conventional 
 ## Al tocar contenido o rutas
 
 Nuevo/editado MDX → `bun run content:index` y `bun run audit` (frontmatter validado con zod: título 3–60,
-descripción 40–160, `category` existente en la taxonomía, ≥1 `h2`, sin saltos de nivel). Nueva ruta →
+descripción 40–160, `category` existente en la taxonomía, ≥1 `h2`, sin saltos de nivel).
+**Todo artículo nuevo exige su propia figura (FIG. NN)**: `src/lib/figures/designs/<slug>.ts` +
+registro en `registry.ts` + `figureCaption` en cada idioma; previsualiza con
+`bun tools/figures/preview.ts <slug> --og` (detalle en `AGENTS.md` §6). Nueva ruta →
 archivo en `src/routes/$locale/` y `audit` verifica que el id de `createFileRoute()` coincida con el disco.
 Nuevo idioma/sección: ver `AGENTS.md` §11.
 

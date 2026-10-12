@@ -9,6 +9,10 @@ export type ContentHeading = {
 export type ContentEntry = {
   category: string;
   description: string;
+  /**
+  Pie de la figura del artículo («FIG. NN — …»); también es el texto alternativo de la tarjeta social.
+  */
+  figureCaption: string;
   headings: ContentHeading[];
   locale: Locale;
   order: number;

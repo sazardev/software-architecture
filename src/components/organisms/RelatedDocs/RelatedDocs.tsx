@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
 import { BlueprintFrame, Eyebrow } from '@/components/atoms';
+import { FigureThumb } from '@/components/molecules';
 import type { ContentEntry } from '@/lib/content/types';
 import { useLocale } from '@/lib/i18n/locale-context';
 import { useMessages } from '@/lib/i18n/use-messages';
@@ -32,6 +33,7 @@ export function RelatedDocs({ docs }: RelatedDocsProps) {
                 params={{ locale, slug: doc.slug }}
                 to="/$locale/docs/$slug"
               >
+                <FigureThumb className="mb-5" slug={doc.slug} />
                 <span className="font-mono text-xs tracking-[0.14em] text-neutral-500 uppercase">
                   {messages.docs.minutesShort(doc.readingMinutes)}
                 </span>

@@ -1,4 +1,5 @@
-export { Breadcrumbs } from './Breadcrumbs';
+export { ArticleFigure } from './ArticleFigure';
+export { FigureThumb } from './FigureThumb';
 export { Callout } from './Callout';
 export { CategoryFilter } from './CategoryFilter';
 export { Checklist } from './Checklist';

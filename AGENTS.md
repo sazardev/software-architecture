@@ -119,15 +119,38 @@ slugs (la auditoría avisa con `W-TRANSLATION` si falta una traducción).
 
 Frontmatter obligatorio (validado con zod en la auditoría):
 
-| Campo         | Regla                                                                  |
-| ------------- | ---------------------------------------------------------------------- |
-| `title`       | 3–60 caracteres                                                        |
-| `description` | 40–160 caracteres (se usa en SEO y búsqueda)                           |
-| `category`    | id existente en `src/lib/content/taxonomy.json` (`labels` por idioma)  |
-| `tags`        | hasta 5, kebab-case, únicos                                            |
-| `publishedAt` | `YYYY-MM-DD`, ≤ `updatedAt`; ordena «lo último» de la portada y el RSS |
-| `order`       | entero ≥ 0 (orden dentro de la sección)                                |
-| `updatedAt`   | `YYYY-MM-DD`, no puede ser futuro                                      |
+| Campo           | Regla                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| `title`         | 3–60 caracteres                                                                            |
+| `description`   | 40–160 caracteres (se usa en SEO y búsqueda)                                               |
+| `category`      | id existente en `src/lib/content/taxonomy.json` (`labels` por idioma)                      |
+| `tags`          | hasta 5, kebab-case, únicos                                                                |
+| `publishedAt`   | `YYYY-MM-DD`, ≤ `updatedAt`; ordena «lo último» de la portada y el RSS                     |
+| `order`         | entero ≥ 0 (orden dentro de la sección)                                                    |
+| `figureCaption` | 12–90 caracteres: pie de la figura del artículo («FIG. NN — …») y alt de la tarjeta social |
+| `updatedAt`     | `YYYY-MM-DD`, no puede ser futuro                                                          |
+
+**Cada artículo tiene su propia figura (obligatorio).** Es el equivalente del «FIG. 01» de la
+portada: un plano elegante y animado que aparece en la cabecera del artículo y viaja en la
+tarjeta social. Al crear un artículo nuevo:
+
+1. Dibuja la figura en `src/lib/figures/designs/<slug>.ts` (exporta una función que devuelve
+   `Figure`) y regístrala en `src/lib/figures/registry.ts`. Una figura por slug: no se reutilizan.
+2. Añade `figureCaption` al frontmatter de **cada idioma**.
+3. Comprueba el dibujo con `bun tools/figures/preview.ts <slug>` (PNG en `reports/figures/`) y la
+   tarjeta completa con `--og`.
+
+Cómo se dibuja (`src/lib/figures/`): lienzo fijo 640×400 y una lista de primitivas de datos
+(`path`, `rect`, `circle`, `text`, `group`) construidas con `figure-kit.ts` (flechas, cotas,
+nodos, pulsos) y `figure-shapes.ts` (losas/cubos isométricos, polígonos, curvas). Los colores son
+tonos semánticos (`ink`, `muted`, `brandSoft`, `accent`…), nunca valores literales: en pantalla
+se traducen a tokens con `dark:` (`components/molecules/ArticleFigure`) y en la tarjeta social a
+la paleta de papel y tinta (`figure-palette.ts`). Mismo lenguaje que la portada: trazo de tinta,
+rellenos suaves, **un solo acento brasa** para la idea clave, etiquetas mono cortas y
+neutrales respecto al idioma, movimiento sutil (`flow`, `pulse`, `rise`; los periodos de guiones
+animados deben dividir 24, p. ej. `'5 7'` o `'0.1 11.9'`). La auditoría falla si falta la figura
+(`E-FIGURE-MISSING`) o su pie (`E-FIGURE-CAPTION`) y un test comprueba que cada figura es única y
+cabe en el lienzo.
 
 Reglas de cuerpo: al menos un `h2`, sin saltos de nivel (h2 → h4), anclas únicas, enlaces
 internos `/docs/<slug>#ancla` existentes, bloques de código cerrados.
@@ -260,6 +283,9 @@ Todo el SEO sale del contenido: no hay que tocar nada al añadir artículos o te
     montar para que el router no duplique el `<head>`.
   - Tarjetas sociales 1200×630 por artículo e idioma (`dist/og/<locale>/<slug>.png`) con
     satori + resvg: estilo plano, cajetín y tipografías del sitio. Fuentes `@fontsource/*`.
+    Los artículos incluyen su **figura (FIG. NN)** con marco de registro, pie y cajetín; el
+    texto de la figura se convierte a trazados con satori (`og-figure-text.ts`) porque resvg no
+    carga las fuentes. `figureCaption` es el `og:image:alt` y el `caption` del `ImageObject` JSON-LD.
   - Feeds RSS por idioma (`/<locale>/feed.xml`).
 - `sitemap.xml`/`robots.txt` (`plugin-static-seo`): hreflang y `lastmod`.
 - `VITE_SITE_URL` define todas las URLs absolutas (copia `.env.example` → `.env.local`).
@@ -281,21 +307,24 @@ Todo el SEO sale del contenido: no hay que tocar nada al añadir artículos o te
 
 ## 9. Auditoría (`bun run audit`)
 
-| Código                        | Nivel   | Regla                                           |
-| ----------------------------- | ------- | ----------------------------------------------- |
-| E-FRONTMATTER                 | error   | frontmatter inválido (zod)                      |
-| E-SLUG / E-CATEGORY           | error   | slug kebab / categoría existente                |
-| E-TITLE / E-DESCRIPTION       | error   | longitudes SEO                                  |
-| E-UPDATED-AT                  | error   | fecha ISO válida y no futura                    |
-| E-HEADINGS / -UNIQUE / -LEVEL | error   | estructura de encabezados                       |
-| E-LINK / E-ANCHOR             | error   | enlaces internos y anclas existentes            |
-| E-INDEX                       | error   | `index.gen.json` actualizado                    |
-| E-TAXONOMY-ID / -ORDER        | error   | ids y órdenes de sección únicos                 |
-| E-TAXONOMY-LABELS             | error   | cada sección tiene label/description por idioma |
-| E-LOCALE / E-LOCALE-MESSAGES  | error   | carpeta de idioma y diccionario de mensajes     |
-| E-ROUTE-*                     | error   | rutas: id ↔ archivo, root correcto              |
-| W-FENCE / W-ROUTE-DEFAULT     | warning | bloques sin cerrar / `export default` en rutas  |
-| W-TRANSLATION                 | warning | falta la traducción de un documento             |
+| Código                        | Nivel   | Regla                                                     |
+| ----------------------------- | ------- | --------------------------------------------------------- |
+| E-FRONTMATTER                 | error   | frontmatter inválido (zod)                                |
+| E-SLUG / E-CATEGORY           | error   | slug kebab / categoría existente                          |
+| E-TITLE / E-DESCRIPTION       | error   | longitudes SEO                                            |
+| E-UPDATED-AT                  | error   | fecha ISO válida y no futura                              |
+| E-HEADINGS / -UNIQUE / -LEVEL | error   | estructura de encabezados                                 |
+| E-LINK / E-ANCHOR             | error   | enlaces internos y anclas existentes                      |
+| E-INDEX                       | error   | `index.gen.json` actualizado                              |
+| E-FIGURE-MISSING / -REGISTRY  | error   | cada artículo tiene diseño `designs/<slug>.ts` registrado |
+| E-FIGURE-CAPTION              | error   | `figureCaption` de 12–90 caracteres                       |
+| W-FIGURE-ORPHAN               | warning | diseño de figura sin artículo                             |
+| E-TAXONOMY-ID / -ORDER        | error   | ids y órdenes de sección únicos                           |
+| E-TAXONOMY-LABELS             | error   | cada sección tiene label/description por idioma           |
+| E-LOCALE / E-LOCALE-MESSAGES  | error   | carpeta de idioma y diccionario de mensajes               |
+| E-ROUTE-*                     | error   | rutas: id ↔ archivo, root correcto                        |
+| W-FENCE / W-ROUTE-DEFAULT     | warning | bloques sin cerrar / `export default` en rutas            |
+| W-TRANSLATION                 | warning | falta la traducción de un documento                       |
 
 Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes/`) que devuelva
 `Issue[]` y enlázala en `tools/audit.ts`. Los errores bloquean `check` y el push.
@@ -314,6 +343,8 @@ Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes
   en el frontmatter. Nada más: portada (rejilla de temas, máx. 6 + "ver todos"), índice lateral
   de `/docs`, filtros, pie, conteos, cajetín y etiquetas se generan desde el contenido. Sin
   `icon`, el glifo se deriva del id; para uno nuevo, añádelo al mapa de `SectionGlyph`.
+- **Nuevo artículo**: MDX en cada idioma + su figura propia y `figureCaption` (§6); sin figura no
+  pasa la auditoría.
 - **Nuevo componente**: crea la carpeta en la capa correcta con `Componente.tsx` + `index.ts`
   y expórtalo en el barril de la capa. Si es usable en MDX, mapea en `src/mdx/mdx-components.tsx`.
 - **Nueva ruta**: crea el archivo en `src/routes/$locale/` (la auditoría verifica la coherencia).

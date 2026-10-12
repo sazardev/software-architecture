@@ -10,6 +10,7 @@ import { frontmatterSchema, taxonomySchema } from './schema';
 export type ContentEntry = {
   category: string;
   description: string;
+  figureCaption: string;
   headings: ContentHeading[];
   locale: string;
   order: number;

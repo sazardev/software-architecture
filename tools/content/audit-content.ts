@@ -4,6 +4,7 @@ import { Glob } from 'bun';
 
 import type { Issue } from '../report';
 
+import { collectFigureIssues } from './audit-figures';
 import { collectLinkIssues } from './audit-links';
 import { collectLocaleIssues } from './audit-locales';
 import { buildContentIndex, getIndexPath } from './content-index';
@@ -209,7 +210,14 @@ function parseDocument(
   const headingCheck = collectHeadingIssues(body, relativeFile);
 
   return {
-    doc: { body, headings: headingCheck.headings, locale, relativeFile, slug },
+    doc: {
+      body,
+      figureCaption: parsed.data.figureCaption,
+      headings: headingCheck.headings,
+      locale,
+      relativeFile,
+      slug,
+    },
     issues: [...issues, ...headingCheck.issues],
   };
 }
@@ -274,9 +282,10 @@ export async function auditContent(): Promise<ContentAuditResult> {
   }
 
   const linkIssues = collectLinkIssues(parsedDocs);
+  const figureIssues = await collectFigureIssues(parsedDocs);
   const localeIssues = await collectLocaleIssues(taxonomy, parsedDocs);
   const indexIssues = await collectIndexIssues();
-  issues.push(...linkIssues, ...localeIssues, ...indexIssues);
+  issues.push(...linkIssues, ...figureIssues, ...localeIssues, ...indexIssues);
 
   return { docCount: parsedDocs.size, issues };
 }
