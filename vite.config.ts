@@ -77,7 +77,7 @@ export default defineConfig({
         background_color: '#fbf9f5',
         categories: ['education', 'productivity', 'developer'],
         description:
-          'Recursos ultra interactivos, diagramas vivos y documentación profunda para diseñar sistemas que escalan.',
+          'Cuaderno de ingeniería sobre arquitectura de software: artículos a fondo, diagramas vivos y ejemplos claros para diseñar sistemas que escalan.',
         display: 'standalone',
         icons: [
           { sizes: '192x192', src: 'icons/icon-192.png', type: 'image/png' },
@@ -93,9 +93,13 @@ export default defineConfig({
         lang: 'es',
         name: 'Software Architecture',
         scope: '.',
+        shortcuts: [
+          { name: 'Documentación', short_name: 'Docs', url: 'es/docs' },
+          { name: 'Buscar', short_name: 'Buscar', url: 'es/search' },
+        ],
         short_name: 'Software Arch.',
         start_url: '.',
-        theme_color: '#4f46e5',
+        theme_color: '#171512',
       },
       registerType: 'autoUpdate',
       workbox: {

@@ -3,29 +3,16 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Container } from '@/components/atoms';
 import { CategoryFilter, SearchField } from '@/components/molecules';
 import { SearchResults } from '@/components/organisms';
-import { site } from '@/lib/config/site';
 import { resolveLocaleParam } from '@/lib/i18n/locale-head';
-import { getMessages } from '@/lib/i18n/messages';
 import { useMessages } from '@/lib/i18n/use-messages';
 import { parseSearchRouteParams, searchParams } from '@/lib/search/search-params';
 import { useDeferredSearch } from '@/lib/search/use-deferred-search';
-import { buildPageHead } from '@/lib/seo/meta';
+import { searchSeo, toRouteHead } from '@/lib/seo/page-heads';
 import { cn } from '@/lib/utils/cn';
 
 export const Route = createFileRoute('/$locale/search')({
   component: SearchPage,
-  head: ({ params }) => {
-    const locale = resolveLocaleParam(params.locale);
-    const messages = getMessages(locale);
-
-    return buildPageHead({
-      description: messages.search.metaDescription,
-      locale,
-      noindex: true,
-      path: `/${locale}/search`,
-      title: `${messages.search.title} · ${site.name}`,
-    });
-  },
+  head: ({ params }) => toRouteHead(searchSeo(resolveLocaleParam(params.locale))),
   validateSearch: parseSearchRouteParams,
 });
 

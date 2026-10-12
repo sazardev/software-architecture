@@ -6,6 +6,11 @@ import { AppProviders } from '@/app/providers/AppProviders';
 import { router } from '@/app/router';
 import '@/styles/index.css';
 
+// El postbuild inyecta SEO estático (data-prerender) para crawlers; el router gestiona el <head>.
+for (const element of document.head.querySelectorAll('[data-prerender]')) {
+  element.remove();
+}
+
 const rootElement = document.querySelector('#root');
 
 if (!rootElement) {

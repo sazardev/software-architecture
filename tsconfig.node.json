@@ -33,5 +33,12 @@
     "commitlint.config.ts",
     "lint-staged.config.ts",
     "tools"
+  ],
+  "exclude": [
+    "tools/seo/postbuild.ts",
+    "tools/seo/feed.ts",
+    "tools/seo/og-card.ts",
+    "tools/seo/prerender.ts",
+    "tools/seo/*.test.ts"
   ]
 }

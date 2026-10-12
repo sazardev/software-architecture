@@ -8,5 +8,9 @@ function readSiteUrl(): string {
 
 export const site = {
   name: 'Software Architecture',
+  /**
+  Repositorio público: origen de "Editar en GitHub" y de los comentarios.
+  */
+  repo: 'https://github.com/sazardev/software-architecture',
   url: readSiteUrl(),
 } as const;

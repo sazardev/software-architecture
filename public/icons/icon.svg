@@ -1,12 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#4f46e5" />
+  <rect width="512" height="512" rx="112" fill="#171512" />
+  <g stroke="#ffffff" stroke-opacity=".07" stroke-width="2">
+    <path d="M64 0v512M128 0v512M192 0v512M256 0v512M320 0v512M384 0v512M448 0v512" />
+    <path d="M0 64h512M0 128h512M0 192h512M0 256h512M0 320h512M0 384h512M0 448h512" />
+  </g>
+  <path d="M256 96 416 180 256 264 96 180Z" fill="#fbf9f5" />
   <path
-    d="M144 368 L256 144 L368 368"
-    stroke="#ffffff"
-    stroke-width="48"
+    d="m96 256 160 84 160-84M96 332l160 84 160-84"
     fill="none"
+    stroke="#fbf9f5"
     stroke-linecap="round"
     stroke-linejoin="round"
+    stroke-width="28"
   />
-  <path d="M192 288 H320" stroke="#ffffff" stroke-width="48" stroke-linecap="round" />
+  <circle cx="256" cy="180" r="34" fill="#e2723a" />
 </svg>

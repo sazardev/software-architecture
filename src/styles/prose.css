@@ -13,7 +13,7 @@
   --prose-code-bg: var(--color-neutral-100);
   --prose-code-ink: var(--color-accent-800);
 
-  max-width: 68ch;
+  max-width: 70ch;
   overflow-wrap: break-word;
   color: var(--prose-ink);
   font-family: var(--font-serif);
@@ -118,6 +118,7 @@
   font-family: var(--font-sans);
   font-weight: 400;
   text-decoration: none;
+  user-select: none;
   opacity: 0;
   transition: opacity 150ms ease;
 }

@@ -2,29 +2,17 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 
 import { Badge, Container, Eyebrow, Reveal, SectionGlyph } from '@/components/atoms';
 import { CategoryFilter, TopicNav } from '@/components/molecules';
-import { site } from '@/lib/config/site';
 import { parseDocsSearchParams } from '@/lib/content/docs-search-params';
 import { getDocsBySection } from '@/lib/content/registry';
 import { getSectionText } from '@/lib/content/taxonomy';
 import { resolveLocaleParam } from '@/lib/i18n/locale-head';
-import { getMessages } from '@/lib/i18n/messages';
 import { useMessages } from '@/lib/i18n/use-messages';
-import { buildPageHead } from '@/lib/seo/meta';
+import { docsIndexSeo, toRouteHead } from '@/lib/seo/page-heads';
 import { formatDate } from '@/lib/utils/format-date';
 
 export const Route = createFileRoute('/$locale/docs/')({
   component: DocsIndexPage,
-  head: ({ params }) => {
-    const locale = resolveLocaleParam(params.locale);
-    const messages = getMessages(locale);
-
-    return buildPageHead({
-      description: messages.docs.indexDescription,
-      locale,
-      path: `/${locale}/docs`,
-      title: `${messages.docs.title} · ${site.name}`,
-    });
-  },
+  head: ({ params }) => toRouteHead(docsIndexSeo(resolveLocaleParam(params.locale))),
   validateSearch: parseDocsSearchParams,
 });
 

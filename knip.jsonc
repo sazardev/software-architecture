@@ -2,4 +2,10 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": ["tools/**/*.ts"],
   "ignore": [".opencode/**"],
+  // Fuentes leídas por ruta en tools/seo/og-card.ts (satori no las importa como módulos).
+  "ignoreDependencies": [
+    "@fontsource/fraunces",
+    "@fontsource/jetbrains-mono",
+    "@fontsource/newsreader",
+  ],
 }

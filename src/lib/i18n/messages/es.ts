@@ -24,7 +24,7 @@ export const es = {
     breadcrumbHome: 'Inicio',
     empty: 'No hay documentos en esta sección todavía.',
     indexDescription:
-      'Explora las secciones de fundamentos, diseño de sistemas y prácticas de calidad para arquitectos de software.',
+      'Explora por tema todos los artículos del cuaderno: arquitectura de software explicada con diagramas, ejemplos y práctica.',
     notFoundDescription: 'El documento solicitado no existe en el índice de contenido.',
     next: 'Siguiente',
     notFoundTitle: 'Documento no encontrado',
@@ -100,9 +100,38 @@ export const es = {
     sheet: 'HOJA',
     topic: 'TEMA',
   },
+  article: {
+    editOnGitHub: 'Editar en GitHub',
+    shareCta: '¿Te fue útil? Compártelo',
+    suggest: 'Sugerir un cambio',
+  },
   code: {
     copied: 'Copiado',
     copy: 'Copiar código',
+  },
+  selection: {
+    comment: 'Comentar en GitHub',
+    copy: 'Copiar texto',
+    copied: 'Texto copiado',
+    link: 'Copiar enlace al fragmento',
+    linkCopied: 'Enlace al fragmento copiado',
+    quote: 'Copiar como cita',
+    quoteCopied: 'Cita copiada',
+    share: 'Compartir cita',
+    toolbar: 'Acciones sobre el texto seleccionado',
+  },
+  share: {
+    copyLink: 'Copiar enlace',
+    email: 'Enviar por correo',
+    label: 'Compartir',
+    linkCopied: 'Enlace copiado',
+    linkedin: 'Compartir en LinkedIn',
+    native: 'Compartir…',
+    x: 'Compartir en X',
+  },
+  toc: {
+    hint: 'Pasa el cursor para ver el índice',
+    progress: (percent: number) => `${percent}% leído`,
   },
   languageSwitcher: {
     label: 'Idioma',
@@ -144,7 +173,8 @@ export const es = {
   },
   site: {
     description:
-      'Recursos ultra interactivos, diagramas vivos y documentación profunda para diseñar sistemas que escalan.',
+      'Cuaderno de ingeniería sobre arquitectura de software: artículos a fondo, diagramas vivos y ejemplos claros para diseñar sistemas que escalan.',
+    tagline: 'Cuaderno de ingeniería de software',
   },
   theme: {
     dark: 'oscuro',

@@ -27,7 +27,7 @@ buena voluntad.
 
 ```bash
 bun run dev            # servidor de desarrollo
-bun run build          # typecheck + build de producción (sitemap/robots incluidos)
+bun run build          # typecheck + vite build + postbuild SEO (HTML por ruta, OG, feeds)
 bun run preview        # servir el build
 bun run check          # format + lint + types + audit + tests + knip (obligatorio antes de push)
 bun run audit          # audita contenido y rutas
@@ -60,7 +60,8 @@ src/
   mdx/         # provider + mapa de componentes disponibles en MDX
   content/     # docs/<locale>/*.mdx + taxonomy + index.gen.json (generado)
   styles/      # entry de Tailwind, tokens (@theme), prose
-tools/         # tooling Bun: auditoría, indexación, plugins de build (no va al bundle)
+tools/         # tooling Bun: auditoría, indexación, SEO postbuild (no va al bundle)
+               # tools/seo/{postbuild,prerender,feed,og-card}.ts usan tsconfig.build.json
 ```
 
 Reglas de dependencia (aplicadas por `import-x/no-restricted-paths` en `eslint.config.ts`):
@@ -124,6 +125,7 @@ Frontmatter obligatorio (validado con zod en la auditoría):
 | `description` | 40–160 caracteres (se usa en SEO y búsqueda)                          |
 | `category`    | id existente en `src/lib/content/taxonomy.json` (`labels` por idioma) |
 | `tags`        | hasta 5, kebab-case, únicos                                           |
+| `publishedAt` | opcional, `YYYY-MM-DD` (SEO usa `updatedAt` si falta)                 |
 | `order`       | entero ≥ 0 (orden dentro de la sección)                               |
 | `updatedAt`   | `YYYY-MM-DD`, no puede ser futuro                                     |
 
@@ -224,13 +226,44 @@ siempre rutas absolutas y anclas del idioma correspondiente.
 - Estado en URL: `/<locale>/search?q=&tag=&category=`, `/<locale>/docs?category=`. Nunca
   estado oculto. La búsqueda filtra por `locale`: cada idioma indexa solo sus documentos.
 
-## 8. SEO
+## 8. SEO y compartir
 
-- `buildPageHead()` en `src/lib/seo/meta.ts`: canonical absoluto, OG y Twitter.
-- JSON-LD: `websiteJsonLd` (root), `articleJsonLd` + `breadcrumbJsonLd` (docs).
-- `sitemap.xml` y `robots.txt` se generan en el build desde el índice + `VITE_SITE_URL`
-  (copia `.env.example` → `.env.local`). El sitemap agrupa cada documento con alternates
-  `hreflang` (y `x-default`); `/search` queda fuera del sitemap y bloqueada en robots.
+Todo el SEO sale del contenido: no hay que tocar nada al añadir artículos o temas.
+
+- **Una sola fuente**: `src/lib/seo/page-heads.ts` (`homeSeo`, `docsIndexSeo`, `docSeo`,
+  `searchSeo`) devuelve cabecera + JSON-LD + texto `<noscript>`. Las rutas lo usan con
+  `toRouteHead()` y el postbuild con el mismo código, así cliente y HTML estático coinciden.
+  `buildPageHead()` (`meta.ts`) pone canonical, `hreflang` (solo idiomas donde existe la
+  página) + `x-default`, robots (`max-image-preview:large`), OG/Twitter (`summary_large_image`),
+  imagen con alt/tamaño, `article:*` y el feed RSS.
+- **JSON-LD** (`json-ld.ts`): `WebSite` (portada), `CollectionPage` + `BreadcrumbList`
+  (índice), `TechArticle` + `BreadcrumbList` (artículos, con `datePublished`/`dateModified`,
+  imagen, sección, palabras clave y `publisher`).
+- **Postbuild** (`bun tools/seo/postbuild.ts`, encadenado a `bun run build`):
+  - HTML estático por ruta (`dist/<locale>/…/index.html`, también `/`) con el `<head>` SEO
+    ya inyectado: los crawlers sociales no ejecutan JS y GitHub Pages responde 200 en
+    enlaces profundos. Las etiquetas llevan `data-prerender` y `main.tsx` las retira antes de
+    montar para que el router no duplique el `<head>`.
+  - Tarjetas sociales 1200×630 por artículo e idioma (`dist/og/<locale>/<slug>.png`) con
+    satori + resvg: estilo plano, cajetín y tipografías del sitio. Fuentes `@fontsource/*`.
+  - Feeds RSS por idioma (`/<locale>/feed.xml`).
+- `sitemap.xml`/`robots.txt` (`plugin-static-seo`): hreflang, `lastmod`, y `Disallow: /*/search`.
+- `VITE_SITE_URL` define todas las URLs absolutas (copia `.env.example` → `.env.local`).
+- Identidad: favicon e iconos PWA (`public/favicon.svg`, `public/icons/*.svg`, PNG con
+  `bun run icons:generate`) usan la marca de capas con núcleo brasa; `theme-color` `#171512`.
+- Textos de marketing en `messages/*.ts` (`site.description`, `site.tagline`); el título de la
+  portada es `Nombre — eslogan`.
+
+### Experiencia de lectura
+
+- Rejilla central (`lib/ui/reading-layout.ts`): cabecera y artículo comparten eje (46rem);
+  margen izquierdo = acciones de compartir, derecho = índice.
+- Índice "En esta página": marcas mínimas en el margen que se despliegan al pasar el cursor o
+  enfocar (estilo Notion); en móvil es un bloque plegable. Resalta la sección activa.
+- Selección de texto: `SelectionToolbar` ofrece copiar, copiar como cita, enlace al
+  fragmento (`#:~:text=`), compartir y comentar (abre un issue de GitHub con la cita).
+- Compartir: `ShareActions` (copiar enlace, hoja nativa, X, LinkedIn, correo); el "#" de los
+  encabezados copia su enlace; avisos con `Toaster`. "Editar en GitHub" al final del artículo.
 
 ## 9. Auditoría (`bun run audit`)
 

@@ -9,7 +9,6 @@ import {
   TagIndex,
   type HomeStats,
 } from '@/components/organisms';
-import { site } from '@/lib/config/site';
 import {
   getDocsByLocale,
   getDocsBySection,
@@ -17,22 +16,11 @@ import {
   getTopTags,
 } from '@/lib/content/registry';
 import { resolveLocaleParam } from '@/lib/i18n/locale-head';
-import { getMessages } from '@/lib/i18n/messages';
-import { buildPageHead } from '@/lib/seo/meta';
+import { homeSeo, toRouteHead } from '@/lib/seo/page-heads';
 
 export const Route = createFileRoute('/$locale/')({
   component: HomePage,
-  head: ({ params }) => {
-    const locale = resolveLocaleParam(params.locale);
-    const messages = getMessages(locale);
-
-    return buildPageHead({
-      description: messages.site.description,
-      locale,
-      path: `/${locale}`,
-      title: site.name,
-    });
-  },
+  head: ({ params }) => toRouteHead(homeSeo(resolveLocaleParam(params.locale))),
 });
 
 function HomePage() {

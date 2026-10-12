@@ -12,6 +12,10 @@ export type ContentEntry = {
   headings: ContentHeading[];
   locale: Locale;
   order: number;
+  /**
+  Primera publicación (YYYY-MM-DD); si falta, SEO usa `updatedAt`.
+  */
+  publishedAt?: string | undefined;
   readingMinutes: number;
   route: string;
   slug: string;

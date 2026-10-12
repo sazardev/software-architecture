@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 
 import { useMessages } from '@/lib/i18n/use-messages';
+import { copyText } from '@/lib/ui/clipboard';
 import { cn } from '@/lib/utils/cn';
 
 type CodeBlockProps = Readonly<ComponentProps<'pre'>>;
@@ -30,12 +31,7 @@ export function CodeBlock({ className, ...props }: CodeBlockProps) {
   async function copy() {
     const text = preRef.current?.textContent ?? '';
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
+    setCopied((await copyText(text)) === 'copied');
   }
 
   const label = copied ? messages.code.copied : messages.code.copy;

@@ -1,3 +1,4 @@
+export { ArticleFooter } from './ArticleFooter';
 export { ClosingCta } from './ClosingCta';
 export { DocHeader } from './DocHeader';
 export { HomeHero, type HomeStats } from './HomeHero';

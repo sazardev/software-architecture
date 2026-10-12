@@ -7,6 +7,8 @@ import { getSectionLabel } from '@/lib/content/taxonomy';
 import type { ContentEntry } from '@/lib/content/types';
 import { useMessages } from '@/lib/i18n/use-messages';
 import { searchParams } from '@/lib/search/search-params';
+import { readingGridClass } from '@/lib/ui/reading-layout';
+import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format-date';
 
 type DocHeaderProps = Readonly<{
@@ -25,8 +27,8 @@ export function DocHeader({ entry }: DocHeaderProps) {
 
   return (
     <header className="bp-grid border-b border-neutral-200 dark:border-neutral-800">
-      <Container className="grid gap-10 pt-10 pb-12 sm:pt-14 sm:pb-16 lg:grid-cols-[1fr_auto] lg:items-end">
-        <div>
+      <Container className={cn(readingGridClass, 'pt-10 pb-12 sm:pt-14 sm:pb-14')}>
+        <div className="lg:col-start-2">
           <Breadcrumbs
             className="animate-fade"
             items={[
@@ -47,19 +49,29 @@ export function DocHeader({ entry }: DocHeaderProps) {
             {sectionLabel}
           </p>
           <h1
-            className="mt-4 max-w-4xl animate-rise font-display text-[clamp(2.4rem,5.6vw,4.4rem)] leading-[1.04] font-medium tracking-[-0.03em] text-balance text-neutral-950 dark:text-neutral-50"
+            className="mt-4 animate-rise font-display text-[clamp(2.3rem,5vw,3.9rem)] leading-[1.06] font-medium tracking-[-0.03em] text-balance text-neutral-950 dark:text-neutral-50"
             style={{ animationDelay: '100ms', fontVariationSettings: "'opsz' 144" }}
           >
             {entry.title}
           </h1>
           <p
-            className="mt-6 max-w-2xl animate-rise font-serif text-xl leading-relaxed text-pretty text-neutral-600 sm:text-[1.35rem] dark:text-neutral-300"
+            className="mt-6 animate-rise font-serif text-xl leading-relaxed text-pretty text-neutral-600 sm:text-[1.3rem] dark:text-neutral-300"
             style={{ animationDelay: '220ms' }}
           >
             {entry.description}
           </p>
+          <TitleBlock
+            className="mt-9 animate-fade bg-neutral-50 dark:bg-neutral-950"
+            layout="row"
+            rows={[
+              { label: blueprint.topic, value: sectionLabel },
+              { label: blueprint.sheet, value: `${pad(sheet.index)}/${pad(sheet.total)}` },
+              { label: blueprint.reading, value: messages.docs.minutesShort(entry.readingMinutes) },
+              { label: blueprint.rev, value: formatDate(entry.updatedAt, entry.locale) },
+            ]}
+          />
           <ul
-            className="mt-8 flex animate-rise flex-wrap gap-2"
+            className="mt-5 flex animate-rise flex-wrap gap-2"
             style={{ animationDelay: '340ms' }}
           >
             {entry.tags.map((tag) => (
@@ -75,15 +87,6 @@ export function DocHeader({ entry }: DocHeaderProps) {
             ))}
           </ul>
         </div>
-        <TitleBlock
-          className="w-full animate-fade bg-neutral-50 lg:w-72 dark:bg-neutral-950"
-          rows={[
-            { label: blueprint.topic, value: sectionLabel },
-            { label: blueprint.sheet, value: `${pad(sheet.index)}/${pad(sheet.total)}` },
-            { label: blueprint.reading, value: messages.docs.minutesShort(entry.readingMinutes) },
-            { label: blueprint.rev, value: formatDate(entry.updatedAt, entry.locale) },
-          ]}
-        />
       </Container>
     </header>
   );

@@ -26,7 +26,7 @@ export const en: Messages = {
     breadcrumbHome: 'Home',
     empty: 'There are no documents in this section yet.',
     indexDescription:
-      'Explore foundations, system design and engineering practices resources for software architects.',
+      'Explore every article in the notebook by topic: software architecture explained with diagrams, examples and practice.',
     notFoundDescription: 'The requested document does not exist in the content index.',
     next: 'Next',
     notFoundTitle: 'Document not found',
@@ -102,9 +102,38 @@ export const en: Messages = {
     sheet: 'SHEET',
     topic: 'TOPIC',
   },
+  article: {
+    editOnGitHub: 'Edit on GitHub',
+    shareCta: 'Found this useful? Share it',
+    suggest: 'Suggest a change',
+  },
   code: {
     copied: 'Copied',
     copy: 'Copy code',
+  },
+  selection: {
+    comment: 'Comment on GitHub',
+    copy: 'Copy text',
+    copied: 'Text copied',
+    link: 'Copy link to fragment',
+    linkCopied: 'Fragment link copied',
+    quote: 'Copy as quote',
+    quoteCopied: 'Quote copied',
+    share: 'Share quote',
+    toolbar: 'Actions for the selected text',
+  },
+  share: {
+    copyLink: 'Copy link',
+    email: 'Send by email',
+    label: 'Share',
+    linkCopied: 'Link copied',
+    linkedin: 'Share on LinkedIn',
+    native: 'Share…',
+    x: 'Share on X',
+  },
+  toc: {
+    hint: 'Hover to see the outline',
+    progress: (percent: number) => `${percent}% read`,
   },
   languageSwitcher: {
     label: 'Language',
@@ -146,7 +175,8 @@ export const en: Messages = {
   },
   site: {
     description:
-      'Ultra interactive resources, living diagrams and deep documentation to design systems that scale.',
+      'An engineering notebook on software architecture: in-depth articles, living diagrams and clear examples to design systems that scale.',
+    tagline: 'Software engineering notebook',
   },
   theme: {
     dark: 'dark',
