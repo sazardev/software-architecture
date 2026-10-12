@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { BlueprintFrame } from '@/components/atoms';
 import { useTheme } from '@/lib/theme/theme-context';
 
 type MermaidDiagramProps = Readonly<{
@@ -68,11 +69,8 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
   }
 
   return (
-    <div
-      aria-label="Diagrama"
-      className="mermaid-diagram my-6 flex justify-center"
-      ref={containerRef}
-      role="img"
-    />
+    <BlueprintFrame className="bp-grid my-8 bg-neutral-50 dark:bg-neutral-950">
+      <div aria-label="Diagrama" className="mermaid-diagram" ref={containerRef} role="img" />
+    </BlueprintFrame>
   );
 }

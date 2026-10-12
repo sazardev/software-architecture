@@ -1,0 +1,1 @@
+export { SectionGlyph } from './SectionGlyph';

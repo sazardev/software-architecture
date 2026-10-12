@@ -4,9 +4,11 @@ import {
   getDocBySlug,
   getDocNeighbors,
   getDocsByLocale,
+  getDocSheet,
   getDocsBySection,
   getLatestDocs,
   getRelatedDocs,
+  getTopTags,
 } from '@/lib/content/registry';
 
 describe('registro de contenido', () => {
@@ -71,5 +73,22 @@ describe('registro de contenido', () => {
     expect(related).not.toContain('solid');
     expect(related).not.toContain('clean-code');
     expect(related.length).toBeLessThanOrEqual(3);
+  });
+
+  it('cuenta etiquetas por idioma ordenadas por frecuencia y respeta el límite', () => {
+    const tags = getTopTags('es', 3);
+
+    expect(tags.length).toBeLessThanOrEqual(3);
+    expect(
+      tags.every((entry, index) => index === 0 || (tags[index - 1]?.count ?? 0) >= entry.count),
+    ).toBe(true);
+  });
+
+  it('numera la hoja del documento dentro de su idioma', () => {
+    const sheet = getDocSheet('es', 'solid');
+
+    expect(sheet.index).toBeGreaterThan(0);
+    expect(sheet.index).toBeLessThanOrEqual(sheet.total);
+    expect(sheet.total).toBe(getDocsByLocale('es').length);
   });
 });

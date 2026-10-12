@@ -11,6 +11,9 @@ export const es = {
     tableOfContents: 'En esta página',
   },
   docs: {
+    articleCount: (count: number) => (count === 1 ? '1 artículo' : `${count} artículos`),
+    topics: 'Temas',
+    viewAllIn: (count: number, topic: string) => `Ver los ${count} artículos de ${topic}`,
     allArticles: 'Todos los artículos',
     featured: 'Destacado',
     keepReading: 'Sigue leyendo',
@@ -63,9 +66,14 @@ export const es = {
     },
     search: 'Buscar recursos',
     sections: {
-      eyebrow: 'Rutas de lectura',
-      explore: 'Explorar sección',
-      title: 'Tres caminos, un mismo oficio',
+      all: (count: number) => `Ver los ${count} temas`,
+      eyebrow: 'Temas',
+      explore: 'Explorar tema',
+      title: 'Explora por tema',
+    },
+    tags: {
+      eyebrow: 'Etiquetas',
+      title: 'O sigue el hilo por etiqueta',
     },
     start: 'Empezar a leer',
     stats: {
@@ -77,10 +85,20 @@ export const es = {
     titleLead: 'Arquitectura de software,',
   },
   footer: {
+    allTopics: 'Todos los temas',
     explore: 'Explorar',
     note: 'Hecho con cuidado para quienes diseñan sistemas.',
     rights: (year: number) => `© ${year} Software Architecture`,
     sections: 'Secciones',
+  },
+  blueprint: {
+    figure: 'FIG.',
+    project: 'PROYECTO',
+    reading: 'LECTURA',
+    rev: 'REV.',
+    scale: 'ESC.',
+    sheet: 'HOJA',
+    topic: 'TEMA',
   },
   code: {
     copied: 'Copiado',

@@ -44,10 +44,7 @@ export function ReadingProgress() {
       className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[3px]"
       title={messages.a11y.readingProgress}
     >
-      <div
-        className="h-full origin-left scale-x-[var(--progress,0)] bg-gradient-to-r from-accent-500 to-brand-500"
-        ref={barRef}
-      />
+      <div className="h-full origin-left scale-x-[var(--progress,0)] bg-accent-500" ref={barRef} />
     </div>
   );
 }

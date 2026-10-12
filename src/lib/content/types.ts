@@ -26,6 +26,10 @@ export type LocalizedText = {
 };
 
 export type Section = {
+  /**
+  Glifo de plano (ver atom SectionGlyph). Opcional: si falta, se deriva del id.
+  */
+  icon?: string;
   id: string;
   labels: Record<Locale, LocalizedText>;
   order: number;

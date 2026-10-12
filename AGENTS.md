@@ -196,6 +196,10 @@ siempre rutas absolutas y anclas del idioma correspondiente.
 - Movimiento: animaciones CSS (`animate-rise`, `animate-draw`…) y el atom `Reveal` para
   aparecer al hacer scroll; todo respeta `prefers-reduced-motion` (regla global en
   `src/styles/index.css`).
+- Lenguaje de plano (blueprint), sin degradados ni halos desenfocados: retícula `bp-grid`
+  (papel cuadriculado, patrón SVG), panel cianotipo `bp-panel`, `BlueprintFrame` (marcas de
+  registro `+` en las esquinas), `TitleBlock` (cajetín de hoja/escala/revisión), cotas en
+  `Eyebrow` y tipografía mono para metadatos. Las tarjetas son planas (borde, sin sombra).
 - Layout: páginas envuelven su contenido en el atom `Container` (`narrow`/`reading`/`wide`);
   `SiteShell` ya no limita el ancho de `main` para permitir secciones a sangre.
 
@@ -258,8 +262,11 @@ Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes
 
 ## 11. Flexibilidad
 
-- **Nueva sección**: añade la entrada en `src/lib/content/taxonomy.json` (id, label,
-  description, order) y usa ese `category` en el frontmatter.
+- **Nueva sección (tema)**: añade la entrada en `src/lib/content/taxonomy.json` (id, label y
+  description por idioma, order y, opcional, `icon` de `SectionGlyph`) y usa ese `category`
+  en el frontmatter. Nada más: portada (rejilla de temas, máx. 6 + "ver todos"), índice lateral
+  de `/docs`, filtros, pie, conteos, cajetín y etiquetas se generan desde el contenido. Sin
+  `icon`, el glifo se deriva del id; para uno nuevo, añádelo al mapa de `SectionGlyph`.
 - **Nuevo componente**: crea la carpeta en la capa correcta con `Componente.tsx` + `index.ts`
   y expórtalo en el barril de la capa. Si es usable en MDX, mapea en `src/mdx/mdx-components.tsx`.
 - **Nueva ruta**: crea el archivo en `src/routes/$locale/` (la auditoría verifica la coherencia).

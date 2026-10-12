@@ -2,7 +2,7 @@ import taxonomyJson from '@/lib/content/taxonomy.json';
 import type { LocalizedText, Section } from '@/lib/content/types';
 import type { Locale } from '@/lib/i18n/locales';
 
-export const sections: Section[] = taxonomyJson.sections;
+export const sections: Section[] = taxonomyJson.sections.toSorted((a, b) => a.order - b.order);
 
 export function isSectionId(id: string): boolean {
   return sections.some((section) => section.id === id);

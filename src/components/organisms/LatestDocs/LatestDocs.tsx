@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
-import { Badge, Container, Eyebrow, Reveal } from '@/components/atoms';
+import { BlueprintFrame, Container, Eyebrow, Reveal } from '@/components/atoms';
 import { getSectionLabel } from '@/lib/content/taxonomy';
 import type { ContentEntry } from '@/lib/content/types';
 import { useLocale } from '@/lib/i18n/locale-context';
@@ -38,45 +38,36 @@ export function LatestDocs({ docs }: LatestDocsProps) {
         </Link>
       </Reveal>
 
-      <div className="mt-12 grid gap-6 lg:grid-cols-5">
+      <div className="mt-12 grid gap-8 lg:grid-cols-5">
         <Reveal className="lg:col-span-3">
-          <Link
-            className="group relative flex h-full min-h-80 flex-col justify-end overflow-hidden rounded-3xl bg-neutral-900 p-8 text-neutral-50 transition-shadow duration-500 hover:shadow-lift sm:p-10 dark:bg-neutral-900 dark:ring-1 dark:ring-neutral-800"
-            params={{ locale, slug: featured.slug }}
-            to="/$locale/docs/$slug"
-          >
-            <span
-              aria-hidden="true"
-              className="absolute -top-24 -right-20 h-72 w-72 rounded-full bg-accent-500/40 blur-3xl transition-transform duration-700 ease-out-soft group-hover:scale-125"
-            />
-            <span
-              aria-hidden="true"
-              className="absolute -bottom-32 -left-24 h-72 w-72 rounded-full bg-brand-500/40 blur-3xl"
-            />
-            <Badge
-              className="relative w-fit border-white/25 bg-white/10 text-neutral-50"
-              tone="neutral"
+          <BlueprintFrame className="group h-full border-brand-950 dark:border-brand-950">
+            <Link
+              className="bp-panel flex h-full min-h-80 flex-col justify-end p-8 sm:p-10"
+              params={{ locale, slug: featured.slug }}
+              to="/$locale/docs/$slug"
             >
-              {messages.docs.featured} · {getSectionLabel(featured.category, locale)}
-            </Badge>
-            <h3 className="relative mt-5 font-display text-3xl leading-tight font-medium tracking-tight text-balance sm:text-4xl">
-              {featured.title}
-            </h3>
-            <p className="relative mt-3 max-w-xl font-serif text-lg leading-relaxed text-neutral-300">
-              {featured.description}
-            </p>
-            <p className="relative mt-6 flex items-center gap-3 font-sans text-sm text-neutral-400">
-              <span>{messages.docs.minutesShort(featured.readingMinutes)}</span>
-              <span aria-hidden="true">·</span>
-              <span>{formatDate(featured.updatedAt, locale)}</span>
-              <span className="ml-auto font-medium text-neutral-50 transition-transform duration-300 group-hover:translate-x-1.5">
-                {messages.docs.readArticle} →
+              <span className="w-fit border border-white/30 px-2.5 py-1 font-mono text-[0.68rem] tracking-[0.16em] uppercase">
+                {messages.docs.featured} · {getSectionLabel(featured.category, locale)}
               </span>
-            </p>
-          </Link>
+              <h3 className="mt-5 font-display text-3xl leading-tight font-medium tracking-tight text-balance sm:text-4xl">
+                {featured.title}
+              </h3>
+              <p className="mt-3 max-w-xl font-serif text-lg leading-relaxed text-neutral-300">
+                {featured.description}
+              </p>
+              <p className="mt-6 flex items-center gap-3 border-t border-white/20 pt-4 font-mono text-xs tracking-[0.12em] text-neutral-300 uppercase">
+                <span>{messages.docs.minutesShort(featured.readingMinutes)}</span>
+                <span aria-hidden="true">·</span>
+                <span>{formatDate(featured.updatedAt, locale)}</span>
+                <span className="ml-auto font-medium text-accent-300 transition-transform duration-300 group-hover:translate-x-1.5">
+                  {messages.docs.readArticle} →
+                </span>
+              </p>
+            </Link>
+          </BlueprintFrame>
         </Reveal>
 
-        <ol className="flex flex-col divide-y divide-neutral-200 lg:col-span-2 dark:divide-neutral-800">
+        <ol className="flex flex-col divide-y divide-neutral-300 lg:col-span-2 dark:divide-neutral-700">
           {rest.map((doc, index) => (
             <li className="flex-1" key={doc.slug}>
               <Reveal className="h-full" delay={(index + 1) * 100}>
@@ -87,12 +78,12 @@ export function LatestDocs({ docs }: LatestDocsProps) {
                 >
                   <span
                     aria-hidden="true"
-                    className="font-display text-3xl leading-none font-light text-accent-500 italic"
+                    className="font-mono text-sm leading-7 text-accent-600 dark:text-accent-400"
                   >
                     {String(index + 2).padStart(2, '0')}
                   </span>
                   <span className="min-w-0">
-                    <span className="font-sans text-xs tracking-[0.14em] text-neutral-500 uppercase">
+                    <span className="font-mono text-[0.68rem] tracking-[0.14em] text-neutral-500 uppercase">
                       {getSectionLabel(doc.category, locale)} ·{' '}
                       {messages.docs.minutesShort(doc.readingMinutes)}
                     </span>

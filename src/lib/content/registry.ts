@@ -80,3 +80,43 @@ export function getRelatedDocs(
 
   return [...sameSection, ...otherSections].slice(0, limit);
 }
+
+export type TagCount = {
+  count: number;
+  tag: string;
+};
+
+/**
+Etiquetas más usadas del idioma (desempate alfabético), para el índice por etiqueta.
+*/
+export function getTopTags(locale: Locale, limit: number): TagCount[] {
+  const counts = new Map<string, number>();
+
+  for (const doc of getDocsByLocale(locale)) {
+    for (const tag of doc.tags) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  return [...counts]
+    .map(([tag, count]) => ({ count, tag }))
+    .toSorted((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
+    .slice(0, limit);
+}
+
+export type DocSheet = {
+  /**
+  Posición (1-based) del documento en el orden del idioma.
+  */
+  index: number;
+  total: number;
+};
+
+/**
+Numeración "hoja X de N" para el cajetín de plano.
+*/
+export function getDocSheet(locale: Locale, slug: string): DocSheet {
+  const localized = getDocsByLocale(locale);
+
+  return { index: localized.findIndex((doc) => doc.slug === slug) + 1, total: localized.length };
+}

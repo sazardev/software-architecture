@@ -12,3 +12,5 @@ export { ReadingProgress } from './ReadingProgress';
 export { SearchField } from './SearchField';
 export { TableOfContents } from './TableOfContents';
 export { ThemeSwitcher } from './ThemeSwitcher';
+export { TitleBlock } from './TitleBlock';
+export { TopicNav } from './TopicNav';

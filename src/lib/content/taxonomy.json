@@ -2,6 +2,7 @@
   "sections": [
     {
       "id": "fundamentos",
+      "icon": "layers",
       "order": 1,
       "labels": {
         "es": {
@@ -16,6 +17,7 @@
     },
     {
       "id": "diseno",
+      "icon": "nodes",
       "order": 2,
       "labels": {
         "es": {
@@ -30,6 +32,7 @@
     },
     {
       "id": "practicas",
+      "icon": "gauge",
       "order": 3,
       "labels": {
         "es": {

@@ -67,21 +67,36 @@
     mix-blend-mode: soft-light;
   }
 
-  /* Rejilla de plano arquitectónico para fondos de hero. */
-  .blueprint-grid {
-    background-image:
-      linear-gradient(to right, var(--color-neutral-900) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--color-neutral-900) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 20%, transparent 75%);
-    opacity: 0.05;
+  /*
+   * Papel cuadriculado de plano: retícula menor cada 24px y mayor cada 96px, dibujada con
+   * patrones SVG (líneas nítidas, sin degradados). Usar sobre el fondo de la página.
+   */
+  .bp-grid {
+    --bp-minor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M24 0H0v24' fill='none' stroke='%233b55c4' stroke-opacity='.09'/%3E%3C/svg%3E");
+    --bp-major: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cpath d='M96 0H0v96' fill='none' stroke='%233b55c4' stroke-opacity='.17'/%3E%3C/svg%3E");
+    background-image: var(--bp-major), var(--bp-minor);
+    background-size:
+      96px 96px,
+      24px 24px;
+    background-position: -1px -1px;
   }
 
-  .dark .blueprint-grid {
-    background-image:
-      linear-gradient(to right, var(--color-neutral-100) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--color-neutral-100) 1px, transparent 1px);
-    opacity: 0.06;
+  .dark .bp-grid {
+    --bp-minor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M24 0H0v24' fill='none' stroke='%23a9b8f0' stroke-opacity='.06'/%3E%3C/svg%3E");
+    --bp-major: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cpath d='M96 0H0v96' fill='none' stroke='%23a9b8f0' stroke-opacity='.11'/%3E%3C/svg%3E");
+  }
+
+  /* Panel azul cianotipo con retícula clara, para bloques destacados (siempre oscuro). */
+  .bp-panel {
+    --bp-minor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M24 0H0v24' fill='none' stroke='%23ffffff' stroke-opacity='.07'/%3E%3C/svg%3E");
+    --bp-major: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cpath d='M96 0H0v96' fill='none' stroke='%23ffffff' stroke-opacity='.14'/%3E%3C/svg%3E");
+    background-color: var(--color-brand-900);
+    background-image: var(--bp-major), var(--bp-minor);
+    background-size:
+      96px 96px,
+      24px 24px;
+    background-position: -1px -1px;
+    color: var(--color-neutral-50);
   }
 
   /* Revelado al hacer scroll (ver atom Reveal). */

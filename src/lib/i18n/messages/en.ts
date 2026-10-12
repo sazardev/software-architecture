@@ -13,6 +13,9 @@ export const en: Messages = {
     tableOfContents: 'On this page',
   },
   docs: {
+    articleCount: (count: number) => (count === 1 ? '1 article' : `${count} articles`),
+    topics: 'Topics',
+    viewAllIn: (count: number, topic: string) => `See all ${count} articles in ${topic}`,
     allArticles: 'All articles',
     featured: 'Featured',
     keepReading: 'Keep reading',
@@ -65,9 +68,14 @@ export const en: Messages = {
     },
     search: 'Search resources',
     sections: {
-      eyebrow: 'Reading paths',
-      explore: 'Explore section',
-      title: 'Three paths, one craft',
+      all: (count: number) => `See all ${count} topics`,
+      eyebrow: 'Topics',
+      explore: 'Explore topic',
+      title: 'Explore by topic',
+    },
+    tags: {
+      eyebrow: 'Tags',
+      title: 'Or follow the thread by tag',
     },
     start: 'Start reading',
     stats: {
@@ -79,10 +87,20 @@ export const en: Messages = {
     titleLead: 'Software architecture,',
   },
   footer: {
+    allTopics: 'All topics',
     explore: 'Explore',
     note: 'Crafted with care for people who design systems.',
     rights: (year: number) => `© ${year} Software Architecture`,
     sections: 'Sections',
+  },
+  blueprint: {
+    figure: 'FIG.',
+    project: 'PROJECT',
+    reading: 'READING',
+    rev: 'REV.',
+    scale: 'SCALE',
+    sheet: 'SHEET',
+    topic: 'TOPIC',
   },
   code: {
     copied: 'Copied',

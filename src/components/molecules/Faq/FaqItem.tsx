@@ -12,7 +12,7 @@ export function FaqItem({ children, className, question }: FaqItemProps) {
   return (
     <details
       className={cn(
-        'group rounded-2xl border border-neutral-200 bg-white px-5 py-4 transition-colors duration-300 open:border-neutral-300 open:shadow-soft dark:border-neutral-800 dark:bg-neutral-900/60 dark:open:border-neutral-700',
+        'group border border-neutral-300 bg-white px-5 py-4 transition-colors duration-300 open:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900/60 dark:open:border-neutral-300',
         className,
       )}
     >

@@ -1,82 +1,119 @@
 import { Link } from '@tanstack/react-router';
 
-import { Container, Eyebrow, Reveal } from '@/components/atoms';
+import { BlueprintFrame, Container, Eyebrow, Reveal, SectionGlyph } from '@/components/atoms';
 import type { SectionWithDocs } from '@/lib/content/registry';
 import { getSectionText } from '@/lib/content/taxonomy';
 import { useLocale } from '@/lib/i18n/locale-context';
 import { useMessages } from '@/lib/i18n/use-messages';
 
+/**
+Temas visibles en la portada; el resto se explora desde /docs (crece sin tocar el diseño).
+*/
+const HOME_TOPIC_LIMIT = 6;
+
 type SectionPathsProps = Readonly<{
   groups: SectionWithDocs[];
 }>;
 
+function pad(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
 export function SectionPaths({ groups }: SectionPathsProps) {
   const locale = useLocale();
   const messages = useMessages();
+  const visible = groups.slice(0, HOME_TOPIC_LIMIT);
 
   return (
     <Container className="pt-20 sm:pt-28">
       <Reveal>
-        <Eyebrow>{messages.home.sections.eyebrow}</Eyebrow>
+        <Eyebrow>
+          {messages.home.sections.eyebrow} · {pad(groups.length)}
+        </Eyebrow>
         <h2 className="mt-5 max-w-2xl font-display text-4xl leading-[1.08] font-medium tracking-[-0.025em] text-balance text-neutral-950 sm:text-5xl dark:text-neutral-50">
           {messages.home.sections.title}
         </h2>
       </Reveal>
-      <ul className="mt-12 grid gap-5 md:grid-cols-3">
-        {groups.map((group, index) => {
+      <ul className="mt-12 grid [grid-template-columns:repeat(auto-fill,minmax(min(100%,19rem),1fr))] gap-7">
+        {visible.map((group, index) => {
           const text = getSectionText(group.section, locale);
 
           return (
             <li key={group.section.id}>
-              <Reveal className="h-full" delay={index * 120}>
-                <Link
-                  className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white p-7 transition-[transform,box-shadow,border-color] duration-500 ease-out-soft hover:-translate-y-1.5 hover:border-neutral-300 hover:shadow-lift dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:border-neutral-700"
-                  params={{ locale }}
-                  search={{ category: group.section.id }}
-                  to="/$locale/docs"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-accent-200/50 blur-2xl transition-opacity duration-500 group-hover:opacity-100 dark:bg-accent-700/20"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="relative font-display text-6xl leading-none font-light text-accent-500 italic"
+              <Reveal className="h-full" delay={index * 90}>
+                <BlueprintFrame className="group h-full bg-neutral-50 transition-colors duration-300 hover:border-neutral-900 dark:bg-neutral-950 dark:hover:border-neutral-300">
+                  <Link
+                    className="flex h-full flex-col p-6"
+                    params={{ locale }}
+                    search={{ category: group.section.id }}
+                    to="/$locale/docs"
                   >
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <h3 className="relative mt-6 font-display text-2xl font-medium tracking-tight text-neutral-950 dark:text-neutral-50">
-                    {text.label}
-                  </h3>
-                  <p className="relative mt-2 font-serif text-base leading-relaxed text-neutral-600 dark:text-neutral-400">
-                    {text.description}
-                  </p>
-                  <ul className="relative mt-5 space-y-1.5 font-sans text-sm text-neutral-700 dark:text-neutral-300">
-                    {group.docs.slice(0, 3).map((doc) => (
-                      <li className="flex items-baseline gap-2" key={doc.slug}>
-                        <span
-                          aria-hidden="true"
-                          className="h-1 w-1 shrink-0 -translate-y-0.5 rounded-full bg-accent-500"
+                    <span className="flex items-start justify-between">
+                      <span className="flex h-12 w-12 items-center justify-center border border-neutral-300 text-neutral-800 transition-colors duration-300 group-hover:border-accent-500 group-hover:text-accent-700 dark:border-neutral-700 dark:text-neutral-200 dark:group-hover:text-accent-400">
+                        <SectionGlyph
+                          className="h-6 w-6"
+                          icon={group.section.icon}
+                          id={group.section.id}
                         />
-                        <span className="truncate">{doc.title}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <span className="relative mt-auto flex items-center justify-between pt-8 font-sans text-sm font-medium text-brand-700 dark:text-brand-300">
-                    {messages.home.sections.explore}
+                      </span>
+                      <span className="font-mono text-xs tracking-[0.16em] text-neutral-500">
+                        T-{pad(index + 1)}
+                      </span>
+                    </span>
                     <span
                       aria-hidden="true"
-                      className="transition-transform duration-300 group-hover:translate-x-1.5"
+                      className="my-5 flex items-center text-neutral-300 dark:text-neutral-700"
                     >
-                      →
+                      <span className="h-2 border-l border-current" />
+                      <span className="h-px flex-1 bg-current" />
+                      <span className="h-2 border-l border-current" />
                     </span>
-                  </span>
-                </Link>
+                    <h3 className="font-display text-2xl font-medium tracking-tight text-neutral-950 dark:text-neutral-50">
+                      {text.label}
+                    </h3>
+                    <p className="mt-2 line-clamp-3 font-serif text-base leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      {text.description}
+                    </p>
+                    <ul className="mt-5 space-y-1.5 font-sans text-sm text-neutral-700 dark:text-neutral-300">
+                      {group.docs.slice(0, 3).map((doc, docIndex) => (
+                        <li className="flex items-baseline gap-3" key={doc.slug}>
+                          <span
+                            aria-hidden="true"
+                            className="font-mono text-[0.68rem] text-accent-600 dark:text-accent-400"
+                          >
+                            {pad(docIndex + 1)}
+                          </span>
+                          <span className="truncate">{doc.title}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <span className="mt-auto flex items-center justify-between pt-8 font-mono text-xs tracking-[0.14em] text-brand-700 uppercase dark:text-brand-300">
+                      {messages.docs.articleCount(group.docs.length)}
+                      <span
+                        aria-hidden="true"
+                        className="transition-transform duration-300 group-hover:translate-x-1.5"
+                      >
+                        →
+                      </span>
+                    </span>
+                  </Link>
+                </BlueprintFrame>
               </Reveal>
             </li>
           );
         })}
       </ul>
+      {groups.length > HOME_TOPIC_LIMIT ? (
+        <Reveal className="mt-10">
+          <Link
+            className="link-underline pb-1 font-sans text-sm font-medium text-brand-700 dark:text-brand-300"
+            params={{ locale }}
+            to="/$locale/docs"
+          >
+            {messages.home.sections.all(groups.length)} →
+          </Link>
+        </Reveal>
+      ) : null}
     </Container>
   );
 }

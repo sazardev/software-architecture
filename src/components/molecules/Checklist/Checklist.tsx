@@ -11,7 +11,7 @@ export function Checklist({ children, className }: ChecklistProps) {
   return (
     <div
       className={cn(
-        'my-8 rounded-2xl border border-neutral-200 bg-white p-6 text-[0.95em] shadow-soft dark:border-neutral-800 dark:bg-neutral-900/60 dark:shadow-none',
+        'my-8 border border-neutral-300 bg-white p-6 text-[0.95em] dark:border-neutral-700 dark:bg-neutral-900/60',
         className,
       )}
     >

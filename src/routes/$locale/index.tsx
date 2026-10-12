@@ -6,10 +6,16 @@ import {
   LatestDocs,
   PrinciplesBand,
   SectionPaths,
+  TagIndex,
   type HomeStats,
 } from '@/components/organisms';
 import { site } from '@/lib/config/site';
-import { getDocsByLocale, getDocsBySection, getLatestDocs } from '@/lib/content/registry';
+import {
+  getDocsByLocale,
+  getDocsBySection,
+  getLatestDocs,
+  getTopTags,
+} from '@/lib/content/registry';
 import { resolveLocaleParam } from '@/lib/i18n/locale-head';
 import { getMessages } from '@/lib/i18n/messages';
 import { buildPageHead } from '@/lib/seo/meta';
@@ -37,6 +43,7 @@ function HomePage() {
     articles: getDocsByLocale(locale).length,
     minutes: getDocsByLocale(locale).reduce((sum, doc) => sum + doc.readingMinutes, 0),
     sections: groups.length,
+    updatedAt: getLatestDocs(locale, 1)[0]?.updatedAt ?? '1970-01-01',
   };
 
   return (
@@ -44,6 +51,7 @@ function HomePage() {
       <HomeHero stats={stats} />
       <SectionPaths groups={groups} />
       <LatestDocs docs={getLatestDocs(locale, 4)} />
+      <TagIndex tags={getTopTags(locale, 14)} />
       <PrinciplesBand />
       <ClosingCta />
     </>

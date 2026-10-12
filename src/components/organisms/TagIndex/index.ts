@@ -1,0 +1,1 @@
+export { TagIndex } from './TagIndex';

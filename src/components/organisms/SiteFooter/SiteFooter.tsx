@@ -7,67 +7,84 @@ import { getSectionText, sections } from '@/lib/content/taxonomy';
 import { useLocale } from '@/lib/i18n/locale-context';
 import { useMessages } from '@/lib/i18n/use-messages';
 
+/**
+Temas listados en el pie; el resto queda tras el enlace "Todos los temas".
+*/
+const FOOTER_TOPIC_LIMIT = 6;
+
 const currentYear = new Date().getFullYear();
 
 const linkClass =
   'text-neutral-600 transition-colors hover:text-brand-700 dark:text-neutral-400 dark:hover:text-brand-300';
+
+const labelClass = 'font-mono text-[0.68rem] tracking-[0.18em] text-neutral-500 uppercase';
+
+const cellClass = 'space-y-4 p-6 sm:p-8';
 
 export function SiteFooter() {
   const locale = useLocale();
   const messages = useMessages();
 
   return (
-    <footer className="mt-24 border-t border-neutral-200 bg-neutral-100/60 dark:border-neutral-800 dark:bg-neutral-900/40">
-      <Container className="grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
-        <div className="max-w-sm space-y-4">
-          <p className="flex items-center gap-2.5 font-display text-xl font-medium">
-            <BrandMark className="h-8 w-8" />
-            {site.name}
-          </p>
-          <p className="font-serif text-base leading-relaxed text-neutral-600 dark:text-neutral-400">
-            {messages.site.description}
-          </p>
+    <footer className="mt-24 border-t border-neutral-200 dark:border-neutral-800">
+      <Container className="py-14">
+        <div className="grid divide-y divide-neutral-400 border border-neutral-400 bg-neutral-50 md:grid-cols-[1.4fr_1fr_1fr] md:divide-x md:divide-y-0 dark:divide-neutral-600 dark:border-neutral-600 dark:bg-neutral-950">
+          <div className={cellClass}>
+            <p className={labelClass}>{messages.blueprint.project}</p>
+            <p className="flex items-center gap-2.5 font-display text-xl font-medium">
+              <BrandMark className="h-8 w-8" />
+              {site.name}
+            </p>
+            <p className="max-w-sm font-serif text-base leading-relaxed text-neutral-600 dark:text-neutral-400">
+              {messages.site.description}
+            </p>
+          </div>
+          <nav aria-label={messages.footer.explore} className={`${cellClass} font-sans text-sm`}>
+            <p className={labelClass}>{messages.footer.explore}</p>
+            <ul className="space-y-2">
+              {navItems.map((item) => (
+                <li key={item.id}>
+                  <Link className={linkClass} params={{ locale }} to={item.to}>
+                    {messages.nav[item.id]}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label={messages.footer.sections} className={`${cellClass} font-sans text-sm`}>
+            <p className={labelClass}>{messages.footer.sections}</p>
+            <ul className="space-y-2">
+              {sections.slice(0, FOOTER_TOPIC_LIMIT).map((section) => (
+                <li key={section.id}>
+                  <Link
+                    className={linkClass}
+                    params={{ locale }}
+                    search={{ category: section.id }}
+                    to="/$locale/docs"
+                  >
+                    {getSectionText(section, locale).label}
+                  </Link>
+                </li>
+              ))}
+              {sections.length > FOOTER_TOPIC_LIMIT ? (
+                <li>
+                  <Link
+                    className="font-medium text-brand-700 dark:text-brand-300"
+                    params={{ locale }}
+                    to="/$locale/docs"
+                  >
+                    {messages.footer.allTopics} →
+                  </Link>
+                </li>
+              ) : null}
+            </ul>
+          </nav>
         </div>
-        <nav aria-label={messages.footer.explore} className="space-y-3 font-sans text-sm">
-          <p className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase">
-            {messages.footer.explore}
-          </p>
-          <ul className="space-y-2">
-            {navItems.map((item) => (
-              <li key={item.id}>
-                <Link className={linkClass} params={{ locale }} to={item.to}>
-                  {messages.nav[item.id]}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <nav aria-label={messages.footer.sections} className="space-y-3 font-sans text-sm">
-          <p className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase">
-            {messages.footer.sections}
-          </p>
-          <ul className="space-y-2">
-            {sections.map((section) => (
-              <li key={section.id}>
-                <Link
-                  className={linkClass}
-                  params={{ locale }}
-                  search={{ category: section.id }}
-                  to="/$locale/docs"
-                >
-                  {getSectionText(section, locale).label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </Container>
-      <div className="border-t border-neutral-200 dark:border-neutral-800">
-        <Container className="flex flex-col gap-1 py-5 font-sans text-xs text-neutral-500 sm:flex-row sm:justify-between">
+        <div className="mt-6 flex flex-col gap-1 font-mono text-[0.68rem] tracking-[0.12em] text-neutral-500 uppercase sm:flex-row sm:justify-between">
           <span>{messages.footer.rights(currentYear)}</span>
           <span>{messages.footer.note}</span>
-        </Container>
-      </div>
+        </div>
+      </Container>
     </footer>
   );
 }

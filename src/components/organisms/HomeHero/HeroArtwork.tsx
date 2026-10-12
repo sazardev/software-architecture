@@ -151,8 +151,42 @@ function Label({ layer }: Readonly<{ layer: Layer }>) {
 }
 
 /**
-Ilustración decorativa: capas isométricas con dependencias fluyendo hacia el dominio.
+Cota vertical izquierda con líneas de extensión: da escala de plano al conjunto.
 */
+function Dimensions() {
+  const top = layers[2]?.cy ?? 100;
+  const bottom = layers[0]?.cy ?? 400;
+  const mid = (top + bottom) / 2;
+
+  return (
+    <g
+      className="animate-fade stroke-neutral-500 dark:stroke-neutral-400"
+      fill="none"
+      strokeLinecap="round"
+      strokeWidth="1"
+      style={{ animationDelay: '1500ms' }}
+    >
+      <path d={`M40 ${top}V${bottom}`} />
+      {[top, mid, bottom].map((y) => (
+        <path d={`M34 ${y + 6}L46 ${y - 6}`} key={y} />
+      ))}
+      {[top, bottom].map((y) => (
+        <path d={`M48 ${y}H${CX - HALF_W - 6}`} key={y} strokeDasharray="3 4" />
+      ))}
+      <text
+        className="fill-neutral-500 stroke-none font-mono text-[11px] tracking-[0.16em] dark:fill-neutral-400"
+        textAnchor="middle"
+        transform={`rotate(-90 24 ${mid})`}
+        x="24"
+        y={mid}
+      >
+        1:50
+      </text>
+    </g>
+  );
+}
+
+// Ilustración decorativa: capas isométricas con dependencias fluyendo hacia el dominio.
 export function HeroArtwork({ label }: Readonly<{ label: string }>) {
   const [data, domain, ui] = layers;
 
@@ -167,6 +201,13 @@ export function HeroArtwork({ label }: Readonly<{ label: string }>) {
       role="img"
       viewBox="0 0 640 520"
     >
+      <path
+        className="stroke-neutral-400 dark:stroke-neutral-600"
+        d={`M${CX} 8V512`}
+        strokeDasharray="14 4 2 4"
+        strokeWidth="1"
+      />
+      <Dimensions />
       <g className="animate-float">
         <ellipse
           className="fill-neutral-900/8 dark:fill-black/30"

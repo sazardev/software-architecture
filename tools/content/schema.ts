@@ -6,6 +6,10 @@ const localizedTextSchema = z.object({
 });
 
 export const sectionSchema = z.object({
+  icon: z
+    .string()
+    .regex(/^[a-z]+$/)
+    .optional(),
   id: z.string().regex(/^[a-z][a-z0-9-]*$/),
   labels: z.record(z.string(), localizedTextSchema),
   order: z.number().int().positive(),

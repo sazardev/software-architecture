@@ -17,7 +17,7 @@ export const buttonVariants = cva(
         ghost:
           'text-neutral-700 hover:bg-neutral-200/70 dark:text-neutral-200 dark:hover:bg-neutral-800',
         primary:
-          'bg-neutral-900 text-neutral-50 shadow-soft hover:bg-brand-700 hover:shadow-lift dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-brand-300',
+          'bg-neutral-900 text-neutral-50 hover:bg-brand-700 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-brand-300',
         secondary:
           'border border-neutral-300 bg-neutral-50/60 text-neutral-900 hover:border-neutral-900 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-transparent dark:text-neutral-50 dark:hover:border-neutral-300',
       },

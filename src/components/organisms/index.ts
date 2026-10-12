@@ -9,3 +9,4 @@ export { SearchResults } from './SearchResults';
 export { SectionPaths } from './SectionPaths';
 export { SiteFooter } from './SiteFooter';
 export { SiteHeader } from './SiteHeader';
+export { TagIndex } from './TagIndex';
