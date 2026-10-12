@@ -13,7 +13,14 @@ import {
 
 describe('registro de contenido', () => {
   it('agrupa los documentos por sección en el idioma solicitado', () => {
-    const expectedSections = ['fundamentos', 'diseno', 'practicas', 'tendencias'];
+    const expectedSections = [
+      'fundamentos',
+      'diseno',
+      'practicas',
+      'tendencias',
+      'nube',
+      'decisiones',
+    ];
 
     expect(getDocsBySection('es').map((group) => group.section.id)).toEqual(expectedSections);
     expect(getDocsBySection('en').map((group) => group.section.id)).toEqual(expectedSections);

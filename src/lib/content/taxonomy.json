@@ -59,6 +59,36 @@
           "description": "Languages, platforms and industry shifts worth understanding before you decide."
         }
       }
+    },
+    {
+      "id": "nube",
+      "icon": "cloud",
+      "order": 5,
+      "labels": {
+        "es": {
+          "label": "Nube",
+          "description": "Masterclass para arquitectos: servicios, modelos de despliegue, híbrido, dependencia de proveedores, costos y resiliencia en la nube."
+        },
+        "en": {
+          "label": "Cloud",
+          "description": "Masterclass for architects: services, deployment models, hybrid, vendor dependency, cost and resilience in the cloud."
+        }
+      }
+    },
+    {
+      "id": "decisiones",
+      "icon": "compass",
+      "order": 6,
+      "labels": {
+        "es": {
+          "label": "Decisiones, procesos e IA",
+          "description": "Marcos para decidir, presentar ideas, mejorar flujos y programas, y controlar la IA en el trabajo de negocio y de ingeniería."
+        },
+        "en": {
+          "label": "Decisions, processes and AI",
+          "description": "Frameworks to decide, present ideas, improve flows and programs, and keep AI under control in business and engineering work."
+        }
+      }
     }
   ]
 }
