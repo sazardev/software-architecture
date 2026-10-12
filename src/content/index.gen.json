@@ -2,14 +2,17 @@
   "docs": [
     {
       "category": "fundamentos",
-      "description": "Cómo está organizado el sitio, cómo navegar los recursos y cómo crear tu primera página MDX.",
+      "description": "Guía de orientación: qué es este sitio, qué leer y en qué orden según tu perfil, un plan de cuatro semanas, cómo usar la búsqueda y cómo contribuir contenido.",
       "order": 1,
+      "publishedAt": "2026-10-10",
       "tags": [
         "guia",
-        "roadmap"
+        "roadmap",
+        "arquitectura",
+        "contribuir"
       ],
       "title": "Primeros pasos",
-      "updatedAt": "2026-10-11",
+      "updatedAt": "2026-10-12",
       "headings": [
         {
           "id": "primeros-pasos",
@@ -17,19 +20,74 @@
           "text": "Primeros pasos"
         },
         {
-          "id": "recorrido-recomendado",
+          "id": "qué-es-este-sitio-y-para-quién-es",
           "level": 2,
-          "text": "Recorrido recomendado"
+          "text": "Qué es este sitio y para quién es"
         },
         {
-          "id": "código-resaltado",
+          "id": "qué-entendemos-por-arquitectura",
           "level": 2,
-          "text": "Código resaltado"
+          "text": "Qué entendemos por arquitectura"
         },
         {
-          "id": "diagrama-mermaid",
+          "id": "mapa-de-contenidos",
           "level": 2,
-          "text": "Diagrama Mermaid"
+          "text": "Mapa de contenidos"
+        },
+        {
+          "id": "rutas-de-aprendizaje-según-tu-perfil",
+          "level": 2,
+          "text": "Rutas de aprendizaje según tu perfil"
+        },
+        {
+          "id": "si-estás-empezando-en-diseño",
+          "level": 3,
+          "text": "Si estás empezando en diseño"
+        },
+        {
+          "id": "si-lideras-un-equipo-técnico",
+          "level": 3,
+          "text": "Si lideras un equipo técnico"
+        },
+        {
+          "id": "si-ya-eres-arquitecto",
+          "level": 3,
+          "text": "Si ya eres arquitecto"
+        },
+        {
+          "id": "plan-de-cuatro-semanas",
+          "level": 2,
+          "text": "Plan de cuatro semanas"
+        },
+        {
+          "id": "cómo-sacar-partido-al-sitio",
+          "level": 2,
+          "text": "Cómo sacar partido al sitio"
+        },
+        {
+          "id": "vocabulario-esencial",
+          "level": 2,
+          "text": "Vocabulario esencial"
+        },
+        {
+          "id": "cómo-estudiar-para-que-se-quede",
+          "level": 2,
+          "text": "Cómo estudiar para que se quede"
+        },
+        {
+          "id": "contribuir-contenido",
+          "level": 2,
+          "text": "Contribuir contenido"
+        },
+        {
+          "id": "anatomía-de-un-documento",
+          "level": 3,
+          "text": "Anatomía de un documento"
+        },
+        {
+          "id": "flujo-de-trabajo",
+          "level": 3,
+          "text": "Flujo de trabajo"
         },
         {
           "id": "siguientes-pasos",
@@ -38,7 +96,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 1,
+      "readingMinutes": 10,
       "route": "/es/docs/getting-started",
       "slug": "getting-started"
     },
@@ -46,6 +104,7 @@
       "category": "fundamentos",
       "description": "Los cinco principios SOLID explicados con ejemplos concretos y enlaces para profundizar en cada uno.",
       "order": 2,
+      "publishedAt": "2026-10-10",
       "tags": [
         "solid",
         "diseno",
@@ -338,16 +397,305 @@
       "slug": "solid"
     },
     {
+      "category": "fundamentos",
+      "description": "Guía práctica de ADR: qué son, cuándo escribirlos, plantillas (Nygard, MADR, Y-statements), ciclo de vida, revisión en PR y uso con agentes de IA.",
+      "order": 3,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "adr",
+        "decisiones",
+        "documentacion",
+        "arquitectura"
+      ],
+      "title": "ADR: documenta decisiones de arquitectura",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "adr-documenta-decisiones-de-arquitectura",
+          "level": 1,
+          "text": "ADR: documenta decisiones de arquitectura"
+        },
+        {
+          "id": "qué-es-un-adr-y-qué-problema-resuelve",
+          "level": 2,
+          "text": "Qué es un ADR y qué problema resuelve"
+        },
+        {
+          "id": "cuándo-escribir-uno-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo escribir uno (y cuándo no)"
+        },
+        {
+          "id": "anatomía-de-un-adr",
+          "level": 2,
+          "text": "Anatomía de un ADR"
+        },
+        {
+          "id": "plantilla-de-nygard",
+          "level": 3,
+          "text": "Plantilla de Nygard"
+        },
+        {
+          "id": "madr",
+          "level": 3,
+          "text": "MADR"
+        },
+        {
+          "id": "y-statements",
+          "level": 3,
+          "text": "Y-statements"
+        },
+        {
+          "id": "cuál-elegir",
+          "level": 3,
+          "text": "Cuál elegir"
+        },
+        {
+          "id": "un-ejemplo-completo",
+          "level": 2,
+          "text": "Un ejemplo completo"
+        },
+        {
+          "id": "estados-y-ciclo-de-vida",
+          "level": 2,
+          "text": "Estados y ciclo de vida"
+        },
+        {
+          "id": "dónde-guardarlos-y-cómo-revisarlos",
+          "level": 2,
+          "text": "Dónde guardarlos y cómo revisarlos"
+        },
+        {
+          "id": "adr-y-agentes-de-ia",
+          "level": 2,
+          "text": "ADR y agentes de IA"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist-para-tu-próximo-adr",
+          "level": 2,
+          "text": "Checklist para tu próximo ADR"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/adr",
+      "slug": "adr"
+    },
+    {
+      "category": "fundamentos",
+      "description": "Guía para arquitectos: tipos de cohesión y acoplamiento, ocultación de información, módulos profundos, Deméter, inestabilidad y connascence, con herramientas.",
+      "order": 4,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "acoplamiento",
+        "cohesion",
+        "modularidad",
+        "connascence",
+        "diseno"
+      ],
+      "title": "Acoplamiento y cohesión: la base del diseño",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "acoplamiento-y-cohesión-la-base-del-diseño",
+          "level": 1,
+          "text": "Acoplamiento y cohesión: la base del diseño"
+        },
+        {
+          "id": "cohesión-qué-debe-ir-junto",
+          "level": 2,
+          "text": "Cohesión: qué debe ir junto"
+        },
+        {
+          "id": "acoplamiento-cuánto-sabe-una-parte-de-otra",
+          "level": 2,
+          "text": "Acoplamiento: cuánto sabe una parte de otra"
+        },
+        {
+          "id": "ocultación-de-información-el-origen-de-todo",
+          "level": 2,
+          "text": "Ocultación de información: el origen de todo"
+        },
+        {
+          "id": "módulos-profundos-y-superficiales",
+          "level": 2,
+          "text": "Módulos profundos y superficiales"
+        },
+        {
+          "id": "la-ley-de-deméter",
+          "level": 2,
+          "text": "La Ley de Deméter"
+        },
+        {
+          "id": "inestabilidad-y-dependencias-estables",
+          "level": 2,
+          "text": "Inestabilidad y dependencias estables"
+        },
+        {
+          "id": "acoplamiento-a-nivel-de-arquitectura",
+          "level": 2,
+          "text": "Acoplamiento a nivel de arquitectura"
+        },
+        {
+          "id": "connascence-un-vocabulario-para-medir",
+          "level": 2,
+          "text": "Connascence: un vocabulario para medir"
+        },
+        {
+          "id": "cómo-detectarlo-y-vigilarlo",
+          "level": 2,
+          "text": "Cómo detectarlo y vigilarlo"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 17,
+      "route": "/es/docs/acoplamiento-cohesion",
+      "slug": "acoplamiento-cohesion"
+    },
+    {
+      "category": "fundamentos",
+      "description": "Cómo elegir los atributos de calidad que mandan, escribirlos como escenarios medibles, analizar trade-offs con un ATAM ligero y vigilarlos con SLOs.",
+      "order": 5,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "atributos-de-calidad",
+        "trade-offs",
+        "atam",
+        "slo",
+        "escenarios"
+      ],
+      "title": "Atributos de calidad y trade-offs",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "atributos-de-calidad-y-trade-offs",
+          "level": 1,
+          "text": "Atributos de calidad y trade-offs"
+        },
+        {
+          "id": "funcionalidad-frente-a-calidad",
+          "level": 2,
+          "text": "Funcionalidad frente a calidad"
+        },
+        {
+          "id": "por-qué-no-se-puede-maximizar-todo",
+          "level": 2,
+          "text": "Por qué no se puede maximizar todo"
+        },
+        {
+          "id": "elegir-los-tres-a-cinco-que-mandan",
+          "level": 2,
+          "text": "Elegir los tres a cinco que mandan"
+        },
+        {
+          "id": "escribir-escenarios-de-calidad",
+          "level": 2,
+          "text": "Escribir escenarios de calidad"
+        },
+        {
+          "id": "el-árbol-de-utilidad",
+          "level": 2,
+          "text": "El árbol de utilidad"
+        },
+        {
+          "id": "atam-ligero-para-equipos",
+          "level": 2,
+          "text": "ATAM ligero para equipos"
+        },
+        {
+          "id": "qué-se-registra",
+          "level": 3,
+          "text": "Qué se registra"
+        },
+        {
+          "id": "tácticas-habituales-por-atributo",
+          "level": 2,
+          "text": "Tácticas habituales por atributo"
+        },
+        {
+          "id": "hacerlos-medibles-sli-slo-y-presupuesto-de-error",
+          "level": 2,
+          "text": "Hacerlos medibles: SLI, SLO y presupuesto de error"
+        },
+        {
+          "id": "vigilarlos-con-fitness-functions",
+          "level": 2,
+          "text": "Vigilarlos con fitness functions"
+        },
+        {
+          "id": "dejar-constancia-el-trade-off-en-un-adr",
+          "level": 2,
+          "text": "Dejar constancia: el trade-off en un ADR"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist-para-tu-próxima-decisión",
+          "level": 2,
+          "text": "Checklist para tu próxima decisión"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 19,
+      "route": "/es/docs/atributos-de-calidad",
+      "slug": "atributos-de-calidad"
+    },
+    {
       "category": "diseno",
-      "description": "Cómo documentar arquitectura con los cuatro niveles del modelo C4 y diagramas que permanecen vivos.",
+      "description": "Aprende los cuatro niveles del modelo C4 con un ejemplo completo: contexto, contenedores, componentes y código, más reglas de notación y errores típicos.",
       "order": 1,
+      "publishedAt": "2026-10-10",
       "tags": [
         "c4",
         "diagramas",
-        "documentacion"
+        "documentacion",
+        "arquitectura"
       ],
-      "title": "Modelo C4",
-      "updatedAt": "2026-10-10",
+      "title": "Modelo C4: documenta tu arquitectura por niveles",
+      "updatedAt": "2026-10-12",
       "headings": [
         {
           "id": "modelo-c4",
@@ -355,85 +703,487 @@
           "text": "Modelo C4"
         },
         {
-          "id": "niveles",
+          "id": "por-qué-existe-el-modelo-c4",
           "level": 2,
-          "text": "Niveles"
+          "text": "Por qué existe el modelo C4"
         },
         {
-          "id": "contexto",
+          "id": "los-cuatro-bloques-de-construcción",
           "level": 2,
-          "text": "Contexto"
+          "text": "Los cuatro bloques de construcción"
         },
         {
-          "id": "contenedores",
+          "id": "el-ejemplo-que-usaremos-tienda-aurora",
           "level": 2,
-          "text": "Contenedores"
+          "text": "El ejemplo que usaremos: Tienda Aurora"
         },
         {
-          "id": "componentes",
+          "id": "nivel-1-contexto",
           "level": 2,
-          "text": "Componentes"
+          "text": "Nivel 1: Contexto"
         },
         {
-          "id": "código",
+          "id": "nivel-2-contenedores",
           "level": 2,
-          "text": "Código"
+          "text": "Nivel 2: Contenedores"
+        },
+        {
+          "id": "nivel-3-componentes",
+          "level": 2,
+          "text": "Nivel 3: Componentes"
+        },
+        {
+          "id": "nivel-4-código",
+          "level": 2,
+          "text": "Nivel 4: Código"
+        },
+        {
+          "id": "resumen-de-los-cuatro-niveles",
+          "level": 2,
+          "text": "Resumen de los cuatro niveles"
+        },
+        {
+          "id": "diagramas-complementarios",
+          "level": 2,
+          "text": "Diagramas complementarios"
+        },
+        {
+          "id": "reglas-de-notación",
+          "level": 2,
+          "text": "Reglas de notación"
+        },
+        {
+          "id": "diagramas-como-código",
+          "level": 2,
+          "text": "Diagramas como código"
+        },
+        {
+          "id": "cómo-adoptarlo-en-tu-equipo",
+          "level": 2,
+          "text": "Cómo adoptarlo en tu equipo"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "ejercicio-guiado",
+          "level": 2,
+          "text": "Ejercicio guiado"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "para-llevarte",
+          "level": 2,
+          "text": "Para llevarte"
         }
       ],
       "locale": "es",
-      "readingMinutes": 1,
+      "readingMinutes": 13,
       "route": "/es/docs/c4-model",
       "slug": "c4-model"
     },
     {
       "category": "diseno",
-      "description": "Cómo incrustar mapas interactivos con MapLibre GL en la documentación y conectarlos con tus diagramas de arquitectura.",
+      "description": "Guía de DDD para arquitectos: subdominios, lenguaje ubicuo, bounded contexts, agregados, Event Storming y las herramientas para sostener el diseño.",
       "order": 2,
+      "publishedAt": "2026-10-12",
       "tags": [
-        "mapas",
-        "maplibre",
-        "componentes"
+        "ddd",
+        "dominio",
+        "bounded-context",
+        "event-storming",
+        "modelado"
       ],
-      "title": "Mapa interactivo",
-      "updatedAt": "2026-10-10",
+      "title": "Domain-Driven Design: diseña desde el dominio",
+      "updatedAt": "2026-10-12",
       "headings": [
         {
-          "id": "mapa-interactivo",
+          "id": "domain-driven-design-diseña-desde-el-dominio",
           "level": 1,
-          "text": "Mapa interactivo"
+          "text": "Domain-Driven Design: diseña desde el dominio"
         },
         {
-          "id": "ejemplo-incrustado",
+          "id": "qué-problema-resuelve-y-cuándo-no-usarlo",
           "level": 2,
-          "text": "Ejemplo incrustado"
+          "text": "Qué problema resuelve y cuándo no usarlo"
         },
         {
-          "id": "cómo-usarlo",
+          "id": "diseño-estratégico",
           "level": 2,
-          "text": "Cómo usarlo"
+          "text": "Diseño estratégico"
+        },
+        {
+          "id": "dominio-y-subdominios",
+          "level": 3,
+          "text": "Dominio y subdominios"
+        },
+        {
+          "id": "lenguaje-ubicuo",
+          "level": 3,
+          "text": "Lenguaje ubicuo"
+        },
+        {
+          "id": "bounded-context",
+          "level": 3,
+          "text": "Bounded context"
+        },
+        {
+          "id": "mapa-de-contextos",
+          "level": 3,
+          "text": "Mapa de contextos"
+        },
+        {
+          "id": "diseño-táctico",
+          "level": 2,
+          "text": "Diseño táctico"
+        },
+        {
+          "id": "agregados-la-pieza-que-más-se-hace-mal",
+          "level": 3,
+          "text": "Agregados: la pieza que más se hace mal"
+        },
+        {
+          "id": "cómo-se-nombra-cada-bloque",
+          "level": 3,
+          "text": "Cómo se nombra cada bloque"
+        },
+        {
+          "id": "el-agregado-pedido-de-un-vistazo",
+          "level": 3,
+          "text": "El agregado Pedido de un vistazo"
+        },
+        {
+          "id": "el-servicio-de-aplicación-y-la-transacción",
+          "level": 3,
+          "text": "El servicio de aplicación y la transacción"
+        },
+        {
+          "id": "descubrir-el-dominio-con-event-storming",
+          "level": 2,
+          "text": "Descubrir el dominio con Event Storming"
+        },
+        {
+          "id": "de-los-bounded-contexts-a-módulos-y-contenedores-c4",
+          "level": 2,
+          "text": "De los bounded contexts a módulos y contenedores C4"
+        },
+        {
+          "id": "ddd-y-agentes-de-ia",
+          "level": 2,
+          "text": "DDD y agentes de IA"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist-para-tu-próximo-modelo",
+          "level": 2,
+          "text": "Checklist para tu próximo modelo"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
         }
       ],
       "locale": "es",
-      "readingMinutes": 1,
-      "route": "/es/docs/interactive-map",
-      "slug": "interactive-map"
+      "readingMinutes": 20,
+      "route": "/es/docs/domain-driven-design",
+      "slug": "domain-driven-design"
+    },
+    {
+      "category": "diseno",
+      "description": "Guía para arquitectos: puertos y adaptadores, regla de dependencia, cómo organizar y nombrar las piezas, cómo probarla y protegerla con reglas ejecutables.",
+      "order": 3,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "hexagonal",
+        "puertos-adaptadores",
+        "inversion-dependencias",
+        "testing",
+        "typescript"
+      ],
+      "title": "Arquitectura hexagonal: puertos y adaptadores",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "arquitectura-hexagonal-puertos-y-adaptadores",
+          "level": 1,
+          "text": "Arquitectura hexagonal: puertos y adaptadores"
+        },
+        {
+          "id": "el-problema-que-resuelve",
+          "level": 2,
+          "text": "El problema que resuelve"
+        },
+        {
+          "id": "la-idea-puertos-y-adaptadores",
+          "level": 2,
+          "text": "La idea: puertos y adaptadores"
+        },
+        {
+          "id": "la-regla-de-dependencia",
+          "level": 2,
+          "text": "La regla de dependencia"
+        },
+        {
+          "id": "hexagonal-cebolla-y-limpia-qué-comparten",
+          "level": 2,
+          "text": "Hexagonal, cebolla y limpia: qué comparten"
+        },
+        {
+          "id": "cómo-se-organiza-y-se-nombra",
+          "level": 2,
+          "text": "Cómo se organiza y se nombra"
+        },
+        {
+          "id": "estructura-de-carpetas",
+          "level": 3,
+          "text": "Estructura de carpetas"
+        },
+        {
+          "id": "convenciones-de-nombres",
+          "level": 3,
+          "text": "Convenciones de nombres"
+        },
+        {
+          "id": "los-puertos-y-el-caso-de-uso-solo-las-firmas",
+          "level": 3,
+          "text": "Los puertos y el caso de uso: solo las firmas"
+        },
+        {
+          "id": "dónde-vive-cada-responsabilidad",
+          "level": 3,
+          "text": "Dónde vive cada responsabilidad"
+        },
+        {
+          "id": "cómo-se-prueba",
+          "level": 2,
+          "text": "Cómo se prueba"
+        },
+        {
+          "id": "protégela-con-reglas-ejecutables",
+          "level": 2,
+          "text": "Protégela con reglas ejecutables"
+        },
+        {
+          "id": "dependency-cruiser",
+          "level": 3,
+          "text": "dependency-cruiser"
+        },
+        {
+          "id": "eslint-con-import-xno-restricted-paths",
+          "level": 3,
+          "text": "ESLint con import-x/no-restricted-paths"
+        },
+        {
+          "id": "archunitts-y-archunit",
+          "level": 3,
+          "text": "ArchUnitTS y ArchUnit"
+        },
+        {
+          "id": "en-un-sistema-que-ya-existe",
+          "level": 3,
+          "text": "En un sistema que ya existe"
+        },
+        {
+          "id": "cuándo-no-usarla-y-qué-cuesta",
+          "level": 2,
+          "text": "Cuándo no usarla y qué cuesta"
+        },
+        {
+          "id": "relación-con-ddd-y-con-agentes-de-ia",
+          "level": 2,
+          "text": "Relación con DDD y con agentes de IA"
+        },
+        {
+          "id": "herramientas-para-sostenerla",
+          "level": 2,
+          "text": "Herramientas para sostenerla"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 17,
+      "route": "/es/docs/arquitectura-hexagonal",
+      "slug": "arquitectura-hexagonal"
+    },
+    {
+      "category": "diseno",
+      "description": "Compara Mermaid, Structurizr, D2, PlantUML y Graphviz con un mismo sistema, y aprende a versionar, validar en CI y mantener vivos tus diagramas.",
+      "order": 4,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "diagramas-como-codigo",
+        "mermaid",
+        "structurizr",
+        "d2"
+      ],
+      "title": "Diagramas como código: documenta con versiones",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "diagramas-como-código-documenta-con-versiones",
+          "level": 1,
+          "text": "Diagramas como código: documenta con versiones"
+        },
+        {
+          "id": "por-qué-escribir-diagramas-como-texto",
+          "level": 2,
+          "text": "Por qué escribir diagramas como texto"
+        },
+        {
+          "id": "principios-de-un-buen-diagrama",
+          "level": 2,
+          "text": "Principios de un buen diagrama"
+        },
+        {
+          "id": "dibujar-el-diagrama-o-describir-el-modelo",
+          "level": 2,
+          "text": "Dibujar el diagrama o describir el modelo"
+        },
+        {
+          "id": "el-mismo-sistema-en-cinco-herramientas",
+          "level": 2,
+          "text": "El mismo sistema en cinco herramientas"
+        },
+        {
+          "id": "mermaid",
+          "level": 3,
+          "text": "Mermaid"
+        },
+        {
+          "id": "structurizr-dsl",
+          "level": 3,
+          "text": "Structurizr DSL"
+        },
+        {
+          "id": "d2",
+          "level": 3,
+          "text": "D2"
+        },
+        {
+          "id": "plantuml-con-c4-plantuml",
+          "level": 3,
+          "text": "PlantUML con C4-PlantUML"
+        },
+        {
+          "id": "graphviz-dot",
+          "level": 3,
+          "text": "Graphviz (DOT)"
+        },
+        {
+          "id": "comparativa-honesta",
+          "level": 2,
+          "text": "Comparativa honesta"
+        },
+        {
+          "id": "cómo-elegir",
+          "level": 2,
+          "text": "Cómo elegir"
+        },
+        {
+          "id": "intégralos-en-tu-flujo",
+          "level": 2,
+          "text": "Intégralos en tu flujo"
+        },
+        {
+          "id": "junto-al-código-y-a-los-adr",
+          "level": 3,
+          "text": "Junto al código y a los ADR"
+        },
+        {
+          "id": "renderizar-y-publicar",
+          "level": 3,
+          "text": "Renderizar y publicar"
+        },
+        {
+          "id": "validar-en-ci",
+          "level": 3,
+          "text": "Validar en CI"
+        },
+        {
+          "id": "mantenlos-vivos",
+          "level": 2,
+          "text": "Mantenlos vivos"
+        },
+        {
+          "id": "diagramas-y-agentes-de-ia",
+          "level": 2,
+          "text": "Diagramas y agentes de IA"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist-para-tus-diagramas",
+          "level": 2,
+          "text": "Checklist para tus diagramas"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 15,
+      "route": "/es/docs/diagramas-como-codigo",
+      "slug": "diagramas-como-codigo"
     },
     {
       "category": "practicas",
-      "description": "Reglas prácticas de legibilidad, nombres claros, funciones pequeñas y refactoring continuo en equipos grandes.",
+      "description": "Guía práctica de código limpio: nombres, funciones, errores, complejidad, tests, refactoring y deuda técnica, con ejemplos y checklist de revisión.",
       "order": 1,
+      "publishedAt": "2026-10-10",
       "tags": [
         "clean-code",
         "calidad",
-        "refactoring"
+        "refactoring",
+        "testing",
+        "deuda-tecnica"
       ],
       "title": "Clean code para arquitectos",
-      "updatedAt": "2026-10-10",
+      "updatedAt": "2026-10-12",
       "headings": [
         {
           "id": "clean-code-para-arquitectos",
           "level": 1,
           "text": "Clean code para arquitectos"
+        },
+        {
+          "id": "qué-es-y-qué-no-es-clean-code",
+          "level": 2,
+          "text": "Qué es (y qué no es) clean code"
         },
         {
           "id": "nombres-que-explican",
@@ -446,26 +1196,568 @@
           "text": "Funciones pequeñas"
         },
         {
+          "id": "comentarios-explica-el-porqué",
+          "level": 2,
+          "text": "Comentarios: explica el porqué"
+        },
+        {
+          "id": "formato-y-estructura",
+          "level": 2,
+          "text": "Formato y estructura"
+        },
+        {
+          "id": "manejo-de-errores",
+          "level": 2,
+          "text": "Manejo de errores"
+        },
+        {
+          "id": "complejidad-cuánto-cuesta-entender",
+          "level": 2,
+          "text": "Complejidad: cuánto cuesta entender"
+        },
+        {
+          "id": "duplicación-y-abstracción-prematura",
+          "level": 2,
+          "text": "Duplicación y abstracción prematura"
+        },
+        {
+          "id": "tests-como-parte-del-código-limpio",
+          "level": 2,
+          "text": "Tests como parte del código limpio"
+        },
+        {
+          "id": "catálogo-de-olores-de-código",
+          "level": 2,
+          "text": "Catálogo de olores de código"
+        },
+        {
           "id": "refactoring-continuo",
           "level": 2,
           "text": "Refactoring continuo"
+        },
+        {
+          "id": "deuda-técnica",
+          "level": 2,
+          "text": "Deuda técnica"
+        },
+        {
+          "id": "del-código-a-la-arquitectura",
+          "level": 2,
+          "text": "Del código a la arquitectura"
+        },
+        {
+          "id": "clean-code-en-la-era-de-la-ia",
+          "level": 2,
+          "text": "Clean code en la era de la IA"
+        },
+        {
+          "id": "revisión-de-código",
+          "level": 2,
+          "text": "Revisión de código"
+        },
+        {
+          "id": "errores-frecuentes-al-aplicarlo",
+          "level": 2,
+          "text": "Errores frecuentes al aplicarlo"
+        },
+        {
+          "id": "ejercicio-guiado",
+          "level": 2,
+          "text": "Ejercicio guiado"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "para-llevarte",
+          "level": 2,
+          "text": "Para llevarte"
         }
       ],
       "locale": "es",
-      "readingMinutes": 1,
+      "readingMinutes": 16,
       "route": "/es/docs/clean-code",
       "slug": "clean-code"
     },
     {
-      "category": "fundamentos",
-      "description": "How the site is organized, how to navigate the resources and how to create your first MDX page.",
+      "category": "practicas",
+      "description": "Guía para arquitectos: cómo diseñar el harness de Claude Code con memoria, hooks, permisos, subagentes y workflows dinámicos, al día a octubre de 2026.",
+      "order": 2,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "claude-code",
+        "harness-engineering",
+        "agentes",
+        "hooks",
+        "ia"
+      ],
+      "title": "Harness engineering con Claude Code",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "harness-engineering-con-claude-code",
+          "level": 1,
+          "text": "Harness engineering con Claude Code"
+        },
+        {
+          "id": "qué-es-un-harness",
+          "level": 2,
+          "text": "Qué es un harness"
+        },
+        {
+          "id": "guías-y-sensores",
+          "level": 2,
+          "text": "Guías y sensores"
+        },
+        {
+          "id": "el-mapa-de-claude-code",
+          "level": 2,
+          "text": "El mapa de Claude Code"
+        },
+        {
+          "id": "capa-1-memoria-claudemd-rules-y-auto-memory",
+          "level": 2,
+          "text": "Capa 1: memoria (CLAUDE.md, rules y auto memory)"
+        },
+        {
+          "id": "capa-2-hooks-el-enforcement-determinista",
+          "level": 2,
+          "text": "Capa 2: hooks, el enforcement determinista"
+        },
+        {
+          "id": "bloquear-el-patrón-pretooluse",
+          "level": 3,
+          "text": "Bloquear: el patrón PreToolUse"
+        },
+        {
+          "id": "sentir-posttooluse-y-stop",
+          "level": 3,
+          "text": "Sentir: PostToolUse y Stop"
+        },
+        {
+          "id": "capa-3-permisos-y-sandbox",
+          "level": 2,
+          "text": "Capa 3: permisos y sandbox"
+        },
+        {
+          "id": "modos-de-permiso",
+          "level": 3,
+          "text": "Modos de permiso"
+        },
+        {
+          "id": "sandbox",
+          "level": 3,
+          "text": "Sandbox"
+        },
+        {
+          "id": "capa-4-skills-subagentes-y-plugins",
+          "level": 2,
+          "text": "Capa 4: skills, subagentes y plugins"
+        },
+        {
+          "id": "skills-conocimiento-bajo-demanda",
+          "level": 3,
+          "text": "Skills: conocimiento bajo demanda"
+        },
+        {
+          "id": "subagentes-aislar-contexto",
+          "level": 3,
+          "text": "Subagentes: aislar contexto"
+        },
+        {
+          "id": "plugins-distribuir-el-arnés",
+          "level": 3,
+          "text": "Plugins: distribuir el arnés"
+        },
+        {
+          "id": "capa-5-workflows-dinámicos",
+          "level": 2,
+          "text": "Capa 5: workflows dinámicos"
+        },
+        {
+          "id": "lo-más-reciente-octubre-de-2026",
+          "level": 2,
+          "text": "Lo más reciente (octubre de 2026)"
+        },
+        {
+          "id": "un-ejemplo-real-el-harness-de-este-repositorio",
+          "level": 2,
+          "text": "Un ejemplo real: el harness de este repositorio"
+        },
+        {
+          "id": "cómo-construirlo-sin-sobreingeniería",
+          "level": 2,
+          "text": "Cómo construirlo sin sobreingeniería"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist-para-tu-arnés",
+          "level": 2,
+          "text": "Checklist para tu arnés"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 21,
+      "route": "/es/docs/harness-engineering-claude-code",
+      "slug": "harness-engineering-claude-code"
+    },
+    {
+      "category": "practicas",
+      "description": "Cómo convertir las características de tu arquitectura en comprobaciones automáticas: tipos, herramientas por lenguaje y cómo adoptarlas en sistemas legados.",
+      "order": 3,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "fitness-functions",
+        "arquitectura-evolutiva",
+        "ci",
+        "gobernanza",
+        "ia"
+      ],
+      "title": "Fitness functions y arquitectura evolutiva",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "fitness-functions-y-arquitectura-evolutiva",
+          "level": 1,
+          "text": "Fitness functions y arquitectura evolutiva"
+        },
+        {
+          "id": "de-dónde-viene-el-concepto",
+          "level": 2,
+          "text": "De dónde viene el concepto"
+        },
+        {
+          "id": "qué-es-una-fitness-function-y-qué-no",
+          "level": 2,
+          "text": "Qué es una fitness function y qué no"
+        },
+        {
+          "id": "cómo-se-clasifican",
+          "level": 2,
+          "text": "Cómo se clasifican"
+        },
+        {
+          "id": "de-característica-a-comprobación",
+          "level": 2,
+          "text": "De característica a comprobación"
+        },
+        {
+          "id": "ejemplos-con-herramientas-reales",
+          "level": 2,
+          "text": "Ejemplos con herramientas reales"
+        },
+        {
+          "id": "reglas-de-capas-y-dependencias",
+          "level": 3,
+          "text": "Reglas de capas y dependencias"
+        },
+        {
+          "id": "ciclos-de-dependencias",
+          "level": 3,
+          "text": "Ciclos de dependencias"
+        },
+        {
+          "id": "tamaño-y-complejidad",
+          "level": 3,
+          "text": "Tamaño y complejidad"
+        },
+        {
+          "id": "rendimiento-y-tamaño-del-bundle",
+          "level": 3,
+          "text": "Rendimiento y tamaño del bundle"
+        },
+        {
+          "id": "pruebas-contratos-y-slos",
+          "level": 3,
+          "text": "Pruebas, contratos y SLOs"
+        },
+        {
+          "id": "un-ejemplo-real-las-capas-de-este-repositorio",
+          "level": 2,
+          "text": "Un ejemplo real: las capas de este repositorio"
+        },
+        {
+          "id": "dónde-ejecutarlas",
+          "level": 2,
+          "text": "Dónde ejecutarlas"
+        },
+        {
+          "id": "introducirlas-en-un-sistema-legado",
+          "level": 2,
+          "text": "Introducirlas en un sistema legado"
+        },
+        {
+          "id": "fitness-functions-adr-y-agentes-de-ia",
+          "level": 2,
+          "text": "Fitness functions, ADR y agentes de IA"
+        },
+        {
+          "id": "cada-decisión-puede-llevar-su-comprobación",
+          "level": 3,
+          "text": "Cada decisión puede llevar su comprobación"
+        },
+        {
+          "id": "son-los-sensores-computacionales-del-arnés",
+          "level": 3,
+          "text": "Son los sensores computacionales del arnés"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist-para-tu-primera-fitness-function",
+          "level": 2,
+          "text": "Checklist para tu primera fitness function"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 15,
+      "route": "/es/docs/fitness-functions",
+      "slug": "fitness-functions"
+    },
+    {
+      "category": "tendencias",
+      "description": "Guía para arquitectos: qué papel juegan Python, TypeScript, Rust, Go, Mojo y Zig en la era de la IA, y cómo elegir entre ellos.",
       "order": 1,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "lenguajes",
+        "ia",
+        "rust",
+        "mojo",
+        "zig"
+      ],
+      "title": "Lenguajes y frameworks en la era de la IA",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "lenguajes-y-frameworks-en-la-era-de-la-ia",
+          "level": 1,
+          "text": "Lenguajes y frameworks en la era de la IA"
+        },
+        {
+          "id": "qué-cambia-con-la-ia",
+          "level": 2,
+          "text": "Qué cambia con la IA"
+        },
+        {
+          "id": "mapa-de-capas",
+          "level": 2,
+          "text": "Mapa de capas"
+        },
+        {
+          "id": "los-consolidados-python-y-typescript",
+          "level": 2,
+          "text": "Los consolidados: Python y TypeScript"
+        },
+        {
+          "id": "rust-seguridad-de-memoria-sin-recolector",
+          "level": 2,
+          "text": "Rust: seguridad de memoria sin recolector"
+        },
+        {
+          "id": "go-simplicidad-operativa-para-agentes-y-plataformas",
+          "level": 2,
+          "text": "Go: simplicidad operativa para agentes y plataformas"
+        },
+        {
+          "id": "mojo-python-para-el-hardware-de-ia",
+          "level": 2,
+          "text": "Mojo: Python para el hardware de IA"
+        },
+        {
+          "id": "zig-el-control-de-c-sin-sorpresas-ocultas",
+          "level": 2,
+          "text": "Zig: el control de C, sin sorpresas ocultas"
+        },
+        {
+          "id": "en-el-radar",
+          "level": 2,
+          "text": "En el radar"
+        },
+        {
+          "id": "comparativa-rápida",
+          "level": 2,
+          "text": "Comparativa rápida"
+        },
+        {
+          "id": "cómo-decidir",
+          "level": 2,
+          "text": "Cómo decidir"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist-para-tu-próximo-adr",
+          "level": 2,
+          "text": "Checklist para tu próximo ADR"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 11,
+      "route": "/es/docs/lenguajes-era-ia",
+      "slug": "lenguajes-era-ia"
+    },
+    {
+      "category": "tendencias",
+      "description": "Guía para arquitectos: cuándo usar workflows o agentes, qué componentes necesita una aplicación con LLM, cómo asegurarla y qué trade-offs asumir.",
+      "order": 2,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "llm",
+        "agentes",
+        "mcp",
+        "seguridad",
+        "evals"
+      ],
+      "title": "Arquitectura de aplicaciones con LLM y agentes",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "arquitectura-de-aplicaciones-con-llm-y-agentes",
+          "level": 1,
+          "text": "Arquitectura de aplicaciones con LLM y agentes"
+        },
+        {
+          "id": "workflows-y-agentes-el-espectro",
+          "level": 2,
+          "text": "Workflows y agentes: el espectro"
+        },
+        {
+          "id": "cuándo-no-usar-un-agente",
+          "level": 2,
+          "text": "Cuándo no usar un agente"
+        },
+        {
+          "id": "componentes-de-la-arquitectura",
+          "level": 2,
+          "text": "Componentes de la arquitectura"
+        },
+        {
+          "id": "capa-de-modelos",
+          "level": 3,
+          "text": "Capa de modelos"
+        },
+        {
+          "id": "contexto-y-memoria",
+          "level": 3,
+          "text": "Contexto y memoria"
+        },
+        {
+          "id": "rag-decisiones-no-receta",
+          "level": 3,
+          "text": "RAG: decisiones, no receta"
+        },
+        {
+          "id": "herramientas-y-mcp",
+          "level": 3,
+          "text": "Herramientas y MCP"
+        },
+        {
+          "id": "orquestación",
+          "level": 3,
+          "text": "Orquestación"
+        },
+        {
+          "id": "guardrails-y-salidas-estructuradas",
+          "level": 3,
+          "text": "Guardrails y salidas estructuradas"
+        },
+        {
+          "id": "observabilidad",
+          "level": 3,
+          "text": "Observabilidad"
+        },
+        {
+          "id": "evaluaciones-evals",
+          "level": 3,
+          "text": "Evaluaciones (evals)"
+        },
+        {
+          "id": "trade-offs-latencia-coste-y-no-determinismo",
+          "level": 2,
+          "text": "Trade-offs: latencia, coste y no determinismo"
+        },
+        {
+          "id": "caché-de-prompts",
+          "level": 3,
+          "text": "Caché de prompts"
+        },
+        {
+          "id": "elegir-el-modelo-por-tarea",
+          "level": 3,
+          "text": "Elegir el modelo por tarea"
+        },
+        {
+          "id": "fallos-parciales-idempotencia-y-reintentos",
+          "level": 3,
+          "text": "Fallos parciales, idempotencia y reintentos"
+        },
+        {
+          "id": "seguridad",
+          "level": 2,
+          "text": "Seguridad"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist-para-tu-aplicación-con-llm",
+          "level": 2,
+          "text": "Checklist para tu aplicación con LLM"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 19,
+      "route": "/es/docs/arquitectura-agentes-llm",
+      "slug": "arquitectura-agentes-llm"
+    },
+    {
+      "category": "fundamentos",
+      "description": "An orientation guide: what this site is, what to read and in what order for your profile, a four-week plan, how to use search and how to contribute content.",
+      "order": 1,
+      "publishedAt": "2026-10-10",
       "tags": [
         "guide",
-        "roadmap"
+        "roadmap",
+        "architecture",
+        "contributing"
       ],
       "title": "Getting started",
-      "updatedAt": "2026-10-11",
+      "updatedAt": "2026-10-12",
       "headings": [
         {
           "id": "getting-started",
@@ -473,19 +1765,74 @@
           "text": "Getting started"
         },
         {
-          "id": "recommended-path",
+          "id": "what-this-site-is-and-who-it-is-for",
           "level": 2,
-          "text": "Recommended path"
+          "text": "What this site is and who it is for"
         },
         {
-          "id": "highlighted-code",
+          "id": "what-we-mean-by-architecture",
           "level": 2,
-          "text": "Highlighted code"
+          "text": "What we mean by architecture"
         },
         {
-          "id": "mermaid-diagram",
+          "id": "content-map",
           "level": 2,
-          "text": "Mermaid diagram"
+          "text": "Content map"
+        },
+        {
+          "id": "learning-paths-by-profile",
+          "level": 2,
+          "text": "Learning paths by profile"
+        },
+        {
+          "id": "if-you-are-starting-out-in-design",
+          "level": 3,
+          "text": "If you are starting out in design"
+        },
+        {
+          "id": "if-you-lead-a-technical-team",
+          "level": 3,
+          "text": "If you lead a technical team"
+        },
+        {
+          "id": "if-you-are-already-an-architect",
+          "level": 3,
+          "text": "If you are already an architect"
+        },
+        {
+          "id": "four-week-plan",
+          "level": 2,
+          "text": "Four-week plan"
+        },
+        {
+          "id": "getting-the-most-out-of-the-site",
+          "level": 2,
+          "text": "Getting the most out of the site"
+        },
+        {
+          "id": "essential-vocabulary",
+          "level": 2,
+          "text": "Essential vocabulary"
+        },
+        {
+          "id": "how-to-study-so-it-sticks",
+          "level": 2,
+          "text": "How to study so it sticks"
+        },
+        {
+          "id": "contributing-content",
+          "level": 2,
+          "text": "Contributing content"
+        },
+        {
+          "id": "anatomy-of-a-document",
+          "level": 3,
+          "text": "Anatomy of a document"
+        },
+        {
+          "id": "workflow",
+          "level": 3,
+          "text": "Workflow"
         },
         {
           "id": "next-steps",
@@ -494,7 +1841,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 1,
+      "readingMinutes": 10,
       "route": "/en/docs/getting-started",
       "slug": "getting-started"
     },
@@ -502,6 +1849,7 @@
       "category": "fundamentos",
       "description": "The five SOLID principles explained with concrete examples and links to go deeper on each one.",
       "order": 2,
+      "publishedAt": "2026-10-10",
       "tags": [
         "solid",
         "design",
@@ -794,16 +2142,305 @@
       "slug": "solid"
     },
     {
+      "category": "fundamentos",
+      "description": "A practical guide to ADRs: what they are, when to write them, templates (Nygard, MADR, Y-statements), lifecycle, PR review and working with AI agents.",
+      "order": 3,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "adr",
+        "decisions",
+        "documentation",
+        "architecture"
+      ],
+      "title": "ADRs: document architecture decisions",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "adrs-document-architecture-decisions",
+          "level": 1,
+          "text": "ADRs: document architecture decisions"
+        },
+        {
+          "id": "what-an-adr-is-and-what-problem-it-solves",
+          "level": 2,
+          "text": "What an ADR is and what problem it solves"
+        },
+        {
+          "id": "when-to-write-one-and-when-not",
+          "level": 2,
+          "text": "When to write one (and when not)"
+        },
+        {
+          "id": "anatomy-of-an-adr",
+          "level": 2,
+          "text": "Anatomy of an ADR"
+        },
+        {
+          "id": "nygards-template",
+          "level": 3,
+          "text": "Nygard's template"
+        },
+        {
+          "id": "madr",
+          "level": 3,
+          "text": "MADR"
+        },
+        {
+          "id": "y-statements",
+          "level": 3,
+          "text": "Y-statements"
+        },
+        {
+          "id": "which-one-to-choose",
+          "level": 3,
+          "text": "Which one to choose"
+        },
+        {
+          "id": "a-complete-example",
+          "level": 2,
+          "text": "A complete example"
+        },
+        {
+          "id": "states-and-lifecycle",
+          "level": 2,
+          "text": "States and lifecycle"
+        },
+        {
+          "id": "where-to-store-them-and-how-to-review-them",
+          "level": 2,
+          "text": "Where to store them and how to review them"
+        },
+        {
+          "id": "adrs-and-ai-agents",
+          "level": 2,
+          "text": "ADRs and AI agents"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist-for-your-next-adr",
+          "level": 2,
+          "text": "Checklist for your next ADR"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 13,
+      "route": "/en/docs/adr",
+      "slug": "adr"
+    },
+    {
+      "category": "fundamentos",
+      "description": "A guide for architects: types of cohesion and coupling, information hiding, deep modules, Demeter, instability and connascence, with tooling.",
+      "order": 4,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "coupling",
+        "cohesion",
+        "modularity",
+        "connascence",
+        "design"
+      ],
+      "title": "Coupling and cohesion: the foundation of design",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "coupling-and-cohesion-the-foundation-of-design",
+          "level": 1,
+          "text": "Coupling and cohesion: the foundation of design"
+        },
+        {
+          "id": "cohesion-what-should-go-together",
+          "level": 2,
+          "text": "Cohesion: what should go together"
+        },
+        {
+          "id": "coupling-how-much-one-part-knows-about-another",
+          "level": 2,
+          "text": "Coupling: how much one part knows about another"
+        },
+        {
+          "id": "information-hiding-where-it-all-starts",
+          "level": 2,
+          "text": "Information hiding: where it all starts"
+        },
+        {
+          "id": "deep-and-shallow-modules",
+          "level": 2,
+          "text": "Deep and shallow modules"
+        },
+        {
+          "id": "the-law-of-demeter",
+          "level": 2,
+          "text": "The Law of Demeter"
+        },
+        {
+          "id": "instability-and-stable-dependencies",
+          "level": 2,
+          "text": "Instability and stable dependencies"
+        },
+        {
+          "id": "coupling-at-the-architecture-level",
+          "level": 2,
+          "text": "Coupling at the architecture level"
+        },
+        {
+          "id": "connascence-a-vocabulary-for-measuring",
+          "level": 2,
+          "text": "Connascence: a vocabulary for measuring"
+        },
+        {
+          "id": "how-to-detect-and-enforce-it",
+          "level": 2,
+          "text": "How to detect and enforce it"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 17,
+      "route": "/en/docs/acoplamiento-cohesion",
+      "slug": "acoplamiento-cohesion"
+    },
+    {
+      "category": "fundamentos",
+      "description": "How to choose the quality attributes that drive your architecture, write them as measurable scenarios, weigh trade-offs with a light ATAM and track SLOs.",
+      "order": 5,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "quality-attributes",
+        "trade-offs",
+        "atam",
+        "slo",
+        "scenarios"
+      ],
+      "title": "Quality attributes and trade-offs",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "quality-attributes-and-trade-offs",
+          "level": 1,
+          "text": "Quality attributes and trade-offs"
+        },
+        {
+          "id": "functionality-versus-quality",
+          "level": 2,
+          "text": "Functionality versus quality"
+        },
+        {
+          "id": "why-you-cannot-maximize-everything",
+          "level": 2,
+          "text": "Why you cannot maximize everything"
+        },
+        {
+          "id": "choosing-the-three-to-five-that-drive-the-design",
+          "level": 2,
+          "text": "Choosing the three to five that drive the design"
+        },
+        {
+          "id": "writing-quality-attribute-scenarios",
+          "level": 2,
+          "text": "Writing quality attribute scenarios"
+        },
+        {
+          "id": "the-utility-tree",
+          "level": 2,
+          "text": "The utility tree"
+        },
+        {
+          "id": "a-light-atam-for-teams",
+          "level": 2,
+          "text": "A light ATAM for teams"
+        },
+        {
+          "id": "what-gets-recorded",
+          "level": 3,
+          "text": "What gets recorded"
+        },
+        {
+          "id": "common-tactics-per-attribute",
+          "level": 2,
+          "text": "Common tactics per attribute"
+        },
+        {
+          "id": "making-them-measurable-sli-slo-and-error-budget",
+          "level": 2,
+          "text": "Making them measurable: SLI, SLO and error budget"
+        },
+        {
+          "id": "guarding-them-with-fitness-functions",
+          "level": 2,
+          "text": "Guarding them with fitness functions"
+        },
+        {
+          "id": "keeping-a-record-the-trade-off-in-an-adr",
+          "level": 2,
+          "text": "Keeping a record: the trade-off in an ADR"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist-for-your-next-decision",
+          "level": 2,
+          "text": "Checklist for your next decision"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 19,
+      "route": "/en/docs/atributos-de-calidad",
+      "slug": "atributos-de-calidad"
+    },
+    {
       "category": "diseno",
-      "description": "How to document architecture with the four levels of the C4 model and diagrams that stay alive.",
+      "description": "Learn the four levels of the C4 model with a complete example: context, containers, components and code, plus notation rules and common mistakes.",
       "order": 1,
+      "publishedAt": "2026-10-10",
       "tags": [
         "c4",
         "diagrams",
-        "documentation"
+        "documentation",
+        "architecture"
       ],
-      "title": "C4 model",
-      "updatedAt": "2026-10-10",
+      "title": "C4 model: document your architecture by levels",
+      "updatedAt": "2026-10-12",
       "headings": [
         {
           "id": "c4-model",
@@ -811,85 +2448,487 @@
           "text": "C4 model"
         },
         {
-          "id": "levels",
+          "id": "why-the-c4-model-exists",
           "level": 2,
-          "text": "Levels"
+          "text": "Why the C4 model exists"
         },
         {
-          "id": "context",
+          "id": "the-four-building-blocks",
           "level": 2,
-          "text": "Context"
+          "text": "The four building blocks"
         },
         {
-          "id": "containers",
+          "id": "the-example-we-will-use-aurora-store",
           "level": 2,
-          "text": "Containers"
+          "text": "The example we will use: Aurora Store"
         },
         {
-          "id": "components",
+          "id": "level-1-context",
           "level": 2,
-          "text": "Components"
+          "text": "Level 1: Context"
         },
         {
-          "id": "code",
+          "id": "level-2-containers",
           "level": 2,
-          "text": "Code"
+          "text": "Level 2: Containers"
+        },
+        {
+          "id": "level-3-components",
+          "level": 2,
+          "text": "Level 3: Components"
+        },
+        {
+          "id": "level-4-code",
+          "level": 2,
+          "text": "Level 4: Code"
+        },
+        {
+          "id": "summary-of-the-four-levels",
+          "level": 2,
+          "text": "Summary of the four levels"
+        },
+        {
+          "id": "supplementary-diagrams",
+          "level": 2,
+          "text": "Supplementary diagrams"
+        },
+        {
+          "id": "notation-rules",
+          "level": 2,
+          "text": "Notation rules"
+        },
+        {
+          "id": "diagrams-as-code",
+          "level": 2,
+          "text": "Diagrams as code"
+        },
+        {
+          "id": "how-to-adopt-it-in-your-team",
+          "level": 2,
+          "text": "How to adopt it in your team"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "guided-exercise",
+          "level": 2,
+          "text": "Guided exercise"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "takeaways",
+          "level": 2,
+          "text": "Takeaways"
         }
       ],
       "locale": "en",
-      "readingMinutes": 1,
+      "readingMinutes": 13,
       "route": "/en/docs/c4-model",
       "slug": "c4-model"
     },
     {
       "category": "diseno",
-      "description": "How to embed interactive maps with MapLibre GL in the documentation and connect them with your architecture diagrams.",
+      "description": "A DDD guide for architects: subdomains, ubiquitous language, bounded contexts, aggregates, Event Storming and the tools that keep the design honest.",
       "order": 2,
+      "publishedAt": "2026-10-12",
       "tags": [
-        "maps",
-        "maplibre",
-        "components"
+        "ddd",
+        "domain",
+        "bounded-context",
+        "event-storming",
+        "modeling"
       ],
-      "title": "Interactive map",
-      "updatedAt": "2026-10-10",
+      "title": "Domain-Driven Design: design from the domain",
+      "updatedAt": "2026-10-12",
       "headings": [
         {
-          "id": "interactive-map",
+          "id": "domain-driven-design-design-from-the-domain",
           "level": 1,
-          "text": "Interactive map"
+          "text": "Domain-Driven Design: design from the domain"
         },
         {
-          "id": "embedded-example",
+          "id": "what-problem-it-solves-and-when-not-to-use-it",
           "level": 2,
-          "text": "Embedded example"
+          "text": "What problem it solves, and when not to use it"
         },
         {
-          "id": "how-to-use-it",
+          "id": "strategic-design",
           "level": 2,
-          "text": "How to use it"
+          "text": "Strategic design"
+        },
+        {
+          "id": "domain-and-subdomains",
+          "level": 3,
+          "text": "Domain and subdomains"
+        },
+        {
+          "id": "ubiquitous-language",
+          "level": 3,
+          "text": "Ubiquitous language"
+        },
+        {
+          "id": "bounded-context",
+          "level": 3,
+          "text": "Bounded context"
+        },
+        {
+          "id": "context-map",
+          "level": 3,
+          "text": "Context map"
+        },
+        {
+          "id": "tactical-design",
+          "level": 2,
+          "text": "Tactical design"
+        },
+        {
+          "id": "aggregates-the-piece-most-often-done-wrong",
+          "level": 3,
+          "text": "Aggregates: the piece most often done wrong"
+        },
+        {
+          "id": "how-each-building-block-is-named",
+          "level": 3,
+          "text": "How each building block is named"
+        },
+        {
+          "id": "the-order-aggregate-at-a-glance",
+          "level": 3,
+          "text": "The Order aggregate at a glance"
+        },
+        {
+          "id": "the-application-service-and-the-transaction",
+          "level": 3,
+          "text": "The application service and the transaction"
+        },
+        {
+          "id": "discovering-the-domain-with-event-storming",
+          "level": 2,
+          "text": "Discovering the domain with Event Storming"
+        },
+        {
+          "id": "from-bounded-contexts-to-modules-and-c4-containers",
+          "level": 2,
+          "text": "From bounded contexts to modules and C4 containers"
+        },
+        {
+          "id": "ddd-and-ai-agents",
+          "level": 2,
+          "text": "DDD and AI agents"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist-for-your-next-model",
+          "level": 2,
+          "text": "Checklist for your next model"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
         }
       ],
       "locale": "en",
-      "readingMinutes": 1,
-      "route": "/en/docs/interactive-map",
-      "slug": "interactive-map"
+      "readingMinutes": 19,
+      "route": "/en/docs/domain-driven-design",
+      "slug": "domain-driven-design"
+    },
+    {
+      "category": "diseno",
+      "description": "A guide for architects: ports and adapters, the dependency rule, how to organize and name the pieces, how to test it and protect it with executable rules.",
+      "order": 3,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "hexagonal",
+        "ports-adapters",
+        "dependency-inversion",
+        "testing",
+        "typescript"
+      ],
+      "title": "Hexagonal architecture: ports and adapters",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "hexagonal-architecture-ports-and-adapters",
+          "level": 1,
+          "text": "Hexagonal architecture: ports and adapters"
+        },
+        {
+          "id": "the-problem-it-solves",
+          "level": 2,
+          "text": "The problem it solves"
+        },
+        {
+          "id": "the-idea-ports-and-adapters",
+          "level": 2,
+          "text": "The idea: ports and adapters"
+        },
+        {
+          "id": "the-dependency-rule",
+          "level": 2,
+          "text": "The dependency rule"
+        },
+        {
+          "id": "hexagonal-onion-and-clean-what-they-share",
+          "level": 2,
+          "text": "Hexagonal, onion and clean: what they share"
+        },
+        {
+          "id": "how-it-is-organized-and-named",
+          "level": 2,
+          "text": "How it is organized and named"
+        },
+        {
+          "id": "folder-structure",
+          "level": 3,
+          "text": "Folder structure"
+        },
+        {
+          "id": "naming-conventions",
+          "level": 3,
+          "text": "Naming conventions"
+        },
+        {
+          "id": "ports-and-the-use-case-signatures-only",
+          "level": 3,
+          "text": "Ports and the use case: signatures only"
+        },
+        {
+          "id": "where-each-responsibility-lives",
+          "level": 3,
+          "text": "Where each responsibility lives"
+        },
+        {
+          "id": "how-to-test-it",
+          "level": 2,
+          "text": "How to test it"
+        },
+        {
+          "id": "protect-it-with-executable-rules",
+          "level": 2,
+          "text": "Protect it with executable rules"
+        },
+        {
+          "id": "dependency-cruiser",
+          "level": 3,
+          "text": "dependency-cruiser"
+        },
+        {
+          "id": "eslint-with-import-xno-restricted-paths",
+          "level": 3,
+          "text": "ESLint with import-x/no-restricted-paths"
+        },
+        {
+          "id": "archunitts-and-archunit",
+          "level": 3,
+          "text": "ArchUnitTS and ArchUnit"
+        },
+        {
+          "id": "in-a-system-that-already-exists",
+          "level": 3,
+          "text": "In a system that already exists"
+        },
+        {
+          "id": "when-not-to-use-it-and-what-it-costs",
+          "level": 2,
+          "text": "When not to use it and what it costs"
+        },
+        {
+          "id": "relationship-with-ddd-and-with-ai-agents",
+          "level": 2,
+          "text": "Relationship with DDD and with AI agents"
+        },
+        {
+          "id": "tools-to-sustain-it",
+          "level": 2,
+          "text": "Tools to sustain it"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 17,
+      "route": "/en/docs/arquitectura-hexagonal",
+      "slug": "arquitectura-hexagonal"
+    },
+    {
+      "category": "diseno",
+      "description": "Compare Mermaid, Structurizr, D2, PlantUML and Graphviz on one system, and learn to version, validate in CI and keep your architecture diagrams alive.",
+      "order": 4,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "diagrams-as-code",
+        "mermaid",
+        "structurizr",
+        "d2"
+      ],
+      "title": "Diagrams as code: document with version control",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "diagrams-as-code-document-with-version-control",
+          "level": 1,
+          "text": "Diagrams as code: document with version control"
+        },
+        {
+          "id": "why-write-diagrams-as-text",
+          "level": 2,
+          "text": "Why write diagrams as text"
+        },
+        {
+          "id": "principles-of-a-good-diagram",
+          "level": 2,
+          "text": "Principles of a good diagram"
+        },
+        {
+          "id": "drawing-the-diagram-or-describing-the-model",
+          "level": 2,
+          "text": "Drawing the diagram or describing the model"
+        },
+        {
+          "id": "the-same-system-in-five-tools",
+          "level": 2,
+          "text": "The same system in five tools"
+        },
+        {
+          "id": "mermaid",
+          "level": 3,
+          "text": "Mermaid"
+        },
+        {
+          "id": "structurizr-dsl",
+          "level": 3,
+          "text": "Structurizr DSL"
+        },
+        {
+          "id": "d2",
+          "level": 3,
+          "text": "D2"
+        },
+        {
+          "id": "plantuml-with-c4-plantuml",
+          "level": 3,
+          "text": "PlantUML with C4-PlantUML"
+        },
+        {
+          "id": "graphviz-dot",
+          "level": 3,
+          "text": "Graphviz (DOT)"
+        },
+        {
+          "id": "an-honest-comparison",
+          "level": 2,
+          "text": "An honest comparison"
+        },
+        {
+          "id": "how-to-choose",
+          "level": 2,
+          "text": "How to choose"
+        },
+        {
+          "id": "integrate-them-into-your-workflow",
+          "level": 2,
+          "text": "Integrate them into your workflow"
+        },
+        {
+          "id": "next-to-the-code-and-the-adrs",
+          "level": 3,
+          "text": "Next to the code and the ADRs"
+        },
+        {
+          "id": "rendering-and-publishing",
+          "level": 3,
+          "text": "Rendering and publishing"
+        },
+        {
+          "id": "validating-in-ci",
+          "level": 3,
+          "text": "Validating in CI"
+        },
+        {
+          "id": "keep-them-alive",
+          "level": 2,
+          "text": "Keep them alive"
+        },
+        {
+          "id": "diagrams-and-ai-agents",
+          "level": 2,
+          "text": "Diagrams and AI agents"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist-for-your-diagrams",
+          "level": 2,
+          "text": "Checklist for your diagrams"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 15,
+      "route": "/en/docs/diagramas-como-codigo",
+      "slug": "diagramas-como-codigo"
     },
     {
       "category": "practicas",
-      "description": "Practical rules for readability, clear names, small functions and continuous refactoring in large teams.",
+      "description": "A practical clean code guide: names, functions, errors, complexity, tests, refactoring and technical debt, with before/after examples and a review checklist.",
       "order": 1,
+      "publishedAt": "2026-10-10",
       "tags": [
         "clean-code",
         "quality",
-        "refactoring"
+        "refactoring",
+        "testing",
+        "technical-debt"
       ],
       "title": "Clean code for architects",
-      "updatedAt": "2026-10-10",
+      "updatedAt": "2026-10-12",
       "headings": [
         {
           "id": "clean-code-for-architects",
           "level": 1,
           "text": "Clean code for architects"
+        },
+        {
+          "id": "what-clean-code-is-and-is-not",
+          "level": 2,
+          "text": "What clean code is (and is not)"
         },
         {
           "id": "names-that-explain",
@@ -902,15 +2941,554 @@
           "text": "Small functions"
         },
         {
+          "id": "comments-explain-the-why",
+          "level": 2,
+          "text": "Comments: explain the why"
+        },
+        {
+          "id": "formatting-and-structure",
+          "level": 2,
+          "text": "Formatting and structure"
+        },
+        {
+          "id": "error-handling",
+          "level": 2,
+          "text": "Error handling"
+        },
+        {
+          "id": "complexity-how-hard-it-is-to-understand",
+          "level": 2,
+          "text": "Complexity: how hard it is to understand"
+        },
+        {
+          "id": "duplication-and-premature-abstraction",
+          "level": 2,
+          "text": "Duplication and premature abstraction"
+        },
+        {
+          "id": "tests-as-part-of-clean-code",
+          "level": 2,
+          "text": "Tests as part of clean code"
+        },
+        {
+          "id": "catalog-of-code-smells",
+          "level": 2,
+          "text": "Catalog of code smells"
+        },
+        {
           "id": "continuous-refactoring",
           "level": 2,
           "text": "Continuous refactoring"
+        },
+        {
+          "id": "technical-debt",
+          "level": 2,
+          "text": "Technical debt"
+        },
+        {
+          "id": "from-code-to-architecture",
+          "level": 2,
+          "text": "From code to architecture"
+        },
+        {
+          "id": "clean-code-in-the-ai-era",
+          "level": 2,
+          "text": "Clean code in the AI era"
+        },
+        {
+          "id": "code-review",
+          "level": 2,
+          "text": "Code review"
+        },
+        {
+          "id": "common-mistakes-when-applying-it",
+          "level": 2,
+          "text": "Common mistakes when applying it"
+        },
+        {
+          "id": "guided-exercise",
+          "level": 2,
+          "text": "Guided exercise"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "takeaways",
+          "level": 2,
+          "text": "Takeaways"
         }
       ],
       "locale": "en",
-      "readingMinutes": 1,
+      "readingMinutes": 16,
       "route": "/en/docs/clean-code",
       "slug": "clean-code"
+    },
+    {
+      "category": "practicas",
+      "description": "A guide for architects: designing the Claude Code harness with memory, hooks, permissions, subagents and dynamic workflows, current as of October 2026.",
+      "order": 2,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "claude-code",
+        "harness-engineering",
+        "agents",
+        "hooks",
+        "ai"
+      ],
+      "title": "Harness engineering with Claude Code",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "harness-engineering-with-claude-code",
+          "level": 1,
+          "text": "Harness engineering with Claude Code"
+        },
+        {
+          "id": "what-a-harness-is",
+          "level": 2,
+          "text": "What a harness is"
+        },
+        {
+          "id": "guides-and-sensors",
+          "level": 2,
+          "text": "Guides and sensors"
+        },
+        {
+          "id": "the-claude-code-map",
+          "level": 2,
+          "text": "The Claude Code map"
+        },
+        {
+          "id": "layer-1-memory-claudemd-rules-and-auto-memory",
+          "level": 2,
+          "text": "Layer 1: memory (CLAUDE.md, rules and auto memory)"
+        },
+        {
+          "id": "layer-2-hooks-deterministic-enforcement",
+          "level": 2,
+          "text": "Layer 2: hooks, deterministic enforcement"
+        },
+        {
+          "id": "blocking-the-pretooluse-pattern",
+          "level": 3,
+          "text": "Blocking: the PreToolUse pattern"
+        },
+        {
+          "id": "sensing-posttooluse-and-stop",
+          "level": 3,
+          "text": "Sensing: PostToolUse and Stop"
+        },
+        {
+          "id": "layer-3-permissions-and-sandbox",
+          "level": 2,
+          "text": "Layer 3: permissions and sandbox"
+        },
+        {
+          "id": "permission-modes",
+          "level": 3,
+          "text": "Permission modes"
+        },
+        {
+          "id": "sandbox",
+          "level": 3,
+          "text": "Sandbox"
+        },
+        {
+          "id": "layer-4-skills-subagents-and-plugins",
+          "level": 2,
+          "text": "Layer 4: skills, subagents and plugins"
+        },
+        {
+          "id": "skills-on-demand-knowledge",
+          "level": 3,
+          "text": "Skills: on-demand knowledge"
+        },
+        {
+          "id": "subagents-isolating-context",
+          "level": 3,
+          "text": "Subagents: isolating context"
+        },
+        {
+          "id": "plugins-distributing-the-harness",
+          "level": 3,
+          "text": "Plugins: distributing the harness"
+        },
+        {
+          "id": "layer-5-dynamic-workflows",
+          "level": 2,
+          "text": "Layer 5: dynamic workflows"
+        },
+        {
+          "id": "the-latest-october-2026",
+          "level": 2,
+          "text": "The latest (October 2026)"
+        },
+        {
+          "id": "a-real-example-this-repositorys-harness",
+          "level": 2,
+          "text": "A real example: this repository's harness"
+        },
+        {
+          "id": "how-to-build-it-without-over-engineering",
+          "level": 2,
+          "text": "How to build it without over-engineering"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist-for-your-harness",
+          "level": 2,
+          "text": "Checklist for your harness"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 21,
+      "route": "/en/docs/harness-engineering-claude-code",
+      "slug": "harness-engineering-claude-code"
+    },
+    {
+      "category": "practicas",
+      "description": "How to turn your architecture's characteristics into automated checks: types, tools per language and how to adopt them in legacy systems.",
+      "order": 3,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "fitness-functions",
+        "evolutionary-architecture",
+        "ci",
+        "governance",
+        "ai"
+      ],
+      "title": "Fitness functions and evolutionary architecture",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "fitness-functions-and-evolutionary-architecture",
+          "level": 1,
+          "text": "Fitness functions and evolutionary architecture"
+        },
+        {
+          "id": "where-the-concept-comes-from",
+          "level": 2,
+          "text": "Where the concept comes from"
+        },
+        {
+          "id": "what-a-fitness-function-is-and-is-not",
+          "level": 2,
+          "text": "What a fitness function is and is not"
+        },
+        {
+          "id": "how-they-are-classified",
+          "level": 2,
+          "text": "How they are classified"
+        },
+        {
+          "id": "from-characteristic-to-check",
+          "level": 2,
+          "text": "From characteristic to check"
+        },
+        {
+          "id": "examples-with-real-tools",
+          "level": 2,
+          "text": "Examples with real tools"
+        },
+        {
+          "id": "layer-and-dependency-rules",
+          "level": 3,
+          "text": "Layer and dependency rules"
+        },
+        {
+          "id": "dependency-cycles",
+          "level": 3,
+          "text": "Dependency cycles"
+        },
+        {
+          "id": "size-and-complexity",
+          "level": 3,
+          "text": "Size and complexity"
+        },
+        {
+          "id": "performance-and-bundle-size",
+          "level": 3,
+          "text": "Performance and bundle size"
+        },
+        {
+          "id": "tests-contracts-and-slos",
+          "level": 3,
+          "text": "Tests, contracts and SLOs"
+        },
+        {
+          "id": "a-real-example-this-repositorys-layers",
+          "level": 2,
+          "text": "A real example: this repository's layers"
+        },
+        {
+          "id": "where-to-run-them",
+          "level": 2,
+          "text": "Where to run them"
+        },
+        {
+          "id": "introducing-them-in-a-legacy-system",
+          "level": 2,
+          "text": "Introducing them in a legacy system"
+        },
+        {
+          "id": "fitness-functions-adrs-and-ai-agents",
+          "level": 2,
+          "text": "Fitness functions, ADRs and AI agents"
+        },
+        {
+          "id": "every-decision-can-carry-its-check",
+          "level": 3,
+          "text": "Every decision can carry its check"
+        },
+        {
+          "id": "they-are-the-harnesss-computational-sensors",
+          "level": 3,
+          "text": "They are the harness's computational sensors"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist-for-your-first-fitness-function",
+          "level": 2,
+          "text": "Checklist for your first fitness function"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 14,
+      "route": "/en/docs/fitness-functions",
+      "slug": "fitness-functions"
+    },
+    {
+      "category": "tendencias",
+      "description": "A guide for architects: the role of Python, TypeScript, Rust, Go, Mojo and Zig in the AI era, and how to choose between them.",
+      "order": 1,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "languages",
+        "ai",
+        "rust",
+        "mojo",
+        "zig"
+      ],
+      "title": "Programming languages in the AI era",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "programming-languages-in-the-ai-era",
+          "level": 1,
+          "text": "Programming languages in the AI era"
+        },
+        {
+          "id": "what-ai-changes",
+          "level": 2,
+          "text": "What AI changes"
+        },
+        {
+          "id": "map-of-layers",
+          "level": 2,
+          "text": "Map of layers"
+        },
+        {
+          "id": "the-established-ones-python-and-typescript",
+          "level": 2,
+          "text": "The established ones: Python and TypeScript"
+        },
+        {
+          "id": "rust-memory-safety-without-a-garbage-collector",
+          "level": 2,
+          "text": "Rust: memory safety without a garbage collector"
+        },
+        {
+          "id": "go-operational-simplicity-for-agents-and-platforms",
+          "level": 2,
+          "text": "Go: operational simplicity for agents and platforms"
+        },
+        {
+          "id": "mojo-python-for-ai-hardware",
+          "level": 2,
+          "text": "Mojo: Python for AI hardware"
+        },
+        {
+          "id": "zig-c-level-control-no-hidden-surprises",
+          "level": 2,
+          "text": "Zig: C-level control, no hidden surprises"
+        },
+        {
+          "id": "on-the-radar",
+          "level": 2,
+          "text": "On the radar"
+        },
+        {
+          "id": "quick-comparison",
+          "level": 2,
+          "text": "Quick comparison"
+        },
+        {
+          "id": "how-to-decide",
+          "level": 2,
+          "text": "How to decide"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist-for-your-next-adr",
+          "level": 2,
+          "text": "Checklist for your next ADR"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 10,
+      "route": "/en/docs/lenguajes-era-ia",
+      "slug": "lenguajes-era-ia"
+    },
+    {
+      "category": "tendencias",
+      "description": "A guide for architects: when to use workflows or agents, which components an LLM application needs, how to secure it and which trade-offs to accept.",
+      "order": 2,
+      "publishedAt": "2026-10-12",
+      "tags": [
+        "llm",
+        "agents",
+        "mcp",
+        "security",
+        "evals"
+      ],
+      "title": "Architecture of LLM and agent applications",
+      "updatedAt": "2026-10-12",
+      "headings": [
+        {
+          "id": "architecture-of-llm-and-agent-applications",
+          "level": 1,
+          "text": "Architecture of LLM and agent applications"
+        },
+        {
+          "id": "workflows-and-agents-the-spectrum",
+          "level": 2,
+          "text": "Workflows and agents: the spectrum"
+        },
+        {
+          "id": "when-not-to-use-an-agent",
+          "level": 2,
+          "text": "When not to use an agent"
+        },
+        {
+          "id": "architecture-components",
+          "level": 2,
+          "text": "Architecture components"
+        },
+        {
+          "id": "the-model-layer",
+          "level": 3,
+          "text": "The model layer"
+        },
+        {
+          "id": "context-and-memory",
+          "level": 3,
+          "text": "Context and memory"
+        },
+        {
+          "id": "rag-decisions-not-a-recipe",
+          "level": 3,
+          "text": "RAG: decisions, not a recipe"
+        },
+        {
+          "id": "tools-and-mcp",
+          "level": 3,
+          "text": "Tools and MCP"
+        },
+        {
+          "id": "orchestration",
+          "level": 3,
+          "text": "Orchestration"
+        },
+        {
+          "id": "guardrails-and-structured-outputs",
+          "level": 3,
+          "text": "Guardrails and structured outputs"
+        },
+        {
+          "id": "observability",
+          "level": 3,
+          "text": "Observability"
+        },
+        {
+          "id": "evaluations-evals",
+          "level": 3,
+          "text": "Evaluations (evals)"
+        },
+        {
+          "id": "trade-offs-latency-cost-and-non-determinism",
+          "level": 2,
+          "text": "Trade-offs: latency, cost and non-determinism"
+        },
+        {
+          "id": "prompt-caching",
+          "level": 3,
+          "text": "Prompt caching"
+        },
+        {
+          "id": "choosing-the-model-per-task",
+          "level": 3,
+          "text": "Choosing the model per task"
+        },
+        {
+          "id": "partial-failures-idempotency-and-retries",
+          "level": 3,
+          "text": "Partial failures, idempotency and retries"
+        },
+        {
+          "id": "security",
+          "level": 2,
+          "text": "Security"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist-for-your-llm-application",
+          "level": 2,
+          "text": "Checklist for your LLM application"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 17,
+      "route": "/en/docs/arquitectura-agentes-llm",
+      "slug": "arquitectura-agentes-llm"
     }
   ]
 }

@@ -1,46 +1,549 @@
 ---
 title: Clean code para arquitectos
-description: Reglas prácticas de legibilidad, nombres claros, funciones pequeñas y refactoring continuo en equipos grandes.
+description: 'Guía práctica de código limpio: nombres, funciones, errores, complejidad, tests, refactoring y deuda técnica, con ejemplos y checklist de revisión.'
 category: practicas
 tags:
   - clean-code
   - calidad
   - refactoring
+  - testing
+  - deuda-tecnica
 order: 1
-updatedAt: 2026-10-10
+publishedAt: 2026-10-10
+updatedAt: 2026-10-12
 ---
 
 # Clean code para arquitectos
 
-La arquitectura empieza en el código: si el día a día es caótico, ningún diagrama lo
-salva. Estas reglas dialogan con los [principios SOLID](/docs/solid).
+La arquitectura no se decide solo en las pizarras: se decide cada día, en cada nombre que
+eliges, en cada función que escribes y en cada atajo que aceptas «por esta vez». Los
+diagramas del [modelo C4](/docs/c4-model) terminan donde empieza el código, y es en el código
+donde la arquitectura se mantiene o se erosiona. Un sistema con una arquitectura brillante y
+un código caótico se degrada en meses.
+
+Esta guía recoge las prácticas de código limpio que más impacto tienen en equipos reales, con
+ejemplos de **antes y después**, criterios para saber cuándo aplicarlas (y cuándo no) y una
+checklist para revisiones. Dialoga con los [principios SOLID](/docs/solid): SOLID habla de
+cómo se relacionan los módulos; clean code habla de cómo se lee y se cambia cada uno.
+
+Los ejemplos están en TypeScript, pero las ideas son independientes del lenguaje.
+
+## Qué es (y qué no es) clean code
+
+**Código limpio es código que otra persona puede entender y cambiar con seguridad, sin
+pedirte explicaciones.** Esa persona incluye a tu yo de dentro de seis meses y a los agentes
+de IA que trabajan sobre tu repositorio.
+
+No es una cuestión de gusto ni de estética. Es economía: los equipos pasan mucho más tiempo
+**leyendo** código que escribiéndolo. Robert C. Martin lo estima en una proporción muy superior
+a 10 a 1. Todo lo que hace más barata la lectura abarata el cambio, y el cambio es lo que
+cuesta dinero a lo largo de la vida de un sistema.
+
+Dos referencias para tener a mano:
+
+- **Las cuatro reglas del diseño simple (Kent Beck):** el código pasa los tests, revela su
+  intención, no tiene duplicación y usa el menor número posible de elementos. En ese orden de
+  prioridad.
+- **La regla del boy scout:** deja el código un poco más limpio de como lo encontraste. No
+  hace falta una limpieza heroica; basta con una mejora pequeña cada vez.
+
+<Callout tone="info" title="Limpio no es lo mismo que corto ni que ingenioso">
+  Una línea densa y «elegante» que nadie entiende es peor que cinco líneas obvias. El objetivo es la
+  claridad para quien lee, no la brevedad para quien escribe.
+</Callout>
 
 ## Nombres que explican
 
-Un nombre debe revelar intención. Si necesitas un comentario para explicar una variable,
-la variable tiene el nombre equivocado.
+Un nombre es la primera documentación y la más leída. Si necesitas un comentario para explicar
+una variable, la variable tiene el nombre equivocado.
 
-## Funciones pequeñas
+**Reglas que funcionan**
 
-Cada función hace una sola cosa, con un solo nivel de abstracción. Los
-[checkers del repositorio](/docs/getting-started) también lo vigilan.
+1. **Revela la intención.** El nombre dice qué es y para qué sirve, no cómo se almacena.
+2. **Usa el lenguaje del dominio.** Si negocio dice «pedido» y «cliente», no escribas
+   `record` y `user`. Un vocabulario compartido es la base del diseño guiado por el dominio.
+3. **Sé consistente.** No alternes `fetch`, `get` y `retrieve` para la misma idea.
+4. **Evita palabras vacías:** `Manager`, `Helper`, `Data`, `Info`, `Util` casi nunca dicen nada.
+5. **Longitud proporcional al alcance.** `i` en un bucle de tres líneas está bien; una
+   variable de módulo necesita un nombre completo.
+6. **Los booleanos son preguntas:** `isActive`, `hasStock`, `canRefund`.
+7. **Las funciones son verbos, los tipos son sustantivos.**
+8. **Que se pueda buscar.** `7` no se encuentra; `MAX_RETRIES` sí.
 
 ```ts title="nombres.ts"
+// Antes: hay que adivinar qué significa cada cosa.
 function calc(a: number, b: number): number {
   return a * b * 0.21;
 }
 
+const d = 7;
+const list = getData();
+
+// Después: el código se explica solo.
+const VAT_RATE = 0.21;
+const PAYMENT_GRACE_PERIOD_DAYS = 7;
+
 function calculateVatAmount(netPrice: number, quantity: number): number {
   return netPrice * quantity * VAT_RATE;
 }
+
+const overdueInvoices = findOverdueInvoices();
 ```
+
+## Funciones pequeñas
+
+Una función debe hacer **una sola cosa**, con **un solo nivel de abstracción**, y su nombre
+debe describir exactamente eso. Si para describirla necesitas la palabra «y», son dos
+funciones.
+
+**Pautas**
+
+- **Pocos parámetros.** Con más de tres, agrúpalos en un objeto con nombre.
+- **Sin banderas booleanas.** `save(order, true)` no dice nada; dos funciones o una opción
+  con nombre sí.
+- **Separa órdenes de consultas.** Una función cambia estado o devuelve información, no ambas
+  cosas.
+- **Sin efectos secundarios ocultos.** Si `validate()` además guarda, el nombre miente.
+- **Cláusulas de guarda.** Sal pronto de los casos inválidos y deja el camino feliz sin
+  anidar.
+- **Lectura descendente.** El código se lee de arriba abajo como un periódico: primero la idea
+  general, después los detalles.
+
+Veamos una función típica que mezcla validación, cálculo, persistencia y notificación:
+
+```ts title="antes.ts"
+async function processOrder(order: Order, sendEmail: boolean) {
+  if (order.items.length > 0) {
+    if (order.customer.active) {
+      let total = 0;
+      for (const item of order.items) {
+        total += item.price * item.quantity;
+        if (order.customer.vip) {
+          total -= item.price * item.quantity * 0.1;
+        }
+      }
+      await db.save({ ...order, total });
+      if (sendEmail) {
+        await mailer.send(order.customer.email, 'Order confirmed', `Total: ${total}`);
+      }
+      return total;
+    }
+  }
+  return null;
+}
+```
+
+Problemas: tres niveles de anidación, un número mágico (`0.1`), una bandera booleana,
+dependencias globales (`db`, `mailer`), un `null` que obliga a quien llama a comprobar y
+cuatro responsabilidades en un solo bloque. Ahora separada:
+
+```ts title="despues.ts"
+const VIP_DISCOUNT_RATE = 0.1;
+
+function assertCanBeProcessed(order: Order): void {
+  if (order.items.length === 0) {
+    throw new EmptyOrderError(order.id);
+  }
+
+  if (!order.customer.active) {
+    throw new InactiveCustomerError(order.customer.id);
+  }
+}
+
+function calculateTotal(order: Order): number {
+  const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  return order.customer.vip ? subtotal * (1 - VIP_DISCOUNT_RATE) : subtotal;
+}
+
+export async function placeOrder(order: Order, deps: OrderDependencies): Promise<number> {
+  assertCanBeProcessed(order);
+
+  const total = calculateTotal(order);
+
+  await deps.orders.save({ ...order, total });
+  await deps.notifier.orderConfirmed(order.customer, total);
+
+  return total;
+}
+```
+
+Qué ganamos: `placeOrder` se lee como una receta; `calculateTotal` se prueba sin base de datos;
+las dependencias vienen de fuera (inversión de dependencias, ver [SOLID](/docs/solid)); la
+bandera de correo desaparece (decidir si se notifica es asunto de quien compone las
+dependencias); y los errores tienen nombre.
+
+## Comentarios: explica el porqué
+
+El mejor comentario es el que no necesitas porque el código ya lo dice. Cuando comentes, que
+sea para lo que el código **no puede** expresar.
+
+| Sí comentar                                     | No comentar                                 |
+| ----------------------------------------------- | ------------------------------------------- |
+| **Por qué** se hizo así (restricción, decisión) | **Qué** hace una línea evidente             |
+| Advertencias de consecuencias no obvias         | Código comentado (bórralo: git lo recuerda) |
+| Enlaces a especificaciones, tickets o ADR       | Historial de cambios (para eso está git)    |
+| `TODO` con responsable y referencia             | Ruido: `// incrementa i`                    |
+
+```ts title="comentarios.ts"
+// Mal: repite el código.
+// Suma uno al contador
+counter += 1;
+
+// Bien: explica una decisión que el código no puede contar.
+// La pasarela reintenta por su cuenta durante 30 s; reintentar aquí duplicaría cobros.
+const MAX_PAYMENT_ATTEMPTS = 1;
+```
+
+Si un comentario explica **qué** hace un bloque confuso, suele ser una señal para extraer una
+función con un buen nombre.
+
+## Formato y estructura
+
+El formato debe ser **automático y no negociable**: una herramienta decide, no las
+preferencias personales. Este repositorio lo resuelve con Prettier y reglas de lint que se
+ejecutan en cada commit (ver [Contribuir contenido](/docs/getting-started#contribuir-contenido)).
+
+Reglas que conviene que haga cumplir la máquina, no la memoria del equipo:
+
+- **Tamaño de archivo y función acotado.** Este proyecto limita los archivos a 300 líneas.
+- **Complejidad cognitiva limitada.** Se mide cuánto cuesta entender una función; aquí el
+  límite es 15.
+- **Orden de imports y nombres de archivo consistentes.**
+- **Sin `any` y sin aserciones peligrosas** en lenguajes con tipos.
+
+Dentro del archivo, organiza como un artículo: lo importante arriba, los detalles abajo; las
+cosas relacionadas, juntas; una línea en blanco entre ideas distintas.
+
+## Manejo de errores
+
+Los errores son parte del diseño, no una nota al pie. Un manejo pobre produce los fallos más
+caros: los silenciosos.
+
+- **No devuelvas `null` para indicar fallo** si el valor es obligatorio: obliga a comprobar en
+  cada llamada y se olvida. Lanza un error con nombre o devuelve un resultado explícito.
+- **Falla pronto y alto.** Valida en la frontera del sistema y rechaza datos inválidos en
+  cuanto entran.
+- **Nunca tragues una excepción** con un `catch` vacío. Si no sabes qué hacer, deja que suba.
+- **Incluye contexto en el mensaje:** qué se intentaba, con qué identificador, por qué falló.
+- **Parsea, no valides.** Convierte datos externos en tipos del dominio una sola vez en el
+  borde (por ejemplo con un esquema de validación) y trabaja con tipos fiables dentro.
+- **Distingue errores esperados de fallos del sistema.** Un pedido sin stock es una situación
+  del negocio; una base de datos caída es una avería.
+
+```ts title="errores.ts"
+// Antes: el null se propaga y explota lejos del origen.
+function findUser(id: string): User | null {
+  return users.get(id) ?? null;
+}
+
+findUser('42')?.email.toLowerCase(); // ¿y si no existe? Silencio.
+
+// Después: el fallo es explícito y tiene contexto.
+class UserNotFoundError extends Error {
+  constructor(readonly userId: string) {
+    super(`User ${userId} was not found`);
+    this.name = 'UserNotFoundError';
+  }
+}
+
+function getUser(id: string): User {
+  const user = users.get(id);
+
+  if (user === undefined) {
+    throw new UserNotFoundError(id);
+  }
+
+  return user;
+}
+```
+
+## Complejidad: cuánto cuesta entender
+
+La complejidad cognitiva mide el esfuerzo mental de leer una función: cada `if`, bucle o
+`catch` suma, y la anidación suma más. Es mejor métrica que contar líneas porque penaliza lo
+que de verdad confunde.
+
+Técnicas para bajarla:
+
+1. **Cláusulas de guarda** en lugar de `if` anidados.
+2. **Extraer funciones** con nombre que expresen la intención de cada bloque.
+3. **Tablas de datos** en lugar de cadenas de `if`/`else` o `switch`.
+4. **Polimorfismo** cuando cada caso tiene comportamiento propio y la lista crece.
+5. **Condiciones con nombre:** `if (isEligibleForRefund(order))` en vez de una expresión de
+   cuatro operadores.
+
+```ts title="complejidad.ts"
+// Antes: anidación y repetición.
+function shippingCost(country: string, weightKg: number): number {
+  if (country === 'ES') {
+    if (weightKg <= 1) {
+      return 4;
+    } else {
+      return 6;
+    }
+  } else if (country === 'PT') {
+    if (weightKg <= 1) {
+      return 5;
+    } else {
+      return 8;
+    }
+  }
+
+  throw new Error(`Unsupported country ${country}`);
+}
+
+// Después: los datos viven en una tabla y la lógica es mínima.
+const SHIPPING_RATES: Record<string, { light: number; heavy: number }> = {
+  ES: { light: 4, heavy: 6 },
+  PT: { light: 5, heavy: 8 },
+};
+
+function shippingCostFlat(country: string, weightKg: number): number {
+  const rate = SHIPPING_RATES[country];
+
+  if (rate === undefined) {
+    throw new Error(`Unsupported country ${country}`);
+  }
+
+  return weightKg <= 1 ? rate.light : rate.heavy;
+}
+```
+
+Añadir un país ahora es añadir una fila, no tocar la lógica.
+
+## Duplicación y abstracción prematura
+
+La duplicación es costosa, pero **la abstracción equivocada cuesta más**. Cuando dos trozos de
+código se parecen solo por casualidad, unificarlos los acopla y cada cambio futuro obliga a
+añadir parámetros y condiciones para separar lo que nunca debió juntarse.
+
+- **Regla de tres:** tolera la duplicación una vez; a la tercera, abstrae con los tres casos a
+  la vista.
+- **Duplicación de conocimiento, no de texto.** Lo peligroso es repetir una _regla de negocio_
+  (el IVA, el límite de reintentos), no dos bloques que se parecen visualmente.
+- **Abstrae por razón de cambio.** Si dos piezas cambian por motivos distintos, mantenlas
+  separadas aunque hoy sean idénticas.
+- **Si la abstracción necesita banderas para funcionar, probablemente sea la equivocada.**
+
+## Tests como parte del código limpio
+
+Sin tests no puedes refactorizar con seguridad, y sin refactorizar el código se pudre. Los
+tests limpios comparten rasgos:
+
+- **Rápidos, independientes, repetibles, auto-verificables y oportunos.**
+- **Un concepto por test,** con un nombre que describe el comportamiento, no el método.
+- **Estructura Arrange–Act–Assert:** preparar, ejecutar, comprobar.
+- **Prueban comportamiento observable,** no detalles internos; así sobreviven a los
+  refactorings.
+- **Los datos de prueba se construyen con funciones** (`buildOrder`) que dejan visible solo lo
+  que importa en cada caso.
+
+```ts title="calculate-total.test.ts"
+import { describe, expect, it } from 'vitest';
+
+describe('calculateTotal', () => {
+  it('applies the VIP discount to the subtotal', () => {
+    const order = buildOrder({ vip: true, items: [{ price: 100, quantity: 2 }] });
+
+    expect(calculateTotal(order)).toBe(180);
+  });
+
+  it('charges the full subtotal to regular customers', () => {
+    const order = buildOrder({ vip: false, items: [{ price: 100, quantity: 2 }] });
+
+    expect(calculateTotal(order)).toBe(200);
+  });
+});
+```
+
+Un buen test es **documentación ejecutable**: leyendo los nombres se entiende qué promete el
+módulo.
+
+## Catálogo de olores de código
+
+Un «olor» es un síntoma que sugiere un problema de diseño. No es un error, pero merece
+atención.
+
+| Olor                        | Cómo se ve                                             | Remedio habitual                               |
+| --------------------------- | ------------------------------------------------------ | ---------------------------------------------- |
+| Función larga               | Más de una pantalla, varios niveles de abstracción     | Extraer función                                |
+| Clase o módulo gigante      | Hace de todo; muchas razones para cambiar              | Dividir por responsabilidad                    |
+| Obsesión por los primitivos | `string` para emails, `number` para dinero             | Tipos del dominio (`Email`, `Money`)           |
+| Envidia de características  | Un método usa más datos de otro objeto que de su clase | Mover el método a quien tiene los datos        |
+| Cirugía a escopetazos       | Un cambio pequeño obliga a tocar muchos archivos       | Reunir lo que cambia junto                     |
+| Grupos de datos             | Los mismos tres parámetros viajan juntos               | Introducir un objeto de parámetros             |
+| Números y cadenas mágicas   | `if (status === 3)`                                    | Constantes o tipos enumerados con nombre       |
+| Código muerto               | Funciones y ramas que nadie llama                      | Borrar; el control de versiones lo recuerda    |
+| Comentarios que mienten     | Describen un comportamiento que ya cambió              | Reescribir el código para que se explique solo |
+| Cadenas de `if` por tipo    | Un `switch` repetido en varios lugares                 | Polimorfismo o tabla de estrategias            |
+
+## Refactoring continuo
+
+Refactorizar es **cambiar la estructura del código sin cambiar su comportamiento**. No es una
+fase ni un proyecto aparte: es un hábito diario que evita que la deuda se acumule. La deuda no
+se paga en una semana de héroes; se evita todos los días.
+
+**El ciclo seguro**
+
+1. **Asegura una red:** tests que cubran el comportamiento que vas a tocar. Si no existen,
+   escribe primero tests de caracterización que fijen lo que hace hoy.
+2. **Da un paso pequeño:** renombrar, extraer, mover. Uno solo.
+3. **Ejecuta los tests.** Si fallan, deshaz el paso.
+4. **Haz commit** cuando esté verde. Pasos pequeños y commits frecuentes hacen que revertir
+   sea barato.
+5. **Repite.**
+
+**Movimientos que más se usan**
+
+| Movimiento                              | Cuándo                                           |
+| --------------------------------------- | ------------------------------------------------ |
+| Renombrar                               | Un nombre ya no refleja lo que algo hace         |
+| Extraer función                         | Un bloque necesita un comentario para entenderse |
+| Introducir objeto de parámetros         | Los mismos datos viajan juntos                   |
+| Reemplazar condicional por polimorfismo | Un `switch` por tipo se repite                   |
+| Reemplazar número mágico por constante  | Un literal tiene significado de negocio          |
+| Mover función                           | Un método vive lejos de los datos que usa        |
+
+Cuando el cambio es grande (migrar un módulo entero), aplica el patrón _strangler_: construye
+lo nuevo al lado, desvía el tráfico poco a poco y retira lo antiguo al final. Nunca refactorices
+y añadas funcionalidad en el mismo commit: mezclar ambas cosas hace imposible saber qué rompió
+qué.
+
+<Callout tone="tip" title="Cuándo no refactorizar">
+  No refactorices código que no vas a tocar, ni lo hagas sin tests ni cerca de una entrega crítica.
+  Limpia lo que estás a punto de cambiar, y solo lo suficiente para hacerlo con seguridad.
+</Callout>
+
+## Deuda técnica
+
+La deuda técnica es una metáfora útil: tomar un atajo hoy es pedir prestado, y cada cambio
+posterior paga intereses en forma de lentitud y errores. Como la deuda financiera, **no es mala
+por definición**; es mala cuando no se decide, no se registra o no se paga.
 
 <Callout tone="warning" title="Deuda técnica">
   Un atajo puntual es aceptable; un atajo permanente es una decisión de arquitectura que nadie
   firmó.
 </Callout>
 
-## Refactoring continuo
+El cuadrante de Martin Fowler ayuda a distinguirla:
 
-Refactoriza en pasos pequeños respaldados por tests. La deuda no se paga en una semana de
-héroes: se evita todos los días.
+| —               | Prudente                                            | Imprudente                       |
+| --------------- | --------------------------------------------------- | -------------------------------- |
+| **Deliberada**  | «Entregamos ya y refactorizamos después» (con plan) | «No tenemos tiempo para diseñar» |
+| **Inadvertida** | «Ahora sabemos cómo debimos hacerlo»                | «¿Qué es una capa?»              |
+
+**Cómo gestionarla sin dramatismo**
+
+- **Hazla visible:** regístrala como tareas o ADR, con el motivo y el coste de no pagarla.
+- **Asigna un presupuesto fijo** de capacidad de cada iteración a reducirla.
+- **Priorízala por intereses,** no por fealdad: arregla primero lo que más se toca.
+- **Págala cuando pases por ahí:** la regla del boy scout evita grandes proyectos de limpieza.
+- **Evita que entre más de la cuenta:** reglas automáticas en CI (formato, lint, complejidad,
+  cobertura mínima) que bloqueen el empeoramiento.
+
+## Del código a la arquitectura
+
+Clean code y arquitectura no son disciplinas separadas: son la misma a distinta escala.
+
+- **Los nombres del código deberían coincidir con los del diagrama.** Si el
+  [diagrama de componentes](/docs/c4-model#nivel-3-componentes) dice «Servicio de pedidos»,
+  el código debería tener un `OrderService` reconocible.
+- **La dirección de las dependencias es una decisión arquitectónica.** Las reglas que impiden
+  que una capa importe otra (como las de este repositorio, aplicadas por lint) son
+  arquitectura ejecutable.
+- **Las fronteras se protegen con tipos y contratos,** no con buenas intenciones.
+- **Lo que no se automatiza se erosiona.** Convierte cada regla del equipo en una comprobación
+  que falle el build.
+
+## Clean code en la era de la IA
+
+Los asistentes y agentes escriben cada vez más código, y eso hace el código limpio **más**
+importante, no menos: generar es barato, pero alguien tiene que revisar, entender y mantener
+lo generado.
+
+Qué vigilar al revisar código generado por IA:
+
+- **Nombres genéricos** (`data`, `result`, `handler`) o que no usan el vocabulario del dominio.
+- **Duplicación silenciosa:** el agente reescribe una utilidad que ya existía en lugar de
+  reutilizarla.
+- **Sobreingeniería:** capas, interfaces y patrones que el problema no pedía.
+- **APIs inventadas o desactualizadas:** comprueba que lo que se llama existe.
+- **Tests que no comprueban nada** (afirmaciones triviales o que repiten la implementación).
+- **Errores tragados** con `catch` amplios «para que no falle».
+
+Y a favor: deja las reglas por escrito. Un documento de convenciones en el repositorio (este
+proyecto usa uno que se inyecta en cada sesión de agente) y comprobaciones automáticas
+transforman «el estilo del equipo» en algo que cualquier autor, humano o no, puede cumplir. Para
+más contexto sobre cómo cambia la elección de herramientas, mira
+[lenguajes y frameworks en la era de la IA](/docs/lenguajes-era-ia).
+
+## Revisión de código
+
+Una buena revisión busca claridad y riesgo, no preferencias. Preguntas para cada pull request:
+
+1. ¿Entiendo qué hace y por qué, leyendo solo el código y la descripción?
+2. ¿Los nombres revelan la intención y usan el lenguaje del dominio?
+3. ¿Las funciones hacen una sola cosa y se leen de arriba abajo?
+4. ¿Los casos de error están contemplados y tienen mensajes útiles?
+5. ¿Hay tests que fallarían si el comportamiento se rompiera?
+6. ¿Se introdujo duplicación de reglas de negocio o una abstracción prematura?
+7. ¿Respeta las fronteras y la dirección de las dependencias?
+8. ¿Deja el código mejor, o al menos no peor, de como estaba?
+
+Revisa el diseño primero y el estilo después; el estilo lo debería cazar una herramienta.
+
+## Errores frecuentes al aplicarlo
+
+- **Dogmatismo.** Las reglas son heurísticas. Una función de 25 líneas clarísima es mejor que
+  cinco funciones de cinco líneas que obligan a saltar por el archivo.
+- **Fragmentar en exceso.** Demasiadas funciones y capas diminutas esconden el flujo; busca
+  profundidad, no solo tamaño.
+- **Ignorar el rendimiento donde importa.** La claridad va primero, pero en rutas calientes
+  medidas (bucles críticos, cargas masivas) el diseño cuidadoso en estructuras de datos y
+  asignaciones puede pesar más que el polimorfismo bonito. Mide antes de decidir y deja un
+  comentario con el motivo.
+- **Refactorizar sin red.** Sin tests, un refactoring es una apuesta.
+- **Limpiar por limpiar.** Si nadie va a tocar ese código, no lo toques tú.
+- **Reglas sin automatización.** Lo que depende de acordarse se incumple. Pásalo a lint o CI.
+- **Culpar a personas.** La revisión critica el código, no a quien lo escribió.
+
+## Ejercicio guiado
+
+Elige una función real de tu proyecto de entre 30 y 60 líneas y dedícale una hora.
+
+1. **10 min:** escribe tests de caracterización que fijen su comportamiento actual, incluidos
+   los casos raros.
+2. **10 min:** renombra variables y parámetros que no revelan su intención.
+3. **15 min:** extrae bloques a funciones con nombre, de una en una, ejecutando los tests
+   tras cada paso.
+4. **10 min:** sustituye números y cadenas mágicas por constantes y reemplaza condicionales
+   anidados por cláusulas de guarda.
+5. **10 min:** revisa el manejo de errores: nada de `null` ambiguos ni `catch` vacíos.
+6. **5 min:** compara el antes y el después con alguien del equipo. ¿Lo entiende sin ayuda?
+
+## Checklist
+
+- [ ] Los nombres revelan intención y usan el vocabulario del dominio.
+- [ ] Cada función hace una sola cosa y tiene como máximo tres parámetros.
+- [ ] No hay banderas booleanas ni efectos secundarios ocultos.
+- [ ] Los comentarios explican el porqué, no el qué; no hay código comentado.
+- [ ] Los errores son explícitos, con contexto y sin `catch` vacíos.
+- [ ] No hay números ni cadenas mágicas.
+- [ ] La complejidad de cada función es baja y sin anidación profunda.
+- [ ] Hay tests que describen el comportamiento y fallarían si se rompiera.
+- [ ] Las reglas del equipo las hace cumplir una herramienta, no la memoria.
+- [ ] La deuda conocida está registrada, con motivo y plan.
+
+## Para llevarte
+
+- Código limpio es el que otra persona puede **entender y cambiar con seguridad**.
+- Los nombres y las funciones pequeñas son la inversión de mayor retorno.
+- Los errores y la complejidad se diseñan: no se improvisan.
+- Refactoriza en **pasos pequeños con tests**, a diario, en lo que vas a tocar.
+- La deuda técnica no es mala si es **deliberada, visible y pagada**.
+- Lo que no se automatiza se erosiona: pon las reglas en el build.
+
+**Para seguir aprendiendo:** _Clean Code_ de Robert C. Martin, _Refactoring_ de Martin Fowler,
+_A Philosophy of Software Design_ de John Ousterhout y _The Pragmatic Programmer_ de David Thomas
+y Andrew Hunt. Léelos con criterio: son guías de pensamiento, no leyes.

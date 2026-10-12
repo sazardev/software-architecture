@@ -9,6 +9,7 @@ tags:
   - arquitectura
   - principios
 order: 2
+publishedAt: 2026-10-10
 updatedAt: 2026-10-11
 ---
 
@@ -973,9 +974,9 @@ func (c Compra) Ejecutar(p Pedido) error {
 Ahora el test usa un guardado en memoria de tres líneas. Producción enchufa Postgres sin
 tocar el caso de uso. La flecha apunta hacia dentro, hacia el negocio.
 
-Este giro es la puerta de entrada a la [arquitectura hexagonal](/docs/c4-model#componentes):
+Este giro es la puerta de entrada a la [arquitectura hexagonal](/docs/c4-model#nivel-3-componentes):
 el núcleo expone puertos y los adaptadores los implementan. En los diagramas de
-[componentes](/docs/c4-model#componentes) verás exactamente estas flechas apuntando hacia
+[componentes](/docs/c4-model#nivel-3-componentes) verás exactamente estas flechas apuntando hacia
 dentro, hacia el negocio.
 
 ### Otro ejemplo: notificaciones intercambiables
@@ -1309,7 +1310,7 @@ significa diseño sano. Coste creciente significa que falta una abstracción o s
 
 - Consolida la base con las ideas de [clean code](/docs/clean-code) y los hábitos de
   [primeros pasos](/docs/getting-started). La legibilidad diaria sostiene el diseño mensual.
-- Baja al detalle visual con el [modelo C4](/docs/c4-model#componentes): contexto,
+- Baja al detalle visual con el [modelo C4](/docs/c4-model#nivel-3-componentes): contexto,
   contenedores y componentes son el mapa donde viven tus puertos y adaptadores. Dibuja tus
   dependencias antes de discutirlas.
 - Practica hoy: elige una clase de tu proyecto que mezcle dos ejes de cambio, extrae un

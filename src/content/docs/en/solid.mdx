@@ -9,6 +9,7 @@ tags:
   - architecture
   - principles
 order: 2
+publishedAt: 2026-10-10
 updatedAt: 2026-10-11
 ---
 
@@ -965,8 +966,8 @@ func (c Checkout) Run(o Order) error {
 Now the test uses a three-line in-memory store. Production plugs Postgres without touching
 the use case. The arrow points inward, toward the business.
 
-This twist is the gateway to [hexagonal architecture](/docs/c4-model#components): the core
-exposes ports and adapters implement them. In the [component](/docs/c4-model#components)
+This twist is the gateway to [hexagonal architecture](/docs/c4-model#level-3-components): the core
+exposes ports and adapters implement them. In the [component](/docs/c4-model#level-3-components)
 diagrams you will see exactly those arrows pointing inward, toward the business.
 
 ### Second example: swappable notifications
@@ -1294,7 +1295,7 @@ healthy design. Rising cost means one abstraction missing or one surplus.
 
 - Consolidate the basics with [clean code](/docs/clean-code) ideas and the
   [getting started](/docs/getting-started) habits. Daily readability sustains monthly design.
-- Go visual with the [C4 model](/docs/c4-model#components): context, containers and
+- Go visual with the [C4 model](/docs/c4-model#level-3-components): context, containers and
   components are the map where your ports and adapters live. Draw dependencies before
   discussing them.
 - Practice today: pick one class in your project that mixes two change axes, extract a
