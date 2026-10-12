@@ -11,6 +11,7 @@ buena voluntad.
 | Runtime/PM | **Bun** (scripts, tooling de contenido, auditoría)                                 |
 | Bundler    | **Vite 8** (Rolldown) + React Compiler                                             |
 | UI         | **React 19** + **Tailwind CSS 4** (CSS-first, tokens en `src/styles/theme.css`)    |
+| Tipografía | **@fontsource-variable** (Fraunces, Newsreader, Instrument Sans, JetBrains Mono)   |
 | Tipos      | **TypeScript 7 nativo** (`tsc`) para chequeo · TS 6 API solo para ESLint (aliases) |
 | Rutas      | **TanStack Router** (file-based, `autoCodeSplitting`, search params validados)     |
 | Datos      | **TanStack Query** (caché) · contenido vía índice generado                         |
@@ -180,6 +181,23 @@ siempre rutas absolutas y anclas del idioma correspondiente.
 - En punteros táctiles (`pointer: coarse`) no hay autofocus de inputs y los atajos de teclado
   se ocultan (`SearchField`, página de búsqueda).
 - El índice del documento (TOC) es colapsable (`<details>`) en móvil y fijo en `lg+`.
+
+### Sistema visual ("Tinta y brasa")
+
+- Paleta en `src/styles/theme.css`: `neutral-*` sobrescrito con grises cálidos (papel/tinta),
+  `brand-*` azul de plano (interactivo) y `accent-*` brasa (detalles con alma). Siempre
+  tokens, nunca colores literales; cada color lleva su variante `dark:`.
+- Tipografía autoalojada con `@fontsource-variable` (offline vía PWA, solo subset `latin`):
+  `font-display` (Fraunces) para títulos, `font-serif` (Newsreader) para lectura y párrafos
+  de apoyo, `font-sans` (Instrument Sans) para UI y `font-mono` (JetBrains Mono) para código.
+- Lectura: el cuerpo de los artículos vive en `.prose` (`src/styles/prose.css`, medida ~68ch,
+  capitular, anclas, tablas con scroll). El `<h1>` del MDX se oculta: el título lo pinta
+  `DocHeader` desde el frontmatter.
+- Movimiento: animaciones CSS (`animate-rise`, `animate-draw`…) y el atom `Reveal` para
+  aparecer al hacer scroll; todo respeta `prefers-reduced-motion` (regla global en
+  `src/styles/index.css`).
+- Layout: páginas envuelven su contenido en el atom `Container` (`narrow`/`reading`/`wide`);
+  `SiteShell` ya no limita el ancho de `main` para permitir secciones a sangre.
 
 ### Tema global (claro/oscuro/sistema)
 

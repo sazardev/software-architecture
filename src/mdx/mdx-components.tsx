@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react';
 import {
   Callout,
   Checklist,
+  CodeBlock,
   ExerciseCard,
   Faq,
   FaqItem,
@@ -21,7 +22,7 @@ function InteractiveMap(props: InteractiveMapProps) {
   return (
     <Suspense
       fallback={
-        <div className="my-6 h-80 animate-pulse rounded-lg border border-neutral-200 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900" />
+        <div className="my-6 h-80 animate-pulse rounded-2xl border border-neutral-200 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900" />
       }
     >
       <InteractiveMapImpl {...props} />
@@ -38,4 +39,5 @@ export const mdxComponents: MDXComponents = {
   FragileInheritanceNote,
   InteractiveMap,
   MermaidDiagram,
+  pre: CodeBlock,
 };

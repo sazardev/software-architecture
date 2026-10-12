@@ -13,7 +13,7 @@ export function LanguageSwitcher() {
   return (
     <div
       aria-label={messages.languageSwitcher.label}
-      className="flex items-center gap-1 text-xs"
+      className="flex items-center rounded-full border border-neutral-200 p-0.5 font-sans text-[0.7rem] dark:border-neutral-800"
       role="group"
     >
       {localeDefinitions.map((definition) => {
@@ -23,10 +23,10 @@ export function LanguageSwitcher() {
           <Link
             aria-current={isActive ? 'true' : undefined}
             className={cn(
-              'rounded px-1.5 py-0.5 font-medium uppercase transition-colors',
+              'rounded-full px-2.5 py-1 leading-none font-semibold tracking-wider uppercase transition-colors duration-300',
               isActive
-                ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-50'
-                : 'text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400',
+                ? 'bg-neutral-900 text-neutral-50 dark:bg-neutral-50 dark:text-neutral-900'
+                : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-50',
             )}
             key={definition.code}
             search={location.search as never}

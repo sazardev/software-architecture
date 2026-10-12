@@ -1,10 +1,17 @@
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 
-import { buttonVariants } from '@/components/atoms';
+import {
+  ClosingCta,
+  HomeHero,
+  LatestDocs,
+  PrinciplesBand,
+  SectionPaths,
+  type HomeStats,
+} from '@/components/organisms';
 import { site } from '@/lib/config/site';
+import { getDocsByLocale, getDocsBySection, getLatestDocs } from '@/lib/content/registry';
 import { resolveLocaleParam } from '@/lib/i18n/locale-head';
 import { getMessages } from '@/lib/i18n/messages';
-import { useMessages } from '@/lib/i18n/use-messages';
 import { buildPageHead } from '@/lib/seo/meta';
 
 export const Route = createFileRoute('/$locale/')({
@@ -23,29 +30,22 @@ export const Route = createFileRoute('/$locale/')({
 });
 
 function HomePage() {
-  const { locale } = Route.useParams();
-  const messages = useMessages();
+  const { locale: localeParam } = Route.useParams();
+  const locale = resolveLocaleParam(localeParam);
+  const groups = getDocsBySection(locale);
+  const stats: HomeStats = {
+    articles: getDocsByLocale(locale).length,
+    minutes: getDocsByLocale(locale).reduce((sum, doc) => sum + doc.readingMinutes, 0),
+    sections: groups.length,
+  };
 
   return (
-    <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 py-10 text-center sm:py-16">
-      <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-        {messages.home.title}
-      </h1>
-      <p className="max-w-2xl text-lg text-pretty text-neutral-600 dark:text-neutral-300">
-        {messages.site.description}
-      </p>
-      <div className="flex flex-wrap justify-center gap-3">
-        <Link className={buttonVariants({ size: 'lg' })} params={{ locale }} to="/$locale/docs">
-          {messages.home.start}
-        </Link>
-        <Link
-          className={buttonVariants({ size: 'lg', variant: 'secondary' })}
-          params={{ locale }}
-          to="/$locale/search"
-        >
-          {messages.home.search}
-        </Link>
-      </div>
-    </section>
+    <>
+      <HomeHero stats={stats} />
+      <SectionPaths groups={groups} />
+      <LatestDocs docs={getLatestDocs(locale, 4)} />
+      <PrinciplesBand />
+      <ClosingCta />
+    </>
   );
 }

@@ -1,10 +1,120 @@
+@import '@fontsource-variable/fraunces/opsz.css';
+@import '@fontsource-variable/fraunces/opsz-italic.css';
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource-variable/newsreader/opsz-italic.css';
+@import '@fontsource-variable/instrument-sans/index.css';
+@import '@fontsource-variable/jetbrains-mono/index.css';
 @import 'tailwindcss';
 @import './theme.css';
 @import './prose.css';
 @plugin '@tailwindcss/typography';
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--spacing) * 24);
+    text-size-adjust: 100%;
+  }
+
   body {
-    @apply bg-neutral-50 text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-50;
+    @apply bg-neutral-50 font-sans text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100;
+    font-feature-settings:
+      'ss01' 1,
+      'cv11' 1;
+  }
+
+  ::selection {
+    @apply bg-accent-200 text-accent-950 dark:bg-accent-700/60 dark:text-accent-50;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500 dark:outline-brand-400;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Textura de papel: grano sutil sobre el fondo, sin coste de red. */
+  .paper-grain {
+    position: relative;
+  }
+
+  .paper-grain::before {
+    content: '';
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .dark .paper-grain::before {
+    opacity: 0.05;
+    mix-blend-mode: soft-light;
+  }
+
+  /* Rejilla de plano arquitectónico para fondos de hero. */
+  .blueprint-grid {
+    background-image:
+      linear-gradient(to right, var(--color-neutral-900) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-neutral-900) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 20%, transparent 75%);
+    opacity: 0.05;
+  }
+
+  .dark .blueprint-grid {
+    background-image:
+      linear-gradient(to right, var(--color-neutral-100) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-neutral-100) 1px, transparent 1px);
+    opacity: 0.06;
+  }
+
+  /* Revelado al hacer scroll (ver atom Reveal). */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.9s var(--ease-out-soft),
+      transform 0.9s var(--ease-out-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .reveal[data-visible='true'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .no-js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Subrayado editorial que crece desde la izquierda. */
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    transition: background-size 0.4s var(--ease-out-soft);
+  }
+
+  .link-underline:hover,
+  .group:hover .link-underline {
+    background-size: 100% 1px;
   }
 }

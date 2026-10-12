@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import { Container } from '@/components/atoms';
 import { CategoryFilter, SearchField } from '@/components/molecules';
 import { SearchResults } from '@/components/organisms';
 import { site } from '@/lib/config/site';
@@ -9,6 +10,7 @@ import { useMessages } from '@/lib/i18n/use-messages';
 import { parseSearchRouteParams, searchParams } from '@/lib/search/search-params';
 import { useDeferredSearch } from '@/lib/search/use-deferred-search';
 import { buildPageHead } from '@/lib/seo/meta';
+import { cn } from '@/lib/utils/cn';
 
 export const Route = createFileRoute('/$locale/search')({
   component: SearchPage,
@@ -41,13 +43,18 @@ function SearchPage() {
   });
 
   return (
-    <section className="mx-auto max-w-3xl">
-      <h1 className="mb-2 text-3xl font-semibold tracking-tight">{messages.search.title}</h1>
-      <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
+    <Container className="py-14 sm:py-20" size="narrow">
+      <h1
+        className="mb-3 animate-rise font-display text-[clamp(2.6rem,6vw,4.4rem)] leading-[1.02] font-medium tracking-[-0.03em] text-neutral-950 dark:text-neutral-50"
+        style={{ fontVariationSettings: "'opsz' 144" }}
+      >
+        {messages.search.title}
+      </h1>
+      <p className="mb-8 font-serif text-lg text-neutral-600 dark:text-neutral-400">
         {messages.search.hint}{' '}
         <span className="hidden sm:inline">
           {messages.search.shortcut}{' '}
-          <kbd className="rounded border border-neutral-300 px-1.5 text-xs dark:border-neutral-700">
+          <kbd className="rounded-md border border-neutral-300 px-1.5 font-mono text-xs dark:border-neutral-700">
             /
           </kbd>
         </span>
@@ -74,7 +81,7 @@ function SearchPage() {
         {search.tag === undefined ? null : (
           <button
             aria-label={messages.search.removeTag(search.tag)}
-            className="rounded-full border border-brand-300 bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700 transition-colors hover:border-brand-400 dark:border-brand-800 dark:bg-brand-950/40 dark:text-brand-300"
+            className="rounded-full border border-brand-300 bg-brand-50 px-4 py-1.5 font-sans text-sm font-medium text-brand-700 transition-colors hover:border-brand-500 dark:border-brand-800 dark:bg-brand-950/40 dark:text-brand-300"
             onClick={() => {
               void navigate({ replace: true, search: searchParams({ ...search, tag: undefined }) });
             }}
@@ -86,7 +93,10 @@ function SearchPage() {
       </div>
 
       <p
-        className={`mt-6 text-sm text-neutral-500 transition-opacity dark:text-neutral-400 ${isStale ? 'opacity-50' : ''}`}
+        className={cn(
+          'mt-8 font-sans text-sm text-neutral-500 transition-opacity dark:text-neutral-400',
+          isStale && 'opacity-50',
+        )}
       >
         {query === ''
           ? messages.search.available(results.length)
@@ -96,6 +106,6 @@ function SearchPage() {
       <div className="mt-4">
         <SearchResults query={query} results={results} />
       </div>
-    </section>
+    </Container>
   );
 }

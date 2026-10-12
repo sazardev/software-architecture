@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { buttonVariants } from '@/components/atoms';
 import { useLocale } from '@/lib/i18n/locale-context';
 import { useMessages } from '@/lib/i18n/use-messages';
 import { cn } from '@/lib/utils/cn';
@@ -17,27 +18,28 @@ export function NotFoundPage({ className, description, title }: NotFoundPageProp
   return (
     <section
       className={cn(
-        'mx-auto flex max-w-xl flex-col items-center gap-4 py-16 text-center sm:py-24',
+        'relative isolate mx-auto flex max-w-xl flex-col items-center gap-5 px-5 py-20 text-center sm:py-32',
         className,
       )}
     >
-      <p className="text-sm font-semibold tracking-wider text-brand-600 uppercase dark:text-brand-400">
+      <p
+        aria-hidden="true"
+        className="animate-rise font-display text-[8rem] leading-none font-light text-accent-500 italic sm:text-[11rem]"
+      >
         {messages.notFound.code}
       </p>
-      <h1 className="text-3xl font-semibold tracking-tight">{title ?? messages.notFound.title}</h1>
-      <p className="text-neutral-600 dark:text-neutral-300">
+      <h1 className="font-display text-3xl font-medium tracking-tight text-neutral-950 sm:text-4xl dark:text-neutral-50">
+        {title ?? messages.notFound.title}
+      </h1>
+      <p className="font-serif text-lg text-neutral-600 dark:text-neutral-300">
         {description ?? messages.notFound.description}
       </p>
-      <div className="mt-2 flex gap-3">
-        <Link
-          className="inline-flex h-10 items-center rounded-lg bg-brand-600 px-5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
-          params={{ locale }}
-          to="/$locale"
-        >
+      <div className="mt-3 flex flex-wrap justify-center gap-3">
+        <Link className={buttonVariants({ size: 'lg' })} params={{ locale }} to="/$locale">
           {messages.notFound.home}
         </Link>
         <Link
-          className="inline-flex h-10 items-center rounded-lg border border-neutral-300 px-5 text-sm font-medium text-neutral-700 transition-colors hover:border-brand-400 dark:border-neutral-700 dark:text-neutral-200"
+          className={buttonVariants({ size: 'lg', variant: 'secondary' })}
           params={{ locale }}
           to="/$locale/search"
         >

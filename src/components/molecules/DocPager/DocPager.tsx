@@ -10,6 +10,15 @@ type DocPagerProps = Readonly<{
   previous: ContentEntry | undefined;
 }>;
 
+const cardClass =
+  'group flex flex-col gap-1 rounded-2xl border border-neutral-200 bg-white p-6 transition-[transform,border-color,box-shadow] duration-500 ease-out-soft hover:-translate-y-1 hover:border-neutral-300 hover:shadow-lift dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:border-neutral-700';
+
+const hintClass =
+  'font-sans text-xs font-semibold tracking-[0.16em] text-accent-700 uppercase dark:text-accent-400';
+
+const titleClass =
+  'font-display text-xl font-medium tracking-tight text-neutral-950 dark:text-neutral-50';
+
 export function DocPager({ next, previous }: DocPagerProps) {
   const locale = useLocale();
   const messages = useMessages();
@@ -21,35 +30,28 @@ export function DocPager({ next, previous }: DocPagerProps) {
   return (
     <nav
       aria-label={messages.a11y.pager}
-      className="mt-12 grid gap-4 border-t border-neutral-200 pt-6 sm:grid-cols-2 dark:border-neutral-800"
+      className="mt-20 grid gap-4 border-t border-neutral-200 pt-10 sm:grid-cols-2 dark:border-neutral-800"
     >
       {previous === undefined ? (
         <span />
       ) : (
         <Link
-          className="group rounded-lg border border-neutral-200 p-4 transition-colors hover:border-brand-400 dark:border-neutral-800 dark:hover:border-brand-600"
+          className={cardClass}
           params={{ locale, slug: previous.slug }}
           to="/$locale/docs/$slug"
         >
-          <span className="text-xs text-neutral-500">← {messages.docs.previous}</span>
-          <span className="mt-1 block font-medium group-hover:text-brand-600 dark:group-hover:text-brand-400">
-            {previous.title}
-          </span>
+          <span className={hintClass}>← {messages.docs.previous}</span>
+          <span className={titleClass}>{previous.title}</span>
         </Link>
       )}
       {next === undefined ? null : (
         <Link
-          className={cn(
-            'group rounded-lg border border-neutral-200 p-4 text-right transition-colors hover:border-brand-400 dark:border-neutral-800 dark:hover:border-brand-600',
-            previous === undefined ? 'sm:col-span-2' : 'sm:col-start-2',
-          )}
+          className={cn(cardClass, 'text-right', previous === undefined && 'sm:col-span-2')}
           params={{ locale, slug: next.slug }}
           to="/$locale/docs/$slug"
         >
-          <span className="text-xs text-neutral-500">{messages.docs.next} →</span>
-          <span className="mt-1 block font-medium group-hover:text-brand-600 dark:group-hover:text-brand-400">
-            {next.title}
-          </span>
+          <span className={hintClass}>{messages.docs.next} →</span>
+          <span className={titleClass}>{next.title}</span>
         </Link>
       )}
     </nav>

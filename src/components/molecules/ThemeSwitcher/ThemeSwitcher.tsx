@@ -22,7 +22,7 @@ export function ThemeSwitcher() {
     <button
       aria-label={actionLabel}
       className={cn(
-        'inline-flex h-7 w-7 items-center justify-center rounded text-neutral-500 transition-colors hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400',
+        'inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 transition-colors duration-300 hover:border-neutral-900 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-300 dark:hover:text-neutral-50',
       )}
       onClick={() => {
         setPreference(next);

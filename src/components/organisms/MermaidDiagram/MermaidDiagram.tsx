@@ -17,9 +17,20 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
     async function renderChart() {
       try {
         const { default: mermaid } = await import('mermaid');
+        const isDark = resolvedTheme === 'dark';
+
         mermaid.initialize({
           startOnLoad: false,
-          theme: resolvedTheme === 'dark' ? 'dark' : 'default',
+          theme: 'base',
+          themeVariables: {
+            fontFamily: 'Instrument Sans Variable, ui-sans-serif, system-ui, sans-serif',
+            lineColor: isDark ? '#a8a29a' : '#6b655d',
+            primaryBorderColor: isDark ? '#7f9bf0' : '#3b55c4',
+            primaryColor: isDark ? '#1f2a52' : '#e6ebfb',
+            primaryTextColor: isDark ? '#f4f1ec' : '#1b1814',
+            secondaryColor: isDark ? '#4a2a1c' : '#fbe6d8',
+            tertiaryColor: isDark ? '#26221d' : '#f4f0ea',
+          },
         });
 
         const { svg } = await mermaid.render(`mermaid-${crypto.randomUUID()}`, chart);
@@ -48,7 +59,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
   if (error) {
     return (
       <div
-        className="my-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+        className="my-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
         role="alert"
       >
         {error}

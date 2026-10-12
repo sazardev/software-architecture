@@ -5,6 +5,8 @@ import {
   getDocNeighbors,
   getDocsByLocale,
   getDocsBySection,
+  getLatestDocs,
+  getRelatedDocs,
 } from '@/lib/content/registry';
 
 describe('registro de contenido', () => {
@@ -46,5 +48,28 @@ describe('registro de contenido', () => {
 
   it('devuelve undefined para slugs desconocidos', () => {
     expect(getDocBySlug('es', 'no-existe')).toBeUndefined();
+  });
+
+  it('ordena los documentos más recientes primero y respeta el límite', () => {
+    const latest = getLatestDocs('es', 2);
+
+    expect(latest).toHaveLength(2);
+    expect((latest[0]?.updatedAt ?? '') >= (latest[1]?.updatedAt ?? '')).toBe(true);
+  });
+
+  it('propone lecturas relacionadas sin repetir el documento ni las exclusiones', () => {
+    const entry = getDocBySlug('es', 'solid');
+
+    expect(entry).toBeDefined();
+
+    if (entry === undefined) {
+      return;
+    }
+
+    const related = getRelatedDocs(entry, 3, ['clean-code']).map((doc) => doc.slug);
+
+    expect(related).not.toContain('solid');
+    expect(related).not.toContain('clean-code');
+    expect(related.length).toBeLessThanOrEqual(3);
   });
 });

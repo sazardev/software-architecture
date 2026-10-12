@@ -33,10 +33,10 @@ export function CategoryFilter({ active, className, onSelect }: CategoryFilterPr
           <button
             aria-pressed={isActive}
             className={cn(
-              'rounded-full border px-3 py-1 text-sm font-medium transition-colors',
+              'rounded-full border px-4 py-1.5 font-sans text-sm font-medium transition-colors duration-300',
               isActive
-                ? 'border-brand-600 bg-brand-600 text-white'
-                : 'border-neutral-300 text-neutral-600 hover:border-brand-400 hover:text-brand-600 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-brand-600 dark:hover:text-brand-400',
+                ? 'border-neutral-900 bg-neutral-900 text-neutral-50 dark:border-neutral-50 dark:bg-neutral-50 dark:text-neutral-900'
+                : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-300 dark:hover:text-neutral-50',
             )}
             key={option.id ?? 'all'}
             onClick={() => {

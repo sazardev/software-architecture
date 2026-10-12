@@ -16,6 +16,6 @@ describe('Button', () => {
   it('aplica la variante solicitada', () => {
     render(<Button variant="secondary">Secundario</Button>);
 
-    expect(screen.getByRole('button', { name: 'Secundario' })).toHaveClass('bg-neutral-200');
+    expect(screen.getByRole('button', { name: 'Secundario' })).toHaveClass('border-neutral-300');
   });
 });

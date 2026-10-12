@@ -74,7 +74,7 @@ export default defineConfig({
         'icons/icon.svg',
       ],
       manifest: {
-        background_color: '#fafafa',
+        background_color: '#fbf9f5',
         categories: ['education', 'productivity', 'developer'],
         description:
           'Recursos ultra interactivos, diagramas vivos y documentación profunda para diseñar sistemas que escalan.',
@@ -101,7 +101,7 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         globIgnores: ['**/404.html'],
-        globPatterns: ['**/*.{js,css,html,svg,png,json,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,json,webmanifest}', '**/*-latin-*.woff2'],
         navigateFallback: 'index.html',
       },
     }),

@@ -1,5 +1,8 @@
 export const es = {
   a11y: {
+    backToTop: 'Volver arriba',
+    mainNavigation: 'Navegación principal',
+    readingProgress: 'Progreso de lectura',
     breadcrumbs: 'Migas de pan',
     categoryFilter: 'Filtrar por sección',
     pager: 'Navegación entre documentos',
@@ -8,6 +11,12 @@ export const es = {
     tableOfContents: 'En esta página',
   },
   docs: {
+    allArticles: 'Todos los artículos',
+    featured: 'Destacado',
+    keepReading: 'Sigue leyendo',
+    minutesShort: (minutes: number) => `${minutes} min`,
+    readArticle: 'Leer artículo',
+    relatedDescription: 'Más lecturas de la misma sección.',
     breadcrumbDocs: 'Documentación',
     breadcrumbHome: 'Inicio',
     empty: 'No hay documentos en esta sección todavía.',
@@ -24,9 +33,58 @@ export const es = {
     updatedOn: (date: string) => `actualizado el ${date}`,
   },
   home: {
+    cta: {
+      body: 'Los fundamentos te ahorran meses de refactor. Empieza por el primer artículo y avanza a tu ritmo.',
+      title: 'Empieza por los cimientos',
+    },
+    eyebrow: 'Un cuaderno de ingeniería',
+    heroAlt: 'Diagrama animado de una arquitectura en capas',
+    latest: {
+      all: 'Ver toda la documentación',
+      eyebrow: 'Lecturas recientes',
+      title: 'Lo último del cuaderno',
+    },
+    principles: {
+      items: [
+        {
+          body: 'Cada artículo parte de un problema real y termina en una idea que puedes dibujar en una servilleta.',
+          title: 'Claridad antes que ingenio',
+        },
+        {
+          body: 'Diagramas, mapas y ejemplos interactivos: ves el sistema moverse, no solo lees sobre él.',
+          title: 'Diagramas vivos',
+        },
+        {
+          body: 'Tipografía cómoda, modo oscuro, búsqueda instantánea y funcionamiento sin conexión.',
+          title: 'Pensado para leer',
+        },
+      ],
+      title: 'Una forma más serena de aprender arquitectura',
+    },
     search: 'Buscar recursos',
-    start: 'Empezar',
-    title: 'Arquitectura de software, en serio',
+    sections: {
+      eyebrow: 'Rutas de lectura',
+      explore: 'Explorar sección',
+      title: 'Tres caminos, un mismo oficio',
+    },
+    start: 'Empezar a leer',
+    stats: {
+      articles: 'artículos',
+      minutes: 'minutos de lectura',
+      sections: 'secciones',
+    },
+    titleAccent: 'en serio',
+    titleLead: 'Arquitectura de software,',
+  },
+  footer: {
+    explore: 'Explorar',
+    note: 'Hecho con cuidado para quienes diseñan sistemas.',
+    rights: (year: number) => `© ${year} Software Architecture`,
+    sections: 'Secciones',
+  },
+  code: {
+    copied: 'Copiado',
+    copy: 'Copiar código',
   },
   languageSwitcher: {
     label: 'Idioma',

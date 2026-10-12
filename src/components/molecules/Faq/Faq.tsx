@@ -8,5 +8,5 @@ type FaqProps = Readonly<{
 }>;
 
 export function Faq({ children, className }: FaqProps) {
-  return <div className={cn('my-6 grid gap-3', className)}>{children}</div>;
+  return <div className={cn('my-8 grid gap-3', className)}>{children}</div>;
 }

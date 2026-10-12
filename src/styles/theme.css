@@ -1,18 +1,118 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * "Tinta y brasa": papel cálido, tinta casi negra, azul de plano arquitectónico para lo
+ * interactivo y un acento brasa para los detalles con alma. Los neutrales sobrescriben los de
+ * Tailwind para que todo el sistema herede la calidez sin tocar cada componente.
+ */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --color-brand-50: oklch(0.962 0.018 272.3);
-  --color-brand-100: oklch(0.93 0.034 272.8);
-  --color-brand-200: oklch(0.87 0.065 274);
-  --color-brand-300: oklch(0.785 0.115 274.7);
-  --color-brand-400: oklch(0.68 0.17 276.9);
-  --color-brand-500: oklch(0.585 0.233 277.1);
-  --color-brand-600: oklch(0.511 0.262 276.9);
-  --color-brand-700: oklch(0.457 0.24 277);
-  --color-brand-800: oklch(0.398 0.195 277.4);
-  --color-brand-900: oklch(0.359 0.144 278.7);
-  --color-brand-950: oklch(0.257 0.09 281.3);
+  --color-neutral-50: oklch(0.985 0.006 85);
+  --color-neutral-100: oklch(0.967 0.009 85);
+  --color-neutral-200: oklch(0.925 0.012 82);
+  --color-neutral-300: oklch(0.87 0.014 80);
+  --color-neutral-400: oklch(0.71 0.015 78);
+  --color-neutral-500: oklch(0.55 0.015 75);
+  --color-neutral-600: oklch(0.45 0.015 72);
+  --color-neutral-700: oklch(0.37 0.014 70);
+  --color-neutral-800: oklch(0.28 0.012 68);
+  --color-neutral-900: oklch(0.21 0.01 66);
+  --color-neutral-950: oklch(0.16 0.009 65);
+
+  --color-brand-50: oklch(0.972 0.012 262);
+  --color-brand-100: oklch(0.945 0.025 263);
+  --color-brand-200: oklch(0.885 0.05 263);
+  --color-brand-300: oklch(0.795 0.09 263);
+  --color-brand-400: oklch(0.69 0.14 263);
+  --color-brand-500: oklch(0.58 0.17 263);
+  --color-brand-600: oklch(0.49 0.175 263);
+  --color-brand-700: oklch(0.42 0.155 263);
+  --color-brand-800: oklch(0.35 0.125 263);
+  --color-brand-900: oklch(0.29 0.09 263);
+  --color-brand-950: oklch(0.22 0.06 263);
+
+  --color-accent-50: oklch(0.975 0.014 60);
+  --color-accent-100: oklch(0.945 0.036 58);
+  --color-accent-200: oklch(0.89 0.075 55);
+  --color-accent-300: oklch(0.82 0.12 52);
+  --color-accent-400: oklch(0.74 0.15 48);
+  --color-accent-500: oklch(0.67 0.165 45);
+  --color-accent-600: oklch(0.59 0.165 42);
+  --color-accent-700: oklch(0.5 0.14 40);
+  --color-accent-800: oklch(0.41 0.11 38);
+  --color-accent-900: oklch(0.34 0.08 36);
+  --color-accent-950: oklch(0.25 0.055 34);
+
+  --shadow-soft: 0 1px 2px oklch(0.3 0.02 70 / 0.05), 0 8px 24px -8px oklch(0.3 0.02 70 / 0.12);
+  --shadow-lift: 0 2px 4px oklch(0.3 0.02 70 / 0.06), 0 18px 40px -12px oklch(0.3 0.04 70 / 0.22);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-rise: rise 0.9s var(--ease-out-soft) both;
+  --animate-fade: fade 1.2s ease both;
+  --animate-draw: draw 2.4s var(--ease-out-soft) both;
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 3.2s ease-out infinite;
+  --animate-flow: flow 2.4s linear infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      opacity: 0.55;
+      transform: scale(0.6);
+    }
+    80%,
+    100% {
+      opacity: 0;
+      transform: scale(1.9);
+    }
+  }
+
+  @keyframes flow {
+    to {
+      stroke-dashoffset: -24;
+    }
+  }
 }

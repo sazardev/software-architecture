@@ -1,2 +1,11 @@
+export { ClosingCta } from './ClosingCta';
+export { DocHeader } from './DocHeader';
+export { HomeHero, type HomeStats } from './HomeHero';
+export { LatestDocs } from './LatestDocs';
 export { MermaidDiagram } from './MermaidDiagram';
+export { PrinciplesBand } from './PrinciplesBand';
+export { RelatedDocs } from './RelatedDocs';
 export { SearchResults } from './SearchResults';
+export { SectionPaths } from './SectionPaths';
+export { SiteFooter } from './SiteFooter';
+export { SiteHeader } from './SiteHeader';

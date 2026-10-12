@@ -11,13 +11,11 @@ export function Checklist({ children, className }: ChecklistProps) {
   return (
     <div
       className={cn(
-        'my-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900/40',
+        'my-8 rounded-2xl border border-neutral-200 bg-white p-6 text-[0.95em] shadow-soft dark:border-neutral-800 dark:bg-neutral-900/60 dark:shadow-none',
         className,
       )}
     >
-      <div className="[&_li]:my-1 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:marker:text-brand-600 dark:[&_ul]:marker:text-brand-400">
-        {children}
-      </div>
+      <div className="callout-body checklist-body">{children}</div>
     </div>
   );
 }

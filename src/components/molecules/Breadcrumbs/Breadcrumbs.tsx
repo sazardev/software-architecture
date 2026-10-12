@@ -20,7 +20,7 @@ export function Breadcrumbs({ className, items }: BreadcrumbsProps) {
   return (
     <nav
       aria-label={messages.a11y.breadcrumbs}
-      className={cn('mb-6 text-sm text-neutral-500 dark:text-neutral-400', className)}
+      className={cn('font-sans text-[0.8rem] text-neutral-500 dark:text-neutral-400', className)}
     >
       <ol className="flex flex-wrap items-center gap-2">
         {items.map((item, index) => {
@@ -28,7 +28,11 @@ export function Breadcrumbs({ className, items }: BreadcrumbsProps) {
 
           return (
             <li className="flex items-center gap-2" key={item.label}>
-              {index > 0 ? <span aria-hidden="true">/</span> : null}
+              {index > 0 ? (
+                <span aria-hidden="true" className="text-neutral-300 dark:text-neutral-700">
+                  /
+                </span>
+              ) : null}
               {!isLast && item.to !== undefined ? (
                 <Link
                   className="transition-colors hover:text-brand-600 dark:hover:text-brand-400"

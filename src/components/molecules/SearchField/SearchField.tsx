@@ -56,7 +56,21 @@ export function SearchField({
         {messages.a11y.searchField}
       </label>
       <div className="relative">
+        <svg
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-5 h-5 w-5 -translate-y-1/2 text-neutral-400"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth="1.8"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
         <Input
+          className="pl-13"
+
           aria-keyshortcuts="/"
           autoFocus={shouldAutoFocus}
           id={id}
@@ -68,7 +82,7 @@ export function SearchField({
           type="search"
           value={value}
         />
-        <kbd className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded border border-neutral-300 px-1.5 text-xs text-neutral-400 sm:block dark:border-neutral-700 dark:text-neutral-500">
+        <kbd className="pointer-events-none absolute top-1/2 right-4 hidden -translate-y-1/2 rounded-md border border-neutral-300 px-2 py-0.5 font-mono text-xs text-neutral-400 sm:block dark:border-neutral-700 dark:text-neutral-500">
           /
         </kbd>
       </div>

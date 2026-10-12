@@ -1,19 +1,17 @@
-import { Link, createFileRoute, notFound } from '@tanstack/react-router';
+import { createFileRoute, notFound } from '@tanstack/react-router';
 import type { ComponentType } from 'react';
 
-import { Badge } from '@/components/atoms';
-import { Breadcrumbs, DocPager, TableOfContents } from '@/components/molecules';
+import { Container } from '@/components/atoms';
+import { DocPager, ReadingProgress, TableOfContents } from '@/components/molecules';
+import { DocHeader, RelatedDocs } from '@/components/organisms';
 import { NotFoundPage } from '@/components/templates';
 import { site } from '@/lib/config/site';
-import { getDocBySlug, getDocNeighbors } from '@/lib/content/registry';
-import { getSectionLabel } from '@/lib/content/taxonomy';
+import { getDocBySlug, getDocNeighbors, getRelatedDocs } from '@/lib/content/registry';
 import { resolveLocaleParam } from '@/lib/i18n/locale-head';
 import { getMessages } from '@/lib/i18n/messages';
 import { useMessages } from '@/lib/i18n/use-messages';
-import { searchParams } from '@/lib/search/search-params';
 import { articleJsonLd, breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import { buildPageHead } from '@/lib/seo/meta';
-import { formatDate } from '@/lib/utils/format-date';
 
 type DocModule = {
   default: ComponentType;
@@ -84,59 +82,31 @@ function DocNotFound() {
 
 function DocPage() {
   const { docModule, entry } = Route.useLoaderData();
-  const messages = useMessages();
   const { next, previous } = getDocNeighbors(entry.locale, entry.slug);
-  const sectionLabel = getSectionLabel(entry.category, entry.locale);
+  const neighborSlugs = [next?.slug, previous?.slug].filter(
+    (slug): slug is string => slug !== undefined,
+  );
   const DocContent = docModule.default;
 
   return (
-    <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-10">
-      <div className="min-w-0">
-        <Breadcrumbs
-          items={[
-            {
-              label: messages.docs.breadcrumbHome,
-              params: { locale: entry.locale },
-              to: '/$locale/',
-            },
-            {
-              label: messages.docs.breadcrumbDocs,
-              params: { locale: entry.locale },
-              to: '/$locale/docs',
-            },
-            { label: entry.title },
-          ]}
-        />
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Badge tone="brand">{sectionLabel}</Badge>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">
-            {messages.docs.readingTime(entry.readingMinutes)} ·{' '}
-            {messages.docs.updatedOn(formatDate(entry.updatedAt, entry.locale))}
-          </span>
+    <>
+      <ReadingProgress />
+      <DocHeader entry={entry} />
+      <Container className="grid gap-12 py-12 lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-16 lg:py-16">
+        <div className="min-w-0">
+          <div className="mb-10 lg:hidden">
+            <TableOfContents collapsible headings={entry.headings} />
+          </div>
+          <article className="prose">
+            <DocContent />
+          </article>
+          <DocPager next={next} previous={previous} />
+          <RelatedDocs docs={getRelatedDocs(entry, 2, neighborSlugs)} />
         </div>
-        <div className="mb-2 flex flex-wrap gap-2">
-          {entry.tags.map((tag) => (
-            <Link
-              key={tag}
-              params={{ locale: entry.locale }}
-              search={searchParams({ tag })}
-              to="/$locale/search"
-            >
-              <Badge tone="outline">#{tag}</Badge>
-            </Link>
-          ))}
-        </div>
-        <div className="mb-8 lg:hidden">
-          <TableOfContents collapsible headings={entry.headings} />
-        </div>
-        <article className="prose prose-neutral dark:prose-invert">
-          <DocContent />
-        </article>
-        <DocPager next={next} previous={previous} />
-      </div>
-      <aside className="sticky top-20 hidden self-start lg:block">
-        <TableOfContents headings={entry.headings} />
-      </aside>
-    </div>
+        <aside className="sticky top-24 hidden max-h-[calc(100dvh-8rem)] [scrollbar-width:thin] self-start overflow-y-auto lg:block">
+          <TableOfContents headings={entry.headings} />
+        </aside>
+      </Container>
+    </>
   );
 }

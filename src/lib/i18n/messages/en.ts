@@ -2,6 +2,9 @@ import type { Messages } from '@/lib/i18n/messages/es';
 
 export const en: Messages = {
   a11y: {
+    backToTop: 'Back to top',
+    mainNavigation: 'Main navigation',
+    readingProgress: 'Reading progress',
     breadcrumbs: 'Breadcrumbs',
     categoryFilter: 'Filter by section',
     pager: 'Document navigation',
@@ -10,6 +13,12 @@ export const en: Messages = {
     tableOfContents: 'On this page',
   },
   docs: {
+    allArticles: 'All articles',
+    featured: 'Featured',
+    keepReading: 'Keep reading',
+    minutesShort: (minutes: number) => `${minutes} min`,
+    readArticle: 'Read article',
+    relatedDescription: 'More reads from the same section.',
     breadcrumbDocs: 'Documentation',
     breadcrumbHome: 'Home',
     empty: 'There are no documents in this section yet.',
@@ -26,9 +35,58 @@ export const en: Messages = {
     updatedOn: (date: string) => `updated on ${date}`,
   },
   home: {
+    cta: {
+      body: 'Foundations save you months of refactoring. Start with the first article and go at your own pace.',
+      title: 'Start with the foundations',
+    },
+    eyebrow: 'An engineering notebook',
+    heroAlt: 'Animated diagram of a layered architecture',
+    latest: {
+      all: 'Browse all documentation',
+      eyebrow: 'Recent reads',
+      title: 'Latest from the notebook',
+    },
+    principles: {
+      items: [
+        {
+          body: 'Every article starts from a real problem and ends in an idea you can sketch on a napkin.',
+          title: 'Clarity over cleverness',
+        },
+        {
+          body: 'Diagrams, maps and interactive examples: you watch the system move instead of just reading about it.',
+          title: 'Living diagrams',
+        },
+        {
+          body: 'Comfortable typography, dark mode, instant search and offline support.',
+          title: 'Made for reading',
+        },
+      ],
+      title: 'A calmer way to learn architecture',
+    },
     search: 'Search resources',
-    start: 'Get started',
-    title: 'Software architecture, for real',
+    sections: {
+      eyebrow: 'Reading paths',
+      explore: 'Explore section',
+      title: 'Three paths, one craft',
+    },
+    start: 'Start reading',
+    stats: {
+      articles: 'articles',
+      minutes: 'minutes of reading',
+      sections: 'sections',
+    },
+    titleAccent: 'done right',
+    titleLead: 'Software architecture,',
+  },
+  footer: {
+    explore: 'Explore',
+    note: 'Crafted with care for people who design systems.',
+    rights: (year: number) => `© ${year} Software Architecture`,
+    sections: 'Sections',
+  },
+  code: {
+    copied: 'Copied',
+    copy: 'Copy code',
   },
   languageSwitcher: {
     label: 'Language',

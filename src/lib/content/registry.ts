@@ -60,3 +60,23 @@ export function getDocNeighbors(locale: Locale, slug: string): DocNeighbors {
 
   return neighbors;
 }
+
+export function getLatestDocs(locale: Locale, limit: number): ContentEntry[] {
+  return getDocsByLocale(locale)
+    .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.order - b.order)
+    .slice(0, limit);
+}
+
+export function getRelatedDocs(
+  entry: ContentEntry,
+  limit: number,
+  excludeSlugs: readonly string[] = [],
+): ContentEntry[] {
+  const candidates = getDocsByLocale(entry.locale).filter(
+    (doc) => doc.slug !== entry.slug && !excludeSlugs.includes(doc.slug),
+  );
+  const sameSection = candidates.filter((doc) => doc.category === entry.category);
+  const otherSections = candidates.filter((doc) => doc.category !== entry.category);
+
+  return [...sameSection, ...otherSections].slice(0, limit);
+}

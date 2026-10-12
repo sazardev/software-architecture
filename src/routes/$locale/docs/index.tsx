@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 
-import { Badge } from '@/components/atoms';
+import { Badge, Container, Eyebrow, Reveal } from '@/components/atoms';
 import { CategoryFilter } from '@/components/molecules';
 import { site } from '@/lib/config/site';
 import { parseDocsSearchParams } from '@/lib/content/docs-search-params';
@@ -38,14 +38,21 @@ function DocsIndexPage() {
   const total = groups.reduce((sum, group) => sum + group.docs.length, 0);
 
   return (
-    <section className="mx-auto max-w-3xl">
-      <div className="mb-8 space-y-4">
-        <h1 className="text-3xl font-semibold tracking-tight">{messages.docs.title}</h1>
-        <p className="text-neutral-600 dark:text-neutral-300">
+    <Container className="py-14 sm:py-20" size="reading">
+      <div className="animate-rise space-y-5">
+        <Eyebrow>{messages.nav.docs}</Eyebrow>
+        <h1
+          className="font-display text-[clamp(2.6rem,6vw,4.6rem)] leading-[1.02] font-medium tracking-[-0.03em] text-neutral-950 dark:text-neutral-50"
+          style={{ fontVariationSettings: "'opsz' 144" }}
+        >
+          {messages.docs.title}
+        </h1>
+        <p className="max-w-xl font-serif text-xl leading-relaxed text-neutral-600 dark:text-neutral-300">
           {messages.docs.summary(total, groups.length)}
         </p>
         <CategoryFilter
           active={category}
+          className="pt-3"
           onSelect={(nextCategory) => {
             void navigate({ search: { category: nextCategory } });
           }}
@@ -53,46 +60,66 @@ function DocsIndexPage() {
       </div>
 
       {groups.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-neutral-300 p-8 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+        <p className="mt-16 rounded-2xl border border-dashed border-neutral-300 p-10 text-center font-sans text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
           {messages.docs.empty}
         </p>
       ) : (
-        groups.map((group) => (
-          <div className="mb-10" key={group.section.id}>
-            <h2 className="text-lg font-semibold">{getSectionText(group.section, locale).label}</h2>
-            <p className="mb-4 text-sm text-neutral-500 dark:text-neutral-400">
-              {getSectionText(group.section, locale).description}
-            </p>
-            <ul className="grid gap-3">
-              {group.docs.map((doc) => (
-                <li key={doc.slug}>
-                  <Link
-                    className="block rounded-lg border border-neutral-200 p-4 transition-colors hover:border-brand-400 dark:border-neutral-800 dark:hover:border-brand-600"
-                    params={{ locale, slug: doc.slug }}
-                    to="/$locale/docs/$slug"
-                  >
-                    <p className="font-medium">{doc.title}</p>
-                    <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                      {doc.description}
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
-                      <span>
-                        {messages.docs.readingTime(doc.readingMinutes)} ·{' '}
-                        {formatDate(doc.updatedAt, locale)}
-                      </span>
-                      {doc.tags.map((tag) => (
-                        <Badge key={tag} tone="outline">
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
+        groups.map((group) => {
+          const text = getSectionText(group.section, locale);
+
+          return (
+            <section className="mt-16" key={group.section.id}>
+              <Reveal className="border-b border-neutral-300 pb-5 dark:border-neutral-700">
+                <h2 className="font-display text-3xl font-medium tracking-tight text-neutral-950 dark:text-neutral-50">
+                  {text.label}
+                </h2>
+                <p className="mt-1.5 font-serif text-lg text-neutral-600 dark:text-neutral-400">
+                  {text.description}
+                </p>
+              </Reveal>
+              <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                {group.docs.map((doc, index) => (
+                  <li key={doc.slug}>
+                    <Reveal delay={index * 70}>
+                      <Link
+                        className="group grid gap-x-8 gap-y-2 py-7 sm:grid-cols-[1fr_auto]"
+                        params={{ locale, slug: doc.slug }}
+                        to="/$locale/docs/$slug"
+                      >
+                        <div className="min-w-0">
+                          <h3 className="font-display text-2xl leading-snug font-medium tracking-tight text-neutral-950 transition-colors group-hover:text-brand-700 dark:text-neutral-50 dark:group-hover:text-brand-300">
+                            {doc.title}
+                          </h3>
+                          <p className="mt-2 max-w-2xl font-serif text-[1.05rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                            {doc.description}
+                          </p>
+                          <ul className="mt-3 flex flex-wrap gap-2">
+                            {doc.tags.map((tag) => (
+                              <li key={tag}>
+                                <Badge tone="neutral">#{tag}</Badge>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="flex items-start gap-4 font-sans text-sm text-neutral-500 sm:flex-col sm:items-end sm:gap-1 sm:pt-1.5 dark:text-neutral-400">
+                          <span>{messages.docs.readingTime(doc.readingMinutes)}</span>
+                          <span>{formatDate(doc.updatedAt, locale)}</span>
+                          <span
+                            aria-hidden="true"
+                            className="hidden text-lg text-accent-600 transition-transform duration-300 group-hover:translate-x-1.5 sm:mt-3 sm:block"
+                          >
+                            →
+                          </span>
+                        </div>
+                      </Link>
+                    </Reveal>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })
       )}
-    </section>
+    </Container>
   );
 }
