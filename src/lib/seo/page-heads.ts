@@ -89,7 +89,7 @@ export function docSeo(entry: ContentEntry): PageSeo {
       alternateLocales: locales.filter((code) => getDocBySlug(code, entry.slug) !== undefined),
       article: {
         modifiedAt: entry.updatedAt,
-        publishedAt: entry.publishedAt ?? entry.updatedAt,
+        publishedAt: entry.publishedAt,
         section: sectionLabel,
         tags: entry.tags,
       },
@@ -109,21 +109,5 @@ export function docSeo(entry: ContentEntry): PageSeo {
       ]),
     ],
     noscript: { description: entry.description, title: entry.title },
-  };
-}
-
-export function searchSeo(locale: Locale): PageSeo {
-  const messages = getMessages(locale);
-
-  return {
-    head: buildPageHead({
-      description: messages.search.metaDescription,
-      locale,
-      noindex: true,
-      path: `/${locale}/search`,
-      title: `${messages.search.title} · ${site.name}`,
-    }),
-    jsonLd: [],
-    noscript: { description: messages.search.metaDescription, title: messages.search.title },
   };
 }

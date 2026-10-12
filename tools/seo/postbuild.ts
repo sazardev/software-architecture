@@ -9,7 +9,7 @@ import { defaultLocale, locales, type Locale } from '@/lib/i18n/locales';
 import { getMessages } from '@/lib/i18n/messages';
 import { absoluteUrl } from '@/lib/seo/absolute-url';
 import { feedPath, ogImagePath } from '@/lib/seo/og';
-import { docSeo, docsIndexSeo, homeSeo, searchSeo, type PageSeo } from '@/lib/seo/page-heads';
+import { docSeo, docsIndexSeo, homeSeo, type PageSeo } from '@/lib/seo/page-heads';
 import { formatDate } from '@/lib/utils/format-date';
 
 import { buildFeed } from './feed';
@@ -93,7 +93,6 @@ function listPages(): PageJob[] {
   const pages = locales.flatMap((locale) => [
     { locale, path: `${locale}/index.html`, seo: homeSeo(locale) },
     { locale, path: `${locale}/docs/index.html`, seo: docsIndexSeo(locale) },
-    { locale, path: `${locale}/search/index.html`, seo: searchSeo(locale) },
     ...getDocsByLocale(locale).map((entry) => ({
       locale,
       path: `${locale}/docs/${entry.slug}/index.html`,

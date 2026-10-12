@@ -44,6 +44,21 @@
           "description": "Habits, continuous refactoring and standards that keep the system healthy."
         }
       }
+    },
+    {
+      "id": "tendencias",
+      "icon": "compass",
+      "order": 4,
+      "labels": {
+        "es": {
+          "label": "Tendencias",
+          "description": "Lenguajes, plataformas y cambios de la industria que conviene entender antes de decidir."
+        },
+        "en": {
+          "label": "Trends",
+          "description": "Languages, platforms and industry shifts worth understanding before you decide."
+        }
+      }
     }
   ]
 }

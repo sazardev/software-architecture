@@ -1,8 +1,9 @@
 import { Link } from '@tanstack/react-router';
 
-import { buttonVariants } from '@/components/atoms';
+import { Button, buttonVariants } from '@/components/atoms';
 import { useLocale } from '@/lib/i18n/locale-context';
 import { useMessages } from '@/lib/i18n/use-messages';
+import { useCommandPalette } from '@/lib/search/palette-context';
 import { cn } from '@/lib/utils/cn';
 
 type NotFoundPageProps = Readonly<{
@@ -14,6 +15,7 @@ type NotFoundPageProps = Readonly<{
 export function NotFoundPage({ className, description, title }: NotFoundPageProps) {
   const locale = useLocale();
   const messages = useMessages();
+  const { open } = useCommandPalette();
 
   return (
     <section className={cn('bp-grid relative isolate px-5 py-20 sm:py-32', className)}>
@@ -34,13 +36,15 @@ export function NotFoundPage({ className, description, title }: NotFoundPageProp
           <Link className={buttonVariants({ size: 'lg' })} params={{ locale }} to="/$locale">
             {messages.notFound.home}
           </Link>
-          <Link
-            className={buttonVariants({ size: 'lg', variant: 'secondary' })}
-            params={{ locale }}
-            to="/$locale/search"
+          <Button
+            onClick={() => {
+              open();
+            }}
+            size="lg"
+            variant="secondary"
           >
             {messages.notFound.search}
-          </Link>
+          </Button>
         </div>
       </div>
     </section>

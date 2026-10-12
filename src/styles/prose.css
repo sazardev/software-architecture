@@ -294,18 +294,19 @@
   background-color: var(--shiki-dark-bg);
 }
 
-/* El marco y la retícula los pinta MermaidDiagram (BlueprintFrame + bp-grid). */
-.prose .mermaid-diagram {
-  display: flex;
-  justify-content: center;
-  margin-block: 0;
-  padding: 1.5rem 1.25rem;
-  overflow-x: auto;
+/* El marco y el panel de plano los pinta MermaidDiagram (BlueprintFrame + bp-panel). */
+.mermaid-diagram {
+  cursor: grab;
+  scrollbar-width: thin;
 }
 
-.mermaid-diagram svg {
-  max-width: 100%;
-  height: auto;
+.mermaid-diagram:active {
+  cursor: grabbing;
+}
+
+/* Visor a pantalla completa: los nodos de los flowcharts se pueden reacomodar. */
+[data-editable='true'] .mermaid-viewer g.node {
+  cursor: move;
 }
 
 /* Cuerpos de componentes MDX (Callout, ExerciseCard, Checklist): sin márgenes en los extremos. */

@@ -16,6 +16,11 @@
     text-size-adjust: 100%;
   }
 
+  /* Con un diálogo modal abierto (paleta de comandos) la página no hace scroll. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
   body {
     @apply bg-neutral-50 font-sans text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100;
     font-feature-settings:

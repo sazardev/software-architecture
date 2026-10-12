@@ -29,7 +29,7 @@ export function articleJsonLd(entry: ContentEntry, sectionLabel: string): string
     articleSection: sectionLabel,
     author: publisher(),
     dateModified: entry.updatedAt,
-    datePublished: entry.publishedAt ?? entry.updatedAt,
+    datePublished: entry.publishedAt,
     description: entry.description,
     headline: entry.title,
     image: ogImageUrl(entry.locale, entry.slug),

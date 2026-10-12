@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Toaster } from '@/components/molecules';
-import { SiteFooter, SiteHeader } from '@/components/organisms';
+import { CommandPalette, SiteFooter, SiteHeader } from '@/components/organisms';
 import { useMessages } from '@/lib/i18n/use-messages';
 
 type SiteShellProps = Readonly<{
@@ -24,6 +24,7 @@ export function SiteShell({ children }: SiteShellProps) {
         {children}
       </main>
       <SiteFooter />
+      <CommandPalette />
       <Toaster />
     </div>
   );

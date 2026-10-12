@@ -1,15 +1,22 @@
 import { Link } from '@tanstack/react-router';
 
-import { BlueprintFrame, Container, Eyebrow, Reveal, SectionGlyph } from '@/components/atoms';
+import {
+  BlueprintFrame,
+  Container,
+  Eyebrow,
+  Reveal,
+  SectionGlyph,
+  buttonVariants,
+} from '@/components/atoms';
 import type { SectionWithDocs } from '@/lib/content/registry';
 import { getSectionText } from '@/lib/content/taxonomy';
 import { useLocale } from '@/lib/i18n/locale-context';
 import { useMessages } from '@/lib/i18n/use-messages';
 
 /**
-Temas visibles en la portada; el resto se explora desde /docs (crece sin tocar el diseño).
+Temas visibles en la portada (los de más artículos); el resto se explora desde /docs.
 */
-const HOME_TOPIC_LIMIT = 6;
+const HOME_TOPIC_LIMIT = 3;
 
 type SectionPathsProps = Readonly<{
   groups: SectionWithDocs[];
@@ -22,7 +29,9 @@ function pad(value: number): string {
 export function SectionPaths({ groups }: SectionPathsProps) {
   const locale = useLocale();
   const messages = useMessages();
-  const visible = groups.slice(0, HOME_TOPIC_LIMIT);
+  const visible = groups
+    .toSorted((a, b) => b.docs.length - a.docs.length)
+    .slice(0, HOME_TOPIC_LIMIT);
 
   return (
     <Container className="pt-20 sm:pt-28">
@@ -104,13 +113,14 @@ export function SectionPaths({ groups }: SectionPathsProps) {
         })}
       </ul>
       {groups.length > HOME_TOPIC_LIMIT ? (
-        <Reveal className="mt-10">
+        <Reveal className="mt-10 flex justify-center">
           <Link
-            className="link-underline pb-1 font-sans text-sm font-medium text-brand-700 dark:text-brand-300"
+            className={buttonVariants({ size: 'lg', variant: 'secondary' })}
             params={{ locale }}
             to="/$locale/docs"
           >
-            {messages.home.sections.all(groups.length)} →
+            {messages.home.sections.all(groups.length)}
+            <span aria-hidden="true">→</span>
           </Link>
         </Reveal>
       ) : null}

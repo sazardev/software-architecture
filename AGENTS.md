@@ -54,7 +54,7 @@ src/
     content/   # taxonomía, tipos, registry (índice generado)
     i18n/      # locales.json, mensajes tipados (es/en), provider y hooks
     theme/     # preferencias de tema (claro/oscuro/sistema), provider y hooks
-    search/    # motor de búsqueda, params de URL, hook de búsqueda diferida
+    search/    # motor de búsqueda, sintaxis y items de la paleta de comandos, provider y atajos
     seo/       # URLs absolutas, meta builders, JSON-LD
     utils/     # utilidades puras (cn, format-date…)
   mdx/         # provider + mapa de componentes disponibles en MDX
@@ -99,11 +99,11 @@ Reglas de dependencia (aplicadas por `import-x/no-restricted-paths` en `eslint.c
   de `loaderData` colapsa a `never` (limitación actual del router).
 - **Query params**: todo param se valida y normaliza en `lib/*/**-params.ts`
   (`validateSearch`). Los tipos usan `clave?: string | undefined` para convivir con
-  `exactOptionalPropertyTypes`. La URL es el estado: filtros y búsquedas son compartibles.
+  `exactOptionalPropertyTypes`. La URL es el estado de los filtros de listados (compartibles).
 - **SEO**: cada ruta construye su head con `buildPageHead()` (title, description, canonical,
   alternates `hreflang` + `x-default`, OG/Twitter con `og:locale`). Añade JSON-LD
-  (`articleJsonLd`, `breadcrumbJsonLd`) cuando el contenido lo justifique. `/search` es
-  `noindex`.
+  (`articleJsonLd`, `breadcrumbJsonLd`) cuando el contenido lo justifique. No hay página de
+  búsqueda: la búsqueda es la paleta de comandos (§7).
 - **i18n en rutas**: las páginas viven bajo `/$locale/...` (`/es/...`, `/en/...`); `/` redirige
   al idioma preferido del navegador. El layout `$locale.tsx` valida el idioma, provee el
   contexto (`LocaleProvider`) y actualiza `<html lang>`. Nunca escribas textos de UI en un
@@ -119,18 +119,25 @@ slugs (la auditoría avisa con `W-TRANSLATION` si falta una traducción).
 
 Frontmatter obligatorio (validado con zod en la auditoría):
 
-| Campo         | Regla                                                                 |
-| ------------- | --------------------------------------------------------------------- |
-| `title`       | 3–60 caracteres                                                       |
-| `description` | 40–160 caracteres (se usa en SEO y búsqueda)                          |
-| `category`    | id existente en `src/lib/content/taxonomy.json` (`labels` por idioma) |
-| `tags`        | hasta 5, kebab-case, únicos                                           |
-| `publishedAt` | opcional, `YYYY-MM-DD` (SEO usa `updatedAt` si falta)                 |
-| `order`       | entero ≥ 0 (orden dentro de la sección)                               |
-| `updatedAt`   | `YYYY-MM-DD`, no puede ser futuro                                     |
+| Campo         | Regla                                                                  |
+| ------------- | ---------------------------------------------------------------------- |
+| `title`       | 3–60 caracteres                                                        |
+| `description` | 40–160 caracteres (se usa en SEO y búsqueda)                           |
+| `category`    | id existente en `src/lib/content/taxonomy.json` (`labels` por idioma)  |
+| `tags`        | hasta 5, kebab-case, únicos                                            |
+| `publishedAt` | `YYYY-MM-DD`, ≤ `updatedAt`; ordena «lo último» de la portada y el RSS |
+| `order`       | entero ≥ 0 (orden dentro de la sección)                                |
+| `updatedAt`   | `YYYY-MM-DD`, no puede ser futuro                                      |
 
 Reglas de cuerpo: al menos un `h2`, sin saltos de nivel (h2 → h4), anclas únicas, enlaces
 internos `/docs/<slug>#ancla` existentes, bloques de código cerrados.
+
+**Código en los artículos: guía, no receta.** Los documentos explican decisiones, arquitectura y
+el porqué; no son para copiar y pegar. El código solo muestra cómo **nombrar, ubicar y
+organizar**: firmas y tipos sin cuerpo (`// …`), árboles de carpetas, convenciones de nombres,
+la forma de una configuración o plantilla. Nunca implementaciones, lógica de funciones ni tests
+completos. Bloques de ≤ 15 líneas y, como referencia, ≤ 40 líneas de código por artículo
+(sin contar ` ```mermaid `). Lo que antes iría en código se explica en prosa, tabla o diagrama.
 
 Disponible sin importar dentro de MDX: `<Callout>`, `<InteractiveMap>`, bloques ` ```mermaid `
 (se convierten en diagramas interactivos lazy). Los componentes del sistema de diseño se añaden
@@ -160,7 +167,7 @@ src/content/index.gen.json  (commiteado, incluye locale)
 
 Tras editar o crear contenido: `bun run content:index` y `bun run audit`.
 
-Los enlaces internos de MDX (`/docs/...`, `/search`, `/`) se localizan automáticamente en build
+Los enlaces internos de MDX (`/docs/...`, `/`) se localizan automáticamente en build
 (`tools/rehype-internal-links.ts`): prefija base path del hosting + idioma del archivo. Escribe
 siempre rutas absolutas y anclas del idioma correspondiente.
 
@@ -180,8 +187,8 @@ siempre rutas absolutas y anclas del idioma correspondiente.
   desde `md` (`SiteShell`).
 - Los bloques de código y diagramas Mermaid hacen scroll interno (`.shiki`, `.mermaid-diagram`),
   nunca la página: verifica `document.documentElement.scrollWidth <= window.innerWidth`.
-- En punteros táctiles (`pointer: coarse`) no hay autofocus de inputs y los atajos de teclado
-  se ocultan (`SearchField`, página de búsqueda).
+- En punteros táctiles (`pointer: coarse`) se ocultan los atajos de teclado (pie de la paleta de
+  comandos); ningún input toma el foco al cargar la página, solo al abrir la paleta a propósito.
 - El índice del documento (TOC) es colapsable (`<details>`) en móvil y fijo en `lg+`.
 
 ### Sistema visual ("Tinta y brasa")
@@ -223,15 +230,22 @@ siempre rutas absolutas y anclas del idioma correspondiente.
 - Búsqueda: normaliza acentos, puntúa título (8) > tags (6) > headings (5) > slug (4) > descripción
   (3), exige que todos los tokens coincidan y devuelve el heading para enlazar
   `/docs/<slug>#<ancla>`.
-- Estado en URL: `/<locale>/search?q=&tag=&category=`, `/<locale>/docs?category=`. Nunca
-  estado oculto. La búsqueda filtra por `locale`: cada idioma indexa solo sus documentos.
+- **Paleta de comandos** (`CommandPalette`, montada en `SiteShell`; estado y atajos en
+  `lib/search/palette-provider.tsx`): `Ctrl/⌘ + K` alterna y `/` abre (salvo escribiendo en un
+  campo). Es un `<dialog>` modal nativo con patrón combobox/listbox accesible. Abre desde
+  cualquier sitio con `useCommandPalette().open(consultaInicial?)` (p. ej. las etiquetas abren
+  `#etiqueta`). Sintaxis: texto libre + `#etiqueta` (filtra por etiqueta, sugiere al escribir).
+  Los grupos (documentos, temas, etiquetas, navegación, ajustes) salen de `palette-items.ts` a
+  partir del contenido y la taxonomía: nada que mantener a mano al añadir artículos.
+- La paleta es estado efímero de UI y no vive en la URL; los filtros de `/<locale>/docs?category=`
+  sí. La búsqueda filtra por `locale`: cada idioma indexa solo sus documentos.
 
 ## 8. SEO y compartir
 
 Todo el SEO sale del contenido: no hay que tocar nada al añadir artículos o temas.
 
 - **Una sola fuente**: `src/lib/seo/page-heads.ts` (`homeSeo`, `docsIndexSeo`, `docSeo`,
-  `searchSeo`) devuelve cabecera + JSON-LD + texto `<noscript>`. Las rutas lo usan con
+  ) devuelve cabecera + JSON-LD + texto `<noscript>`. Las rutas lo usan con
   `toRouteHead()` y el postbuild con el mismo código, así cliente y HTML estático coinciden.
   `buildPageHead()` (`meta.ts`) pone canonical, `hreflang` (solo idiomas donde existe la
   página) + `x-default`, robots (`max-image-preview:large`), OG/Twitter (`summary_large_image`),
@@ -247,7 +261,7 @@ Todo el SEO sale del contenido: no hay que tocar nada al añadir artículos o te
   - Tarjetas sociales 1200×630 por artículo e idioma (`dist/og/<locale>/<slug>.png`) con
     satori + resvg: estilo plano, cajetín y tipografías del sitio. Fuentes `@fontsource/*`.
   - Feeds RSS por idioma (`/<locale>/feed.xml`).
-- `sitemap.xml`/`robots.txt` (`plugin-static-seo`): hreflang, `lastmod`, y `Disallow: /*/search`.
+- `sitemap.xml`/`robots.txt` (`plugin-static-seo`): hreflang y `lastmod`.
 - `VITE_SITE_URL` define todas las URLs absolutas (copia `.env.example` → `.env.local`).
 - Identidad: favicon e iconos PWA (`public/favicon.svg`, `public/icons/*.svg`, PNG con
   `bun run icons:generate`) usan la marca de capas con núcleo brasa; `theme-color` `#171512`.

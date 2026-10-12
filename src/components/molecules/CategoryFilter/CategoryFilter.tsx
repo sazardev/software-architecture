@@ -13,7 +13,7 @@ export function CategoryFilter({ active, className, onSelect }: CategoryFilterPr
   const locale = useLocale();
   const messages = useMessages();
   const options = [
-    { id: undefined, label: messages.search.allCategories },
+    { id: undefined, label: messages.docs.allTopics },
     ...sections.map((section) => ({
       id: section.id,
       label: getSectionText(section, locale).label,

@@ -1,7 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 
 import { BrandMark, Container } from '@/components/atoms';
-import { LanguageSwitcher, ThemeSwitcher } from '@/components/molecules';
+import { CommandPaletteTrigger, LanguageSwitcher, ThemeSwitcher } from '@/components/molecules';
 import { navItems } from '@/lib/config/nav';
 import { site } from '@/lib/config/site';
 import { useLocale } from '@/lib/i18n/locale-context';
@@ -64,7 +64,11 @@ export function SiteHeader() {
               </Link>
             );
           })}
+          <div className="ml-auto md:hidden">
+            <CommandPaletteTrigger />
+          </div>
           <div className="ml-3 hidden items-center gap-2 border-l border-neutral-200 pl-4 md:flex dark:border-neutral-800">
+            <CommandPaletteTrigger />
             <LanguageSwitcher />
             <ThemeSwitcher />
           </div>

@@ -63,7 +63,7 @@ export function getDocNeighbors(locale: Locale, slug: string): DocNeighbors {
 
 export function getLatestDocs(locale: Locale, limit: number): ContentEntry[] {
   return getDocsByLocale(locale)
-    .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.order - b.order)
+    .toSorted((a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.order - b.order)
     .slice(0, limit);
 }
 

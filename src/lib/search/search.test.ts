@@ -37,7 +37,8 @@ describe('searchDocs', () => {
   it('filtra por categoría', () => {
     const results = searchDocs('', { category: 'practicas', locale: 'es' });
 
-    expect(results.map((result) => result.entry.slug)).toEqual(['clean-code']);
+    expect(results.map((result) => result.entry.slug)).toContain('clean-code');
+    expect(results.every((result) => result.entry.category === 'practicas')).toBe(true);
   });
 
   it('filtra por tag sin consulta', () => {

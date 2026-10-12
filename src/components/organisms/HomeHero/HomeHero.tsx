@@ -1,17 +1,16 @@
 import { Link } from '@tanstack/react-router';
 
-import { BlueprintFrame, Container, Eyebrow, buttonVariants } from '@/components/atoms';
+import { BlueprintFrame, Button, Container, Eyebrow, buttonVariants } from '@/components/atoms';
 import { TitleBlock } from '@/components/molecules';
 import { useLocale } from '@/lib/i18n/locale-context';
 import { useMessages } from '@/lib/i18n/use-messages';
+import { useCommandPalette } from '@/lib/search/palette-context';
 import { formatDate } from '@/lib/utils/format-date';
 
 import { HeroArtwork } from './HeroArtwork';
 
 export type HomeStats = Readonly<{
   articles: number;
-  minutes: number;
-  sections: number;
   /**
   Fecha ISO de la última revisión de contenido.
   */
@@ -33,12 +32,8 @@ function pad(value: number): string {
 export function HomeHero({ stats }: HomeHeroProps) {
   const locale = useLocale();
   const messages = useMessages();
+  const { open } = useCommandPalette();
   const { blueprint, home } = messages;
-  const statItems = [
-    { label: home.stats.articles, value: stats.articles },
-    { label: home.stats.sections, value: stats.sections },
-    { label: home.stats.minutes, value: stats.minutes },
-  ];
 
   return (
     <section className="bp-grid relative isolate border-b border-neutral-200 dark:border-neutral-800">
@@ -90,13 +85,15 @@ export function HomeHero({ stats }: HomeHeroProps) {
                 →
               </span>
             </Link>
-            <Link
-              className={buttonVariants({ size: 'lg', variant: 'secondary' })}
-              params={{ locale }}
-              to="/$locale/search"
+            <Button
+              onClick={() => {
+                open();
+              }}
+              size="lg"
+              variant="secondary"
             >
               {home.search}
-            </Link>
+            </Button>
           </div>
         </div>
 
@@ -118,24 +115,6 @@ export function HomeHero({ stats }: HomeHeroProps) {
             </figcaption>
           </BlueprintFrame>
         </figure>
-      </Container>
-
-      <Container>
-        <dl
-          className="grid animate-rise grid-cols-3 divide-x divide-neutral-300 border-t border-neutral-300 bg-neutral-50 dark:divide-neutral-700 dark:border-neutral-700 dark:bg-neutral-950"
-          style={rise(600)}
-        >
-          {statItems.map((item) => (
-            <div className="px-3 py-6 text-center sm:px-8 sm:py-8" key={item.label}>
-              <dd className="font-display text-4xl font-medium tracking-tight text-neutral-950 sm:text-5xl dark:text-neutral-50">
-                {item.value}
-              </dd>
-              <dt className="mt-1 font-mono text-[0.68rem] tracking-[0.14em] text-neutral-500 uppercase sm:text-xs">
-                {item.label}
-              </dt>
-            </div>
-          ))}
-        </dl>
       </Container>
     </section>
   );

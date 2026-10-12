@@ -1,13 +1,12 @@
 export { ArticleFooter } from './ArticleFooter';
 export { ClosingCta } from './ClosingCta';
+export { CommandPalette } from './CommandPalette';
 export { DocHeader } from './DocHeader';
 export { HomeHero, type HomeStats } from './HomeHero';
 export { LatestDocs } from './LatestDocs';
 export { MermaidDiagram } from './MermaidDiagram';
 export { PrinciplesBand } from './PrinciplesBand';
 export { RelatedDocs } from './RelatedDocs';
-export { SearchResults } from './SearchResults';
 export { SectionPaths } from './SectionPaths';
 export { SiteFooter } from './SiteFooter';
 export { SiteHeader } from './SiteHeader';
-export { TagIndex } from './TagIndex';

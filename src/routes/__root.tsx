@@ -6,6 +6,7 @@ import { site } from '@/lib/config/site';
 import { LocaleProvider } from '@/lib/i18n/locale-provider';
 import { localeFromPathname, defaultLocale } from '@/lib/i18n/locales';
 import { getMessages } from '@/lib/i18n/messages';
+import { CommandPaletteProvider } from '@/lib/search/palette-provider';
 import { ThemeProvider } from '@/lib/theme/theme-provider';
 import { MdxProvider } from '@/mdx';
 
@@ -32,13 +33,15 @@ function RootRoute() {
   return (
     <ThemeProvider>
       <LocaleProvider locale={localeFromPathname(pathname)}>
-        <SiteShell>
-          <HeadContent />
-          <MdxProvider>
-            <Outlet />
-          </MdxProvider>
-          {RouterDevtools ? <RouterDevtools /> : null}
-        </SiteShell>
+        <CommandPaletteProvider>
+          <SiteShell>
+            <HeadContent />
+            <MdxProvider>
+              <Outlet />
+            </MdxProvider>
+            {RouterDevtools ? <RouterDevtools /> : null}
+          </SiteShell>
+        </CommandPaletteProvider>
       </LocaleProvider>
     </ThemeProvider>
   );

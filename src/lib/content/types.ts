@@ -13,9 +13,9 @@ export type ContentEntry = {
   locale: Locale;
   order: number;
   /**
-  Primera publicación (YYYY-MM-DD); si falta, SEO usa `updatedAt`.
+  Primera publicación (YYYY-MM-DD); define qué es «lo último» en la portada.
   */
-  publishedAt?: string | undefined;
+  publishedAt: string;
   readingMinutes: number;
   route: string;
   slug: string;

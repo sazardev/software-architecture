@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LocaleRouteImport } from './routes/$locale'
 import { Route as LocaleIndexRouteImport } from './routes/$locale/index'
-import { Route as LocaleSearchRouteImport } from './routes/$locale/search'
 import { Route as LocaleDocsIndexRouteImport } from './routes/$locale/docs/index'
 import { Route as LocaleDocsSlugRouteImport } from './routes/$locale/docs/$slug'
 
@@ -31,11 +30,6 @@ const LocaleIndexRoute = LocaleIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LocaleRoute,
 } as any)
-const LocaleSearchRoute = LocaleSearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => LocaleRoute,
-} as any)
 const LocaleDocsIndexRoute = LocaleDocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
@@ -50,14 +44,12 @@ const LocaleDocsSlugRoute = LocaleDocsSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$locale': typeof LocaleRouteWithChildren
-  '/$locale/search': typeof LocaleSearchRoute
   '/$locale/': typeof LocaleIndexRoute
   '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
   '/$locale/docs/': typeof LocaleDocsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$locale/search': typeof LocaleSearchRoute
   '/$locale': typeof LocaleIndexRoute
   '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
   '/$locale/docs': typeof LocaleDocsIndexRoute
@@ -66,7 +58,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$locale': typeof LocaleRouteWithChildren
-  '/$locale/search': typeof LocaleSearchRoute
   '/$locale/': typeof LocaleIndexRoute
   '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
   '/$locale/docs/': typeof LocaleDocsIndexRoute
@@ -74,24 +65,13 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/$locale'
-    | '/$locale/search'
-    | '/$locale/'
-    | '/$locale/docs/$slug'
-    | '/$locale/docs/'
+    '/' | '/$locale' | '/$locale/' | '/$locale/docs/$slug' | '/$locale/docs/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/$locale/search'
-    | '/$locale'
-    | '/$locale/docs/$slug'
-    | '/$locale/docs'
+  to: '/' | '/$locale' | '/$locale/docs/$slug' | '/$locale/docs'
   id:
     | '__root__'
     | '/'
     | '/$locale'
-    | '/$locale/search'
     | '/$locale/'
     | '/$locale/docs/$slug'
     | '/$locale/docs/'
@@ -125,13 +105,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleIndexRouteImport
       parentRoute: typeof LocaleRoute
     }
-    '/$locale/search': {
-      id: '/$locale/search'
-      path: '/search'
-      fullPath: '/$locale/search'
-      preLoaderRoute: typeof LocaleSearchRouteImport
-      parentRoute: typeof LocaleRoute
-    }
     '/$locale/docs/': {
       id: '/$locale/docs/'
       path: '/docs'
@@ -150,14 +123,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface LocaleRouteChildren {
-  LocaleSearchRoute: typeof LocaleSearchRoute
   LocaleIndexRoute: typeof LocaleIndexRoute
   LocaleDocsSlugRoute: typeof LocaleDocsSlugRoute
   LocaleDocsIndexRoute: typeof LocaleDocsIndexRoute
 }
 
 const LocaleRouteChildren: LocaleRouteChildren = {
-  LocaleSearchRoute: LocaleSearchRoute,
   LocaleIndexRoute: LocaleIndexRoute,
   LocaleDocsSlugRoute: LocaleDocsSlugRoute,
   LocaleDocsIndexRoute: LocaleDocsIndexRoute,

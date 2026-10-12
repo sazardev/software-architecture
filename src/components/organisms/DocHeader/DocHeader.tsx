@@ -1,12 +1,10 @@
-import { Link } from '@tanstack/react-router';
-
 import { Badge, Container } from '@/components/atoms';
 import { Breadcrumbs, TitleBlock } from '@/components/molecules';
 import { getDocSheet } from '@/lib/content/registry';
 import { getSectionLabel } from '@/lib/content/taxonomy';
 import type { ContentEntry } from '@/lib/content/types';
 import { useMessages } from '@/lib/i18n/use-messages';
-import { searchParams } from '@/lib/search/search-params';
+import { useCommandPalette } from '@/lib/search/palette-context';
 import { readingGridClass } from '@/lib/ui/reading-layout';
 import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format-date';
@@ -21,6 +19,7 @@ function pad(value: number): string {
 
 export function DocHeader({ entry }: DocHeaderProps) {
   const messages = useMessages();
+  const { open } = useCommandPalette();
   const { blueprint } = messages;
   const sheet = getDocSheet(entry.locale, entry.slug);
   const sectionLabel = getSectionLabel(entry.category, entry.locale);
@@ -76,13 +75,14 @@ export function DocHeader({ entry }: DocHeaderProps) {
           >
             {entry.tags.map((tag) => (
               <li key={tag}>
-                <Link
-                  params={{ locale: entry.locale }}
-                  search={searchParams({ tag })}
-                  to="/$locale/search"
+                <button
+                  onClick={() => {
+                    open(`#${tag}`);
+                  }}
+                  type="button"
                 >
                   <Badge tone="outline">#{tag}</Badge>
-                </Link>
+                </button>
               </li>
             ))}
           </ul>

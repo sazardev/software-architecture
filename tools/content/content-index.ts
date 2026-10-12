@@ -13,6 +13,7 @@ export type ContentEntry = {
   headings: ContentHeading[];
   locale: string;
   order: number;
+  publishedAt: string;
   readingMinutes: number;
   route: string;
   slug: string;

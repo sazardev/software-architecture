@@ -33,7 +33,7 @@ export function buildFeed(locale: Locale): string {
       <title>${escapeXml(doc.title)}</title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
-      <pubDate>${rfc822(doc.publishedAt ?? doc.updatedAt)}</pubDate>
+      <pubDate>${rfc822(doc.publishedAt)}</pubDate>
       <category>${escapeXml(getSectionLabel(doc.category, locale))}</category>
       <description>${escapeXml(doc.description)}</description>
     </item>`;

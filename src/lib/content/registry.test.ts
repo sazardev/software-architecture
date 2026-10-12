@@ -13,7 +13,7 @@ import {
 
 describe('registro de contenido', () => {
   it('agrupa los documentos por sección en el idioma solicitado', () => {
-    const expectedSections = ['fundamentos', 'diseno', 'practicas'];
+    const expectedSections = ['fundamentos', 'diseno', 'practicas', 'tendencias'];
 
     expect(getDocsBySection('es').map((group) => group.section.id)).toEqual(expectedSections);
     expect(getDocsBySection('en').map((group) => group.section.id)).toEqual(expectedSections);
@@ -23,7 +23,13 @@ describe('registro de contenido', () => {
     const groups = getDocsBySection('es', 'diseno');
 
     expect(groups).toHaveLength(1);
-    expect(groups[0]?.docs.map((doc) => doc.slug)).toEqual(['c4-model', 'interactive-map']);
+    const slugs = groups[0]?.docs.map((doc) => doc.slug) ?? [];
+
+    expect(slugs[0]).toBe('c4-model');
+    expect(slugs).toEqual(
+      expect.arrayContaining(['domain-driven-design', 'arquitectura-hexagonal']),
+    );
+    expect(groups[0]?.docs.every((doc) => doc.category === 'diseno')).toBe(true);
   });
 
   it('mantiene la paridad de documentos entre idiomas', () => {
@@ -45,7 +51,7 @@ describe('registro de contenido', () => {
     const { next, previous } = getDocNeighbors('en', 'solid');
 
     expect(previous?.slug).toBe('getting-started');
-    expect(next?.slug).toBe('c4-model');
+    expect(next?.slug).toBe('adr');
   });
 
   it('devuelve undefined para slugs desconocidos', () => {
@@ -56,7 +62,7 @@ describe('registro de contenido', () => {
     const latest = getLatestDocs('es', 2);
 
     expect(latest).toHaveLength(2);
-    expect((latest[0]?.updatedAt ?? '') >= (latest[1]?.updatedAt ?? '')).toBe(true);
+    expect((latest[0]?.publishedAt ?? '') >= (latest[1]?.publishedAt ?? '')).toBe(true);
   });
 
   it('propone lecturas relacionadas sin repetir el documento ni las exclusiones', () => {

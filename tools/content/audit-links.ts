@@ -2,7 +2,7 @@ import type { Issue } from '../report';
 
 import type { ParsedDoc } from './parsed-doc';
 
-const knownStaticRoutes = new Set(['/', '/docs', '/search']);
+const knownStaticRoutes = new Set(['/', '/docs']);
 
 function extractLinks(markdown: string): string[] {
   const links: string[] = [];
@@ -22,10 +22,7 @@ function auditLink(
   parsedDocs: Map<string, ParsedDoc>,
 ): Issue | undefined {
   const isExternal =
-    link.startsWith('http://') ||
-    link.startsWith('https://') ||
-    link.startsWith('mailto:') ||
-    link.startsWith('/search');
+    link.startsWith('http://') || link.startsWith('https://') || link.startsWith('mailto:');
 
   if (isExternal) {
     return undefined;

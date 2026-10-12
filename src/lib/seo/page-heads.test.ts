@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { getDocsByLocale } from '@/lib/content/registry';
-import { docSeo, docsIndexSeo, homeSeo, searchSeo, toRouteHead } from '@/lib/seo/page-heads';
+import { docSeo, docsIndexSeo, homeSeo, toRouteHead } from '@/lib/seo/page-heads';
 
 function metaContent(seo: ReturnType<typeof homeSeo>, key: string): string | undefined {
   return seo.head.meta.find((entry) => entry.property === key || entry.name === key)?.content;
@@ -60,12 +60,10 @@ describe('SEO por página', () => {
     expect(langs).toContain('es');
   });
 
-  it('el índice de documentación publica una colección y la búsqueda es noindex', () => {
+  it('el índice de documentación publica una colección indexable', () => {
     const index = docsIndexSeo('en');
-    const search = searchSeo('en');
 
     expect(JSON.parse(index.jsonLd[0] ?? '{}')).toMatchObject({ '@type': 'CollectionPage' });
-    expect(metaContent(search, 'robots')).toBe('noindex, nofollow');
     expect(metaContent(index, 'robots')).toContain('index, follow');
   });
 

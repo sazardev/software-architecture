@@ -35,7 +35,7 @@ las reglas del proyecto al pie de la letra. La fuente autoritativa de reglas es
   `interface`. CSS solo con `cn()` + `cva`, colores con tokens y variante `dark:`.
 - **Rutas:** en opciones de ruta, `loader` siempre antes de `head`. Query params
   validados en `lib/*/**-params.ts` (`validateSearch`). SEO con `buildPageHead()`;
-  `/search` es `noindex`. Textos de UI solo vía `useMessages()`, nunca literales.
+  la búsqueda es la paleta de comandos (sin ruta propia). Textos de UI solo vía `useMessages()`, nunca literales.
 - **Contenido MDX:** frontmatter válido (title 3–60, description 40–160, categoría
   existente, ≤5 tags kebab-case únicos, `updatedAt` no futuro); al menos un `h2`,
   sin saltos de nivel, anclas únicas, enlaces internos `/docs/<slug>#ancla`

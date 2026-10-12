@@ -22,7 +22,7 @@ const weights = {
   title: 8,
 } as const;
 
-function normalize(text: string): string {
+export function normalize(text: string): string {
   return text
     .normalize('NFD')
     .replaceAll(/[\u{300}-\u{36F}]/gu, '')

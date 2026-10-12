@@ -20,7 +20,7 @@ export function TopicNav({ active, className, groups, onSelect }: TopicNavProps)
   const messages = useMessages();
   const total = groups.reduce((sum, group) => sum + group.docs.length, 0);
   const options = [
-    { count: total, icon: undefined, id: undefined, label: messages.search.allCategories },
+    { count: total, icon: undefined, id: undefined, label: messages.docs.allTopics },
     ...groups.map((group) => ({
       count: group.docs.length,
       icon: group.section.icon,
