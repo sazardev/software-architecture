@@ -101,7 +101,7 @@ export function HomeHero({ stats }: HomeHeroProps) {
           <BlueprintFrame className="bg-neutral-50 p-4 sm:p-6 dark:bg-neutral-950">
             <HeroArtwork label={home.heroAlt} />
             <figcaption className="mt-4 flex flex-wrap items-end justify-between gap-4">
-              <span className="font-mono text-[0.68rem] tracking-[0.14em] text-neutral-500 uppercase">
+              <span className="font-mono text-[0.68rem] tracking-[0.14em] text-neutral-500 uppercase dark:text-neutral-400">
                 {blueprint.figure} 01 — {home.heroAlt}
               </span>
               <TitleBlock

@@ -31,7 +31,7 @@ export function TopicNav({ active, className, groups, onSelect }: TopicNavProps)
 
   return (
     <nav aria-label={messages.a11y.categoryFilter} className={className}>
-      <p className="mb-4 font-mono text-[0.7rem] tracking-[0.16em] text-neutral-500 uppercase">
+      <p className="mb-4 font-mono text-[0.7rem] tracking-[0.16em] text-neutral-500 uppercase dark:text-neutral-400">
         {messages.docs.topics}
       </p>
       <ul className="border-l border-neutral-300 dark:border-neutral-700">
@@ -57,7 +57,9 @@ export function TopicNav({ active, className, groups, onSelect }: TopicNavProps)
                   <SectionGlyph className="h-4 w-4 shrink-0" icon={option.icon} id={option.id} />
                 )}
                 <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                <span className="font-mono text-xs text-neutral-400">{option.count}</span>
+                <span className="font-mono text-xs text-neutral-500 dark:text-neutral-400">
+                  {option.count}
+                </span>
               </button>
             </li>
           );

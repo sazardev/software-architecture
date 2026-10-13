@@ -100,7 +100,7 @@ export function TableOfContents({ headings, variant }: TableOfContentsProps) {
       </ul>
       {/* Panel flotante: aparece al pasar el cursor o al enfocar un enlace. */}
       <div className="pointer-events-none absolute top-0 right-0 z-30 w-72 translate-x-2 border border-neutral-300 bg-neutral-50 p-4 opacity-0 transition-[opacity,transform] duration-200 group-focus-within/toc:pointer-events-auto group-focus-within/toc:translate-x-0 group-focus-within/toc:opacity-100 group-hover/toc:pointer-events-auto group-hover/toc:translate-x-0 group-hover/toc:opacity-100 dark:border-neutral-700 dark:bg-neutral-950">
-        <p className="mb-3 font-mono text-[0.68rem] tracking-[0.18em] text-neutral-500 uppercase">
+        <p className="mb-3 font-mono text-[0.68rem] tracking-[0.18em] text-neutral-500 uppercase dark:text-neutral-400">
           {messages.a11y.tableOfContents}
         </p>
         <div className="max-h-[min(65vh,30rem)] [scrollbar-width:thin] overflow-y-auto pr-2">

@@ -27,7 +27,7 @@ export function PaletteBody({ initialQuery, onClose }: PaletteBodyProps) {
       <div className="flex items-center gap-3 border-b border-neutral-300 px-4 dark:border-neutral-700">
         <svg
           aria-hidden="true"
-          className="h-5 w-5 shrink-0 text-neutral-500"
+          className="h-5 w-5 shrink-0 text-neutral-500 dark:text-neutral-400"
           fill="none"
           stroke="currentColor"
           strokeLinecap="round"

@@ -84,7 +84,7 @@ export function LatestDocs({ docs }: LatestDocsProps) {
                     {String(index + 2).padStart(2, '0')}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="font-mono text-[0.68rem] tracking-[0.14em] text-neutral-500 uppercase">
+                    <span className="font-mono text-[0.68rem] tracking-[0.14em] text-neutral-500 uppercase dark:text-neutral-400">
                       {getSectionLabel(doc.category, locale)} ·{' '}
                       {messages.docs.minutesShort(doc.readingMinutes)}
                     </span>

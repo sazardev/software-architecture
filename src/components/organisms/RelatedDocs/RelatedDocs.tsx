@@ -34,7 +34,7 @@ export function RelatedDocs({ docs }: RelatedDocsProps) {
                 to="/$locale/docs/$slug"
               >
                 <FigureThumb className="mb-5" slug={doc.slug} />
-                <span className="font-mono text-xs tracking-[0.14em] text-neutral-500 uppercase">
+                <span className="font-mono text-xs tracking-[0.14em] text-neutral-500 uppercase dark:text-neutral-400">
                   {messages.docs.minutesShort(doc.readingMinutes)}
                 </span>
                 <span className="mt-2 block font-display text-xl leading-snug font-medium text-neutral-950 dark:text-neutral-50">

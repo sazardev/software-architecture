@@ -17,7 +17,8 @@ const currentYear = new Date().getFullYear();
 const linkClass =
   'text-neutral-600 transition-colors hover:text-brand-700 dark:text-neutral-400 dark:hover:text-brand-300';
 
-const labelClass = 'font-mono text-[0.68rem] tracking-[0.18em] text-neutral-500 uppercase';
+const labelClass =
+  'font-mono text-[0.68rem] tracking-[0.18em] text-neutral-500 uppercase dark:text-neutral-400';
 
 const cellClass = 'space-y-4 p-6 sm:p-8';
 
@@ -80,7 +81,7 @@ export function SiteFooter() {
             </ul>
           </nav>
         </div>
-        <div className="mt-6 flex flex-col gap-3 font-mono text-[0.68rem] tracking-[0.12em] text-neutral-500 uppercase sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col gap-3 font-mono text-[0.68rem] tracking-[0.12em] text-neutral-500 uppercase sm:flex-row sm:items-center sm:justify-between dark:text-neutral-400">
           <span>{messages.footer.rights(currentYear)}</span>
           <nav aria-label={messages.footer.machine} className="flex items-center gap-4">
             <a className={linkClass} href={`/${locale}/feed.xml`}>

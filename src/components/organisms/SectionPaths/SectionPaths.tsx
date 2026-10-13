@@ -65,7 +65,7 @@ export function SectionPaths({ groups }: SectionPathsProps) {
                           id={group.section.id}
                         />
                       </span>
-                      <span className="font-mono text-xs tracking-[0.16em] text-neutral-500">
+                      <span className="font-mono text-xs tracking-[0.16em] text-neutral-500 dark:text-neutral-400">
                         T-{pad(index + 1)}
                       </span>
                     </span>
