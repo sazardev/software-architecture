@@ -1,8 +1,20 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const key = '95f9e3264112509f5838fc7a31c039c5';
+const key = 'c1a32d6b90d663673a183756161dd07f';
 const dist = join(import.meta.dir, '..', '..', 'dist');
+const liveRobotsUrl = 'https://sazardev.github.io/software-architecture/robots.txt';
+const endpoints = [
+  'https://api.indexnow.org/indexnow',
+  'https://www.bing.com/indexnow',
+  'https://yandex.com/indexnow',
+  'https://searchadvisor.naver.com/indexnow',
+  'https://search.seznam.cz/indexnow',
+];
+
+type Submission = { body: string; endpoint: string; ok: boolean; status: number };
+
+type Payload = { host: string; key: string; keyLocation: string; urlList: string[] };
 
 function sitemapUrls(sitemap: string): string[] {
   return [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
@@ -10,37 +22,76 @@ function sitemapUrls(sitemap: string): string[] {
     .filter((url): url is string => url !== undefined);
 }
 
+async function readOptional(path: string): Promise<string | undefined> {
+  try {
+    return await readFile(path, 'utf8');
+  } catch {
+    return undefined;
+  }
+}
+
+async function fetchText(url: string): Promise<string> {
+  const response = await fetch(url);
+
+  return response.text();
+}
+
+async function readRobots(): Promise<string> {
+  return (await readOptional(join(dist, 'robots.txt'))) ?? (await fetchText(liveRobotsUrl));
+}
+
+async function submit(endpoint: string, payload: Payload): Promise<Submission> {
+  try {
+    const response = await fetch(endpoint, {
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      method: 'POST',
+    });
+    const body = await response.text();
+
+    return { body, endpoint, ok: response.status < 400, status: response.status };
+  } catch (error) {
+    const body = error instanceof Error ? error.message : String(error);
+
+    return { body, endpoint, ok: false, status: 0 };
+  }
+}
+
 /**
-Notifica a IndexNow (Bing, Yandex, Naver, Seznam) todas las URLs del sitemap generado.
-Uso: `bun run build && bun run indexnow`. La clave vive en `public/<key>.txt`.
+Notifica a IndexNow las URLs del sitemap en vivo (Bing, Yandex, Naver, Seznam).
+La clave vive en `public/<key>.txt` y el workflow lo ejecuta tras cada deploy.
+Uso local: `bun run indexnow`.
 */
 async function main(): Promise<void> {
-  const [sitemap, robots] = await Promise.all([
-    readFile(join(dist, 'sitemap.xml'), 'utf8'),
-    readFile(join(dist, 'robots.txt'), 'utf8'),
-  ]);
-  const urls = sitemapUrls(sitemap);
+  const robots = await readRobots();
   const sitemapUrl = /Sitemap:\s*(\S+)/.exec(robots)?.[1];
   const host = sitemapUrl === undefined ? undefined : new URL(sitemapUrl).host;
 
-  if (sitemapUrl === undefined || host === undefined || urls.length === 0) {
-    throw new Error(
-      'Falta dist/sitemap.xml o su URL en robots.txt: ejecuta "bun run build" primero',
-    );
+  if (sitemapUrl === undefined || host === undefined) {
+    throw new Error('No encuentro la URL del sitemap en robots.txt: ejecuta el build o el deploy');
+  }
+
+  const urlList = sitemapUrls(await fetchText(sitemapUrl));
+
+  if (urlList.length === 0) {
+    throw new Error(`Sitemap vacío en ${sitemapUrl}`);
   }
 
   const keyLocation = new URL(`${key}.txt`, sitemapUrl).href;
-  const response = await fetch('https://api.indexnow.org/indexnow', {
-    body: JSON.stringify({ host, key, keyLocation, urlList: urls }),
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    method: 'POST',
-  });
+  const payload: Payload = { host, key, keyLocation, urlList };
+  const results = await Promise.all(endpoints.map((endpoint) => submit(endpoint, payload)));
 
-  if (response.status >= 400) {
-    throw new Error(`IndexNow respondió ${response.status}: ${await response.text()}`);
+  for (const result of results) {
+    console.log(
+      `${result.ok ? '✔' : '✖'} ${result.endpoint} → ${result.status} ${result.body.slice(0, 120)}`,
+    );
   }
 
-  console.log(`✔ IndexNow: ${urls.length} URLs enviadas a Bing/Yandex/Seznam (${response.status})`);
+  if (results.every((result) => !result.ok)) {
+    throw new Error(`Ningún endpoint aceptó las ${urlList.length} URLs`);
+  }
+
+  console.log(`✔ IndexNow: ${urlList.length} URLs enviadas desde ${sitemapUrl}`);
 }
 
 await main();
