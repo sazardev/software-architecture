@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const key = 'c1a32d6b90d663673a183756161dd07f';
+const key = '29ce51d3c726be0f8b23c1ea9d84275a';
 const dist = join(import.meta.dir, '..', '..', 'dist');
 const liveRobotsUrl = 'https://sazardev.github.io/software-architecture/robots.txt';
 const endpoints = [
