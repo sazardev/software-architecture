@@ -6,6 +6,9 @@ import { getMessages } from '@/lib/i18n/messages';
 import { absoluteUrl } from '@/lib/seo/absolute-url';
 import { feedUrl, llmsFullUrl, llmsUrl } from '@/lib/seo/og';
 
+import { parseArticleBlocks, readDocBody } from './article-blocks';
+import { blocksToText } from './article-serializers';
+
 /**
 Genera llms.txt por idioma (estándar https://llmstxt.org): índice curado para
 ChatGPT, Claude, Perplexity y otros crawlers de IA. Todo sale del contenido,
@@ -47,10 +50,11 @@ export function buildLlmsTxt(locale: Locale): string {
 }
 
 /**
-Variante extendida: incluye los encabezados de cada artículo para que el modelo
-pueda citar secciones profundas (/docs/<slug>#<ancla>).
+Variante extendida: incluye el texto completo de cada artículo (encabezados con ancla,
+párrafos, listas, tablas y bloques de código) para que un modelo pueda citar secciones
+profundas (/docs/<slug>#<ancla>) y leer el contenido sin ejecutar JavaScript.
 */
-export function buildLlmsFullTxt(locale: Locale): string {
+export async function buildLlmsFullTxt(locale: Locale): Promise<string> {
   const messages = getMessages(locale);
   const groups = getDocsBySection(locale);
   const lines: string[] = [`# ${site.name} (full)`, '', `> ${messages.site.description}`, ''];
@@ -61,16 +65,17 @@ export function buildLlmsFullTxt(locale: Locale): string {
     lines.push('## ' + label, '');
 
     for (const doc of sectionDocs) {
-      lines.push(`### [${doc.title}](${absoluteUrl(doc.route)})`, '', doc.description, '');
+      const url = absoluteUrl(doc.route);
+      const blocks = parseArticleBlocks(await readDocBody(locale, doc.slug));
 
-      const subsections = doc.headings.filter((entry) => entry.level === 2);
-
-      for (const heading of subsections) {
-        const anchor = absoluteUrl(doc.route + '#' + heading.id);
-        lines.push(`- [${heading.text}](${anchor})`);
-      }
-
-      lines.push('');
+      lines.push(
+        `### [${doc.title}](${url})`,
+        '',
+        doc.description,
+        '',
+        blocksToText(blocks, { headingOffset: 2, locale, url }),
+        '',
+      );
     }
   }
 

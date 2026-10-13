@@ -48,6 +48,10 @@ jobs:
         with:
           path: dist
 
+      - name: Submit sitemap to IndexNow (best effort)
+        continue-on-error: true
+        run: bun run indexnow
+
   deploy:
     name: Deploy
     needs: build

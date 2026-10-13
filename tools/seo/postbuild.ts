@@ -8,6 +8,8 @@ import { absoluteUrl } from '@/lib/seo/absolute-url';
 import { feedPath, llmsFullPath, llmsPath, ogImagePath } from '@/lib/seo/og';
 import { docSeo, docsIndexSeo, homeSeo, type PageSeo } from '@/lib/seo/page-heads';
 
+import { parseArticleBlocks, readDocBody } from './article-blocks';
+import { blocksToHtml } from './article-serializers';
 import { buildFeed } from './feed';
 import { buildLlmsFullTxt, buildLlmsRoot, buildLlmsTxt } from './llms';
 import { renderOgCard, type OgCardInput } from './og-card';
@@ -40,31 +42,53 @@ async function writeOgImages(): Promise<number> {
   return jobs.length;
 }
 
-type PageJob = { locale: Locale; path: string; seo: PageSeo };
+type PageJob = { contentHtml?: string; locale: Locale; path: string; seo: PageSeo };
 
-function listPages(): PageJob[] {
-  const pages = locales.flatMap((locale) => [
-    { locale, path: `${locale}/index.html`, seo: homeSeo(locale) },
-    { locale, path: `${locale}/docs/index.html`, seo: docsIndexSeo(locale) },
-    ...getDocsByLocale(locale).map((entry) => ({
-      locale,
-      path: `${locale}/docs/${entry.slug}/index.html`,
-      seo: docSeo(entry),
-    })),
-  ]);
+async function articleHtml(locale: string, slug: string): Promise<string> {
+  const blocks = parseArticleBlocks(await readDocBody(locale, slug));
+
+  return blocksToHtml(blocks, locale);
+}
+
+async function listPages(): Promise<PageJob[]> {
+  const pages: PageJob[] = [];
+
+  for (const locale of locales) {
+    pages.push(
+      { locale, path: `${locale}/index.html`, seo: homeSeo(locale) },
+      { locale, path: `${locale}/docs/index.html`, seo: docsIndexSeo(locale) },
+    );
+
+    for (const entry of getDocsByLocale(locale)) {
+      pages.push({
+        locale,
+        path: `${locale}/docs/${entry.slug}/index.html`,
+        seo: docSeo(entry),
+        contentHtml: await articleHtml(entry.locale, entry.slug),
+      });
+    }
+  }
 
   // La raíz redirige por JS al idioma preferido; los crawlers ven la portada del idioma por defecto.
   return [{ locale: defaultLocale, path: 'index.html', seo: homeSeo(defaultLocale) }, ...pages];
 }
 
+function pathToRoute(path: string): string {
+  const route = path.replace(/\/?index\.html$/, '');
+
+  return route === '' ? '/' : `/${route}`;
+}
+
 async function writePages(): Promise<number> {
   const template = await Bun.file(join(dist, 'index.html')).text();
-  const pages = listPages();
+  const pages = await listPages();
 
   await Promise.all(
-    pages.map((page) =>
-      write(page.path, renderPage(template, page.locale, page.seo, absoluteUrl(`/${page.locale}`))),
-    ),
+    pages.map((page) => {
+      const url = absoluteUrl(pathToRoute(page.path));
+
+      return write(page.path, renderPage(template, page.locale, page.seo, url, page.contentHtml));
+    }),
   );
 
   return pages.length;
@@ -87,17 +111,17 @@ function securityTxt(): string {
 async function writeLlms(): Promise<number> {
   const jobs = [
     write('llms.txt', buildLlmsRoot()),
-    ...locales.flatMap((locale) => [
-      write(llmsPath(locale), buildLlmsTxt(locale)),
-      write(llmsFullPath(locale), buildLlmsFullTxt(locale)),
-    ]),
+    ...locales.map(async (locale) => {
+      await write(llmsPath(locale), buildLlmsTxt(locale));
+      await write(llmsFullPath(locale), await buildLlmsFullTxt(locale));
+    }),
     write('humans.txt', humansTxt()),
     write('.well-known/security.txt', securityTxt()),
   ];
 
   await Promise.all(jobs);
 
-  return jobs.length;
+  return jobs.length + locales.length;
 }
 
 const [pages, images, feeds, llms] = await Promise.all([

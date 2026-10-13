@@ -11,11 +11,13 @@ describe('llms.txt', () => {
     expect(txt).toMatch(/-\s\[.+\]\(https?:\/\/.+\/es\/docs\/.+\):\s.+/);
   });
 
-  it('la versión full enlaza a las anclas h2', () => {
-    const txt = buildLlmsFullTxt('en');
+  it('la versión full incluye el texto completo con encabezados anclados', async () => {
+    const txt = await buildLlmsFullTxt('en');
 
     expect(txt).toContain('# Software Architecture (full)');
     expect(txt).toMatch(/#[a-z0-9-]+\)/);
+    expect(txt).toContain('#### ');
+    expect(txt).toContain('```');
   });
 
   it('la raíz descubre ambos idiomas, feeds y repo', () => {

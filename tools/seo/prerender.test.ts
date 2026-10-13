@@ -52,6 +52,14 @@ describe('prerender', () => {
     expect(page).toContain('<noscript>');
     expect(page.match(/<title/g)).toHaveLength(1);
   });
+
+  it('incluye el cuerpo del artículo dentro del noscript', () => {
+    const page = renderPage(template, 'es', seo, 'https://x.test/es', '<p>Cuerpo completo</p>');
+
+    expect(page).toContain('<noscript>');
+    expect(page).toContain('<p>Cuerpo completo</p>');
+    expect(page).toContain('href="https://x.test/es"');
+  });
 });
 
 describe('feed RSS', () => {

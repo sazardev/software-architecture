@@ -69,10 +69,18 @@ export function jsonLdToHtml(jsonLd: string[]): string {
     .join('\n    ');
 }
 
-// Genera el HTML de una ruta a partir del index.html del build, con SEO real en el <head>.
-export function renderPage(template: string, lang: string, seo: PageSeo, homeUrl: string): string {
+// Genera el HTML de una ruta a partir del index.html del build, con SEO real en el <head>
+// y, en los artículos, el cuerpo completo dentro de <noscript> para crawlers sin JS.
+export function renderPage(
+  template: string,
+  lang: string,
+  seo: PageSeo,
+  pageUrl: string,
+  contentHtml = '',
+): string {
   const headHtml = [headToHtml(seo.head), jsonLdToHtml(seo.jsonLd)].filter(Boolean).join('\n    ');
-  const noscript = `<noscript>\n      <h1>${escapeText(seo.noscript.title)}</h1>\n      <p>${escapeText(seo.noscript.description)}</p>\n      <p><a href="${escapeAttr(homeUrl)}">${escapeText(seo.noscript.title)}</a></p>\n    </noscript>`;
+  const article = contentHtml === '' ? '' : `\n      ${contentHtml}`;
+  const noscript = `<noscript>\n      <h1>${escapeText(seo.noscript.title)}</h1>\n      <p>${escapeText(seo.noscript.description)}</p>${article}\n      <p><a href="${escapeAttr(pageUrl)}">${escapeText(seo.noscript.title)}</a></p>\n    </noscript>`;
 
   return template
     .replace(/<html lang="[^"]*"/, () => `<html lang="${lang}"`)

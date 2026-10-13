@@ -30,6 +30,13 @@
     "skipLibCheck": true
   },
   "include": [
+    "tools/content/parse-frontmatter.ts",
+    "tools/content/extract-headings.ts",
+    "tools/seo/article-serializers.ts",
+    "tools/seo/article-inline.ts",
+    "tools/seo/article-blocks.ts",
+    "tools/seo/tmp-mod.ts",
+    "tools/seo/indexnow.ts",
     "tools/seo/postbuild.ts",
     "tools/seo/feed.ts",
     "tools/seo/llms.ts",

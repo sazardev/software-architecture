@@ -23,6 +23,7 @@
     "content:index": "bun tools/content/content-index.ts",
     "icons:generate": "bun tools/pwa/generate-icons.ts",
     "audit": "bun tools/audit.ts",
+    "indexnow": "bun tools/seo/indexnow.ts",
     "analyze": "knip",
     "analyze:bundle": "ANALYZE=1 vite build",
     "check": "bun run format:check && bun run lint && bun run typecheck && bun run audit && bun run test && bun run analyze",

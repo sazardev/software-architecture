@@ -31,6 +31,7 @@ bun run build          # typecheck + vite build + postbuild SEO (HTML por ruta, 
 bun run preview        # servir el build
 bun run check          # format + lint + types + audit + tests + knip (obligatorio antes de push)
 bun run audit          # audita contenido y rutas
+bun run indexnow       # envía el sitemap del build a IndexNow (Bing/Yandex/Seznam)
 bun run content:index  # regenera src/content/index.gen.json tras editar contenido
 bun run test           # Vitest (unit)
 bun run test:coverage  # cobertura v8
@@ -61,7 +62,7 @@ src/
   content/     # docs/<locale>/*.mdx + taxonomy + index.gen.json (generado)
   styles/      # entry de Tailwind, tokens (@theme), prose
 tools/         # tooling Bun: auditoría, indexación, SEO postbuild (no va al bundle)
-               # tools/seo/{postbuild,prerender,feed,llms,og-card}.ts usan tsconfig.build.json
+               # tools/seo/{article-*,indexnow,postbuild,prerender,feed,llms,og-card}.ts usan tsconfig.build.json
 ```
 
 Reglas de dependencia (aplicadas por `import-x/no-restricted-paths` en `eslint.config.ts`):
@@ -280,13 +281,22 @@ Todo el SEO sale del contenido: no hay que tocar nada al añadir artículos o te
   - HTML estático por ruta (`dist/<locale>/…/index.html`, también `/`) con el `<head>` SEO
     ya inyectado: los crawlers sociales no ejecutan JS y GitHub Pages responde 200 en
     enlaces profundos. Las etiquetas llevan `data-prerender` y `main.tsx` las retira antes de
-    montar para que el router no duplique el `<head>`.
+    montar para que el router no duplique el `<head>`. Los artículos añaden su texto completo
+    dentro de `<noscript>` (párrafos, listas, tablas, código y enlaces localizados) con
+    `tools/seo/article-*.ts`, para que los crawlers sin JavaScript —incluidos los de
+    IA— lean el contenido.
   - Tarjetas sociales 1200×630 por artículo e idioma (`dist/og/<locale>/<slug>.png`) con
     satori + resvg: estilo plano, cajetín y tipografías del sitio. Fuentes `@fontsource/*`.
     Los artículos incluyen su **figura (FIG. NN)** con marco de registro, pie y cajetín; el
     texto de la figura se convierte a trazados con satori (`og-figure-text.ts`) porque resvg no
     carga las fuentes. `figureCaption` es el `og:image:alt` y el `caption` del `ImageObject` JSON-LD.
   - Feeds RSS por idioma (`/<locale>/feed.xml`).
+  - Índices para LLMs (`tools/seo/llms.ts`): `llms.txt` (raíz, descubre idiomas y feeds),
+    `/<locale>/llms.txt` (índice curado por sección) y `/<locale>/llms-full.txt` (texto
+    completo de todos los artículos con encabezados anclados).
+- `robots.txt` declara bienvenidos a los crawlers de IA (GPTBot, ClaudeBot, PerplexityBot…)
+  y `bun run indexnow` (tras el build) notifica sitemap a Bing/Yandex/Seznam; el workflow
+  lo intenta en cada deploy (`continue-on-error`).
 - `sitemap.xml`/`robots.txt` (`plugin-static-seo`): hreflang y `lastmod`.
 - `VITE_SITE_URL` define todas las URLs absolutas (copia `.env.example` → `.env.local`).
 - Identidad: favicon e iconos PWA (`public/favicon.svg`, `public/icons/*.svg`, PNG con
