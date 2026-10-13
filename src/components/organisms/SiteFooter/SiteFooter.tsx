@@ -80,8 +80,19 @@ export function SiteFooter() {
             </ul>
           </nav>
         </div>
-        <div className="mt-6 flex flex-col gap-1 font-mono text-[0.68rem] tracking-[0.12em] text-neutral-500 uppercase sm:flex-row sm:justify-between">
+        <div className="mt-6 flex flex-col gap-3 font-mono text-[0.68rem] tracking-[0.12em] text-neutral-500 uppercase sm:flex-row sm:items-center sm:justify-between">
           <span>{messages.footer.rights(currentYear)}</span>
+          <nav aria-label={messages.footer.machine} className="flex items-center gap-4">
+            <a className={linkClass} href={`/${locale}/feed.xml`}>
+              {messages.footer.rss}
+            </a>
+            <a className={linkClass} href={`/${locale}/llms.txt`}>
+              {messages.footer.llms}
+            </a>
+            <a className={linkClass} href="/sitemap.xml">
+              {messages.footer.sitemap}
+            </a>
+          </nav>
           <span>{messages.footer.note}</span>
         </div>
       </Container>

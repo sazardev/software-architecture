@@ -122,9 +122,13 @@ export const en: Messages = {
   footer: {
     allTopics: 'All topics',
     explore: 'Explore',
+    llms: 'LLMs.txt',
+    machine: 'Machine',
     note: 'Crafted with care for people who design systems.',
     rights: (year: number) => `© ${year} Software Architecture`,
+    rss: 'RSS',
     sections: 'Sections',
+    sitemap: 'Sitemap',
   },
   blueprint: {
     figure: 'FIG.',

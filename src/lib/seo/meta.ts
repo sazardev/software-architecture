@@ -7,7 +7,7 @@ import {
   type Locale,
 } from '@/lib/i18n/locales';
 import { absoluteUrl } from '@/lib/seo/absolute-url';
-import { feedUrl, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/lib/seo/og';
+import { feedUrl, llmsUrl, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/lib/seo/og';
 
 type HeadLinkEntry = {
   href: string;
@@ -100,6 +100,10 @@ export function buildPageHead(input: PageHeadInput): PageHead {
   const meta: HeadMetaEntry[] = [
     { title: input.title },
     { content: input.description, name: 'description' },
+    { content: site.name, name: 'author' },
+    ...(input.article === undefined
+      ? []
+      : [{ content: input.article.tags.join(', '), name: 'keywords' }]),
     { content: input.noindex === true ? 'noindex, nofollow' : ROBOTS_INDEX, name: 'robots' },
     { content: type, property: 'og:type' },
     { content: input.title, property: 'og:title' },
@@ -132,6 +136,12 @@ export function buildPageHead(input: PageHeadInput): PageHead {
         rel: 'alternate',
         title: `${site.name} (${input.locale})`,
         type: 'application/rss+xml',
+      },
+      {
+        href: llmsUrl(input.locale),
+        rel: 'alternate',
+        title: `${site.name} LLMs.txt (${input.locale})`,
+        type: 'text/plain',
       },
     ],
     meta,

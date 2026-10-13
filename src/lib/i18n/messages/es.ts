@@ -120,9 +120,13 @@ export const es = {
   footer: {
     allTopics: 'Todos los temas',
     explore: 'Explorar',
+    llms: 'LLMs.txt',
+    machine: 'Máquina',
     note: 'Hecho con cuidado para quienes diseñan sistemas.',
     rights: (year: number) => `© ${year} Software Architecture`,
+    rss: 'RSS',
     sections: 'Secciones',
+    sitemap: 'Sitemap',
   },
   blueprint: {
     figure: 'FIG.',

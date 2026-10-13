@@ -116,6 +116,13 @@ export function staticSeoPlugin(options: StaticSeoOptions): Plugin {
         await readFile('src/lib/i18n/locales.json', 'utf8'),
       ) as LocalesConfig;
       const codes = localeConfig.locales.map((definition) => definition.code);
+      let globalLastmod: string | undefined;
+
+      for (const doc of index.docs) {
+        if (globalLastmod === undefined || doc.updatedAt > globalLastmod) {
+          globalLastmod = doc.updatedAt;
+        }
+      }
 
       const homeAlternates = new Map(
         codes.map((code) => [code, `${base}/${code}`] as [string, string]),
@@ -125,13 +132,36 @@ export function staticSeoPlugin(options: StaticSeoOptions): Plugin {
       );
 
       const entries = [
-        sitemapUrl(homeAlternates, localeConfig.default, '1.0'),
-        sitemapUrl(docsAlternates, localeConfig.default, '0.8'),
+        sitemapUrl(homeAlternates, localeConfig.default, '1.0', globalLastmod),
+        sitemapUrl(docsAlternates, localeConfig.default, '0.8', globalLastmod),
         ...buildDocUrls(index.docs, base, localeConfig.default),
       ];
 
       const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${entries.join('\n')}\n</urlset>\n`;
-      const robots = `User-agent: *\nAllow: /\n\nSitemap: ${base}/sitemap.xml\n`;
+      const robots = [
+        'User-agent: *',
+        'Allow: /',
+        '',
+        '# Crawlers de IA bienvenidos: el contenido es abierto y citable.',
+        'User-agent: GPTBot',
+        'Allow: /',
+        'User-agent: ChatGPT-User',
+        'Allow: /',
+        'User-agent: ClaudeBot',
+        'Allow: /',
+        'User-agent: anthropic-ai',
+        'Allow: /',
+        'User-agent: PerplexityBot',
+        'Allow: /',
+        'User-agent: Google-Extended',
+        'Allow: /',
+        '',
+        `Sitemap: ${base}/sitemap.xml`,
+        '',
+        '# Índice curado para LLMs (https://llmstxt.org)',
+        ...codes.map((code) => `# ${base}/${code}/llms.txt`),
+        '',
+      ].join('\n');
 
       await writeFile(join(outDir, 'sitemap.xml'), sitemap, 'utf8');
       await writeFile(join(outDir, 'robots.txt'), robots, 'utf8');

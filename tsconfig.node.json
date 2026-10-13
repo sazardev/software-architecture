@@ -37,6 +37,7 @@
   "exclude": [
     "tools/seo/postbuild.ts",
     "tools/seo/feed.ts",
+    "tools/seo/llms.ts",
     "tools/seo/og-card.ts",
     "tools/seo/og-figure-card.ts",
     "tools/seo/og-figure-text.ts",

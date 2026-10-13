@@ -22,3 +22,22 @@ export function feedPath(locale: Locale): string {
 export function feedUrl(locale: Locale): string {
   return absoluteUrl(feedPath(locale));
 }
+
+/**
+Índice curado para LLMs (https://llmstxt.org); se genera en el postbuild.
+*/
+export function llmsPath(locale: Locale): string {
+  return `${locale}/llms.txt`;
+}
+
+export function llmsUrl(locale: Locale): string {
+  return absoluteUrl(llmsPath(locale));
+}
+
+export function llmsFullPath(locale: Locale): string {
+  return `${locale}/llms-full.txt`;
+}
+
+export function llmsFullUrl(locale: Locale): string {
+  return absoluteUrl(llmsFullPath(locale));
+}

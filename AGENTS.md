@@ -61,7 +61,7 @@ src/
   content/     # docs/<locale>/*.mdx + taxonomy + index.gen.json (generado)
   styles/      # entry de Tailwind, tokens (@theme), prose
 tools/         # tooling Bun: auditoría, indexación, SEO postbuild (no va al bundle)
-               # tools/seo/{postbuild,prerender,feed,og-card}.ts usan tsconfig.build.json
+               # tools/seo/{postbuild,prerender,feed,llms,og-card}.ts usan tsconfig.build.json
 ```
 
 Reglas de dependencia (aplicadas por `import-x/no-restricted-paths` en `eslint.config.ts`):

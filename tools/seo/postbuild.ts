@@ -1,13 +1,15 @@
 import { mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
+import { site } from '@/lib/config/site';
 import { getDocsByLocale } from '@/lib/content/registry';
 import { defaultLocale, locales, type Locale } from '@/lib/i18n/locales';
 import { absoluteUrl } from '@/lib/seo/absolute-url';
-import { feedPath, ogImagePath } from '@/lib/seo/og';
+import { feedPath, llmsFullPath, llmsPath, ogImagePath } from '@/lib/seo/og';
 import { docSeo, docsIndexSeo, homeSeo, type PageSeo } from '@/lib/seo/page-heads';
 
 import { buildFeed } from './feed';
+import { buildLlmsFullTxt, buildLlmsRoot, buildLlmsTxt } from './llms';
 import { renderOgCard, type OgCardInput } from './og-card';
 import { docCard, homeCard } from './og-inputs';
 import { renderPage } from './prerender';
@@ -74,6 +76,37 @@ async function writeFeeds(): Promise<number> {
   return locales.length;
 }
 
-const [pages, images, feeds] = await Promise.all([writePages(), writeOgImages(), writeFeeds()]);
+function humansTxt(): string {
+  return `/* TEAM */\nSite: ${site.name}\nRepo: ${site.repo}\nContact: ${site.repo}/issues\n`;
+}
 
-console.log(`✔ SEO postbuild: ${pages} páginas estáticas, ${images} tarjetas OG, ${feeds} feeds`);
+function securityTxt(): string {
+  return `Contact: ${site.repo}/security/advisories/new\nExpires: 2027-12-31T00:00:00.000Z\nPreferred-Languages: es, en\n`;
+}
+
+async function writeLlms(): Promise<number> {
+  const jobs = [
+    write('llms.txt', buildLlmsRoot()),
+    ...locales.flatMap((locale) => [
+      write(llmsPath(locale), buildLlmsTxt(locale)),
+      write(llmsFullPath(locale), buildLlmsFullTxt(locale)),
+    ]),
+    write('humans.txt', humansTxt()),
+    write('.well-known/security.txt', securityTxt()),
+  ];
+
+  await Promise.all(jobs);
+
+  return jobs.length;
+}
+
+const [pages, images, feeds, llms] = await Promise.all([
+  writePages(),
+  writeOgImages(),
+  writeFeeds(),
+  writeLlms(),
+]);
+
+console.log(
+  `✔ SEO postbuild: ${pages} páginas estáticas, ${images} tarjetas OG, ${feeds} feeds, ${llms} archivos LLM/humans/security`,
+);
