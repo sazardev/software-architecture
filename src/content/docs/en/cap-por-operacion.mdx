@@ -1,0 +1,71 @@
+---
+title: 'CAP is decided per operation'
+description: 'CAP and PACELC explained as per-operation decisions: what choosing consistency or availability means for a balance, a cart or a like counter.'
+category: diseno
+tags:
+  - cap
+  - pacelc
+  - consistency
+  - availability
+order: 18
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Each operation picks its own point between consistency and availability
+---
+
+# CAP is decided per operation
+
+The CAP theorem is often taught as a global choice: your database is CP or AP. That simplification leads to bad decisions.
+One system has operations that need certainty and others that need a fast answer, and each should be decided separately.
+
+## What CAP says, precisely
+
+During a **partition**, when parts of the system cannot communicate, a distributed system must choose between answering with
+possibly stale data (availability) or rejecting the request until it can be sure (consistency).
+
+Two precisions avoid the most common misreadings. The **C** in CAP is not the C in ACID: it means that a read from a replica
+sees the last confirmed write, not the database's integrity rules. And CAP only talks about partitions: it says nothing about
+normal operation.
+
+## PACELC: the part you pay every day
+
+PACELC completes the theorem: if there is a **P**artition, you choose between **A** and **C**; **E**lse, that is, without a
+partition, you choose between **L**atency and **C**onsistency. That second choice is the one you pay every day, because it
+happens on almost every request.
+
+Waiting for every replica to confirm gives consistency at the cost of latency. Answering from the nearest replica is faster,
+but may return stale data.
+
+## Four operations, four decisions
+
+- **Account balance:** consistency. Showing an old balance can authorize a spend that does not exist. More latency is accepted.
+- **Last seat on a flight:** consistency. Two customers cannot both get the same seat. A conditional write or a reservation key helps.
+- **Shopping cart:** availability. A product that takes a second to appear is annoying; a lost cart is worse. Some divergence
+  between replicas is tolerated.
+- **Like counter:** availability. An approximate number for a few seconds hurts nobody.
+
+The useful question for each operation has two parts: what happens if I read something stale? And what happens if I wait
+300 milliseconds more to be sure?
+
+## How it works in practice
+
+The tools for choosing per operation exist: idempotency keys, versions with conditional writes, quorum reads and writes, and
+replication topologies with or without a leader. The database does not decide for you. It offers options, and your design
+picks the right one for each case.
+
+## Checklist
+
+- [ ] Does every critical operation have an explicit consistency decision?
+- [ ] Do you know how much latency each operation pays for its consistency?
+- [ ] Is there a way to verify what the system promises, for example with partition tests?
+- [ ] Do operations that cannot tolerate stale data use conditional writes or keys?
+
+**Further reading:** [CAP and PACELC](/docs/cap-pacelc) covers the spectrum of consistency models, four worked cases and how
+to verify what a system promises.
+
+## Sources
+
+- Eric Brewer, keynote at PODC (2000), the origin of the CAP theorem.
+- Seth Gilbert and Nancy Lynch, "Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web
+  Services", _ACM SIGACT News_ (2002).
+- Daniel Abadi, "Consistency Tradeoffs in Modern Distributed Database System Design", _IEEE Computer_ (2012).

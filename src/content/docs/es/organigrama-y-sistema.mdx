@@ -1,0 +1,75 @@
+---
+title: 'Tu organigrama dibuja tu arquitectura'
+description: 'La ley de Conway en la práctica: cómo la comunicación de tu organización acaba en el sistema y cómo usar la maniobra inversa para diseñar equipos a propósito.'
+category: decisiones
+tags:
+  - ley-de-conway
+  - team-topologies
+  - organizacion
+  - arquitectura
+order: 12
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: El sistema hereda la estructura de comunicación del equipo
+---
+
+# Tu organigrama dibuja tu arquitectura
+
+En 1968, Melvin Conway observó que las organizaciones diseñan sistemas que copian su estructura de
+comunicación. No era una broma: tres equipos que rara vez hablan entre sí producen tres grandes
+piezas con interfaces torpes entre ellas, aunque nadie las haya diseñado así.
+
+La consecuencia práctica es incómoda. Si tu organigrama no cambia, tu arquitectura tampoco. Y si
+cada cambio pasa por cinco equipos, tu sistema tendrá cinco puntos de coordinación, aunque el
+diagrama los llame de otra forma.
+
+## Cómo se ve en un proyecto
+
+Imagina un flujo de pago que necesita tocar el equipo de facturación, el de la pasarela y el de
+notificaciones. Si cada uno tiene su propio backlog y sus propios plazos, el flujo se convierte en
+tres componentes con contratos negociados a golpe de reunión. Cada cambio en el flujo exige tres
+despliegues coordinados, y el responsable de la experiencia completa no existe.
+
+La estructura no es culpa de nadie. Es la consecuencia lógica de cómo se reparten las
+responsabilidades.
+
+## La maniobra inversa
+
+La maniobra inversa de Conway consiste en hacer lo contrario: diseñar primero el flujo de valor que
+quieres y después los equipos que lo sostienen. Si quieres un servicio de pagos independiente, crea
+un equipo que sea dueño de extremo a extremo de ese flujo, y deja que la arquitectura siga.
+
+_Team Topologies_ ofrece un vocabulario para hacerlo:
+
+- **Cuatro tipos de equipo:** alineado al flujo, de plataforma, habilitador y de subsistema
+  complicado.
+- **Tres modos de interacción:** colaboración, X como servicio y facilitación.
+
+El tipo de equipo indica qué responsabilidad tiene y el modo indica cómo se relaciona con otros.
+Un equipo de plataforma que se comporta como una cola de tickets no está cumpliendo su función,
+aunque su nombre diga lo contrario.
+
+## La carga cognitiva
+
+Hay un límite que se olvida con frecuencia: un equipo solo puede sostener cierta cantidad de
+dominio. Si un equipo es dueño de demasiados subsistemas, no entenderá ninguno a fondo, y la
+arquitectura se degradará en las partes que nadie mira.
+
+Antes de crear un equipo, pregúntate si puede entender lo que va a poseer. Si la respuesta es no, la
+solución no es añadir personas a la fuerza, sino dividir el dominio en fronteras más pequeñas.
+
+## Checklist
+
+- [ ] ¿Puedes dibujar tu organigrama y predecir la forma de tu arquitectura?
+- [ ] ¿Hay un equipo dueño de extremo a extremo de cada flujo de valor importante?
+- [ ] ¿Cuántos equipos tocan un mismo cambio? Cada uno es un punto de coordinación.
+- [ ] ¿La carga cognitiva de cada equipo es razonable para el dominio que posee?
+
+**Para profundizar:** [la ley de Conway y Team Topologies](/docs/ley-de-conway-team-topologies)
+recoge la historia de la ley, los tipos de equipo y ejemplos de decisión.
+
+## Fuentes
+
+- Melvin Conway, "How Do Committees Invent?", _Datamation_ (1968).
+- Matthew Skelton y Manuel Pais, _Team Topologies_ (2019).
+- Martin Fowler, entrada "Conway's Law" en martinfowler.com.

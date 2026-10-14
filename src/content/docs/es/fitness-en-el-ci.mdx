@@ -1,0 +1,82 @@
+---
+title: 'Tu arquitectura debería fallar en el CI'
+description: 'Cómo convertir una regla de arquitectura en una comprobación que falla el pipeline, con un ejemplo real de ESLint en este repositorio y los pasos para empezar.'
+category: practicas
+tags:
+  - fitness-functions
+  - ci
+  - eslint
+  - arquitectura
+order: 6
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Un import que rompe una regla de capas hace fallar el pipeline
+---
+
+# Tu arquitectura debería fallar en el CI
+
+Un diagrama de arquitectura no protege nada. Puede decir que el dominio no depende de la
+infraestructura, pero nada impide que alguien lo rompa en un pull request un viernes por la tarde.
+Una regla que nadie ejecuta es una intención.
+
+Una regla ejecutable sí protege. Y cuanto antes falle, más barato es corregirla.
+
+## Del diagrama a la comprobación
+
+Una _fitness function_ es una comprobación automática que vigila una característica de la
+arquitectura: una frontera, un ciclo de dependencias, un tamaño máximo, un presupuesto de
+rendimiento. La clave está en la palabra automática. Si la regla depende de que alguien revise el
+código, tarde o temprano se olvidará.
+
+Para convertir una característica en comprobación, sigue este orden:
+
+1. Elige una característica que te importe y que ya te haya dolido alguna vez.
+2. Escríbela como una regla medible: qué puede importar qué, qué tamaño máximo, qué umbral.
+3. Ejecútala en el punto donde más barato sea fallar: el editor, el commit o el pipeline.
+4. Define qué pasa cuando la regla estorba.
+
+## Un ejemplo real
+
+En este repositorio, la regla de capas de la interfaz se expresa como zonas en la configuración de
+ESLint, mediante la regla `import-x/no-restricted-paths`. Los átomos no pueden importar moléculas
+ni organismos, y `lib` no puede importar componentes. Si un desarrollador añade ese import, ESLint
+lo marca con un mensaje que explica la regla y el orden correcto.
+
+El script `bun run check` incluye el lint, así que el pipeline de despliegue falla y el cambio no
+llega a producción. La regla no depende de la memoria de nadie: vive en el código y se ejecuta en
+cada cambio.
+
+## Cuando la regla estorba
+
+Una fitness function que nunca molesta probablemente no protege nada. Cuando una regla bloquea un
+cambio legítimo, hay dos salidas honestas: cambiar la regla o cambiar la decisión. En ambos casos,
+el cambio debe quedar registrado en un ADR, no desactivado en silencio.
+
+Desactivar la regla sin explicación es la forma más común de perder la arquitectura. La segunda
+más común es añadir excepciones una tras otra hasta que la regla ya no dice nada.
+
+## Errores frecuentes
+
+- **Demasiadas reglas a la vez.** Diez comprobaciones que fallan todo el tiempo se ignoran. Empieza
+  por una o dos que protejan algo real.
+- **Reglas que nadie entiende.** El mensaje de fallo debe decir qué regla se rompió y cuál es la
+  alternativa correcta.
+- **Comprobaciones solo en local.** Si no corren en el pipeline compartido, no protegen nada.
+
+## Checklist
+
+- [ ] ¿La característica que proteges importa al negocio o al equipo?
+- [ ] ¿La regla es medible y tiene un umbral acordado?
+- [ ] ¿Corre en el pipeline, no solo en el editor?
+- [ ] ¿El mensaje de fallo explica la alternativa?
+- [ ] ¿Está previsto el camino para cambiar la regla con un ADR?
+
+**Para profundizar:** [fitness functions y arquitectura evolutiva](/docs/fitness-functions) cubre
+los tipos de comprobación, herramientas por lenguaje y cómo adoptarlas en sistemas legados.
+
+## Fuentes
+
+- Neal Ford, Rebecca Parsons, Patrick Kua y Pramod Sadalage, _Building Evolutionary Architectures_
+  (2.ª edición, 2022).
+- Documentación de ESLint, regla `no-restricted-paths` del plugin `eslint-plugin-import-x`.
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020).

@@ -1,0 +1,86 @@
+---
+title: 'Cuánta autonomía dar a un agente'
+description: 'Niveles de autonomía para sistemas con IA: qué pasos son deterministas, dónde poner aprobación humana, cómo parar y cómo trazar costo e idempotencia.'
+category: decisiones
+tags:
+  - ia
+  - agentes
+  - gobierno
+  - autonomia
+order: 14
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Cada nivel de autonomía exige un permiso más explícito
+---
+
+# Cuánta autonomía dar a un agente
+
+Un agente es un sistema probabilístico que actúa: lee datos, decide y ejecuta acciones. Eso cambia las
+reglas de arquitectura. Una función determinista que se equivoca siempre se equivoca igual, y se puede
+probar. Un agente puede equivocarse de formas distintas en cada ejecución, y sus errores tienen
+consecuencias reales si puede emitir un reembolso o enviar un correo.
+
+La pregunta de diseño no es si el agente es suficientemente bueno. Es qué puede hacer sin preguntar.
+
+## Decidir paso a paso qué hace el modelo
+
+No todo el flujo necesita un modelo. Validar un JSON, comprobar un importe contra un límite o consultar
+una base de datos son pasos deterministas. Solo el juicio que el código no puede expresar, como
+interpretar un correo ambiguo, debería delegarse al modelo.
+
+Separar los pasos tiene dos ventajas: reduce el área donde puede fallar la IA y abarata la operación.
+Cada paso determinista es más barato, más rápido y verificable.
+
+## Puntos de control
+
+Un flujo con IA necesita tres tipos de punto de control:
+
+- **Validar:** comprobar la salida del modelo contra un esquema y reglas de negocio antes de actuar.
+- **Aprobar:** una persona confirma las acciones costosas o irreversibles, como un pago.
+- **Parar:** límites de pasos, de costo y de tiempo, con una salida segura cuando se alcanzan.
+
+## Niveles de autonomía
+
+No todo agente debe actuar sin supervisión. Un modelo de niveles ayuda a decidir:
+
+1. **Sugerir:** el agente propone y una persona actúa. Es el nivel de partida.
+2. **Actuar con límite:** el agente ejecuta acciones de bajo riesgo dentro de un tope, por ejemplo un
+   reembolso menor a un importe acordado. Lo demás se escala.
+3. **Actuar sin supervisión:** solo para acciones reversibles y bien medidas, con monitorización
+   continua.
+
+Subir de nivel exige un permiso más explícito y evidencia de que el nivel anterior funciona. Entre el
+segundo y el tercero debe haber una aprobación humana obligatoria.
+
+## Trazabilidad y costo
+
+Cada decisión del agente debe quedar registrada: qué datos tenía, qué decidió, cuánto costó la
+ejecución y qué acción produjo. Sin esa traza no hay forma de auditar ni de aprender de los errores.
+
+La idempotencia sigue siendo responsabilidad del diseño. Si un reintento puede duplicar un pago, el
+problema no es del modelo: es de la arquitectura, y se resuelve con claves de idempotencia y
+compensaciones.
+
+## Marcos de referencia
+
+Para hablar del tema con legal y seguridad, tres marcos ayudan a poner nombres a los riesgos: el NIST
+AI Risk Management Framework, el Reglamento europeo de IA (EU AI Act) y el OWASP Top 10 para aplicaciones
+con modelos de lenguaje. Ninguno decide por ti el nivel de autonomía, pero dan vocabulario común.
+
+## Checklist
+
+- [ ] ¿Cada paso del flujo está marcado como determinista o como juicio del modelo?
+- [ ] ¿Hay validación de la salida antes de cualquier acción?
+- [ ] ¿Qué acciones requieren aprobación humana?
+- [ ] ¿Existen límites de pasos, costo y tiempo?
+- [ ] ¿Cada decisión queda trazada, con su costo?
+
+**Para profundizar:** [diseñar flujos con agentes](/docs/disenar-flujos-con-agentes) y
+[controlar la IA: gobierno y autonomía](/docs/controlar-la-ia-gobierno-y-autonomia) desarrollan los
+patrones de flujo, la evaluación continua y el registro de responsables.
+
+## Fuentes
+
+- NIST, _Artificial Intelligence Risk Management Framework (AI RMF 1.0)_ (2023).
+- Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo (Reglamento de Inteligencia Artificial).
+- OWASP, _Top 10 for Large Language Model Applications_.

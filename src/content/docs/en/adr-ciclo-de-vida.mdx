@@ -1,0 +1,71 @@
+---
+title: 'Decisions have a lifecycle'
+description: 'An ADR is proposed, accepted and, over time, deprecated or superseded. How to keep a decision log without erasing its history.'
+category: decisiones
+tags:
+  - adr
+  - decisions
+  - documentation
+  - governance
+order: 13
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: An ADR changes state; it is never deleted
+---
+
+# Decisions have a lifecycle
+
+A one-page ADR can spare a team months of questions. "Why this queue?" "Why not microservices?" "Why this database?" If the
+answer lives only in someone's head, it disappears when that person changes teams.
+
+But a decision log is not a file you write once. Decisions age, get replaced and are sometimes dropped. A log with no lifecycle
+ends up lying.
+
+## What makes an ADR useful
+
+The value of an ADR is in the why, not the what. Four sections are enough:
+
+- **Context:** facts and constraints, without defending any option.
+- **Options considered:** at least two, including the conservative one. If there was only one option, there was no decision,
+  only habit.
+- **Decision:** in active voice, "we chose X because Y".
+- **Consequences:** the good and the bad. The bad ones are the ones people forget first.
+
+## The states of a decision
+
+An ADR moves through states. The usual ones are:
+
+1. **Proposed:** under review, not yet binding.
+2. **Accepted:** in force. The team commits to following it.
+3. **Rejected:** dropped during review. Keep it, because it stops the same debate from happening again.
+4. **Deprecated:** no longer applies because the context changed, with no new decision recorded.
+5. **Superseded:** another ADR replaces it and links to it.
+
+The important rule: an accepted ADR is not edited to match what was done later. The value of the log is precisely what was thought at the
+time. If something changed, write a new ADR that explains the change.
+
+## Where it lives and how it is reviewed
+
+ADRs live in the same repository as the code, in a versioned folder. They enter the project as a pull request, and the review conversation is
+recorded next to the decision. That turns approval into a team practice, not a document nobody reads.
+
+## ADRs and AI agents
+
+An agent working in the repository needs to know which decisions are already made. An accepted ADR is an explicit constraint the agent can read;
+a decision that exists only in a chat is not. That makes ADRs part of how automated work gets governed.
+
+## Checklist
+
+- [ ] Does the decision have at least two options considered?
+- [ ] Do the consequences include costs, not only benefits?
+- [ ] Does the ADR show its state?
+- [ ] Does a change of decision create a new ADR, rather than editing the old one?
+
+**Further reading:** [ADRs, a practical guide](/docs/adr) covers the Nygard, MADR and Y-statement templates and how to fit ADRs into code review.
+[Trade-offs and decisions](/docs/trade-offs-y-decisiones) explains how to reason about the decision before recording it.
+
+## Sources
+
+- Michael T. Nygard, "Documenting Architecture Decisions" (2011).
+- MADR template (Markdown Architectural Decision Records), public project.
+- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020), chapter on architecture decisions.

@@ -1,0 +1,79 @@
+---
+title: 'Las decisiones tienen ciclo de vida'
+description: 'Un ADR se propone, se acepta y, con el tiempo, queda obsoleto o se reemplaza. Cómo mantener un registro de decisiones sin borrar la historia.'
+category: decisiones
+tags:
+  - adr
+  - decisiones
+  - documentacion
+  - gobierno
+order: 13
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Un ADR cambia de estado; no se borra
+---
+
+# Las decisiones tienen ciclo de vida
+
+Un ADR de una página puede ahorrarle a un equipo meses de preguntas. «¿Por qué usamos esta cola?»
+«¿Por qué no microservicios?» «¿Por qué esta base de datos?». Si la respuesta vive solo en la
+cabeza de alguien, se pierde cuando esa persona cambia de equipo.
+
+Pero un registro de decisiones no es un archivo que se escribe una vez. Las decisiones envejecen, se
+sustituyen y, a veces, se descartan. Un registro sin ciclo de vida acaba mintiendo.
+
+## Lo que hace útil un ADR
+
+El valor de un ADR está en el porqué, no en el qué. Cuatro secciones bastan:
+
+- **Contexto:** hechos y restricciones, sin defender ninguna opción.
+- **Opciones consideradas:** al menos dos, incluida la conservadora. Si solo hay una opción, no hubo
+  decisión, hubo costumbre.
+- **Decisión:** en voz activa, «elegimos X porque Y».
+- **Consecuencias:** lo bueno y lo malo. Las consecuencias malas son las que más tarde se olvidan.
+
+## Los estados de una decisión
+
+Un ADR pasa por estados. Los habituales son:
+
+1. **Propuesto:** en revisión, todavía no vinculante.
+2. **Aceptado:** vigente. El equipo se compromete a seguirlo.
+3. **Rechazado:** se descartó durante la revisión. Conviene conservarlo, porque evita volver a
+   discutir lo mismo.
+4. **Obsoleto:** ya no aplica, por un cambio de contexto, sin que haya una decisión nueva.
+5. **Reemplazado:** otro ADR lo sustituye y enlaza con él.
+
+La regla importante: un ADR aceptado no se edita para que cuadre con lo que se hizo después. El
+valor del registro es precisamente lo que se pensó en su momento. Si algo cambió, se escribe un ADR
+nuevo que explica el cambio.
+
+## Dónde vive y cómo se revisa
+
+Los ADR viven en el mismo repositorio que el código, en una carpeta versionada. Entran al proyecto
+como un pull request, y la conversación de la revisión queda registrada junto a la decisión. Eso
+convierte la aprobación en una práctica de equipo, no en un documento que nadie lee.
+
+## ADR y agentes de IA
+
+Un agente que trabaja en el repositorio necesita saber qué decisiones ya están tomadas. Un ADR
+aceptado es una restricción explícita que el agente puede leer; una decisión solo en un chat no lo
+es. Por eso los ADR son también una forma de gobernar el trabajo automatizado.
+
+## Checklist
+
+- [ ] ¿La decisión tiene al menos dos opciones consideradas?
+- [ ] ¿Las consecuencias incluyen los costes, no solo los beneficios?
+- [ ] ¿El ADR tiene un estado visible?
+- [ ] ¿Un cambio de decisión genera un ADR nuevo, no una edición del anterior?
+
+**Para profundizar:** [ADR, guía práctica](/docs/adr) cubre las plantillas de Nygard, MADR y
+Y-statements, y cómo integrar los ADR en las revisiones de código.
+[Trade-offs y decisiones](/docs/trade-offs-y-decisiones) explica cómo razonar la decisión antes de
+registrarla.
+
+## Fuentes
+
+- Michael T. Nygard, "Documenting Architecture Decisions" (2011).
+- Plantilla MADR (Markdown Architectural Decision Records), proyecto público.
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020), capítulo sobre decisiones
+  de arquitectura.

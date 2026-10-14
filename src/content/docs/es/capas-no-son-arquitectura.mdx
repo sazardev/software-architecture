@@ -1,0 +1,79 @@
+---
+title: 'Las capas no son la arquitectura'
+description: 'Por qué las carpetas por capa no bastan: la regla de dependencia, qué debe cruzar cada frontera y cuándo las capas añaden ruido en lugar de protección.'
+category: diseno
+tags:
+  - capas
+  - dependencias
+  - clean-architecture
+  - fronteras
+order: 15
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Las dependencias apuntan hacia el dominio, nunca al revés
+---
+
+# Las capas no son la arquitectura
+
+Tu proyecto tiene carpetas `controllers/`, `services/` y `repositories/`. Eso dice cómo se llaman
+las cosas, no cómo se relacionan. Una arquitectura en capas puede degradarse en silencio: el
+servicio de reembolsos importa el ORM, el controlador conoce el formato de la base de datos y,
+seis meses después, cambiar una columna obliga a tocar medio proyecto.
+
+El problema no es tener capas. Es que la dependencia vaya en la dirección equivocada.
+
+## La regla de dependencia
+
+La regla que sostiene cualquier arquitectura en capas, sea clásica, cebolla o limpia, es una sola:
+**el código de una capa interna no conoce a las externas**. El dominio define reglas de negocio,
+como que un reembolso nunca supera el importe del pago original. La aplicación orquesta casos de
+uso. La infraestructura implementa los detalles: la base de datos, el cliente HTTP, la cola de
+mensajes.
+
+Así, las dependencias apuntan hacia dentro. La infraestructura depende del dominio, no al revés.
+Para comprobarlo, pregúntate qué archivo importa a cuál. Si el dominio menciona un tipo del ORM,
+ya no tienes arquitectura: tienes carpetas.
+
+## Qué cruza cada frontera
+
+Cada frontera tiene una pregunta: qué datos cruzan y cuáles no.
+
+- **Lo que sí cruza:** tipos simples, objetos de valor y DTOs diseñados para el caso de uso. Un
+  importe, un identificador, una fecha.
+- **Lo que no cruza:** entidades del ORM, excepciones de la base de datos, objetos del framework,
+  respuestas HTTP.
+- **Quién define la interfaz:** el caso de uso declara el puerto que necesita y la infraestructura
+  lo implementa. La dependencia se invierte, no se copia.
+
+Un ejemplo concreto: aprobar un reembolso. El caso de uso recibe un identificador de pago y un
+importe, consulta un puerto de pagos y devuelve un resultado de dominio. Si la base de datos falla
+con un error de conexión, la infraestructura lo traduce a un error de aplicación antes de que
+llegue al caso de uso. Cambiar de base de datos no obliga entonces a reescribir la lógica de
+reembolsos.
+
+## Cuándo las capas estorban
+
+El extremo contrario también existe. Las capas que solo reenvían datos no protegen nada: añaden
+ficheros, nombres y saltos sin decidir nada. Un CRUD con ocho capas y una interfaz por clase es
+complejidad accidental, la que añaden las herramientas y no el problema.
+
+Las capas se justifican cuando hay lógica de negocio que proteger, varias fuentes de datos o un
+equipo que necesita límites claros. Para un formulario que guarda una fila, con una capa basta.
+
+## Checklist
+
+- [ ] ¿El dominio importa algo de infraestructura? Si sí, esa es tu primera frontera rota.
+- [ ] ¿Qué tipos cruzan cada frontera? Deben ser simples o diseñados para el caso de uso.
+- [ ] ¿Hay capas que solo reenvían datos? Elimínalas o justifícalas.
+- [ ] ¿Quién declara la interfaz? Debe ser quien la necesita.
+
+**Para profundizar:** [arquitectura en capas, cebolla y limpia](/docs/arquitectura-en-capas-clean-onion)
+compara los tres estilos y sus errores frecuentes. Para que la regla se cumpla sola, mira
+[fitness functions](/docs/fitness-functions).
+
+## Fuentes
+
+- Robert C. Martin, _Clean Architecture_ (2017).
+- Jeffrey Palermo, "The Onion Architecture" (2008).
+- Alistair Cockburn, "Hexagonal Architecture" (2005), también conocida como puertos y adaptadores.
+- Vaughn Vernon, _Implementing Domain-Driven Design_ (2013).

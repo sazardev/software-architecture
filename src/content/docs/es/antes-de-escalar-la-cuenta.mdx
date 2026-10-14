@@ -1,0 +1,75 @@
+---
+title: 'Antes de escalar, haz la cuenta'
+description: 'Ley de Little, ley de Amdahl y colas para estimar concurrencia y capacidad antes de añadir servidores, con un cálculo completo de principio a fin.'
+category: diseno
+tags:
+  - escalabilidad
+  - rendimiento
+  - ley-de-little
+  - capacidad
+order: 19
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Concurrencia = caudal × tiempo de respuesta
+---
+
+# Antes de escalar, haz la cuenta
+
+Muchos sistemas no necesitan cincuenta servidores. Necesitan una estimación de orden de magnitud, hecha
+antes de comprar nada. La diferencia entre adivinar y calcular suele ser de un factor diez, y ese factor
+decide si el problema se resuelve con una caché o con una reescritura.
+
+Tres leyes cubren la mayoría de los casos.
+
+## Ley de Little: concurrencia
+
+La ley de Little dice que el número de peticiones en curso es igual al caudal multiplicado por el tiempo
+que cada una permanece en el sistema: **L = λ × W**.
+
+Con 200 peticiones por segundo y 0,5 segundos de latencia, hay en promedio 100 peticiones en vuelo. Ese
+número te dice cuántos hilos, conexiones o sesiones necesitas, y dónde se agotarán primero. Si la
+latencia sube a dos segundos sin cambiar el tráfico, la concurrencia se multiplica por cuatro. Muchas
+caídas en cascada empiezan así: la latencia sube, la concurrencia se dispara y los recursos se agotan.
+
+## Ley de Amdahl: el techo del paralelismo
+
+Si una fracción del trabajo es secuencial, añadir núcleos tiene un límite. Con un 10 % de trabajo
+secuencial, la mejora máxima es de 10 veces, por muchos núcleos que compres. Antes de paralelizar, pregunta
+qué parte es realmente paralelizable. A menudo es un cuello de botella de base de datos o un bloqueo
+compartido.
+
+## Colas: la latencia se dispara al final
+
+Cuando la utilización de un recurso se acerca al 100 %, el tiempo de espera crece muy deprisa. Por eso un
+servicio al 60 % de carga suele ir bien, y al 95 % sufre picos que nadie explica. La variabilidad del tráfico
+empeora el efecto. Diseña con margen, no con la media.
+
+## Un cálculo completo
+
+Supón un servicio de consultas con 200 peticiones por segundo en pico, latencia media de 0,5 segundos y
+un 10 % de trabajo secuencial. Con Little, necesitas capacidad para unas 100 peticiones simultáneas. Con
+Amdahl, añadir réplicas que paralelizan el 90 % restante tiene un techo; si el cuello está en la parte
+secuencial, cambiar el diseño vale más que comprar máquinas. Con colas, reserva margen para que la
+utilización no supere el 70 % en pico.
+
+El resultado no es un número exacto, sino un rango con su razonamiento. Esa es la estimación útil.
+
+## Checklist
+
+- [ ] ¿Conoces el caudal pico y la latencia media, y el percentil 95 o 99?
+- [ ] ¿Cuántas peticiones en vuelo necesita el sistema?
+- [ ] ¿Qué parte del trabajo es secuencial?
+- [ ] ¿Qué utilización máxima aceptas en pico?
+- [ ] ¿La decisión de escalar sale de un cálculo, o de una intuición?
+
+**Para profundizar:** [números y leyes de rendimiento](/docs/numeros-y-leyes-de-rendimiento) incluye la
+ley de escalabilidad universal y tablas de latencia de referencia, y
+[escalabilidad en casos clásicos](/docs/escalabilidad-casos-clasicos) aplica el método a un acortador
+de URLs, un limitador de tasa y un feed.
+
+## Fuentes
+
+- John D. C. Little, "A Proof for the Queuing Formula: L = λW", _Operations Research_ (1961).
+- Gene M. Amdahl, "Validity of the single processor approach to achieving large scale computing
+  capabilities", AFIPS Spring Joint Computer Conference (1967).
+- Neil J. Gunther, _Guerrilla Capacity Planning_ (2007), para la ley de escalabilidad universal.

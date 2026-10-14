@@ -1,0 +1,75 @@
+---
+title: 'CAP se decide por operación'
+description: 'CAP y PACELC explicados como decisiones por operación: qué significa elegir consistencia o disponibilidad en un saldo, un carrito o un contador de likes.'
+category: diseno
+tags:
+  - cap
+  - pacelc
+  - consistencia
+  - disponibilidad
+order: 18
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Cada operación elige su punto entre consistencia y disponibilidad
+---
+
+# CAP se decide por operación
+
+El teorema CAP suele enseñarse como una elección global: tu base de datos es CP o AP. Esa
+simplificación lleva a decisiones malas. Un mismo sistema tiene operaciones que necesitan certeza y
+otras que necesitan respuesta rápida, y cada una debe decidirse por separado.
+
+## Qué dice CAP, con precisión
+
+Durante una **partición**, cuando dos partes del sistema no pueden comunicarse, un sistema distribuido
+debe elegir entre responder con datos posiblemente viejos (disponibilidad) o rechazar la petición
+hasta que haya certeza (consistencia).
+
+Dos precisiones evitan los malentendidos más comunes. La **C** de CAP no es la C de ACID: se refiere
+a que una lectura en una réplica vea la última escritura confirmada, no a las reglas de integridad de
+la base. Y CAP solo habla de particiones: no dice nada sobre el funcionamiento normal.
+
+## PACELC: la parte que pagas cada día
+
+PACELC completa el teorema: si hay **P**artición, eliges entre **A** y **C**; **E**lse, es decir,
+sin partición, eliges entre **L**atencia y **C**onsistencia. Esa segunda elección es la que pagas
+todos los días, porque ocurre en casi todas las peticiones.
+
+Esperar a que todas las réplicas confirmen da consistencia a costa de latencia. Responder desde la
+réplica más cercana es más rápido, pero puede devolver datos atrasados.
+
+## Cuatro operaciones, cuatro decisiones
+
+- **Saldo de una cuenta:** consistencia. Mostrar un saldo viejo puede llevar a autorizar un gasto que
+  no existe. Se acepta más latencia.
+- **Reserva del último asiento:** consistencia. Dos clientes no pueden quedarse con el mismo asiento.
+  Conviene una escritura condicional o una clave de reserva.
+- **Carrito de compras:** disponibilidad. Que un artículo tarde un segundo en aparecer es molesto;
+  perder el carrito, peor. Se tolera cierta divergencia entre réplicas.
+- **Contador de likes:** disponibilidad. Un número aproximado durante unos segundos no daña a nadie.
+
+La pregunta útil para cada operación es doble: ¿qué pasa si leo algo viejo?, y ¿qué pasa si espero
+300 milisegundos más para tener la certeza?
+
+## Cómo se aplica en la práctica
+
+Las herramientas para elegir por operación existen: claves de idempotencia, versiones con escrituras
+condicionales, lecturas y escrituras por quórum, topologías de replicación con líder o sin él. La
+base de datos no decide por ti: ofrece opciones, y tu diseño decide cuál usar en cada caso.
+
+## Checklist
+
+- [ ] ¿Cada operación crítica tiene una decisión de consistencia explícita?
+- [ ] ¿Sabes cuánta latencia pagas por la consistencia de cada operación?
+- [ ] ¿Hay forma de verificar lo que promete el sistema, por ejemplo con pruebas de partición?
+- [ ] ¿Las operaciones que no toleran datos viejos usan escrituras condicionales o claves?
+
+**Para profundizar:** [CAP y PACELC](/docs/cap-pacelc) incluye el espectro de modelos de consistencia,
+cuatro casos trabajados y cómo verificar lo que promete un sistema.
+
+## Fuentes
+
+- Eric Brewer, conferencia en el PODC (2000), base del teorema CAP.
+- Seth Gilbert y Nancy Lynch, "Brewer's Conjecture and the Feasibility of Consistent, Available,
+  Partition-Tolerant Web Services", _ACM SIGACT News_ (2002).
+- Daniel Abadi, "Consistency Tradeoffs in Modern Distributed Database System Design", _IEEE Computer_ (2012).

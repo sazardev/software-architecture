@@ -1,0 +1,78 @@
+---
+title: 'Your architecture should fail in CI'
+description: 'How to turn an architecture rule into a check that fails the pipeline: a real ESLint example from this repository and the steps to start with one.'
+category: practicas
+tags:
+  - fitness-functions
+  - ci
+  - eslint
+  - architecture
+order: 6
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: An import that breaks a layer rule fails the pipeline
+---
+
+# Your architecture should fail in CI
+
+An architecture diagram protects nothing. It can say that the domain does not depend on infrastructure, but
+nothing stops someone from breaking that in a pull request on a Friday afternoon. A rule nobody runs is just
+an intention.
+
+An executable rule does protect. And the earlier it fails, the cheaper it is to fix.
+
+## From diagram to check
+
+A _fitness function_ is an automated check that watches one characteristic of the architecture: a boundary, a
+dependency cycle, a size limit, a performance budget. The key word is automated. If the rule depends on someone
+reviewing the code, sooner or later it will be forgotten.
+
+To turn a characteristic into a check, follow this order:
+
+1. Pick a characteristic you care about, one that has already hurt you.
+2. Write it as a measurable rule: what may import what, what maximum size, what threshold.
+3. Run it where failing is cheapest: the editor, the commit or the pipeline.
+4. Decide in advance what happens when the rule gets in the way.
+
+## A real example
+
+In this repository, the layer rules of the interface are expressed as zones in the ESLint configuration, using
+the `import-x/no-restricted-paths` rule. Atoms cannot import molecules or organisms, and `lib` cannot import
+components. If a developer adds such an import, ESLint flags it with a message that explains the rule and the
+correct direction.
+
+The `bun run check` script includes lint, so the deploy pipeline fails and the change never reaches production.
+The rule does not depend on anyone's memory: it lives in the code and runs on every change.
+
+## When the rule gets in the way
+
+A fitness function that never annoys anyone probably protects nothing. When a rule blocks a legitimate change,
+there are two honest outcomes: change the rule or change the decision. In both cases the change should be
+recorded in an ADR, not switched off silently.
+
+Disabling a rule without explanation is the most common way to lose an architecture. The second most common is
+adding exceptions one after another until the rule says nothing at all.
+
+## Common mistakes
+
+- **Too many rules at once.** Ten checks that fail all the time get ignored. Start with one or two that protect
+  something real.
+- **Rules nobody understands.** The failure message should name the rule and the correct alternative.
+- **Checks that only run locally.** If they do not run in the shared pipeline, they protect nothing.
+
+## Checklist
+
+- [ ] Does the characteristic you protect matter to the business or to the team?
+- [ ] Is the rule measurable, with an agreed threshold?
+- [ ] Does it run in the pipeline, not only in the editor?
+- [ ] Does the failure message explain the alternative?
+- [ ] Is there a path to change the rule through an ADR?
+
+**Further reading:** [fitness functions and evolutionary architecture](/docs/fitness-functions) covers the types of
+check, tools per language and how to adopt them in legacy systems.
+
+## Sources
+
+- Neal Ford, Rebecca Parsons, Patrick Kua and Pramod Sadalage, _Building Evolutionary Architectures_ (2nd edition, 2022).
+- ESLint documentation, the `no-restricted-paths` rule from `eslint-plugin-import-x`.
+- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020).

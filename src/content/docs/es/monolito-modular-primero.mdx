@@ -1,0 +1,81 @@
+---
+title: 'Monolito modular antes que microservicios'
+description: 'Monolito o microservicios es la pregunta equivocada. Cómo diseñar fronteras dentro de un proceso y cuándo tiene sentido extraer un servicio.'
+category: diseno
+tags:
+  - monolito-modular
+  - microservicios
+  - fronteras
+  - migracion
+order: 16
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Módulos con API pública y datos propios dentro de un proceso
+---
+
+# Monolito modular antes que microservicios
+
+«¿Monolito o microservicios?» es casi siempre la pregunta equivocada. La útil es otra: **¿dónde
+están mis fronteras y cuánto cuesta moverlas?**
+
+Un monolito bien hecho puede ser modular: módulos con una API pública, dependencias controladas y
+datos con dueño. Uno mal hecho es un monolito distribuido: servicios que se llaman en cadena,
+comparten base de datos y se despliegan juntos. Ese es el peor de los dos mundos, porque pagas la
+complejidad de la red sin obtener la independencia.
+
+## Qué es un módulo de verdad
+
+Un módulo no es una carpeta. Es una frontera con tres propiedades:
+
+- **Una API pública pequeña.** Otros módulos solo llaman a lo que el módulo expone de forma
+  explícita. Todo lo demás es interno.
+- **Datos con dueño.** Cada módulo escribe en sus propias tablas. Leer las de otro módulo está
+  prohibido, aunque sea posible.
+- **Dependencias controladas.** Las dependencias entre módulos forman un grafo sin ciclos, y esa
+  propiedad puede comprobarse automáticamente.
+
+Si una de las tres falla, el módulo solo existe en el diagrama.
+
+## Por qué empezar por el monolito modular
+
+Corregir una frontera dentro de un proceso es mucho más barato que corregirla entre servicios. Mover
+una función de un módulo a otro es un refactor. Mover un flujo entre dos servicios exige contratos,
+despliegues coordinados y, a menudo, una migración de datos.
+
+Un monolito modular te permite descubrir dónde están las fronteras reales antes de pagar por ellas.
+Cuando un módulo tiene requisitos de escala o de fiabilidad distintos, o cuando un equipo necesita
+desplegar sin coordinarse con los demás, ese módulo es candidato a extraerse. Hasta entonces, la
+extracción es una apuesta.
+
+## Cuándo extraer un servicio
+
+Extrae cuando la respuesta a una de estas preguntas es sí, y no antes:
+
+- ¿Hay un equipo independiente que necesita desplegar sin esperar a otros?
+- ¿El módulo tiene una carga o un nivel de fiabilidad que el resto no puede compartir?
+- ¿Conoces la frontera con suficiente detalle para no equivocarte en los datos?
+
+Si la respuesta a la última es no, el problema es la frontera, no el despliegue.
+
+## Migrar sin parar el sistema
+
+Cuando llega el momento, la extracción más segura suele ser gradual. El patrón estrangulador pone
+una fachada delante del módulo, desvía poco a poco las llamadas al nuevo servicio y retira el código
+antiguo cuando ya nadie lo usa. Así, cada paso es reversible.
+
+## Checklist
+
+- [ ] ¿Cada módulo tiene una API pública y el resto es interno?
+- [ ] ¿Cada módulo escribe solo en sus propios datos?
+- [ ] ¿Hay una comprobación automática que impida depender del interior de otro módulo?
+- [ ] ¿Tienes una razón medible para extraer, no solo una preferencia?
+
+**Para profundizar:** [monolito vs microservicios](/docs/monolito-vs-microservicios) cubre los
+costes de cada opción, dos casos públicos y las rutas de migración.
+
+## Fuentes
+
+- Martin Fowler, "MonolithFirst" (2015).
+- Sam Newman, _Monolith to Microservices_ (2019).
+- Chris Richardson, _Microservices Patterns_ (2018), capítulo sobre el patrón estrangulador.
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020).

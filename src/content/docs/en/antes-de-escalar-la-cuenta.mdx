@@ -1,0 +1,64 @@
+---
+title: 'Before you scale, do the math'
+description: "Little's law, Amdahl's law and queueing to estimate concurrency and capacity before adding servers, with a full calculation from start to finish."
+category: diseno
+tags:
+  - scalability
+  - performance
+  - littles-law
+  - capacity
+order: 19
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Concurrency = throughput × response time
+---
+
+# Before you scale, do the math
+
+Many systems do not need fifty servers. They need an order-of-magnitude estimate, made before buying anything. The difference between guessing
+and calculating is often a factor of ten, and that factor decides whether the problem is solved with a cache or with a rewrite.
+
+Three laws cover most cases.
+
+## Little's law: concurrency
+
+Little's law says the number of requests in progress equals the throughput multiplied by the time each request stays in the system: **L = λ × W**.
+
+With 200 requests per second and 0.5 seconds of latency, there are on average 100 requests in flight. That number tells you how many threads,
+connections or sessions you need, and where they will run out first. If latency rises to two seconds with the same traffic, concurrency quadruples.
+Many cascading outages start exactly like this: latency rises, concurrency spikes and resources run out.
+
+## Amdahl's law: the ceiling on parallelism
+
+If part of the work is sequential, adding cores has a limit. With 10 % sequential work, the maximum improvement is ten times, however many cores you buy.
+Before parallelising, ask which part can actually be parallelised. Often the bottleneck is a database or a shared lock.
+
+## Queues: latency explodes at the end
+
+When a resource's utilisation approaches 100 %, waiting time grows very fast. That is why a service at 60 % load usually runs well, and one at 95 % suffers
+peaks nobody can explain. Traffic variability makes the effect worse. Design with headroom, not with the average.
+
+## A full calculation
+
+Suppose a query service with 200 requests per second at peak, 0.5 seconds average latency and 10 % sequential work. Little tells you that you need capacity
+for about 100 simultaneous requests. Amdahl tells you that adding replicas that parallelise the remaining 90 % has a ceiling; if the bottleneck is in the sequential
+part, changing the design is worth more than buying machines. Queueing says to keep headroom, for instance keeping utilisation near 70 % at peak as a rule of thumb.
+
+The result is not an exact number but a range with its reasoning. That is what a useful estimate looks like.
+
+## Checklist
+
+- [ ] Do you know the peak throughput, the average latency and the 95th or 99th percentile?
+- [ ] How many requests in flight does the system need?
+- [ ] Which part of the work is sequential?
+- [ ] What maximum utilisation do you accept at peak?
+- [ ] Does the decision to scale come from a calculation, or from intuition?
+
+**Further reading:** [numbers and performance laws](/docs/numeros-y-leyes-de-rendimiento) includes the universal scalability law and reference latency
+tables, and [scalability in classic cases](/docs/escalabilidad-casos-clasicos) applies the method to a URL shortener, a rate limiter and a feed.
+
+## Sources
+
+- John D. C. Little, "A Proof for the Queuing Formula: L = λW", _Operations Research_ (1961).
+- Gene M. Amdahl, "Validity of the single processor approach to achieving large scale computing capabilities", AFIPS Spring Joint Computer Conference (1967).
+- Neil J. Gunther, _Guerrilla Capacity Planning_ (2007), for the universal scalability law.

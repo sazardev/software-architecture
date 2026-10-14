@@ -1,0 +1,74 @@
+---
+title: 'Reintentos con jitter, sin tormentas'
+description: 'Por qué los reintentos sin jitter multiplican una caída y cómo combinar timeouts, backoff, presupuestos de reintento y circuit breaker.'
+category: practicas
+tags:
+  - resiliencia
+  - reintentos
+  - jitter
+  - circuit-breaker
+order: 7
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Sin jitter, los reintentos llegan todos a la vez
+---
+
+# Reintentos con jitter, sin tormentas
+
+Un servicio tiembla durante un segundo. Mil clientes detectan el error y reintentan. Si todos
+esperan lo mismo antes de reintentar, los mil reintentos llegan en el mismo instante. El servicio,
+que acababa de recuperarse, recibe una carga que no puede absorber y vuelve a caer. Los clientes
+reintentan otra vez, y el ciclo se repite. Eso es una tormenta de reintentos.
+
+El reintento, pensado para ayudar, se convierte en el ataque.
+
+## Jitter: repartir la espera
+
+El _backoff exponencial_ espera cada vez más entre reintentos: 1 segundo, luego 2, luego 4. Ayuda,
+pero si todos los clientes empiezan a la vez, siguen sincronizados. El **jitter** añade una
+aleatoriedad a esa espera, para que los reintentos se repartan en el tiempo en lugar de agruparse.
+
+Con jitter, la misma carga llega distribuida. El servicio la absorbe sin saturarse, aunque la
+capacidad total sea la misma. Lo que cambia es el momento en que llega cada petición.
+
+## Protecciones que van juntas
+
+Un reintento aislado no protege nada. Las defensas funcionan en conjunto:
+
+1. **Timeout en toda llamada remota.** Sin timeout no hay plazo, y sin plazo un servicio lento
+   acumula hilos, conexiones y colas.
+2. **Backoff exponencial con jitter** para repartir los reintentos.
+3. **Presupuesto de reintentos.** Si cada capa reintenta tres veces, una petición fallida genera
+   veintisiete intentos en la cadena. Limita los reintentos en un solo punto.
+4. **Circuit breaker.** Cuando una dependencia no responde, deja de llamarla durante un tiempo y falla
+   rápido. Así le das aire para recuperarse.
+5. **Bulkheads.** Aísla los recursos por dependencia, para que una llamada lenta no consuma todo el
+   servicio.
+
+## Lento es peor que caído
+
+Un servicio caído se detecta rápido y se trata como tal: el cliente recibe un error y falla con
+claridad. Un servicio lento es más peligroso, porque no falla del todo. Las peticiones se quedan
+esperando, los recursos se agotan y el fallo se contagia a los servicios que dependen de él.
+
+Por eso el timeout importa tanto. Un valor razonable, medido sobre la latencia real, convierte la
+lentitud en un error explícito que las demás protecciones pueden manejar.
+
+## Checklist
+
+- [ ] ¿Todas las llamadas remotas tienen timeout, o solo las que alguien revisó?
+- [ ] ¿El backoff incluye jitter?
+- [ ] ¿Los reintentos están limitados en un solo punto de la cadena?
+- [ ] ¿Hay circuit breaker en las dependencias críticas?
+- [ ] ¿Sabes qué se degrada cuando una dependencia falla?
+
+**Para profundizar:** [resiliencia en sistemas distribuidos](/docs/resiliencia-sistemas-distribuidos)
+incluye un ejemplo trabajado de la página de pago, la degradación elegante y cómo medir cada
+mecanismo.
+
+## Fuentes
+
+- Marc Brooker, "Exponential Backoff And Jitter", AWS Architecture Blog (2015).
+- Michael T. Nygard, _Release It!_ (2.ª edición, 2018), patrones de estabilidad: circuit breaker y
+  bulkhead.
+- Google, _Site Reliability Engineering_ (2016), capítulo sobre cascadas de fallos.

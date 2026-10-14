@@ -1,0 +1,69 @@
+---
+title: 'Your org chart draws your architecture'
+description: "Conway's law in practice: how your organization's communication ends up in the system, and how the inverse Conway maneuver lets you design teams on purpose."
+category: decisiones
+tags:
+  - conways-law
+  - team-topologies
+  - organization
+  - architecture
+order: 12
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: The system inherits the communication structure of the teams
+---
+
+# Your org chart draws your architecture
+
+In 1968, Melvin Conway observed that organizations design systems that copy their communication structure. It was
+not a joke: three teams that rarely talk to each other produce three big pieces with awkward interfaces between them,
+even though nobody designed them that way.
+
+The practical consequence is uncomfortable. If your org chart does not change, your architecture will not either. And
+if every change goes through five teams, your system will have five coordination points, however the diagram labels them.
+
+## What it looks like in a project
+
+Imagine a payment flow that has to touch the billing team, the gateway team and the notifications team. If each one
+has its own backlog and its own deadlines, the flow becomes three components with contracts negotiated in meetings.
+Every change to the flow needs three coordinated deployments, and nobody owns the complete experience.
+
+That structure is nobody's fault. It is the logical result of how responsibilities are split.
+
+## The inverse maneuver
+
+The inverse Conway maneuver means doing the opposite: design the value flow you want first, then the teams that sustain
+it. If you want an independent payments service, create a team that owns that flow end to end, and let the architecture
+follow.
+
+_Team Topologies_ offers a vocabulary for this:
+
+- **Four team types:** stream-aligned, platform, enabling and complicated-subsystem.
+- **Three interaction modes:** collaboration, X-as-a-Service and facilitation.
+
+The team type says what responsibility a team carries, and the mode says how it relates to others. A platform team that
+behaves like a ticket queue is not doing its job, however its name reads.
+
+## Cognitive load
+
+One limit is often forgotten: a team can only hold so much domain. If a team owns too many subsystems, it will understand
+none of them well, and the architecture will decay in the parts nobody looks at.
+
+Before creating a team, ask whether it can understand what it is going to own. If not, the answer is not to add people by
+force, but to split the domain into smaller boundaries.
+
+## Checklist
+
+- [ ] Can you draw your org chart and predict the shape of your architecture?
+- [ ] Is there one team that owns each important value flow end to end?
+- [ ] How many teams touch the same change? Each one is a coordination point.
+- [ ] Is each team's cognitive load reasonable for the domain it owns?
+
+**Further reading:** [Conway's law and Team Topologies](/docs/ley-de-conway-team-topologies) covers the history of the law,
+the team types and decision examples.
+
+## Sources
+
+- Melvin Conway, "How Do Committees Invent?", _Datamation_ (1968).
+- Matthew Skelton and Manuel Pais, _Team Topologies_ (2019).
+- Martin Fowler, "Conway's Law" entry on martinfowler.com.

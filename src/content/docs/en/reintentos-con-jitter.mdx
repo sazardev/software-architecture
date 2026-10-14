@@ -1,0 +1,67 @@
+---
+title: 'Retries with jitter, without storms'
+description: 'Why retries without jitter multiply an outage, and how to combine timeouts, backoff, retry budgets and circuit breakers.'
+category: practicas
+tags:
+  - resilience
+  - retries
+  - jitter
+  - circuit-breaker
+order: 7
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Without jitter, every retry lands at the same moment
+---
+
+# Retries with jitter, without storms
+
+A service stutters for a second. A thousand clients notice the error and retry. If they all wait the same amount before retrying,
+the thousand retries arrive at the same instant. The service, which had just recovered, receives a load it cannot absorb and falls
+over again. The clients retry again, and the cycle repeats. That is a retry storm.
+
+The retry, meant to help, becomes the attack.
+
+## Jitter: spreading the wait
+
+Exponential backoff waits longer between retries: 1 second, then 2, then 4. It helps, but if every client starts at the same moment,
+they stay synchronized. **Jitter** adds randomness to that wait, so retries spread over time instead of clustering.
+
+With jitter, the same load arrives distributed. The service absorbs it without saturating, even though the total capacity is the same.
+What changes is the moment each request arrives.
+
+## Protections that work together
+
+A single retry protects nothing. The defences work as a set:
+
+1. **A timeout on every remote call.** Without a timeout there is no deadline, and without a deadline a slow service piles up threads,
+   connections and queues.
+2. **Exponential backoff with jitter** to spread the retries.
+3. **A retry budget.** If every layer retries three times, one failed request produces twenty-seven attempts along the chain. Limit
+   retries at a single point.
+4. **A circuit breaker.** When a dependency does not respond, stop calling it for a while and fail fast. That gives it room to recover.
+5. **Bulkheads.** Isolate resources per dependency, so one slow call cannot consume the whole service.
+
+## Slow is worse than down
+
+A service that is down is detected quickly and handled as such: the client gets an error and fails clearly. A slow service is more dangerous,
+because it does not fail outright. Requests wait, resources run out, and the failure spreads to the services that depend on it.
+
+That is why the timeout matters so much. A sensible value, measured against real latency, turns slowness into an explicit error that the
+other protections can handle.
+
+## Checklist
+
+- [ ] Do all remote calls have a timeout, or only the ones someone reviewed?
+- [ ] Does the backoff include jitter?
+- [ ] Are retries limited at a single point in the chain?
+- [ ] Is there a circuit breaker on the critical dependencies?
+- [ ] Do you know what degrades when a dependency fails?
+
+**Further reading:** [resilience in distributed systems](/docs/resiliencia-sistemas-distribuidos) includes a worked example of the payment
+page, graceful degradation and how to measure each mechanism.
+
+## Sources
+
+- Marc Brooker, "Exponential Backoff And Jitter", AWS Architecture Blog (2015).
+- Michael T. Nygard, _Release It!_ (2nd edition, 2018), stability patterns: circuit breaker and bulkhead.
+- Google, _Site Reliability Engineering_ (2016), chapter on addressing cascading failures.

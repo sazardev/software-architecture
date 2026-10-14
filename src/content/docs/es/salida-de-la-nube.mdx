@@ -1,0 +1,77 @@
+---
+title: 'Cuánto costaría salir de tu nube'
+description: 'El costo de salida del proveedor no es parejo: los datos suelen pesar más que la API. Cómo estimarlo y por qué conviene probar el plan de salida.'
+category: nube
+tags:
+  - lock-in
+  - costo-de-salida
+  - portabilidad
+  - nube
+order: 10
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: El costo de salida pesa más en los datos que en la API
+---
+
+# Cuánto costaría salir de tu nube
+
+Pregunta directa: ¿cuánto costaría migrar de proveedor mañana? Si la respuesta es «no lo sé», tienes
+dependencia sin haberla decidido. Eso no es un problema en sí mismo, pero sí es una decisión que
+alguien debería haber tomado.
+
+## El lock-in no es solo la API
+
+La dependencia tiene varias capas, y no todas pesan igual:
+
+- **API y modelo de programación:** los servicios propietarios que usas exigen reescribir código.
+  Es la capa más visible y, muchas veces, la menos cara.
+- **Datos:** exportar los datos es fácil. Reconstruir su significado, con sus relaciones, reglas y
+  formatos implícitos, es lo caro.
+- **Operación:** monitorización, despliegue, redes e identidad configurados a medida del proveedor.
+- **Contratos y licencias:** compromisos de consumo, descuentos ligados a volumen, licencias que no
+  se trasladan.
+- **Talento:** el equipo sabe operar un proveedor, no otro. Eso también cuesta.
+
+Cuando alguien estima el costo de salida mirando solo la API, casi siempre se equivoca por un orden
+de magnitud.
+
+## Cómo estimarlo con datos reales
+
+Una estimación útil necesita tres cifras por componente: volumen de datos a mover, número de
+integraciones que cambian y tiempo de corte aceptable. Con eso, el costo deja de ser una intuición y
+se convierte en un rango.
+
+El costo también crece con el tiempo. Cada servicio nuevo que adoptas sin pensarlo amplía la
+dependencia. Por eso conviene revisar la estimación cada cierto tiempo, no solo al firmar el
+contrato.
+
+## Decidir con conciencia
+
+No toda dependencia es mala. Un servicio gestionado que no diferencia a tu negocio, como una cola de
+mensajes estándar, puede ser un commodity que compensa usar. Un motor de reglas que es parte de tu
+ventaja competitiva merece más cuidado. La pregunta es si el lock-in que aceptas está donde compensa.
+
+## Un plan de salida que se haya probado
+
+Un plan de salida es un artefacto de arquitectura: describe el destino posible, la secuencia de
+migración, el costo estimado y las condiciones que lo activarían. Lo que lo convierte en plan es
+haberlo ejecutado al menos una vez, aunque sea sobre un entorno de prueba. Un plan que nunca se
+ejecutó es una intención.
+
+## Checklist
+
+- [ ] ¿Sabes cuánto costaría salir, con cifras por componente?
+- [ ] ¿Cada servicio gestionado está justificado como commodity o como diferenciador?
+- [ ] ¿Los datos se pueden exportar en un formato abierto y completo?
+- [ ] ¿Existe un plan de salida y una fecha en la que se probó?
+
+**Para profundizar:** [casado a un proveedor](/docs/casado-a-un-proveedor) describe los tipos de
+lock-in y cómo documentar un plan; [costo como atributo de calidad](/docs/finops-costo-como-atributo)
+explica cómo gobernar el costo desde el diseño.
+
+## Fuentes
+
+- NIST, SP 800-145, _The NIST Definition of Cloud Computing_ (2011).
+- FinOps Foundation, marco FinOps (documentación pública).
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020), capítulo sobre atributos
+  de calidad.

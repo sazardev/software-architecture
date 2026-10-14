@@ -1,0 +1,78 @@
+---
+title: 'Modular monolith before microservices'
+description: 'Monolith or microservices is the wrong question. How to design boundaries inside one process and when extracting a service actually makes sense.'
+category: diseno
+tags:
+  - modular-monolith
+  - microservices
+  - boundaries
+  - migration
+order: 16
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Modules with a public API and their own data inside one process
+---
+
+# Modular monolith before microservices
+
+"Monolith or microservices?" is almost always the wrong question. The useful one is: **where are my boundaries,
+and what does it cost to move them?**
+
+A well-built monolith can be modular: modules with a public API, controlled dependencies and data with an owner.
+A badly built one is a distributed monolith: services that call each other in chains, share a database and deploy
+together. That is the worst of both worlds, because you pay for network complexity without getting independence.
+
+## What a real module is
+
+A module is not a folder. It is a boundary with three properties:
+
+- **A small public API.** Other modules call only what the module exposes explicitly. Everything else is internal.
+- **Data with an owner.** Each module writes to its own tables. Reading another module's tables is forbidden, even
+  when it is technically possible.
+- **Controlled dependencies.** The dependencies between modules form a graph without cycles, and that property can
+  be checked automatically.
+
+If one of the three fails, the module only exists in the diagram.
+
+## Why start with a modular monolith
+
+Correcting a boundary inside one process is far cheaper than correcting it between services. Moving a function from
+one module to another is a refactor. Moving a flow between two services requires contracts, coordinated deployments
+and often a data migration.
+
+A modular monolith lets you discover where the real boundaries are before paying for them. When one module has
+scaling or reliability needs different from the rest, or when one team needs to deploy without waiting for others,
+that module is a candidate for extraction. Until then, extraction is a bet.
+
+## When to extract a service
+
+Extract when the answer to one of these questions is yes, and not before:
+
+- Is there an independent team that needs to deploy without waiting for others?
+- Does the module need a load or reliability level the rest cannot share?
+- Do you understand the boundary well enough not to get the data wrong?
+
+If the answer to the last one is no, the problem is the boundary, not the deployment.
+
+## Migrating without stopping the system
+
+When the time comes, the safest extraction is usually gradual. The strangler pattern puts a facade in front of the
+module, routes calls to the new service step by step and removes the old code once nobody uses it. Every step stays
+reversible.
+
+## Checklist
+
+- [ ] Does each module have a public API, with everything else internal?
+- [ ] Does each module write only to its own data?
+- [ ] Is there an automated check that prevents depending on another module's internals?
+- [ ] Do you have a measurable reason to extract, not just a preference?
+
+**Further reading:** [monolith vs microservices](/docs/monolito-vs-microservicios) covers the costs of each option, two
+public cases and migration routes.
+
+## Sources
+
+- Martin Fowler, "MonolithFirst" (2015).
+- Sam Newman, _Monolith to Microservices_ (2019).
+- Chris Richardson, _Microservices Patterns_ (2018), chapter on the strangler pattern.
+- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020).

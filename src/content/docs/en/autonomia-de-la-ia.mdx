@@ -1,0 +1,80 @@
+---
+title: 'How much autonomy to give an agent'
+description: 'Autonomy levels for AI systems: which steps stay deterministic, where human approval belongs, how to stop safely and how to trace cost and idempotency.'
+category: decisiones
+tags:
+  - ai
+  - agents
+  - governance
+  - autonomy
+order: 14
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Each autonomy level requires a more explicit approval
+---
+
+# How much autonomy to give an agent
+
+An agent is a probabilistic system that acts: it reads data, decides and executes actions. That changes the architecture rules. A
+deterministic function that is wrong is always wrong in the same way, and it can be tested. An agent can fail in different ways on
+each run, and its mistakes have real consequences if it can issue a refund or send an email.
+
+The design question is not whether the agent is good enough. It is what the agent may do without asking.
+
+## Decide step by step what the model does
+
+Not every step in a flow needs a model. Validating a JSON payload, checking an amount against a limit or querying a database are
+deterministic steps. Only the judgement that code cannot express, such as interpreting an ambiguous email, should be delegated to the model.
+
+Separating the steps has two advantages: it shrinks the area where the AI can fail, and it makes operation cheaper. Each deterministic step is
+cheaper, faster and verifiable.
+
+## Control points
+
+A flow with AI needs three kinds of control point:
+
+- **Validate:** check the model's output against a schema and business rules before acting.
+- **Approve:** a person confirms costly or irreversible actions, such as a payment.
+- **Stop:** limits on steps, cost and time, with a safe exit when they are reached.
+
+## Autonomy levels
+
+Not every agent should act unsupervised. A level model helps decide:
+
+1. **Suggest:** the agent proposes and a person acts. This is the starting point.
+2. **Act within a limit:** the agent executes low-risk actions within a ceiling, for example a refund below an agreed amount. Everything else is escalated.
+3. **Act without supervision:** only for reversible, well-measured actions, with continuous monitoring.
+
+Moving up a level requires a more explicit permission and evidence that the level below works. Between the second and third there must be a mandatory human approval.
+
+## Traceability and cost
+
+Every decision the agent makes should be recorded: the data it had, what it decided, what the run cost and what action it produced. Without that
+trace, there is no way to audit or learn from errors.
+
+Idempotency is still a design responsibility. If a retry can duplicate a payment, the problem is not the model; it is the architecture, and it is
+solved with idempotency keys and compensations.
+
+## Reference frameworks
+
+To discuss this with legal and security teams, three frameworks help name the risks: the NIST AI Risk Management Framework, the EU Artificial
+Intelligence Act and the OWASP Top 10 for applications built on language models. None of them picks the autonomy level for you, but they give a
+shared vocabulary.
+
+## Checklist
+
+- [ ] Is each step of the flow marked as deterministic or as model judgement?
+- [ ] Is the output validated before any action?
+- [ ] Which actions require human approval?
+- [ ] Are there limits on steps, cost and time?
+- [ ] Is each decision traced, with its cost?
+
+**Further reading:** [designing flows with agents](/docs/disenar-flujos-con-agentes) and
+[controlling AI: governance and autonomy](/docs/controlar-la-ia-gobierno-y-autonomia) cover flow patterns, continuous evaluation and
+the assignment of responsibility.
+
+## Sources
+
+- NIST, _Artificial Intelligence Risk Management Framework (AI RMF 1.0)_ (2023).
+- Regulation (EU) 2024/1689 of the European Parliament and of the Council (Artificial Intelligence Act).
+- OWASP, _Top 10 for Large Language Model Applications_.

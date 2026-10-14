@@ -1,0 +1,70 @@
+---
+title: 'The complexity your tools add'
+description: 'Telling apart the complexity of the problem from the complexity your frameworks and tools add, with diagnostic questions and four ways to reduce it.'
+category: fundamentos
+tags:
+  - complexity
+  - tools
+  - frameworks
+  - simplicity
+order: 15
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Essential complexity stays; accidental complexity shrinks
+---
+
+# The complexity your tools add
+
+In 1986, Fred Brooks proposed a distinction that is still useful: **essential** complexity belongs to the problem, and **accidental** complexity is what we
+add while solving it. A billing system has essential complexity in its tax rules. It has accidental complexity in a serialisation layer nobody needed.
+
+Separating the two is a diagnostic exercise. Without it, accidental complexity disguises itself as business complexity and nobody questions it.
+
+## Signs of accidental complexity
+
+A few signs keep appearing:
+
+- **A tool imposes its model.** You adapt the problem to the shape the framework expects, even when the problem has a different shape.
+- **Infrastructure added before it is needed.** A queue, a cache or a discovery service "just in case".
+- **Your own decisions that nobody reviewed.** An abstraction layer written for a case that never arrived.
+- **Dependencies that linger.** Libraries nobody uses any more but that stay in the project.
+
+## Questions that separate them
+
+Two questions help classify a piece of complexity:
+
+- If we removed this, would the user's real problem change, or only our code?
+- How many layers or abstractions exist only because the tool asks for them?
+
+If the answer to the first is "only our code", the complexity is accidental. If the answer to the second is "many", you have work to do.
+
+## Two symmetric traps
+
+The first trap is taking accidental complexity for essential: "we have always done it this way" or "the framework requires it". The second is taking essential
+complexity for accidental: simplifying a business rule that is genuinely hard, such as a tax with exceptions, until the system stops being correct.
+
+Neither is fixed by a general rule. Both are fixed by asking, piece by piece, what depends on the problem and what depends on the tool.
+
+## Four ways to reduce it
+
+- **Eliminate it.** The cheapest option is not having the piece at all. If no use case needs it, delete it.
+- **Hide it behind a boundary.** If it cannot be removed, encapsulate it so it does not leak into the rest of the system.
+- **Buy it solved.** A managed service can remove complexity you would otherwise own, in exchange for another dependency and its cost.
+- **Postpone it.** Many pieces are added before they are needed. Waiting until the problem asks for them avoids paying for them in advance.
+
+A minimal log of the decisions that add complexity, with the reason and the date, keeps accidental complexity from becoming permanent.
+
+## Checklist
+
+- [ ] Can you name the problem each layer of your stack solves?
+- [ ] Are there pieces with no use case to justify them?
+- [ ] Which tool imposes a shape the problem does not have?
+- [ ] Which of the four reduction options applies to each piece?
+
+**Further reading:** [essential and accidental complexity](/docs/complejidad-esencial-y-accidental) covers Brooks's original argument, the traps in more
+detail and whether the thesis still holds today.
+
+## Sources
+
+- Frederick P. Brooks, Jr., "No Silver Bullet: Essence and Accidents of Software Engineering", presented at the IFIP congress in 1986 and published in _IEEE Computer_ (1987).
+- Frederick P. Brooks, Jr., _The Mythical Man-Month_ (anniversary edition, 1995).

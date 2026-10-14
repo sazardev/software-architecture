@@ -1,16 +1,23 @@
 import { acoplamientoCohesion } from './designs/acoplamiento-cohesion';
 import { adr } from './designs/adr';
+import { adrCicloDeVida } from './designs/adr-ciclo-de-vida';
+import { antesDeEscalarLaCuenta } from './designs/antes-de-escalar-la-cuenta';
 import { arquitecturaAgentesLlm } from './designs/arquitectura-agentes-llm';
 import { arquitecturaEnCapasCleanOnion } from './designs/arquitectura-en-capas-clean-onion';
 import { arquitecturaHexagonal } from './designs/arquitectura-hexagonal';
 import { atributosDeCalidad } from './designs/atributos-de-calidad';
+import { autonomiaDeLaIa } from './designs/autonomia-de-la-ia';
 import { c4Model } from './designs/c4-model';
 import { cachingColasStreaming } from './designs/caching-colas-streaming';
 import { capPacelc } from './designs/cap-pacelc';
+import { capPorOperacion } from './designs/cap-por-operacion';
+import { capasNoSonArquitectura } from './designs/capas-no-son-arquitectura';
 import { casadoAUnProveedor } from './designs/casado-a-un-proveedor';
 import { cleanCode } from './designs/clean-code';
+import { complejidadAccidentalDeHerramientas } from './designs/complejidad-accidental-de-herramientas';
 import { complejidadEsencialYAccidental } from './designs/complejidad-esencial-y-accidental';
 import { controlarLaIaGobiernoYAutonomia } from './designs/controlar-la-ia-gobierno-y-autonomia';
+import { coordinarServiciosSin2pc } from './designs/coordinar-servicios-sin-2pc';
 import { datosAcidYAislamiento } from './designs/datos-acid-y-aislamiento';
 import { deudaTecnicaEvolucion } from './designs/deuda-tecnica-evolucion';
 import { devopsCultura } from './designs/devops-cultura';
@@ -22,6 +29,7 @@ import { escalabilidadCasosClasicos } from './designs/escalabilidad-casos-clasic
 import { estilosArquitectonicos } from './designs/estilos-arquitectonicos';
 import { eventDrivenCqrsEventSourcing } from './designs/event-driven-cqrs-event-sourcing';
 import { finopsCostoComoAtributo } from './designs/finops-costo-como-atributo';
+import { fitnessEnElCi } from './designs/fitness-en-el-ci';
 import { fitnessFunctions } from './designs/fitness-functions';
 import { flujoDeValorYCuellosDeBotella } from './designs/flujo-de-valor-y-cuellos-de-botella';
 import { gettingStarted } from './designs/getting-started';
@@ -35,19 +43,23 @@ import { marcosDePriorizacion } from './designs/marcos-de-priorizacion';
 import { medirDecisionesOkrKpi } from './designs/medir-decisiones-okr-kpi';
 import { mejoraContinuaYExperimentos } from './designs/mejora-continua-y-experimentos';
 import { modelosDeDespliegueNube } from './designs/modelos-de-despliegue-nube';
+import { monolitoModularPrimero } from './designs/monolito-modular-primero';
 import { monolitoVsMicroservicios } from './designs/monolito-vs-microservicios';
 import { multiTenancy } from './designs/multi-tenancy';
 import { multinubeCuandoTieneSentido } from './designs/multinube-cuando-tiene-sentido';
 import { nubeHibridaEnDetalle } from './designs/nube-hibrida-en-detalle';
 import { numerosYLeyesDeRendimiento } from './designs/numeros-y-leyes-de-rendimiento';
+import { organigramaYSistema } from './designs/organigrama-y-sistema';
 import { patronesDeDiseno } from './designs/patrones-de-diseno';
 import { pensamientoSistemicoYSesgos } from './designs/pensamiento-sistemico-y-sesgos';
 import { presentarIdeasYPropuestas } from './designs/presentar-ideas-y-propuestas';
 import { principiosDeDisenoBasicos } from './designs/principios-de-diseno-basicos';
 import { redesIdentidadSeguridadNube } from './designs/redes-identidad-seguridad-nube';
 import { regionesZonasYRecuperacion } from './designs/regiones-zonas-y-recuperacion';
+import { reintentosConJitter } from './designs/reintentos-con-jitter';
 import { resilienciaSistemasDistribuidos } from './designs/resiliencia-sistemas-distribuidos';
 import { sagasOutboxIdempotencia } from './designs/sagas-outbox-idempotencia';
+import { salidaDeLaNube } from './designs/salida-de-la-nube';
 import { seguridadPorDiseno } from './designs/seguridad-por-diseno';
 import { serverlessYComputacionGestionada } from './designs/serverless-y-computacion-gestionada';
 import { serviciosNubeParaArquitectos } from './designs/servicios-nube-para-arquitectos';
@@ -115,6 +127,18 @@ const entries: readonly (readonly [slug: string, build: FigureBuilder])[] = [
   ['disenar-flujos-con-agentes', disenarFlujosConAgentes],
   ['herramientas-para-decidir-y-documentar', herramientasParaDecidirYDocumentar],
   ['pensamiento-sistemico-y-sesgos', pensamientoSistemicoYSesgos],
+  ['capas-no-son-arquitectura', capasNoSonArquitectura],
+  ['fitness-en-el-ci', fitnessEnElCi],
+  ['monolito-modular-primero', monolitoModularPrimero],
+  ['organigrama-y-sistema', organigramaYSistema],
+  ['coordinar-servicios-sin-2pc', coordinarServiciosSin2pc],
+  ['cap-por-operacion', capPorOperacion],
+  ['salida-de-la-nube', salidaDeLaNube],
+  ['reintentos-con-jitter', reintentosConJitter],
+  ['adr-ciclo-de-vida', adrCicloDeVida],
+  ['autonomia-de-la-ia', autonomiaDeLaIa],
+  ['antes-de-escalar-la-cuenta', antesDeEscalarLaCuenta],
+  ['complejidad-accidental-de-herramientas', complejidadAccidentalDeHerramientas],
 ];
 
 const builders = new Map<string, FigureBuilder>(entries);

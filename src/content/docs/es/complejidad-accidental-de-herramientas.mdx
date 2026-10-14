@@ -1,0 +1,84 @@
+---
+title: 'La complejidad que añaden tus herramientas'
+description: 'Distinguir la complejidad del problema de la que añaden tus frameworks y herramientas, con preguntas de diagnóstico y cuatro formas de reducirla.'
+category: fundamentos
+tags:
+  - complejidad
+  - herramientas
+  - frameworks
+  - simplicidad
+order: 15
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Lo esencial no se toca; lo accidental se reduce
+---
+
+# La complejidad que añaden tus herramientas
+
+En 1986, Fred Brooks propuso una distinción que sigue siendo útil: la complejidad **esencial** es la que
+pertenece al problema, y la **accidental** es la que añadimos al resolverlo. Un sistema de facturación
+tiene complejidad esencial en las reglas fiscales. Tiene complejidad accidental en la capa de
+serialización que nadie necesitaba.
+
+Separar ambas es un ejercicio de diagnóstico. Sin él, la complejidad accidental se disfraza de
+complejidad del negocio y nadie la cuestiona.
+
+## Señales de complejidad accidental
+
+Algunas señales aparecen una y otra vez:
+
+- **Una herramienta impone su modelo.** Adaptas el problema a la forma que el framework espera, aunque
+  el problema tenga otra forma.
+- **Infraestructura añadida antes de necesitarla.** Una cola, un caché o un servicio de descubrimiento
+  «por si acaso».
+- **Decisiones propias que nadie revisó.** Una capa de abstracción que se escribió para un caso que
+  nunca llegó.
+- **Dependencias que se arrastran.** Librerías que ya nadie usa, pero que siguen en el proyecto.
+
+## Preguntas para separarlas
+
+Dos preguntas ayudan a clasificar una pieza de complejidad:
+
+- Si quitamos esto, ¿cambia el problema real del usuario, o solo nuestro código?
+- ¿Cuántas capas o abstracciones existen solo porque la herramienta las pide?
+
+Si la respuesta a la primera es «solo el código», la complejidad es accidental. Si la respuesta a la
+segunda es «muchas», tienes trabajo que hacer.
+
+## Dos trampas simétricas
+
+La primera trampa es tomar por esencial lo accidental: «siempre lo hemos hecho así» o «el framework lo
+exige». La segunda es tomar por accidental lo esencial: simplificar una regla de negocio que de verdad es
+difícil, como la de un impuesto con excepciones, hasta que el sistema deja de ser correcto.
+
+Ninguna de las dos se corrige con una regla general. Se corrige preguntando, pieza por pieza, qué
+depende del problema y qué depende de la herramienta.
+
+## Cuatro formas de reducirla
+
+- **Eliminarla.** Lo más barato es no tener la pieza. Si no hay un caso de uso que la necesite, bórrala.
+- **Ocultarla tras un límite.** Si no se puede eliminar, encapsúlala para que no contamine el resto del
+  sistema.
+- **Comprarla resuelta.** Un servicio gestionado puede eliminar complejidad propia a cambio de otra
+  dependencia, con su coste.
+- **Posponerla.** Muchas piezas se añaden antes de necesitarlas. Esperar a que el problema las pida
+  evita pagarlas por adelantado.
+
+Un registro mínimo de las decisiones que añaden complejidad, con la razón y la fecha, evita que la
+accidental se vuelva permanente.
+
+## Checklist
+
+- [ ] ¿Puedes nombrar qué problema resuelve cada capa de tu stack?
+- [ ] ¿Hay piezas sin un caso de uso que las justifique?
+- [ ] ¿Qué herramienta impone una forma que el problema no tiene?
+- [ ] ¿Cuál de las cuatro formas de reducción aplica a cada pieza?
+
+**Para profundizar:** [complejidad esencial y accidental](/docs/complejidad-esencial-y-accidental)
+recoge el artículo original de Brooks, sus trampas con más detalle y la vigencia de la tesis hoy.
+
+## Fuentes
+
+- Frederick P. Brooks, Jr., "No Silver Bullet: Essence and Accidents of Software Engineering",
+  presentado en el congreso IFIP de 1986 y publicado en _IEEE Computer_ (1987).
+- Frederick P. Brooks, Jr., _The Mythical Man-Month_ (edición de aniversario, 1995).

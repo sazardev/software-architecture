@@ -1,0 +1,78 @@
+---
+title: 'Coordinar servicios sin transacción distribuida'
+description: 'Sagas con compensaciones, outbox e idempotencia para una operación que atraviesa varios servicios y puede fallar a mitad de camino.'
+category: diseno
+tags:
+  - sagas
+  - outbox
+  - idempotencia
+  - microservicios
+order: 17
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Si falla el envío, las compensaciones deshacen lo anterior
+---
+
+# Coordinar servicios sin transacción distribuida
+
+Un cliente paga, el sistema de pedidos confirma y el de envíos falla. El dinero ya salió, el pedido
+existe a medias y nadie sabe qué pasó. Es el escenario típico de una operación que atraviesa varios
+servicios, cada uno con su propia base de datos.
+
+En una sola base de datos, una transacción lo resolvería: todo se confirma o nada. Entre servicios,
+esa garantía no existe, y la respuesta debe diseñarse.
+
+## Por qué no basta con una transacción distribuida
+
+El protocolo de dos fases (2PC) reúne a varios participantes bajo una coordinación común. Funciona,
+pero bloquea recursos mientras espera a todos, depende de un coordinador que puede caer y no es
+habitual en servicios de distintas tecnologías. Para la mayoría de los sistemas distribuidos, la
+alternativa práctica es una saga.
+
+## Sagas: pasos locales y compensaciones
+
+Una saga es una secuencia de transacciones locales. Cada paso confirma en su propio servicio y, si
+un paso posterior falla, se ejecutan las **compensaciones** de los pasos ya confirmados, en orden
+inverso.
+
+Compensar no es deshacer. Un reembolso es un movimiento nuevo que registra la devolución, no un
+borrado del cobro. El historial sigue siendo verdadero y auditable. Esto cambia cómo se diseñan los
+datos: la saga no reescribe el pasado, lo corrige con hechos nuevos.
+
+Hay dos formas de coordinar una saga. En la **orquestación**, un componente decide el siguiente
+paso. En la **coreografía**, cada servicio reacciona a eventos de los demás. La orquestación es más
+fácil de seguir; la coreografía acopla menos, pero se vuelve difícil de razonar cuando crece.
+
+## El problema de la doble escritura
+
+Muchos fallos empiezan aquí: guardar el pedido en la base de datos y después publicar el evento en
+un broker. Si el proceso cae entre ambos pasos, el pedido existe pero el evento no, o al revés. Y
+los reintentos pueden duplicar mensajes.
+
+El patrón _transactional outbox_ lo evita: el evento se escribe en una tabla de salida dentro de la
+misma transacción que el cambio de estado. Un proceso aparte lee esa tabla y publica los eventos.
+Así, el cambio y el evento se confirman juntos o no se confirman.
+
+## Idempotencia: los reintentos son normales
+
+En un sistema distribuido, un mensaje puede llegar dos veces. Por eso el consumidor debe descartar
+duplicados, normalmente guardando los identificadores ya procesados en un _inbox_. Y las operaciones
+con efectos externos, como un cobro, necesitan una clave de idempotencia para que repetirlas no
+cobre dos veces.
+
+## Checklist
+
+- [ ] ¿Cada paso de la saga tiene una compensación definida, o está marcado como irreversible?
+- [ ] ¿El cambio de estado y el evento se escriben en la misma transacción local?
+- [ ] ¿El consumidor descarta duplicados?
+- [ ] ¿Las operaciones con efecto externo llevan clave de idempotencia?
+- [ ] ¿Alguien sabe qué pasa si el paso 3 falla después de que el paso 2 se completó?
+
+**Para profundizar:** [sagas, outbox e idempotencia](/docs/sagas-outbox-idempotencia) desarrolla
+las anomalías de aislamiento, el relay por sondeo y por CDC, y un ejemplo completo de checkout.
+
+## Fuentes
+
+- Hector Garcia-Molina y Kenneth Salem, "Sagas", _ACM SIGMOD_ (1987).
+- Chris Richardson, _Microservices Patterns_ (2018), capítulos sobre sagas y transactional outbox.
+- Pat Helland, "Life beyond Distributed Transactions" (2007).

@@ -1,0 +1,72 @@
+---
+title: 'Coordinating services without distributed transactions'
+description: 'Sagas with compensations, the outbox pattern and idempotency for an operation that spans several services and can fail halfway through.'
+category: diseno
+tags:
+  - sagas
+  - outbox
+  - idempotency
+  - microservices
+order: 17
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: If shipping fails, compensations undo the earlier steps
+---
+
+# Coordinating services without distributed transactions
+
+A customer pays, the orders service confirms, and the shipping service fails. The money has already moved, the order
+exists half-finished, and nobody knows what happened. It is the classic failure of an operation that spans several
+services, each with its own database.
+
+Inside one database, a transaction would solve it: everything commits, or nothing does. Across services that guarantee
+does not exist, so the answer has to be designed.
+
+## Why a distributed transaction is not the default
+
+Two-phase commit (2PC) gathers several participants under a common coordinator. It works, but it holds locks while it
+waits for everyone, depends on a coordinator that can fail, and is rare across services built on different technologies.
+For most distributed systems, the practical alternative is a saga.
+
+## Sagas: local steps and compensations
+
+A saga is a sequence of local transactions. Each step commits in its own service, and if a later step fails, the
+**compensations** of the steps already committed run in reverse order.
+
+Compensating is not undoing. A refund is a new movement that records the return; it does not erase the charge. The history
+stays true and auditable. This changes how data is designed: the saga does not rewrite the past, it corrects it with new facts.
+
+There are two ways to coordinate a saga. In **orchestration**, one component decides the next step. In **choreography**,
+each service reacts to events from the others. Orchestration is easier to follow; choreography couples less, but becomes
+hard to reason about as it grows.
+
+## The dual write problem
+
+Many failures start here: saving the order in the database and then publishing an event to a broker. If the process crashes
+between the two, the order exists but the event does not, or the other way round. Retries can duplicate messages too.
+
+The _transactional outbox_ pattern avoids this: the event is written to an outbox table inside the same transaction as the
+state change. A separate process reads that table and publishes the events. The change and the event commit together, or not at all.
+
+## Idempotency: retries are normal
+
+In a distributed system a message can arrive twice. The consumer must therefore discard duplicates, usually by storing the
+identifiers already processed in an _inbox_. And operations with external effects, such as a charge, need an idempotency
+key so that repeating them does not charge twice.
+
+## Checklist
+
+- [ ] Does every saga step have a defined compensation, or is it marked as irreversible?
+- [ ] Are the state change and the event written in the same local transaction?
+- [ ] Does the consumer discard duplicates?
+- [ ] Do operations with external effects carry an idempotency key?
+- [ ] Does someone know what happens if step 3 fails after step 2 has completed?
+
+**Further reading:** [sagas, outbox and idempotency](/docs/sagas-outbox-idempotencia) covers isolation anomalies, polling and
+CDC relays, and a full checkout example.
+
+## Sources
+
+- Hector Garcia-Molina and Kenneth Salem, "Sagas", _ACM SIGMOD_ (1987).
+- Chris Richardson, _Microservices Patterns_ (2018), chapters on sagas and the transactional outbox.
+- Pat Helland, "Life beyond Distributed Transactions" (2007).

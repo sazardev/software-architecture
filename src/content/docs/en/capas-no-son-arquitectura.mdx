@@ -1,0 +1,76 @@
+---
+title: 'Layers are not the architecture'
+description: 'Why folders named after layers are not enough: the dependency rule, what each boundary may carry, and when extra layers add noise instead of protection.'
+category: diseno
+tags:
+  - layers
+  - dependencies
+  - clean-architecture
+  - boundaries
+order: 15
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Dependencies point toward the domain, never away from it
+---
+
+# Layers are not the architecture
+
+Your project has `controllers/`, `services/` and `repositories/` folders. That tells you what things are
+called, not how they relate. A layered architecture can decay quietly: the refund service imports the ORM,
+the controller knows the database schema and, six months later, changing one column means touching half
+the project.
+
+The problem is not having layers. It is having the dependency point in the wrong direction.
+
+## The dependency rule
+
+The rule behind every layered architecture, whether classic, onion or clean, is a single one: **code in an
+inner layer knows nothing about the outer layers**. The domain defines business rules, such as a refund never
+exceeding the amount of the original payment. The application layer orchestrates use cases. Infrastructure
+implements the details: the database, the HTTP client, the message queue.
+
+This makes dependencies point inward. Infrastructure depends on the domain, not the other way round. To check
+it, ask which file imports which. If the domain mentions an ORM type, you no longer have an architecture; you
+have folders.
+
+## What crosses each boundary
+
+Every boundary raises one question: which data crosses it, and which does not?
+
+- **What crosses:** simple types, value objects and DTOs designed for the use case. An amount, an identifier,
+  a date.
+- **What does not cross:** ORM entities, database exceptions, framework objects, HTTP responses.
+- **Who defines the interface:** the use case declares the port it needs, and infrastructure implements it.
+  The dependency is inverted, not copied.
+
+A concrete example: approving a refund. The use case receives a payment identifier and an amount, queries a
+payments port and returns a domain result. If the database fails with a connection error, infrastructure
+translates it into an application error before it reaches the use case. Switching databases then does not
+force a rewrite of the refund logic.
+
+## When layers get in the way
+
+The opposite extreme exists too. Layers that only forward data protect nothing: they add files, names and hops
+without deciding anything. A CRUD app with eight layers and one interface per class is accidental complexity,
+the kind added by tools rather than by the problem.
+
+Layers pay off when there is business logic to protect, several data sources, or a team that needs clear
+limits. For a form that saves one row, one layer is enough.
+
+## Checklist
+
+- [ ] Does the domain import anything from infrastructure? If so, that is your first broken boundary.
+- [ ] Which types cross each boundary? They should be simple or designed for the use case.
+- [ ] Are there layers that only forward data? Remove them or justify them.
+- [ ] Who declares the interface? It should be the one that needs it.
+
+**Further reading:** [layered, onion and clean architecture](/docs/arquitectura-en-capas-clean-onion) compares
+the three styles and their common mistakes. To make the rule hold on its own, see
+[fitness functions](/docs/fitness-functions).
+
+## Sources
+
+- Robert C. Martin, _Clean Architecture_ (2017).
+- Jeffrey Palermo, "The Onion Architecture" (2008).
+- Alistair Cockburn, "Hexagonal Architecture" (2005), also known as ports and adapters.
+- Vaughn Vernon, _Implementing Domain-Driven Design_ (2013).

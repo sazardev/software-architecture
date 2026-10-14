@@ -1906,6 +1906,62 @@
       "slug": "estilos-arquitectonicos"
     },
     {
+      "category": "fundamentos",
+      "description": "Distinguir la complejidad del problema de la que añaden tus frameworks y herramientas, con preguntas de diagnóstico y cuatro formas de reducirla.",
+      "figureCaption": "Lo esencial no se toca; lo accidental se reduce",
+      "order": 15,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "complejidad",
+        "herramientas",
+        "frameworks",
+        "simplicidad"
+      ],
+      "title": "La complejidad que añaden tus herramientas",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "la-complejidad-que-añaden-tus-herramientas",
+          "level": 1,
+          "text": "La complejidad que añaden tus herramientas"
+        },
+        {
+          "id": "señales-de-complejidad-accidental",
+          "level": 2,
+          "text": "Señales de complejidad accidental"
+        },
+        {
+          "id": "preguntas-para-separarlas",
+          "level": 2,
+          "text": "Preguntas para separarlas"
+        },
+        {
+          "id": "dos-trampas-simétricas",
+          "level": 2,
+          "text": "Dos trampas simétricas"
+        },
+        {
+          "id": "cuatro-formas-de-reducirla",
+          "level": 2,
+          "text": "Cuatro formas de reducirla"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/complejidad-accidental-de-herramientas",
+      "slug": "complejidad-accidental-de-herramientas"
+    },
+    {
       "category": "diseno",
       "description": "Aprende los cuatro niveles del modelo C4 con un ejemplo completo: contexto, contenedores, componentes y código, más reglas de notación y errores típicos.",
       "figureCaption": "Cuatro niveles de zoom: contexto, contenedores, componentes y código",
@@ -3762,6 +3818,281 @@
       "slug": "multi-tenancy"
     },
     {
+      "category": "diseno",
+      "description": "Por qué las carpetas por capa no bastan: la regla de dependencia, qué debe cruzar cada frontera y cuándo las capas añaden ruido en lugar de protección.",
+      "figureCaption": "Las dependencias apuntan hacia el dominio, nunca al revés",
+      "order": 15,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "capas",
+        "dependencias",
+        "clean-architecture",
+        "fronteras"
+      ],
+      "title": "Las capas no son la arquitectura",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "las-capas-no-son-la-arquitectura",
+          "level": 1,
+          "text": "Las capas no son la arquitectura"
+        },
+        {
+          "id": "la-regla-de-dependencia",
+          "level": 2,
+          "text": "La regla de dependencia"
+        },
+        {
+          "id": "qué-cruza-cada-frontera",
+          "level": 2,
+          "text": "Qué cruza cada frontera"
+        },
+        {
+          "id": "cuándo-las-capas-estorban",
+          "level": 2,
+          "text": "Cuándo las capas estorban"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/capas-no-son-arquitectura",
+      "slug": "capas-no-son-arquitectura"
+    },
+    {
+      "category": "diseno",
+      "description": "Monolito o microservicios es la pregunta equivocada. Cómo diseñar fronteras dentro de un proceso y cuándo tiene sentido extraer un servicio.",
+      "figureCaption": "Módulos con API pública y datos propios dentro de un proceso",
+      "order": 16,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "monolito-modular",
+        "microservicios",
+        "fronteras",
+        "migracion"
+      ],
+      "title": "Monolito modular antes que microservicios",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "monolito-modular-antes-que-microservicios",
+          "level": 1,
+          "text": "Monolito modular antes que microservicios"
+        },
+        {
+          "id": "qué-es-un-módulo-de-verdad",
+          "level": 2,
+          "text": "Qué es un módulo de verdad"
+        },
+        {
+          "id": "por-qué-empezar-por-el-monolito-modular",
+          "level": 2,
+          "text": "Por qué empezar por el monolito modular"
+        },
+        {
+          "id": "cuándo-extraer-un-servicio",
+          "level": 2,
+          "text": "Cuándo extraer un servicio"
+        },
+        {
+          "id": "migrar-sin-parar-el-sistema",
+          "level": 2,
+          "text": "Migrar sin parar el sistema"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/monolito-modular-primero",
+      "slug": "monolito-modular-primero"
+    },
+    {
+      "category": "diseno",
+      "description": "Sagas con compensaciones, outbox e idempotencia para una operación que atraviesa varios servicios y puede fallar a mitad de camino.",
+      "figureCaption": "Si falla el envío, las compensaciones deshacen lo anterior",
+      "order": 17,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "sagas",
+        "outbox",
+        "idempotencia",
+        "microservicios"
+      ],
+      "title": "Coordinar servicios sin transacción distribuida",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "coordinar-servicios-sin-transacción-distribuida",
+          "level": 1,
+          "text": "Coordinar servicios sin transacción distribuida"
+        },
+        {
+          "id": "por-qué-no-basta-con-una-transacción-distribuida",
+          "level": 2,
+          "text": "Por qué no basta con una transacción distribuida"
+        },
+        {
+          "id": "sagas-pasos-locales-y-compensaciones",
+          "level": 2,
+          "text": "Sagas: pasos locales y compensaciones"
+        },
+        {
+          "id": "el-problema-de-la-doble-escritura",
+          "level": 2,
+          "text": "El problema de la doble escritura"
+        },
+        {
+          "id": "idempotencia-los-reintentos-son-normales",
+          "level": 2,
+          "text": "Idempotencia: los reintentos son normales"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/coordinar-servicios-sin-2pc",
+      "slug": "coordinar-servicios-sin-2pc"
+    },
+    {
+      "category": "diseno",
+      "description": "CAP y PACELC explicados como decisiones por operación: qué significa elegir consistencia o disponibilidad en un saldo, un carrito o un contador de likes.",
+      "figureCaption": "Cada operación elige su punto entre consistencia y disponibilidad",
+      "order": 18,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "cap",
+        "pacelc",
+        "consistencia",
+        "disponibilidad"
+      ],
+      "title": "CAP se decide por operación",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "cap-se-decide-por-operación",
+          "level": 1,
+          "text": "CAP se decide por operación"
+        },
+        {
+          "id": "qué-dice-cap-con-precisión",
+          "level": 2,
+          "text": "Qué dice CAP, con precisión"
+        },
+        {
+          "id": "pacelc-la-parte-que-pagas-cada-día",
+          "level": 2,
+          "text": "PACELC: la parte que pagas cada día"
+        },
+        {
+          "id": "cuatro-operaciones-cuatro-decisiones",
+          "level": 2,
+          "text": "Cuatro operaciones, cuatro decisiones"
+        },
+        {
+          "id": "cómo-se-aplica-en-la-práctica",
+          "level": 2,
+          "text": "Cómo se aplica en la práctica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/cap-por-operacion",
+      "slug": "cap-por-operacion"
+    },
+    {
+      "category": "diseno",
+      "description": "Ley de Little, ley de Amdahl y colas para estimar concurrencia y capacidad antes de añadir servidores, con un cálculo completo de principio a fin.",
+      "figureCaption": "Concurrencia = caudal × tiempo de respuesta",
+      "order": 19,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "escalabilidad",
+        "rendimiento",
+        "ley-de-little",
+        "capacidad"
+      ],
+      "title": "Antes de escalar, haz la cuenta",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "antes-de-escalar-haz-la-cuenta",
+          "level": 1,
+          "text": "Antes de escalar, haz la cuenta"
+        },
+        {
+          "id": "ley-de-little-concurrencia",
+          "level": 2,
+          "text": "Ley de Little: concurrencia"
+        },
+        {
+          "id": "ley-de-amdahl-el-techo-del-paralelismo",
+          "level": 2,
+          "text": "Ley de Amdahl: el techo del paralelismo"
+        },
+        {
+          "id": "colas-la-latencia-se-dispara-al-final",
+          "level": 2,
+          "text": "Colas: la latencia se dispara al final"
+        },
+        {
+          "id": "un-cálculo-completo",
+          "level": 2,
+          "text": "Un cálculo completo"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/antes-de-escalar-la-cuenta",
+      "slug": "antes-de-escalar-la-cuenta"
+    },
+    {
       "category": "practicas",
       "description": "Guía práctica de código limpio: nombres, funciones, errores, complejidad, tests, refactoring y deuda técnica, con ejemplos y checklist de revisión.",
       "figureCaption": "Del código enredado al código legible: pequeño, claro y consistente",
@@ -4415,6 +4746,113 @@
       "readingMinutes": 19,
       "route": "/es/docs/seguridad-por-diseno",
       "slug": "seguridad-por-diseno"
+    },
+    {
+      "category": "practicas",
+      "description": "Cómo convertir una regla de arquitectura en una comprobación que falla el pipeline, con un ejemplo real de ESLint en este repositorio y los pasos para empezar.",
+      "figureCaption": "Un import que rompe una regla de capas hace fallar el pipeline",
+      "order": 6,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "fitness-functions",
+        "ci",
+        "eslint",
+        "arquitectura"
+      ],
+      "title": "Tu arquitectura debería fallar en el CI",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "tu-arquitectura-debería-fallar-en-el-ci",
+          "level": 1,
+          "text": "Tu arquitectura debería fallar en el CI"
+        },
+        {
+          "id": "del-diagrama-a-la-comprobación",
+          "level": 2,
+          "text": "Del diagrama a la comprobación"
+        },
+        {
+          "id": "un-ejemplo-real",
+          "level": 2,
+          "text": "Un ejemplo real"
+        },
+        {
+          "id": "cuando-la-regla-estorba",
+          "level": 2,
+          "text": "Cuando la regla estorba"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/fitness-en-el-ci",
+      "slug": "fitness-en-el-ci"
+    },
+    {
+      "category": "practicas",
+      "description": "Por qué los reintentos sin jitter multiplican una caída y cómo combinar timeouts, backoff, presupuestos de reintento y circuit breaker.",
+      "figureCaption": "Sin jitter, los reintentos llegan todos a la vez",
+      "order": 7,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "resiliencia",
+        "reintentos",
+        "jitter",
+        "circuit-breaker"
+      ],
+      "title": "Reintentos con jitter, sin tormentas",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "reintentos-con-jitter-sin-tormentas",
+          "level": 1,
+          "text": "Reintentos con jitter, sin tormentas"
+        },
+        {
+          "id": "jitter-repartir-la-espera",
+          "level": 2,
+          "text": "Jitter: repartir la espera"
+        },
+        {
+          "id": "protecciones-que-van-juntas",
+          "level": 2,
+          "text": "Protecciones que van juntas"
+        },
+        {
+          "id": "lento-es-peor-que-caído",
+          "level": 2,
+          "text": "Lento es peor que caído"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/reintentos-con-jitter",
+      "slug": "reintentos-con-jitter"
     },
     {
       "category": "tendencias",
@@ -5883,6 +6321,62 @@
       "slug": "finops-costo-como-atributo"
     },
     {
+      "category": "nube",
+      "description": "El costo de salida del proveedor no es parejo: los datos suelen pesar más que la API. Cómo estimarlo y por qué conviene probar el plan de salida.",
+      "figureCaption": "El costo de salida pesa más en los datos que en la API",
+      "order": 10,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "lock-in",
+        "costo-de-salida",
+        "portabilidad",
+        "nube"
+      ],
+      "title": "Cuánto costaría salir de tu nube",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "cuánto-costaría-salir-de-tu-nube",
+          "level": 1,
+          "text": "Cuánto costaría salir de tu nube"
+        },
+        {
+          "id": "el-lock-in-no-es-solo-la-api",
+          "level": 2,
+          "text": "El lock-in no es solo la API"
+        },
+        {
+          "id": "cómo-estimarlo-con-datos-reales",
+          "level": 2,
+          "text": "Cómo estimarlo con datos reales"
+        },
+        {
+          "id": "decidir-con-conciencia",
+          "level": 2,
+          "text": "Decidir con conciencia"
+        },
+        {
+          "id": "un-plan-de-salida-que-se-haya-probado",
+          "level": 2,
+          "text": "Un plan de salida que se haya probado"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/salida-de-la-nube",
+      "slug": "salida-de-la-nube"
+    },
+    {
       "category": "decisiones",
       "description": "Cómo ordenar un backlog con RICE, ICE y WSJF: fórmulas, costo del retraso, un ejemplo con cinco iniciativas y las trampas de la falsa precisión.",
       "figureCaption": "Cinco iniciativas cambian de puesto al dividir por el esfuerzo",
@@ -7297,6 +7791,174 @@
       "readingMinutes": 20,
       "route": "/es/docs/pensamiento-sistemico-y-sesgos",
       "slug": "pensamiento-sistemico-y-sesgos"
+    },
+    {
+      "category": "decisiones",
+      "description": "La ley de Conway en la práctica: cómo la comunicación de tu organización acaba en el sistema y cómo usar la maniobra inversa para diseñar equipos a propósito.",
+      "figureCaption": "El sistema hereda la estructura de comunicación del equipo",
+      "order": 12,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "ley-de-conway",
+        "team-topologies",
+        "organizacion",
+        "arquitectura"
+      ],
+      "title": "Tu organigrama dibuja tu arquitectura",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "tu-organigrama-dibuja-tu-arquitectura",
+          "level": 1,
+          "text": "Tu organigrama dibuja tu arquitectura"
+        },
+        {
+          "id": "cómo-se-ve-en-un-proyecto",
+          "level": 2,
+          "text": "Cómo se ve en un proyecto"
+        },
+        {
+          "id": "la-maniobra-inversa",
+          "level": 2,
+          "text": "La maniobra inversa"
+        },
+        {
+          "id": "la-carga-cognitiva",
+          "level": 2,
+          "text": "La carga cognitiva"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/organigrama-y-sistema",
+      "slug": "organigrama-y-sistema"
+    },
+    {
+      "category": "decisiones",
+      "description": "Un ADR se propone, se acepta y, con el tiempo, queda obsoleto o se reemplaza. Cómo mantener un registro de decisiones sin borrar la historia.",
+      "figureCaption": "Un ADR cambia de estado; no se borra",
+      "order": 13,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "adr",
+        "decisiones",
+        "documentacion",
+        "gobierno"
+      ],
+      "title": "Las decisiones tienen ciclo de vida",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "las-decisiones-tienen-ciclo-de-vida",
+          "level": 1,
+          "text": "Las decisiones tienen ciclo de vida"
+        },
+        {
+          "id": "lo-que-hace-útil-un-adr",
+          "level": 2,
+          "text": "Lo que hace útil un ADR"
+        },
+        {
+          "id": "los-estados-de-una-decisión",
+          "level": 2,
+          "text": "Los estados de una decisión"
+        },
+        {
+          "id": "dónde-vive-y-cómo-se-revisa",
+          "level": 2,
+          "text": "Dónde vive y cómo se revisa"
+        },
+        {
+          "id": "adr-y-agentes-de-ia",
+          "level": 2,
+          "text": "ADR y agentes de IA"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/adr-ciclo-de-vida",
+      "slug": "adr-ciclo-de-vida"
+    },
+    {
+      "category": "decisiones",
+      "description": "Niveles de autonomía para sistemas con IA: qué pasos son deterministas, dónde poner aprobación humana, cómo parar y cómo trazar costo e idempotencia.",
+      "figureCaption": "Cada nivel de autonomía exige un permiso más explícito",
+      "order": 14,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "ia",
+        "agentes",
+        "gobierno",
+        "autonomia"
+      ],
+      "title": "Cuánta autonomía dar a un agente",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "cuánta-autonomía-dar-a-un-agente",
+          "level": 1,
+          "text": "Cuánta autonomía dar a un agente"
+        },
+        {
+          "id": "decidir-paso-a-paso-qué-hace-el-modelo",
+          "level": 2,
+          "text": "Decidir paso a paso qué hace el modelo"
+        },
+        {
+          "id": "puntos-de-control",
+          "level": 2,
+          "text": "Puntos de control"
+        },
+        {
+          "id": "niveles-de-autonomía",
+          "level": 2,
+          "text": "Niveles de autonomía"
+        },
+        {
+          "id": "trazabilidad-y-costo",
+          "level": 2,
+          "text": "Trazabilidad y costo"
+        },
+        {
+          "id": "marcos-de-referencia",
+          "level": 2,
+          "text": "Marcos de referencia"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 3,
+      "route": "/es/docs/autonomia-de-la-ia",
+      "slug": "autonomia-de-la-ia"
     },
     {
       "category": "fundamentos",
@@ -9204,6 +9866,62 @@
       "slug": "estilos-arquitectonicos"
     },
     {
+      "category": "fundamentos",
+      "description": "Telling apart the complexity of the problem from the complexity your frameworks and tools add, with diagnostic questions and four ways to reduce it.",
+      "figureCaption": "Essential complexity stays; accidental complexity shrinks",
+      "order": 15,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "complexity",
+        "tools",
+        "frameworks",
+        "simplicity"
+      ],
+      "title": "The complexity your tools add",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "the-complexity-your-tools-add",
+          "level": 1,
+          "text": "The complexity your tools add"
+        },
+        {
+          "id": "signs-of-accidental-complexity",
+          "level": 2,
+          "text": "Signs of accidental complexity"
+        },
+        {
+          "id": "questions-that-separate-them",
+          "level": 2,
+          "text": "Questions that separate them"
+        },
+        {
+          "id": "two-symmetric-traps",
+          "level": 2,
+          "text": "Two symmetric traps"
+        },
+        {
+          "id": "four-ways-to-reduce-it",
+          "level": 2,
+          "text": "Four ways to reduce it"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/complejidad-accidental-de-herramientas",
+      "slug": "complejidad-accidental-de-herramientas"
+    },
+    {
       "category": "diseno",
       "description": "Learn the four levels of the C4 model with a complete example: context, containers, components and code, plus notation rules and common mistakes.",
       "figureCaption": "Four zoom levels: context, containers, components and code",
@@ -11060,6 +11778,281 @@
       "slug": "multi-tenancy"
     },
     {
+      "category": "diseno",
+      "description": "Why folders named after layers are not enough: the dependency rule, what each boundary may carry, and when extra layers add noise instead of protection.",
+      "figureCaption": "Dependencies point toward the domain, never away from it",
+      "order": 15,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "layers",
+        "dependencies",
+        "clean-architecture",
+        "boundaries"
+      ],
+      "title": "Layers are not the architecture",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "layers-are-not-the-architecture",
+          "level": 1,
+          "text": "Layers are not the architecture"
+        },
+        {
+          "id": "the-dependency-rule",
+          "level": 2,
+          "text": "The dependency rule"
+        },
+        {
+          "id": "what-crosses-each-boundary",
+          "level": 2,
+          "text": "What crosses each boundary"
+        },
+        {
+          "id": "when-layers-get-in-the-way",
+          "level": 2,
+          "text": "When layers get in the way"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/capas-no-son-arquitectura",
+      "slug": "capas-no-son-arquitectura"
+    },
+    {
+      "category": "diseno",
+      "description": "Monolith or microservices is the wrong question. How to design boundaries inside one process and when extracting a service actually makes sense.",
+      "figureCaption": "Modules with a public API and their own data inside one process",
+      "order": 16,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "modular-monolith",
+        "microservices",
+        "boundaries",
+        "migration"
+      ],
+      "title": "Modular monolith before microservices",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "modular-monolith-before-microservices",
+          "level": 1,
+          "text": "Modular monolith before microservices"
+        },
+        {
+          "id": "what-a-real-module-is",
+          "level": 2,
+          "text": "What a real module is"
+        },
+        {
+          "id": "why-start-with-a-modular-monolith",
+          "level": 2,
+          "text": "Why start with a modular monolith"
+        },
+        {
+          "id": "when-to-extract-a-service",
+          "level": 2,
+          "text": "When to extract a service"
+        },
+        {
+          "id": "migrating-without-stopping-the-system",
+          "level": 2,
+          "text": "Migrating without stopping the system"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/monolito-modular-primero",
+      "slug": "monolito-modular-primero"
+    },
+    {
+      "category": "diseno",
+      "description": "Sagas with compensations, the outbox pattern and idempotency for an operation that spans several services and can fail halfway through.",
+      "figureCaption": "If shipping fails, compensations undo the earlier steps",
+      "order": 17,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "sagas",
+        "outbox",
+        "idempotency",
+        "microservices"
+      ],
+      "title": "Coordinating services without distributed transactions",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "coordinating-services-without-distributed-transactions",
+          "level": 1,
+          "text": "Coordinating services without distributed transactions"
+        },
+        {
+          "id": "why-a-distributed-transaction-is-not-the-default",
+          "level": 2,
+          "text": "Why a distributed transaction is not the default"
+        },
+        {
+          "id": "sagas-local-steps-and-compensations",
+          "level": 2,
+          "text": "Sagas: local steps and compensations"
+        },
+        {
+          "id": "the-dual-write-problem",
+          "level": 2,
+          "text": "The dual write problem"
+        },
+        {
+          "id": "idempotency-retries-are-normal",
+          "level": 2,
+          "text": "Idempotency: retries are normal"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/coordinar-servicios-sin-2pc",
+      "slug": "coordinar-servicios-sin-2pc"
+    },
+    {
+      "category": "diseno",
+      "description": "CAP and PACELC explained as per-operation decisions: what choosing consistency or availability means for a balance, a cart or a like counter.",
+      "figureCaption": "Each operation picks its own point between consistency and availability",
+      "order": 18,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "cap",
+        "pacelc",
+        "consistency",
+        "availability"
+      ],
+      "title": "CAP is decided per operation",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "cap-is-decided-per-operation",
+          "level": 1,
+          "text": "CAP is decided per operation"
+        },
+        {
+          "id": "what-cap-says-precisely",
+          "level": 2,
+          "text": "What CAP says, precisely"
+        },
+        {
+          "id": "pacelc-the-part-you-pay-every-day",
+          "level": 2,
+          "text": "PACELC: the part you pay every day"
+        },
+        {
+          "id": "four-operations-four-decisions",
+          "level": 2,
+          "text": "Four operations, four decisions"
+        },
+        {
+          "id": "how-it-works-in-practice",
+          "level": 2,
+          "text": "How it works in practice"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/cap-por-operacion",
+      "slug": "cap-por-operacion"
+    },
+    {
+      "category": "diseno",
+      "description": "Little's law, Amdahl's law and queueing to estimate concurrency and capacity before adding servers, with a full calculation from start to finish.",
+      "figureCaption": "Concurrency = throughput × response time",
+      "order": 19,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "scalability",
+        "performance",
+        "littles-law",
+        "capacity"
+      ],
+      "title": "Before you scale, do the math",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "before-you-scale-do-the-math",
+          "level": 1,
+          "text": "Before you scale, do the math"
+        },
+        {
+          "id": "littles-law-concurrency",
+          "level": 2,
+          "text": "Little's law: concurrency"
+        },
+        {
+          "id": "amdahls-law-the-ceiling-on-parallelism",
+          "level": 2,
+          "text": "Amdahl's law: the ceiling on parallelism"
+        },
+        {
+          "id": "queues-latency-explodes-at-the-end",
+          "level": 2,
+          "text": "Queues: latency explodes at the end"
+        },
+        {
+          "id": "a-full-calculation",
+          "level": 2,
+          "text": "A full calculation"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/antes-de-escalar-la-cuenta",
+      "slug": "antes-de-escalar-la-cuenta"
+    },
+    {
       "category": "practicas",
       "description": "A practical clean code guide: names, functions, errors, complexity, tests, refactoring and technical debt, with before/after examples and a review checklist.",
       "figureCaption": "From tangled to readable code: small, clear and consistent",
@@ -11713,6 +12706,113 @@
       "readingMinutes": 18,
       "route": "/en/docs/seguridad-por-diseno",
       "slug": "seguridad-por-diseno"
+    },
+    {
+      "category": "practicas",
+      "description": "How to turn an architecture rule into a check that fails the pipeline: a real ESLint example from this repository and the steps to start with one.",
+      "figureCaption": "An import that breaks a layer rule fails the pipeline",
+      "order": 6,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "fitness-functions",
+        "ci",
+        "eslint",
+        "architecture"
+      ],
+      "title": "Your architecture should fail in CI",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "your-architecture-should-fail-in-ci",
+          "level": 1,
+          "text": "Your architecture should fail in CI"
+        },
+        {
+          "id": "from-diagram-to-check",
+          "level": 2,
+          "text": "From diagram to check"
+        },
+        {
+          "id": "a-real-example",
+          "level": 2,
+          "text": "A real example"
+        },
+        {
+          "id": "when-the-rule-gets-in-the-way",
+          "level": 2,
+          "text": "When the rule gets in the way"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/fitness-en-el-ci",
+      "slug": "fitness-en-el-ci"
+    },
+    {
+      "category": "practicas",
+      "description": "Why retries without jitter multiply an outage, and how to combine timeouts, backoff, retry budgets and circuit breakers.",
+      "figureCaption": "Without jitter, every retry lands at the same moment",
+      "order": 7,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "resilience",
+        "retries",
+        "jitter",
+        "circuit-breaker"
+      ],
+      "title": "Retries with jitter, without storms",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "retries-with-jitter-without-storms",
+          "level": 1,
+          "text": "Retries with jitter, without storms"
+        },
+        {
+          "id": "jitter-spreading-the-wait",
+          "level": 2,
+          "text": "Jitter: spreading the wait"
+        },
+        {
+          "id": "protections-that-work-together",
+          "level": 2,
+          "text": "Protections that work together"
+        },
+        {
+          "id": "slow-is-worse-than-down",
+          "level": 2,
+          "text": "Slow is worse than down"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/reintentos-con-jitter",
+      "slug": "reintentos-con-jitter"
     },
     {
       "category": "tendencias",
@@ -13181,6 +14281,62 @@
       "slug": "finops-costo-como-atributo"
     },
     {
+      "category": "nube",
+      "description": "Exit cost from a cloud provider is not evenly distributed: data usually weighs more than the API. How to estimate it and why you should test the plan.",
+      "figureCaption": "Exit cost weighs far more on data than on the API",
+      "order": 10,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "lock-in",
+        "exit-cost",
+        "portability",
+        "cloud"
+      ],
+      "title": "What it would cost to leave your cloud",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "what-it-would-cost-to-leave-your-cloud",
+          "level": 1,
+          "text": "What it would cost to leave your cloud"
+        },
+        {
+          "id": "lock-in-is-not-only-the-api",
+          "level": 2,
+          "text": "Lock-in is not only the API"
+        },
+        {
+          "id": "estimating-it-with-real-data",
+          "level": 2,
+          "text": "Estimating it with real data"
+        },
+        {
+          "id": "deciding-consciously",
+          "level": 2,
+          "text": "Deciding consciously"
+        },
+        {
+          "id": "a-plan-that-has-been-tested",
+          "level": 2,
+          "text": "A plan that has been tested"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/salida-de-la-nube",
+      "slug": "salida-de-la-nube"
+    },
+    {
       "category": "decisiones",
       "description": "How to order a backlog with RICE, ICE and WSJF: formulas, cost of delay, a worked example with five initiatives and the traps of false precision.",
       "figureCaption": "Five initiatives swap places once you divide by effort",
@@ -14595,6 +15751,174 @@
       "readingMinutes": 20,
       "route": "/en/docs/pensamiento-sistemico-y-sesgos",
       "slug": "pensamiento-sistemico-y-sesgos"
+    },
+    {
+      "category": "decisiones",
+      "description": "Conway's law in practice: how your organization's communication ends up in the system, and how the inverse Conway maneuver lets you design teams on purpose.",
+      "figureCaption": "The system inherits the communication structure of the teams",
+      "order": 12,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "conways-law",
+        "team-topologies",
+        "organization",
+        "architecture"
+      ],
+      "title": "Your org chart draws your architecture",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "your-org-chart-draws-your-architecture",
+          "level": 1,
+          "text": "Your org chart draws your architecture"
+        },
+        {
+          "id": "what-it-looks-like-in-a-project",
+          "level": 2,
+          "text": "What it looks like in a project"
+        },
+        {
+          "id": "the-inverse-maneuver",
+          "level": 2,
+          "text": "The inverse maneuver"
+        },
+        {
+          "id": "cognitive-load",
+          "level": 2,
+          "text": "Cognitive load"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/organigrama-y-sistema",
+      "slug": "organigrama-y-sistema"
+    },
+    {
+      "category": "decisiones",
+      "description": "An ADR is proposed, accepted and, over time, deprecated or superseded. How to keep a decision log without erasing its history.",
+      "figureCaption": "An ADR changes state; it is never deleted",
+      "order": 13,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "adr",
+        "decisions",
+        "documentation",
+        "governance"
+      ],
+      "title": "Decisions have a lifecycle",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "decisions-have-a-lifecycle",
+          "level": 1,
+          "text": "Decisions have a lifecycle"
+        },
+        {
+          "id": "what-makes-an-adr-useful",
+          "level": 2,
+          "text": "What makes an ADR useful"
+        },
+        {
+          "id": "the-states-of-a-decision",
+          "level": 2,
+          "text": "The states of a decision"
+        },
+        {
+          "id": "where-it-lives-and-how-it-is-reviewed",
+          "level": 2,
+          "text": "Where it lives and how it is reviewed"
+        },
+        {
+          "id": "adrs-and-ai-agents",
+          "level": 2,
+          "text": "ADRs and AI agents"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/adr-ciclo-de-vida",
+      "slug": "adr-ciclo-de-vida"
+    },
+    {
+      "category": "decisiones",
+      "description": "Autonomy levels for AI systems: which steps stay deterministic, where human approval belongs, how to stop safely and how to trace cost and idempotency.",
+      "figureCaption": "Each autonomy level requires a more explicit approval",
+      "order": 14,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "ai",
+        "agents",
+        "governance",
+        "autonomy"
+      ],
+      "title": "How much autonomy to give an agent",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "how-much-autonomy-to-give-an-agent",
+          "level": 1,
+          "text": "How much autonomy to give an agent"
+        },
+        {
+          "id": "decide-step-by-step-what-the-model-does",
+          "level": 2,
+          "text": "Decide step by step what the model does"
+        },
+        {
+          "id": "control-points",
+          "level": 2,
+          "text": "Control points"
+        },
+        {
+          "id": "autonomy-levels",
+          "level": 2,
+          "text": "Autonomy levels"
+        },
+        {
+          "id": "traceability-and-cost",
+          "level": 2,
+          "text": "Traceability and cost"
+        },
+        {
+          "id": "reference-frameworks",
+          "level": 2,
+          "text": "Reference frameworks"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/autonomia-de-la-ia",
+      "slug": "autonomia-de-la-ia"
     }
   ]
 }

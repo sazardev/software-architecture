@@ -1,0 +1,68 @@
+---
+title: 'What it would cost to leave your cloud'
+description: 'Exit cost from a cloud provider is not evenly distributed: data usually weighs more than the API. How to estimate it and why you should test the plan.'
+category: nube
+tags:
+  - lock-in
+  - exit-cost
+  - portability
+  - cloud
+order: 10
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Exit cost weighs far more on data than on the API
+---
+
+# What it would cost to leave your cloud
+
+A direct question: how much would it cost to move to another provider tomorrow? If the answer is "I don't know", you have a
+dependency nobody decided on. That is not a problem in itself, but it is a decision someone should have made.
+
+## Lock-in is not only the API
+
+The dependency has several layers, and they do not weigh the same:
+
+- **API and programming model:** the proprietary services you use force code rewrites. It is the most visible layer and often
+  the cheapest.
+- **Data:** exporting data is easy. Rebuilding its meaning, with its relationships, rules and implicit formats, is what costs.
+- **Operations:** monitoring, deployment, networking and identity configured to the provider's specifics.
+- **Contracts and licences:** commitments on consumption, discounts tied to volume, licences that do not transfer.
+- **Talent:** the team knows how to run one provider, not another. That has a cost too.
+
+When someone estimates exit cost by looking only at the API, they are usually wrong by an order of magnitude.
+
+## Estimating it with real data
+
+A useful estimate needs three figures per component: the volume of data to move, the number of integrations that change, and
+the acceptable cutover time. With those, the cost stops being an intuition and becomes a range.
+
+The cost also grows over time. Every new service you adopt without thinking widens the dependency. That is why the estimate
+should be revisited periodically, not only when the contract is signed.
+
+## Deciding consciously
+
+Not every dependency is bad. A managed service that does not differentiate your business, such as a standard message queue,
+may be a commodity worth using. An internal rules engine that is part of your competitive advantage deserves more care. The
+question is whether the lock-in you accept sits where it pays off.
+
+## A plan that has been tested
+
+An exit plan is an architecture artefact: it describes the possible destination, the migration sequence, the estimated cost and
+the conditions that would trigger it. What turns it into a plan is having executed it at least once, even on a test environment.
+A plan that was never run is an intention.
+
+## Checklist
+
+- [ ] Do you know how much leaving would cost, with figures per component?
+- [ ] Is each managed service justified as a commodity or as a differentiator?
+- [ ] Can the data be exported in an open, complete format?
+- [ ] Is there an exit plan, and a date when it was tested?
+
+**Further reading:** [locked in to one provider](/docs/casado-a-un-proveedor) describes the types of lock-in and how to document a
+plan; [cost as a quality attribute](/docs/finops-costo-como-atributo) explains how to govern cost from the design stage.
+
+## Sources
+
+- NIST, SP 800-145, _The NIST Definition of Cloud Computing_ (2011).
+- FinOps Foundation, _FinOps Framework_ (public documentation).
+- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020), chapter on architecture characteristics.
