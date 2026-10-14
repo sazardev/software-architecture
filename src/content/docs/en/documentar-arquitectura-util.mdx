@@ -1,0 +1,90 @@
+---
+title: 'Documenting architecture so someone uses it'
+description: 'Which questions architecture documentation must answer, how to choose its level of detail, keep it close to the code and measure whether anyone uses it.'
+category: decisiones
+tags:
+  - documentation
+  - c4
+  - adr
+  - onboarding
+  - architecture
+order: 19
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Document in levels, from general to specific, and remove what is outdated'
+---
+
+# Documenting architecture so someone uses it
+
+Almost every team has architecture documentation, and very few teams read it. It is usually a long document, written at one moment,
+never updated, and contradicting the code on the details that matter. The problem is not a lack of documents but that they do not
+answer questions anyone actually asks.
+
+## Start from the questions
+
+Before writing, list the questions the documentation must answer: what the system does and who it talks to, what its parts are and what
+each one is responsible for, why the hard decisions were made, and how it is deployed and operated. If a text answers no real question,
+it probably should not exist.
+
+## Levels of detail
+
+The C4 model proposes four levels of zoom: context, containers, components and code. For most teams the first two are enough. The context
+level shows the system, its users and the external systems it talks to. The container level shows the applications, databases and queues
+that make it up. Components are drawn only where someone needs to decide, and code is read directly.
+
+Take a new team that needs to understand an order system with four containers. A one-page context diagram and a one-page container diagram
+let them find their way in an afternoon. If they then must touch the discounts module, a component diagram of that module adds what is
+missing. Drawing the components of all forty modules would produce a document that goes stale before it is finished.
+
+## Close to the code, and versioned
+
+Documentation outside the repository drifts. What lives next to the code is reviewed in the same pull requests, and diagrams written as code
+can be validated in the pipeline. Decisions deserve their own record: one ADR per decision, with its status and date, linked from the affected
+diagram. Each design change then leaves a trace without rewriting the main document.
+
+## What to remove
+
+Documenting also means deleting. Candidates are documents nobody has consulted for months, those describing components that no longer exist
+and those that contradict the code. A false document is worse than none, because it inspires trust. If it cannot be kept current, mark it as
+outdated or delete it, and link to the current state.
+
+## Expiry and ownership
+
+Every document needs an owner and a review date. The owner does not have to write everything, but answers for keeping it true. A quarterly
+review suffices for most; operations or incident documents may need more frequent reviews. A document without an owner is, in practice, an
+abandoned one.
+
+## Measure whether it helps
+
+The underlying question is whether anyone uses it. There are observable signals: how long a new person takes to make their first production
+change, how many repeated questions reach the team channel, or whether a recent decision was taken by consulting an existing ADR. If none of
+them improves, the documentation is not doing its job, however abundant it is.
+
+## Common mistakes
+
+- Writing one document meant to serve every audience at once.
+- Drawing every component before anyone needs to decide about them.
+- Keeping documentation outside the repository, where nobody reviews it.
+- Confusing volume with quality: a hundred pages nobody reads help nobody.
+
+## When it does not apply
+
+A single-service system with a small team that knows it closely needs little formal documentation. It does need a README explaining how to run
+and deploy it and which decisions are not obvious. Formal documentation grows with the number of people who must understand the system without
+asking.
+
+## Checklist
+
+- [ ] Does each document answer a concrete question someone asks?
+- [ ] Are the levels of detail the ones needed to decide?
+- [ ] Does the documentation live in the repository and get reviewed in the same pull requests?
+- [ ] Does each document have an owner and a review date?
+- [ ] Are usage signals measured, such as the time until a new person's first change?
+
+**Further reading:** [the C4 model](/docs/c4-model) explains the four levels with a full example; [ADRs, a practical guide](/docs/adr)
+covers how to record decisions; [diagrams as code](/docs/diagramas-como-codigo) compares tools for keeping diagrams alive.
+
+## Sources
+
+- Michael T. Nygard, "Documenting Architecture Decisions" (2011).
+- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020).

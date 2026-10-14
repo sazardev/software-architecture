@@ -1,0 +1,89 @@
+---
+title: 'MLOps: llevar un modelo a producción'
+description: 'Cómo versionar datos, código y modelos por separado, desplegar con sombra y canary, vigilar la deriva y decidir cuándo reentrenar o retirar un modelo.'
+category: tendencias
+tags:
+  - mlops
+  - modelos
+  - despliegue
+  - monitoreo
+  - deriva
+order: 7
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Cada modelo es una versión publicada, vigilada hasta que se retira'
+---
+
+# MLOps: llevar un modelo a producción
+
+Un modelo que funciona en un cuaderno de análisis no es un servicio. Entre el experimento y la producción hay preguntas que el
+software tradicional ya resolvió: con qué datos se entrenó, qué código lo produjo, qué versión está sirviendo y si sigue siendo
+correcto dentro de tres meses. MLOps es el conjunto de prácticas que responde a esas preguntas.
+
+## Versionar datos, código y modelo por separado
+
+Un modelo depende de tres cosas que cambian a ritmos distintos: el código de entrenamiento, los datos y el modelo resultante. Si
+solo se versiona el código, el resultado no se puede reproducir porque los datos cambiaron. La práctica razonable es fijar la
+versión de los datos, registrar la del código y las dependencias, y guardar el modelo con un identificador que apunte a ambas.
+Herramientas como DVC o un registro como MLflow ayudan, pero el principio importa más que la herramienta.
+
+## Entrenamiento reproducible y registro
+
+Un entrenamiento que no se puede repetir no se puede auditar. Hay que fijar las semillas, el entorno y el conjunto de validación.
+Un registro de modelos guarda cada versión con sus métricas, su procedencia y su estado: experimental, candidato o en producción.
+Pasar de un estado a otro debe ser un paso explícito y revisado, igual que un cambio de código.
+
+## Desplegar sin exponer: sombra y canary
+
+Antes de que un modelo decida algo real, conviene ejecutarlo en sombra: recibe las mismas peticiones y sus predicciones se registran,
+pero no se usan. Después, un canary dirige una pequeña parte del tráfico al modelo nuevo y compara métricas antes de ampliarlo.
+
+Un ejemplo: un modelo de detección de fraude recibe 200.000 predicciones al día, unas 8.333 por hora. Un canary del 5 % recibe unas
+417 por hora, y en dos horas acumula unas 834 predicciones. Esa es la muestra con la que se compara el modelo nuevo. Si el volumen
+es menor, la comparación no dice nada y la ventana debe ampliarse.
+
+## Monitorizar la deriva
+
+Un modelo se degrada aunque su código no cambie. La **deriva de datos** ocurre cuando cambia la distribución de las entradas, como
+una región nueva con otros importes. La **deriva de concepto** ocurre cuando cambia la relación entre entradas y resultado, como un
+fraude que adopta tácticas nuevas. La primera se detecta comparando distribuciones; la segunda exige etiquetas reales, que a veces
+llegan tarde. Las alertas necesitan umbrales acordados de antemano y un responsable. Alertar por cualquier variación acaba en
+alertas ignoradas.
+
+## Reentrenar o retirar
+
+Reentrenar no siempre es la respuesta. Si la deriva es de datos y las etiquetas llegan a tiempo, un reentrenamiento programado suele
+bastar. Si cambió la relación, el problema puede estar en la definición del negocio, y conviene revisarla antes de entrenar otra vez.
+Un criterio sencillo para retirar: el modelo queda por debajo de la línea base durante un periodo acordado y ningún reentrenamiento lo
+corrige. Su retirada debe ser tan ordenada como su despliegue, con la versión conservada para auditoría.
+
+## Errores frecuentes
+
+- Desplegar el modelo que mejor puntúa en el conjunto de prueba sin mirar cómo se comporta con tráfico real.
+- Tratar el modelo como un artefacto estático, sin dueño ni fecha de revisión.
+- Confundir una mejora de una métrica técnica con una mejora de negocio.
+- Guardar predicciones sin la versión del modelo que las produjo.
+
+## Cuándo no aplica
+
+Si una regla sencilla resuelve el problema con la misma calidad, un modelo añade coste y superficie de fallo sin beneficio. El
+aprendizaje automático compensa cuando hay muchos datos, patrones que una regla no captura y un coste de error que justifica el
+mantenimiento.
+
+## Checklist
+
+- [ ] ¿Cada modelo está ligado a una versión de datos, código y dependencias?
+- [ ] ¿El entrenamiento se puede repetir con el mismo resultado?
+- [ ] ¿Hay un registro con estados y un paso explícito de promoción?
+- [ ] ¿El modelo nuevo se ejecuta en sombra o en canary antes de decidir?
+- [ ] ¿Hay umbrales de deriva con dueño y criterio de retirada?
+
+**Para profundizar:** [arquitectura para agentes y LLM](/docs/arquitectura-agentes-llm) cubre los componentes de una aplicación
+con modelos; [RAG en producción y evaluación continua](/docs/rag-y-evaluacion-continua) desarrolla la evaluación de respuestas.
+
+## Fuentes
+
+- D. Sculley et al., "Hidden Technical Debt in Machine Learning Systems", NIPS (2015).
+- Eric Breck et al., "The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction", IEEE Big Data (2017).
+- João Gama et al., "A Survey on Concept Drift Adaptation", _ACM Computing Surveys_ (2014).
+- Chip Huyen, _Designing Machine Learning Systems_ (2022).

@@ -1,0 +1,98 @@
+---
+title: 'Arquitectura extensible: plugins y puntos de extensión'
+description: 'Cuándo abrir un sistema a extensiones, puntos de extensión con contrato estable, sandbox con permisos y versionado y deprecación de la API de plugins.'
+category: diseno
+tags:
+  - plugins
+  - extensibilidad
+  - api-publica
+  - compatibilidad
+order: 28
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Los plugins hablan con el núcleo solo a través de sus puertos'
+---
+
+# Arquitectura extensible: plugins y puntos de extensión
+
+Abrir un producto a extensiones tiene un atractivo claro: terceros resuelven casos que tú no
+priorizarías, y el producto crece sin que tu equipo escriba cada integración. Pero una API de
+extensión es un contrato público. Lo que publicas hoy, alguien lo usará durante años, y cambiarlo
+después rompe a todos a la vez. Por eso la decisión no es técnica en primer lugar: es de gobierno.
+
+## Cuándo abrir el sistema y cuándo no
+
+Abrir conviene cuando hay un conjunto estable de casos que varían entre clientes (formatos de
+exportación, conectores a sistemas externos, reglas de validación) y cuando el costo de mantener cada
+variante dentro del núcleo supera el de publicar una interfaz. No conviene cuando el producto aún
+cambia cada semana: cada punto de extensión congela una parte del diseño.
+
+Un criterio orientativo, no una regla: si más de la mitad de las peticiones de funcionalidad encajan en una misma familia,
+esa familia es candidata a un punto de extensión. Si son casos aislados, es mejor resolverlos en el núcleo.
+
+## Puntos de extensión con contrato estable
+
+Un punto de extensión es un puerto: una interfaz pequeña, documentada y versionada, a la que el núcleo
+llama en momentos definidos. «Antes de guardar un pedido», «al generar una factura» o «al recibir un
+evento» son ejemplos. El núcleo nunca expone sus clases internas ni sus tablas; si un plugin necesita un
+dato, el puerto lo entrega en un objeto de transferencia.
+
+La regla de dependencia se aplica igual que en cualquier arquitectura hexagonal: el núcleo no conoce a
+los plugins. Son los plugins los que dependen del puerto, y el registro de plugins vive en la frontera.
+
+## Sandbox y permisos
+
+Un plugin es código de terceros dentro de tu proceso o cerca de él. Por eso necesita dos barreras. La
+primera es un sandbox, que aísla memoria, tiempo de ejecución y acceso a la red. La segunda son los
+permisos: cada plugin declara qué datos y capacidades necesita, y el usuario los aprueba antes de
+instalarlo.
+
+Los permisos deben ser explícitos y mínimos. Un plugin de exportación que pide leer todos los pedidos
+cuando solo necesita los del último mes debe rechazarse o pedir un alcance más estrecho.
+
+## Versionado y compatibilidad
+
+La API de extensión tiene su propia versión, separada de la versión del producto. Un cambio compatible
+(añadir un campo opcional) no sube la versión mayor. Un cambio que rompe (quitar un campo, cambiar un
+tipo) exige una versión nueva, con la antigua soportada durante un plazo anunciado.
+
+Un ejemplo con cifras: una API de extensión con 40 plugins instalados, de los cuales 12 usan un punto de
+extensión que se va a retirar. Son el 30 % del ecosistema. Antes de retirarlo conviene contactar a esos
+12 autores y dar un plazo, en lugar de romper el 30 % de las instalaciones en un despliegue.
+
+## Deprecación con fecha
+
+Una deprecación sin fecha es una promesa vacía. Cada punto obsoleto debe anunciar la versión en que dejará de
+funcionar, avisar en la documentación y en la respuesta de la API, y dejar de aceptar nuevos plugins antes de
+retirarse. El cierre se comunica con antelación suficiente para que los autores migren.
+
+## Errores frecuentes
+
+- Exponer el modelo interno del núcleo como API de extensión.
+- Publicar puntos de extensión sin un caso de uso real que los justifique.
+- Dar permisos amplios por defecto para «no bloquear» a los autores.
+- Cambiar la API de extensión sin versión ni plazo.
+
+## Cuándo no aplica
+
+Un producto interno con un solo equipo que lo usa no necesita plugins: basta con código en el núcleo y una
+buena cohesión de módulos. Abrir el sistema tiene un costo de gobierno que solo se paga si el ecosistema
+existe.
+
+## Checklist
+
+- [ ] ¿Hay una familia de casos que varían entre clientes y justifica un punto de extensión?
+- [ ] ¿El punto de extensión es un contrato pequeño, documentado y versionado?
+- [ ] ¿Los plugins se ejecutan en un sandbox con permisos explícitos?
+- [ ] ¿Hay una política de versiones y de deprecación con fechas?
+- [ ] ¿Sabes qué plugins dependen de cada punto antes de retirarlo?
+
+**Para profundizar:** [arquitectura hexagonal](/docs/arquitectura-hexagonal) explica por qué el núcleo no
+debe depender de sus adaptadores, y [estilos arquitectónicos](/docs/estilos-arquitectonicos) ayuda a decidir
+si un sistema debe ser extensible desde el principio.
+
+## Fuentes
+
+- Alistair Cockburn, "Hexagonal Architecture" (2005), también conocida como puertos y adaptadores.
+- Tom Preston-Werner, _Semantic Versioning 2.0.0_ (2013).
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020).

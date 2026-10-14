@@ -1,0 +1,93 @@
+---
+title: 'Móvil offline-first: sincronizar sin perder datos'
+description: 'Cómo diseñar una app que escribe primero en local, sincroniza una cola de operaciones en orden y resuelve conflictos sin perder cambios del usuario.'
+category: diseno
+tags:
+  - offline
+  - sincronizacion
+  - conflictos
+  - movil
+  - colas
+order: 29
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'La app confirma en local y vacía su cola cuando hay red'
+---
+
+# Móvil offline-first: sincronizar sin perder datos
+
+Una app que solo funciona con red falla justo donde más se necesita: en el metro, en un almacén sin cobertura o en un avión. Un
+diseño offline-first invierte el orden habitual. La app confirma cada cambio en su almacén local, el usuario sigue trabajando y la
+sincronización ocurre después. La parte difícil no es guardar en local, sino devolver esos cambios al servidor sin perder ni
+duplicar ninguno.
+
+## Escribir primero en local
+
+El almacén local es lo que ve el usuario sin conexión. Cada acción se registra como operación (crear, actualizar, borrar) con sus
+datos completos, no como un estado final. Registrar la intención permite reenviarla y aplicar reglas de negocio en el servidor. Y
+la pantalla no puede depender de que el servidor haya confirmado nada: lo que se ve está en local, y la interfaz debe mostrar qué
+cambios aún no están sincronizados.
+
+## Una cola de operaciones pendientes
+
+Las operaciones pendientes van a una cola persistente, que sobrevive a cierres y reinicios. Un técnico de campo pasa dos días sin
+cobertura y acumula 120 operaciones. Si el servidor acepta 5 por segundo, vaciar la cola exige 24 segundos de tráfico continuo; con
+reintentos y pausas, el proceso dura minutos. Eso es aceptable solo si la cola se vacía en orden y puede reanudarse tras una
+interrupción.
+
+El orden importa: crear un parte y después editarlo debe llegar en ese orden. Por eso cada operación lleva un número de secuencia
+dentro de su entidad.
+
+## Identificadores generados en el cliente
+
+Un registro creado sin conexión no tiene identificador del servidor. La solución habitual es generarlo en el cliente, con un
+identificador único, para poder referirse al registro antes de sincronizarlo. Ese mismo identificador sirve como clave de
+idempotencia: si una operación llega dos veces porque se perdió la respuesta, el servidor reconoce el duplicado y no la aplica otra vez.
+
+## Detectar conflictos
+
+Un conflicto aparece cuando dos dispositivos cambian el mismo dato sin verse. Hay tres estrategias, de la más simple a la más exigente.
+
+- **Última escritura gana.** Simple, pero descarta en silencio un cambio del usuario. Válida solo si perder un cambio no importa,
+  como una preferencia visual.
+- **Control de versiones.** Cada registro lleva una versión. Si llega una edición sobre una versión vieja, el servidor la rechaza y
+  devuelve el conflicto para que el usuario lo resuelva.
+- **Tipos replicados sin conflictos (CRDT).** Estructuras que siempre se fusionan de forma determinista, como contadores o conjuntos.
+  Resuelven muchos casos sin intervención, pero modelar un dominio completo con ellas es un proyecto en sí mismo.
+
+La elección depende de lo que cuesta perder un cambio. En un parte de trabajo puede significar facturar mal; en una preferencia, casi nada.
+
+## Qué datos no deben editarse offline
+
+Las operaciones que dependen de estado compartido en tiempo real, como reservar el último asiento o transferir saldo, requieren
+confirmación del servidor. Lo mismo vale para acciones con efectos externos difíciles de revertir. La app puede preparar la operación
+sin conexión, pero debe presentarla como pendiente y nunca como hecha.
+
+## Errores frecuentes
+
+- Guardar solo el estado final y perder la intención de la operación.
+- Vaciar la cola en paralelo y romper el orden entre operaciones de una misma entidad.
+- Mostrar como confirmado algo que solo existe en local.
+- Resolver conflictos sin avisar, de modo que el cambio desaparece sin rastro.
+
+## Cuándo no aplica
+
+Si la app consulta datos que cambian poco y la conexión suele ser buena, una caché de lectura basta, y un modelo offline completo añade
+complejidad innecesaria. Compensa cuando el trabajo se hace sin red y perder un dato tiene un coste real.
+
+## Checklist
+
+- [ ] ¿Cada cambio se registra como operación con su intención, no solo como estado final?
+- [ ] ¿La cola sobrevive a reinicios y se vacía en orden y de forma reanudable?
+- [ ] ¿Los registros nuevos tienen identificador generado en el cliente?
+- [ ] ¿Cada operación es idempotente en el servidor?
+- [ ] ¿Hay una estrategia de conflicto por tipo de dato, y se avisa al usuario?
+
+**Para profundizar:** [caché, colas y streaming](/docs/caching-colas-streaming) explica las semánticas de entrega y el orden de
+los mensajes; [sagas, outbox e idempotencia](/docs/sagas-outbox-idempotencia) desarrolla las claves de idempotencia.
+
+## Fuentes
+
+- Leslie Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", _Communications of the ACM_ (1978).
+- Marc Shapiro, Nuno Preguiça, Carlos Baquero y Marek Zawirski, "Conflict-free Replicated Data Types", SSS (2011).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).

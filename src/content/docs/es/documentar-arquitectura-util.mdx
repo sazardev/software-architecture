@@ -1,0 +1,91 @@
+---
+title: 'Documentar la arquitectura para que alguien la use'
+description: 'Qué preguntas debe responder la documentación de arquitectura, cómo elegir su nivel de detalle, mantenerla cerca del código y medir si alguien la usa.'
+category: decisiones
+tags:
+  - documentacion
+  - c4
+  - adr
+  - onboarding
+  - arquitectura
+order: 19
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Documenta por niveles, de lo general a lo particular, y quita lo caduco'
+---
+
+# Documentar la arquitectura para que alguien la use
+
+Casi todos los equipos tienen documentación de arquitectura, y muy pocos la leen. Suele ser un documento largo, escrito en un
+momento concreto, que nadie actualizó y que contradice el código en los detalles que importan. El problema no es la falta de
+documentos, sino que no responden a preguntas que alguien se haga de verdad.
+
+## Empezar por las preguntas
+
+Antes de escribir, conviene listar las preguntas que la documentación debe responder: qué hace el sistema y con quién habla, qué
+piezas tiene y cuál es la responsabilidad de cada una, por qué se tomaron las decisiones difíciles y cómo se despliega y se opera.
+Si un texto no responde a ninguna pregunta real, probablemente sobra.
+
+## Niveles de detalle
+
+El modelo C4 propone cuatro niveles de zoom: contexto, contenedores, componentes y código. Para la mayoría de los equipos, los dos
+primeros bastan. El contexto muestra el sistema, sus usuarios y los sistemas externos con los que habla. Los contenedores muestran las
+aplicaciones, bases de datos y colas que lo forman. Los componentes se dibujan solo donde alguien necesita decidir, y el código se lee
+directamente.
+
+Un ejemplo: un equipo nuevo necesita entender un sistema de pedidos con cuatro contenedores. Un diagrama de contexto de una página y otro
+de contenedores le permiten orientarse en una tarde. Si después debe tocar el módulo de descuentos, un diagrama de componentes de ese
+módulo añade lo que falta. Dibujar los componentes de los cuarenta módulos produciría un documento caduco antes de terminarlo.
+
+## Cerca del código y versionada
+
+La documentación que vive fuera del repositorio se desincroniza. La que vive junto al código se revisa en los mismos pull requests, y los
+diagramas escritos como código pueden validarse en el pipeline. Las decisiones merecen un registro propio: un ADR por decisión, con su
+estado y su fecha, enlazado desde el diagrama afectado. Así cada cambio de diseño deja rastro sin reescribir el documento principal.
+
+## Qué quitar
+
+Documentar también es quitar. Son candidatos los documentos que nadie consulta desde hace meses, los que describen componentes que ya no
+existen y los que contradicen el código. Un documento falso es peor que ninguno, porque inspira confianza. Si no puede mantenerse, conviene
+marcarlo como caducado o borrarlo, y enlazar el estado actual.
+
+## Caducidad y dueño
+
+Cada documento necesita un dueño y una fecha de revisión. El dueño no tiene que escribirlo todo, pero responde de que siga siendo verdad.
+Una revisión trimestral basta para la mayoría; los documentos de operación o de incidentes pueden necesitar revisiones más frecuentes. Un
+documento sin dueño es, en la práctica, un documento abandonado.
+
+## Medir si sirve
+
+La pregunta de fondo es si alguien la usa. Hay señales observables: cuánto tarda una persona nueva en hacer su primer cambio en producción,
+cuántas preguntas repetidas llegan al canal del equipo o si una decisión reciente se tomó consultando un ADR existente. Si ninguna mejora,
+la documentación no cumple su función, por abundante que sea.
+
+## Errores frecuentes
+
+- Escribir un único documento que pretende servir a todos los públicos a la vez.
+- Dibujar todos los componentes antes de que alguien necesite decidir sobre ellos.
+- Mantener la documentación fuera del repositorio, donde nadie la revisa.
+- Confundir volumen con calidad: cien páginas que nadie lee no ayudan a nadie.
+
+## Cuándo no aplica
+
+Un sistema de un solo servicio, con un equipo pequeño que lo conoce de cerca, necesita poca documentación formal. Sí necesita un README que
+explique cómo ejecutarlo, desplegarlo y qué decisiones no son obvias. La documentación formal crece con el número de personas que deben
+entender el sistema sin preguntar.
+
+## Checklist
+
+- [ ] ¿Cada documento responde a una pregunta concreta que alguien se hace?
+- [ ] ¿Los niveles de detalle son los necesarios para decidir?
+- [ ] ¿La documentación vive en el repositorio y se revisa en los mismos pull requests?
+- [ ] ¿Cada documento tiene dueño y fecha de revisión?
+- [ ] ¿Se miden señales de uso, como el tiempo hasta el primer cambio de una persona nueva?
+
+**Para profundizar:** [el modelo C4](/docs/c4-model) explica los cuatro niveles con un ejemplo completo; [ADR, guía práctica](/docs/adr)
+cubre cómo registrar las decisiones; [diagramas como código](/docs/diagramas-como-codigo) compara herramientas para mantenerlos vivos.
+
+## Fuentes
+
+- Michael T. Nygard, "Documenting Architecture Decisions" (2011).
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020).

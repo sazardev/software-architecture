@@ -1,0 +1,92 @@
+---
+title: 'Incidentes y postmortems sin culpa'
+description: 'Roles durante un incidente, severidades, comunicación y postmortems sin culpa que terminan en acciones con dueño y fecha.'
+category: practicas
+tags:
+  - incidentes
+  - postmortem
+  - sre
+  - cultura
+  - fiabilidad
+order: 13
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'El postmortem busca fallos del sistema, no culpables'
+---
+
+# Incidentes y postmortems sin culpa
+
+Un incidente no es el momento de descubrir quién hizo qué, sino de restaurar el servicio. Y un postmortem no sirve
+para repartir culpas, sino para entender por qué el sistema permitió el fallo. Esa distinción decide si la
+organización aprende de sus caídas o las repite con otro nombre. Lo que escribimos sobre [observabilidad y SLO](/docs/observabilidad-slo-presupuesto-error)
+dice cuándo hay un incidente; este artículo trata qué hacer después.
+
+## Roles durante el incidente
+
+Un incidente mal coordinado tiene demasiadas personas tocando producción a la vez. El remedio es separar roles desde el principio:
+
+- **Coordinador de incidente.** Dirige, decide prioridades y no ejecuta comandos. Su trabajo es que el equipo sepa qué pasa.
+- **Operaciones.** Quien ejecuta la mitigación: revertir un despliegue, desactivar una bandera, escalar capacidad.
+- **Comunicación.** Mantiene informados a clientes y a otras áreas con actualizaciones periódicas, aunque no haya novedades.
+
+## Severidades y decisiones
+
+La severidad debe definirse antes del incidente, con criterios medibles: impacto en clientes, datos afectados, duración del
+error por encima del presupuesto. Cada nivel activa un protocolo: quién se avisa, con qué frecuencia se actualiza y cuándo
+se convoca a la dirección. Una severidad que depende del humor de quien responde no sirve.
+
+La regla de orden más útil es **mitigar antes que entender**. Si una reversión restaura el servicio en dos minutos, se hace
+y la causa se investiga después. Buscar la causa raíz con el servicio caído prolonga el daño.
+
+## Un ejemplo con cifras
+
+Un error en el pago afecta al 8 % de las transacciones durante 47 minutos. Con 12.000 transacciones por hora, eso son 960 fallos por hora: 752 operaciones fallidas en el total. Si el coordinador hubiera activado la reversión a los 12 minutos en lugar de a los 47, los fallos se habrían quedado en 192. La diferencia no está en la técnica sino en el protocolo: alguien tenía que
+tener autoridad para revertir sin esperar a entender todo.
+
+## El postmortem sin culpa
+
+Un postmortem debe contestar cinco preguntas: qué pasó, cuál fue el impacto, cómo se detectó, qué se hizo para mitigar y
+qué cambiará para que no vuelva a pasar. Cada respuesta se refiere al sistema: la alerta llegó tarde, el despliegue no tenía
+prueba de carga, el runbook no existía. Escribir «fulano no revisó el cambio» no aporta nada, porque la siguiente persona que
+revise tampoco lo hará si el proceso lo permite.
+
+John Allspaw popularizó esta idea como cultura de aprendizaje: si las personas temen ser castigadas, ocultan los errores y el
+sistema se vuelve opaco. Sidney Dekker distingue la cultura justa, que separa el error honesto de la negligencia, de la culpa
+generalizada.
+
+## Acciones con dueño y fecha
+
+Un postmortem sin acciones es un documento. Cada acción necesita un dueño, una fecha y una forma de comprobar que se completó.
+Conviene clasificarlas: las que reducen la probabilidad, las que reducen la detección y las que reducen el impacto. Un equipo
+que solo añade alertas para el siguiente incidente aprende poco; uno que elimina el origen del fallo aprende mucho más.
+
+## Errores frecuentes
+
+- **Buscar culpables en la reunión.** La gente deja de contar lo que hizo y el siguiente incidente llega peor informado.
+- **Acciones sin dueño.** Una tarea sin responsable no se hace; queda en la lista para siempre.
+- **Postmortems solo para las caídas grandes.** Los incidentes pequeños repetidos muestran patrones que las grandes no revelan.
+- **Ignorar la comunicación.** Un cliente informado tolera mejor un fallo que uno que se entera por su cuenta.
+
+## Cuándo no aplica
+
+Un error sin impacto en usuarios, corregido en minutos, no necesita una ceremonia completa. Una nota breve con la causa y la
+acción basta. La profundidad del postmortem debe crecer con el impacto.
+
+## Checklist
+
+- [ ] ¿Las severidades tienen criterios medibles definidos antes del incidente?
+- [ ] ¿Cada incidente grave tiene coordinador, operador y responsable de comunicación?
+- [ ] ¿La mitigación se decide antes que el diagnóstico completo?
+- [ ] ¿El postmortem se escribe en términos del sistema y no de personas?
+- [ ] ¿Cada acción tiene dueño, fecha y forma de comprobación?
+
+**Para profundizar:** [observabilidad, SLI, SLO y presupuesto de error](/docs/observabilidad-slo-presupuesto-error) explica cómo
+detectar el incidente y medir su impacto, y [resiliencia en sistemas distribuidos](/docs/resiliencia-sistemas-distribuidos)
+describe los mecanismos que limitan el daño antes de que haga falta un postmortem.
+
+## Fuentes
+
+- Betsy Beyer, Chris Jones, Jennifer Petoff y Niall Richard Murphy (eds.), _Site Reliability Engineering_ (2016).
+- Betsy Beyer, Niall Richard Murphy, David K. Rensin, Kent Kawahara y Stephen Thorne (eds.), _The Site Reliability Workbook_ (2018).
+- Sidney Dekker, _Just Culture: Balancing Safety and Accountability_ (2007).
+- John Allspaw, "Blameless PostMortems and a Just Culture" (2012).

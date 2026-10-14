@@ -1,0 +1,96 @@
+---
+title: 'Extensible architecture: plugins and extension points'
+description: 'When to open a system to extensions, stable extension points with a permissioned sandbox, and versioning and deprecation of the plugin API.'
+category: diseno
+tags:
+  - plugins
+  - extensibility
+  - public-api
+  - compatibility
+order: 28
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Plugins talk to the core only through its ports'
+---
+
+# Extensible architecture: plugins and extension points
+
+Opening a product to extensions has a clear appeal: third parties solve cases you would not prioritise, and
+the product grows without your team writing every integration. But an extension API is a public contract. What
+you publish today, someone will use for years, and changing it later breaks everyone at once. That makes the
+decision a governance one before it is a technical one.
+
+## When to open the system and when not to
+
+Opening pays off when a stable set of cases varies between customers (export formats, connectors to external
+systems, validation rules), and when the cost of maintaining every variant inside the core exceeds the cost of
+publishing an interface. It does not pay off while the product changes every week: each extension point freezes
+part of the design.
+
+A rough rule of thumb, not a law: if more than half of the feature requests fall into the same family, that family is a candidate
+for an extension point. If they are isolated cases, solve them in the core.
+
+## Extension points with a stable contract
+
+An extension point is a port: a small, documented, versioned interface that the core calls at defined moments.
+"Before saving an order", "when generating an invoice" or "when receiving an event" are examples. The core never
+exposes its internal classes or tables; if a plugin needs a piece of data, the port hands it over in a transfer
+object.
+
+The dependency rule applies as in any hexagonal architecture: the core does not know the plugins. The plugins
+depend on the port, and the plugin registry lives at the boundary.
+
+## Sandbox and permissions
+
+A plugin is third-party code running inside or next to your process, so it needs two barriers. The first is a
+sandbox, which isolates memory, execution time and network access. The second is permissions: each plugin declares
+which data and capabilities it needs, and the user approves them before installing.
+
+Permissions must be explicit and minimal. An export plugin that asks to read every order when it only needs the
+last month should be refused or asked to narrow its scope.
+
+## Versioning and compatibility
+
+The extension API has its own version, separate from the product version. A compatible change, such as adding an
+optional field, does not bump the major version. A breaking change, such as removing a field or changing a type,
+requires a new version, with the old one supported for an announced period.
+
+A worked example: an extension API with 40 installed plugins, 12 of which use an extension point due for removal.
+That is 30% of the ecosystem. Before retiring it, contact those 12 authors and give them a deadline, rather than
+breaking 30% of the installations in a single release.
+
+## Deprecation with a date
+
+A deprecation without a date is an empty promise. Every obsolete point should announce the version in which it stops
+working, warn in the documentation and in the API response, and stop accepting new plugins before it is retired. The
+shutdown is communicated early enough for authors to migrate.
+
+## Common mistakes
+
+- Exposing the core's internal model as the extension API.
+- Publishing extension points with no real use case behind them.
+- Granting broad permissions by default so as not to "block" authors.
+- Changing the extension API without a version or a deadline.
+
+## When it does not apply
+
+An internal product used by a single team does not need plugins: code inside the core and good module cohesion are
+enough. Opening the system carries a governance cost that only pays off if an ecosystem exists.
+
+## Checklist
+
+- [ ] Is there a family of cases that varies between customers and justifies an extension point?
+- [ ] Is the extension point a small, documented, versioned contract?
+- [ ] Do plugins run in a sandbox with explicit permissions?
+- [ ] Is there a versioning and deprecation policy with dates?
+- [ ] Do you know which plugins depend on each point before retiring it?
+
+**Further reading:** [hexagonal architecture](/docs/arquitectura-hexagonal) explains why the core must not depend on
+its adapters, and [architectural styles](/docs/estilos-arquitectonicos) helps decide whether a system should be
+extensible from the start.
+
+## Sources
+
+- Alistair Cockburn, "Hexagonal Architecture" (2005), also known as ports and adapters.
+- Tom Preston-Werner, _Semantic Versioning 2.0.0_ (2013).
+- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020).

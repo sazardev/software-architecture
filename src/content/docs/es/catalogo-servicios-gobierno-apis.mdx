@@ -1,0 +1,95 @@
+---
+title: 'Catálogo de servicios y gobierno de APIs'
+description: 'Un catálogo de servicios con dueño, estado y contrato por servicio, reglas de gobierno ligeras y un ciclo de vida de API con fechas de deprecación y retiro.'
+category: decisiones
+tags:
+  - catalogo
+  - gobierno
+  - apis
+  - propiedad
+order: 18
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Cada servicio tiene dueño, estado y contrato; las APIs obsoletas tienen fecha de retiro'
+---
+
+# Catálogo de servicios y gobierno de APIs
+
+Con diez servicios, todo el mundo sabe quién mantiene qué. Con cien, nadie lo sabe. Aparecen APIs
+duplicadas que hacen lo mismo, servicios huérfanos que nadie se atreve a apagar y consumidores que dependen
+de una versión que lleva dos años sin mantenimiento. El catálogo de servicios es el registro que evita
+ese deterioro: una lista viva donde cada servicio tiene dueño, estado y contrato publicado.
+
+## Qué guarda cada entrada
+
+Cada servicio necesita, como mínimo, cuatro datos: el equipo dueño y un canal de contacto, el estado
+(activo, en migración, obsoleto o retirado), el contrato publicado (la especificación de su API o sus
+eventos) y la dependencia de otros servicios. Con eso se puede responder «¿quién cambia esto?» y «¿qué se
+rompe si lo apago?» sin llamar a nadie.
+
+La relación con la estructura de equipos es directa. Team Topologies sugiere que cada equipo sea dueño de
+un flujo o de una plataforma. El catálogo hace visible esa propiedad: un servicio sin dueño es una decisión
+pendiente, no un hecho normal.
+
+Un ejemplo con cifras: un catálogo de 120 servicios en el que 18 no tienen dueño. Son el 15 %. Esa cifra
+es un indicador de gobierno que conviene revisar cada trimestre, porque casi siempre esos servicios son los
+que fallan en el peor momento.
+
+## Descubrir lo que existe
+
+Un catálogo solo sirve si se consulta antes de construir. Antes de crear un servicio de pedidos nuevo, el
+equipo debe ver si ya existe uno. La búsqueda por dominio, por dueño y por tecnología evita la duplicación,
+que es uno de los costos más silenciosos de una organización grande.
+
+Mantener el catálogo al día exige automatizar lo posible: el registro se actualiza desde la plantilla de
+despliegue del servicio, no desde un formulario que alguien debe recordar llenar.
+
+## Gobierno ligero, no burocracia
+
+El gobierno debe ser una red de mínimos, no un comité. Basta con reglas verificables: todo servicio en
+producción tiene dueño, todo contrato público está versionado y todo cambio que rompe el contrato se
+anuncia. Las reglas que requieren aprobación manual para cada cambio se vuelven un cuello de botella, y el
+equipo empieza a evitar el catálogo.
+
+Las reglas se comprueban igual que cualquier otra característica de la arquitectura: en el pipeline,
+no en una reunión.
+
+## Ciclo de vida y deprecación con fechas
+
+Una API no se apaga de un día para otro. El ciclo habitual tiene cuatro estados: activa, obsoleta (sigue
+funcionando, pero avisa y no admite consumidores nuevos), retirada (ya no responde) y eliminada del catálogo.
+Cada paso tiene una fecha. Un ejemplo: una API obsoleta el 1 de marzo con retiro el 1 de septiembre concede
+seis meses para migrar. Si hay consumidores activos al llegar la fecha, el retiro se pospone con una decisión
+registrada, no con una excepción silenciosa.
+
+El encabezado HTTP `Sunset`, definido en la RFC 8594, permite anunciar la fecha de retiro en cada respuesta.
+
+## Errores frecuentes
+
+- Un catálogo que se llena una vez y nunca se actualiza.
+- Servicios sin dueño que siguen recibiendo tráfico.
+- Deprecar sin fecha, de modo que la API sobrevive por inercia.
+- Aprobaciones manuales para cada cambio que bloquean a los equipos.
+
+## Cuándo no aplica
+
+Con un equipo pequeño y pocos servicios, un documento compartido basta. El catálogo formal se justifica cuando
+hay varios equipos, decenas de servicios y consumidores que no conoces por nombre.
+
+## Checklist
+
+- [ ] ¿Cada servicio en producción tiene dueño y canal de contacto?
+- [ ] ¿El estado de cada servicio está actualizado?
+- [ ] ¿El contrato publicado coincide con lo que realmente se despliega?
+- [ ] ¿Cada API obsoleta tiene fecha de retiro?
+- [ ] ¿Las reglas de gobierno se comprueban automáticamente?
+
+**Para profundizar:** [Conway y Team Topologies](/docs/ley-de-conway-team-topologies) explica por qué el
+dueño de un servicio debe ser un equipo, y [diseño de APIs](/docs/diseno-de-apis) describe cómo versionar
+y evolucionar contratos sin romper consumidores.
+
+## Fuentes
+
+- Matthew Skelton y Manuel Pais, _Team Topologies_ (2019).
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020).
+- Erik Wilde, _The Sunset HTTP Header Field_, RFC 8594 (2019).

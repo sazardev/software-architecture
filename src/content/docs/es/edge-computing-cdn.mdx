@@ -1,0 +1,92 @@
+---
+title: 'Edge y CDN: qué ejecutar en el borde'
+description: 'Qué sirve una CDN, qué puede ejecutarse en el borde, cómo se reparten la latencia y la caché, y cuándo acercar la lógica al usuario no compensa.'
+category: tendencias
+tags:
+  - edge
+  - cdn
+  - latencia
+  - cache
+  - despliegue
+order: 8
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Sirve desde el borde más cercano; el origen solo si falla la caché'
+---
+
+# Edge y CDN: qué ejecutar en el borde
+
+Una red de distribución de contenidos (CDN) lleva copias de los recursos a nodos cercanos al usuario. Hoy esos nodos también
+pueden ejecutar pequeñas funciones antes de responder. La pregunta de arquitectura ya no es si usar el borde, sino qué le
+conviene ejecutar en él y qué debe quedarse en el origen.
+
+## Qué sirve una CDN
+
+Funciona bien con respuestas idénticas para muchos usuarios durante un tiempo: imágenes, scripts, hojas de estilo, páginas
+públicas o respuestas de solo lectura. Lo que depende de cada usuario, como el saldo de una cuenta, debe ir al origen o
+personalizarse explícitamente. Una regla práctica: cachear lo que es igual para muchos y cambia poco, y dejar en el origen lo
+que es único por usuario o cambia en cada escritura.
+
+## Latencia frente a coste
+
+Acercar la respuesta reduce la latencia de red, pero no el cálculo ni las consultas a datos. Con un usuario a 20 ms del borde y
+a 200 ms del origen, un 90 % de aciertos da una latencia media de 0,9 × 20 + 0,1 × (20 + 200) = 40 ms. Con un 60 % de aciertos
+sube a 0,6 × 20 + 0,4 × 220 = 100 ms. Lo que decide la experiencia es la tasa de aciertos, no solo la proximidad.
+
+El coste también cambia: cada nodo que ejecuta código se factura por invocación y por tiempo, y el tráfico que sale del borde
+tiene su propia tarifa. Un cálculo que solo mire la latencia puede descartar una opción más cara de lo que parece.
+
+## Qué puede ejecutarse en el borde
+
+Las funciones en el borde sirven para decisiones pequeñas que no necesitan datos completos: reescribir una URL, elegir una
+variante de página según el idioma, validar una cabecera o comprobar un token firmado. No sirven para lógica que necesita muchos
+datos o estado compartido, como calcular un precio que consulta el inventario. Los proveedores limitan tiempo, memoria y acceso
+a datos; si una función necesita tres consultas a una base central, probablemente pertenece al origen.
+
+## Invalidación y TTL
+
+El TTL fija cuánto puede estar desactualizada una copia. Un TTL largo reduce la carga del origen pero tarda en reflejar un cambio;
+uno corto reduce el riesgo pero aumenta las peticiones al origen. Una estrategia habitual combina TTL moderados con invalidación
+explícita al publicar, y sirve la copia antigua mientras se renueva en segundo plano si unos segundos de retraso son aceptables.
+La invalidación tarda en llegar a todos los nodos, así que durante ese tiempo conviven versiones.
+
+## Coherencia entre nodos
+
+Cada nodo tiene su caché, y dos usuarios de regiones distintas pueden ver versiones diferentes un rato. Para recursos que varían
+por usuario, la clave de caché debe incluir las cabeceras o cookies que cambian la respuesta; si no, un usuario puede recibir la
+página de otro. El hashing consistente reparte las claves entre nodos para no duplicar lo mismo en todos.
+
+## Datos que deben quedarse en el origen
+
+Las escrituras, las transacciones y los datos personales sensibles deben quedarse en el origen o en una región controlada. Llevarlos
+al borde multiplica las copias y complica el cumplimiento de la normativa de protección de datos.
+
+## Cuándo el borde no compensa
+
+No compensa cuando las peticiones casi no se repiten, cuando el usuario ya está cerca del origen, cuando la lógica necesita datos
+centrales o cuando el equipo no puede observar código distribuido en muchos puntos. Entonces una caché bien configurada en el
+origen suele ser más barata y más fácil de operar.
+
+## Errores frecuentes
+
+- Cachear respuestas personalizadas sin incluir las cabeceras que las diferencian.
+- Mover al borde una lógica que consulta una base central en cada petición.
+- Medir solo la latencia media, sin la tasa de aciertos ni el percentil 95.
+- Asumir que la invalidación es inmediata en todas las regiones.
+
+## Checklist
+
+- [ ] ¿Qué respuestas son idénticas para muchos usuarios, y durante cuánto tiempo?
+- [ ] ¿La clave de caché incluye todo lo que cambia la respuesta?
+- [ ] ¿Hay plan de invalidación, y se aceptan versiones mezcladas durante la propagación?
+- [ ] ¿La lógica en el borde es pequeña y no necesita datos centrales?
+- [ ] ¿Los datos personales y las escrituras se quedan en una región controlada?
+
+**Para profundizar:** [caché, colas y streaming](/docs/caching-colas-streaming) explica los patrones de caché e invalidación;
+[modelos de despliegue en la nube](/docs/modelos-de-despliegue-nube) sitúa el borde entre las opciones de despliegue.
+
+## Fuentes
+
+- Roy Fielding et al., RFC 9111, _HTTP Caching_ (2022).
+- David Karger et al., "Consistent Hashing and Random Trees", _ACM STOC_ (1997).
+- David Gourley y Brian Totty, _HTTP: The Definitive Guide_ (2002).

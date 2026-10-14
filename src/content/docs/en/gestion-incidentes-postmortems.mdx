@@ -1,0 +1,89 @@
+---
+title: 'Incidents and blameless postmortems'
+description: 'Incident roles, severities, communication and blameless postmortems that end in owned, dated actions.'
+category: practicas
+tags:
+  - incidents
+  - postmortem
+  - sre
+  - culture
+  - reliability
+order: 13
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'The postmortem looks for system failures, not culprits'
+---
+
+# Incidents and blameless postmortems
+
+An incident is not the moment to find out who did what; it is the moment to restore the service. And a postmortem is not for
+assigning blame; it is for understanding why the system allowed the failure. That distinction decides whether an organization
+learns from its outages or repeats them under another name. What we wrote about [observability and SLOs](/docs/observabilidad-slo-presupuesto-error)
+tells you when an incident has started; this article is about what comes next.
+
+## Roles during the incident
+
+A badly coordinated incident has too many people touching production at once. The remedy is to separate roles from the start:
+
+- **Incident commander.** Directs the response and sets priorities. The commander does not run commands; their job is to keep the team informed.
+- **Operations.** Whoever executes the mitigation: rolling back a deployment, turning off a flag, adding capacity.
+- **Communications.** Keeps customers and other areas informed with regular updates, even when there is no news.
+
+## Severities and decisions
+
+Severity must be defined before the incident, with measurable criteria: customer impact, data affected, error budget burned. Each
+level triggers a protocol: who is notified, how often updates go out, and when leadership is called. A severity that depends on the
+mood of whoever is responding is not useful.
+
+The most useful ordering rule is **mitigate before you understand**. If a rollback restores service in two minutes, do it and
+investigate the cause afterwards. Hunting for the root cause while the service is down prolongs the damage.
+
+## A worked example
+
+A payment bug affects 8 percent of transactions for 47 minutes. With 12,000 transactions per hour, that is 960 failures per hour: 752 failed operations in total. Had the commander triggered the rollback at minute 12 instead of minute 47, failures would have stopped at 192. The difference is
+not technical; it is procedural. Someone had to have the authority to roll back without waiting until everything was understood.
+
+## The blameless postmortem
+
+A postmortem should answer five questions: what happened, what the impact was, how it was detected, what was done to mitigate it, and what
+will change so it does not happen again. Each answer refers to the system: the alert came late, the deployment had no load test, the runbook
+did not exist. Writing "so-and-so did not review the change" adds nothing, because the next reviewer will not do better if the process allows it.
+
+John Allspaw popularized this idea as a learning culture: if people fear punishment, they hide mistakes and the system becomes opaque. Sidney
+Dekker distinguishes a just culture, which separates honest error from negligence, from a culture of generalized blame.
+
+## Actions with owners and dates
+
+A postmortem without actions is just a document. Each action needs an owner, a date and a way to verify it was completed. It helps to classify
+them: those that reduce the likelihood, those that improve detection and those that reduce the impact. A team that only adds alerts for the next
+incident learns little; one that removes the source of the failure learns much more.
+
+## Common mistakes
+
+- **Looking for culprits in the meeting.** People stop saying what they did, and the next incident arrives with worse information.
+- **Actions without owners.** A task without a person responsible does not get done; it stays on the list forever.
+- **Postmortems only for big outages.** Repeated small incidents show patterns that the large ones do not.
+- **Ignoring communication.** An informed customer tolerates a failure better than one who finds out on their own.
+
+## When it does not apply
+
+An error with no user impact, fixed in minutes, does not need a full ceremony. A short note with the cause and the action is enough.
+
+## Checklist
+
+- [ ] Are severities defined with measurable criteria before any incident?
+- [ ] Does every serious incident have a commander, an operator and a communications owner?
+- [ ] Is mitigation decided before the full diagnosis?
+- [ ] Is the postmortem written in terms of the system rather than people?
+- [ ] Does every action have an owner, a date and a way to verify it?
+
+**Further reading:** [observability, SLIs, SLOs and error budgets](/docs/observabilidad-slo-presupuesto-error) explains how to detect the
+incident and measure its impact, and [resilience in distributed systems](/docs/resiliencia-sistemas-distribuidos) describes the mechanisms
+that limit the damage before a postmortem is needed.
+
+## Sources
+
+- Betsy Beyer, Chris Jones, Jennifer Petoff and Niall Richard Murphy (eds.), _Site Reliability Engineering_ (2016).
+- Betsy Beyer, Niall Richard Murphy, David K. Rensin, Kent Kawahara and Stephen Thorne (eds.), _The Site Reliability Workbook_ (2018).
+- Sidney Dekker, _Just Culture: Balancing Safety and Accountability_ (2007).
+- John Allspaw, "Blameless PostMortems and a Just Culture" (2012).

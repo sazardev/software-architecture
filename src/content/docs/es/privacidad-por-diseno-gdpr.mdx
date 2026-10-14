@@ -1,0 +1,83 @@
+---
+title: 'Privacidad por diseño: datos, retención y borrado'
+description: 'Minimización, base legal, retención con plazos y borrado que llega a copias y respaldos: la privacidad como requisito de arquitectura.'
+category: practicas
+tags:
+  - privacidad
+  - gdpr
+  - datos
+  - retencion
+  - seguridad
+order: 12
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'El borrado debe propagarse a todas las copias'
+---
+
+# Privacidad por diseño: datos, retención y borrado
+
+La privacidad suele llegar tarde: un equipo construye el producto, guarda todo «por si acaso» y, cuando
+alguien pide borrar sus datos, descubre que hay copias en diez sitios. El Reglamento General de Protección
+de Datos europeo (RGPD) lo prevé en su artículo 25: la protección de datos debe incorporarse desde el diseño
+y, por defecto, solo deben tratarse los datos necesarios. Es un requisito de arquitectura, no un trámite.
+
+## Cuatro decisiones que cambian el diseño
+
+La primera es la **minimización**: el principio del artículo 5 pide que los datos sean adecuados, pertinentes
+y limitados a lo necesario. Si el sistema de envíos no necesita la fecha de nacimiento, no debe recibirla. Cada
+campo que no se recoge es un campo que no hay que proteger, cifrar, respaldar ni borrar.
+
+La segunda es la **base legal y el consentimiento**. El consentimiento tiene que poder demostrarse y retirarse
+con la misma facilidad con que se dio. Por eso conviene guardarlo como dato: qué se aceptó, cuándo, en qué
+versión del texto y para qué finalidad. Un consentimiento que solo vive en el código no sirve como prueba.
+
+La tercera es la **retención con plazos**. Cada tipo de dato necesita un plazo de conservación y un motivo.
+Los registros de facturación pueden tener un plazo legal; los logs de navegación, uno mucho más corto. Un
+plazo que nadie aplica es igual a no tener plazo.
+
+La cuarta es el **borrado que llega a todas partes**. El artículo 17 reconoce el derecho de supresión, pero
+los datos viven en la base principal, en respaldos, en logs, en la analítica y en las cachés. Si el borrado
+solo afecta a la primera, el derecho no se cumple. Hace falta un inventario de dónde está cada dato personal
+y un proceso que recorra ese inventario.
+
+## Un ejemplo con cifras
+
+Una plataforma tiene 200.000 usuarios que piden borrarse en un año. Si cada solicitud toca cinco almacenes, son
+un millón de operaciones de borrado. Si el proceso es manual y cada una tarda 10 minutos, son 166.667 horas de
+trabajo, unas 83 personas-año a 2.000 horas por persona. Con un inventario y un trabajo automático que recorre los
+cinco almacenes, el coste baja a un proceso de minutos por solicitud y a una verificación mensual. La diferencia
+no es de cumplimiento, sino de viabilidad.
+
+Los respaldos merecen una nota propia. Borrar de un respaldo es caro; lo habitual es documentar que el dato
+caduca cuando el respaldo rota y restaurar, si hace falta, aplicando de nuevo las supresiones pendientes.
+
+## Errores frecuentes
+
+- **Tratar la privacidad como un documento.** La política de privacidad no protege nada si el sistema conserva
+  todo.
+- **Olvidar los logs.** Un dato personal impreso en un log de error sobrevive a cualquier borrado de la base.
+- **Confundir cifrado con anonimización.** Un dato cifrado sigue siendo personal si la clave existe.
+- **No tener inventario.** Sin saber dónde está cada dato, el borrado es una promesa vacía.
+
+## Cuándo no aplica
+
+Si el sistema no trata datos personales, estas decisiones no son necesarias. Tampoco reemplazan el asesoramiento
+jurídico: el alcance de la base legal y los plazos concretos dependen del caso y de la jurisdicción.
+
+## Checklist
+
+- [ ] ¿Cada campo personal tiene una finalidad documentada?
+- [ ] ¿El consentimiento se guarda como dato, con versión y fecha?
+- [ ] ¿Cada tipo de dato tiene un plazo de conservación aplicado por un proceso?
+- [ ] ¿Existe un inventario de los almacenes donde vive cada dato personal, incluidos logs y respaldos?
+- [ ] ¿El borrado se verifica y deja constancia?
+
+**Para profundizar:** [seguridad por diseño](/docs/seguridad-por-diseno) trata los principios generales de seguridad,
+y [redes, identidad y seguridad en la nube](/docs/redes-identidad-seguridad-nube) cubre el control de acceso a esos datos.
+
+## Fuentes
+
+- Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo (Reglamento General de Protección de Datos), artículos 5, 17 y 25.
+- Ann Cavoukian, _Privacy by Design: The 7 Foundational Principles_ (2009).
+- NIST, _Privacy Framework: A Tool for Improving Privacy through Enterprise Risk Management_ (versión 1.0, 2020).
+- ISO/IEC 27701:2019, _Técnicas de seguridad: extensión de ISO/IEC 27001 y 27002 para la gestión de la información de privacidad_.

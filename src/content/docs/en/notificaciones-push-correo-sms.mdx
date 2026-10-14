@@ -1,0 +1,93 @@
+---
+title: 'Notifications: push, email and SMS reliably'
+description: 'A decoupled notification service with one queue per channel, user preferences, deduplication and retries that avoid losses and reduce duplicates.'
+category: diseno
+tags:
+  - notifications
+  - queues
+  - preferences
+  - retries
+order: 27
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'One service, one queue per channel: a failed provider does not stall the others'
+---
+
+# Notifications: push, email and SMS reliably
+
+A notification looks trivial: an event happens and the user gets a message. In practice it mixes three hard
+problems. Each channel has its own provider and failure modes, users have preferences that must be respected,
+and retries can turn one message into ten. If the logic lives inside every business service, the result is
+duplicated and chaotic.
+
+## A decoupled service
+
+The sensible architecture separates two things. Business services publish events ("order shipped"), and a
+notification service decides what to send, to whom and through which channel. The producer does not know
+whether the user has push enabled or which provider handles email.
+
+That service checks the user's preferences and consent, and queues one message per channel. One queue per
+channel isolates failures: if the SMS provider goes down, the SMS queue grows while email keeps flowing.
+
+## A worked example
+
+Suppose one million users receive two notifications a day, and 30% of them go by SMS. The total volume is
+2 million a day, about 23 per second on average. SMS accounts for 600,000 a day, about 7 per second.
+
+If the SMS provider is down for two hours, the queue accumulates 7 × 7,200 seconds, about 50,000 messages.
+When the provider returns, those messages must go out at a rate the provider tolerates, not all at once. That
+calculation decides how much resend capacity to reserve.
+
+## Preferences and consent
+
+Preferences should live in one place, with consent stored as separate, dated data. A user who withdrew consent
+for marketing must not receive a promotion, even if their email address is valid. This check runs before
+queueing, not after, because a message already sent cannot be recalled.
+
+## Deduplication and frequency limits
+
+An event can arrive twice, and a retry can repeat a send that did go through. Deduplication uses an
+idempotency key per notification and per channel, stored for a period that covers the retries. Frequency
+limits, such as at most three messages a day per user, are enforced at the same point so that no channel can
+bypass them.
+
+## Retries that do not lose messages
+
+Each send can fail transiently. Retries use exponential backoff with jitter, so they do not bunch together.
+After several attempts the message moves to a dead-letter queue for review instead of disappearing silently.
+No message should be left without a state: it is delivered, retrying or under review.
+
+A send may have been accepted even when the provider's response arrives late or is lost. So the retry should
+reuse the same idempotency key, if the provider supports it, and the message state must be updated with the
+identifier the provider returns. Without idempotency support, delivery is at least once: duplicates are possible
+and must be accepted as a risk.
+
+## Common mistakes
+
+- Sending from the business service and repeating the preference logic in each one.
+- A single queue for all channels, so that one slow channel stalls the rest.
+- Retrying without a limit or jitter, and saturating the provider when it recovers.
+- Discarding failed messages without recording them.
+
+## When it does not apply
+
+If the application sends one kind of email with no complex preferences, a module inside the business service
+is enough. The dedicated service is justified when there are several channels, several producers and consent
+requirements.
+
+## Checklist
+
+- [ ] Do business services only publish events, without choosing the channel?
+- [ ] Does each channel have its own queue and resend capacity?
+- [ ] Is consent checked before queueing?
+- [ ] Does every notification carry an idempotency key?
+- [ ] Are failed messages recorded for review?
+
+**Further reading:** [caching, queues and streaming](/docs/caching-colas-streaming) compares delivery semantics,
+and [sagas, outbox and idempotency](/docs/sagas-outbox-idempotencia) explains how to publish events without losing them.
+
+## Sources
+
+- Gregor Hohpe and Bobby Woolf, _Enterprise Integration Patterns_ (2003).
+- Marc Brooker, "Exponential Backoff And Jitter", AWS Architecture Blog (2015).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).

@@ -1,0 +1,86 @@
+---
+title: 'Payments and the ledger: double entry without errors'
+description: 'Immutable double-entry postings, corrections by reversal, idempotent charges and reconciliation with the payment provider.'
+category: diseno
+tags:
+  - payments
+  - ledger
+  - accounting
+  - idempotency
+  - reconciliation
+order: 24
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Each correction is a new entry, never an edit'
+---
+
+# Payments and the ledger: double entry without errors
+
+A charge looks simple: the customer pays, the system records it. But once refunds, fees, taxes, partial payments
+and retries appear, the balance of an account depends on the order and the number of operations applied. The way to
+keep it correct is old: double-entry bookkeeping, described by Luca Pacioli in 1494, and a ledger that is written
+only through postings.
+
+## Immutable postings
+
+In double entry, every posting balances: its debits and credits add up to the same amount. A charge of 100 euros is one posting
+with cash debited 100 and revenue credited 100. If a posting is wrong, it is not edited: it is cancelled by a
+**reversal** that inverts the amounts, and the correct posting is recorded after it. The original stays.
+
+This changes the design. The ledger table is append-only; there is no `UPDATE` on amounts. Any balance is computed by
+summing postings, or kept as a projection that can be rebuilt from the history. The full history is the evidence of
+what happened and in which order, which is what an audit asks for.
+
+## Idempotent charges
+
+A charge can arrive twice: the customer retries, the provider resends a webhook, or a worker crashes after confirming
+the charge and before writing the posting. So every operation with an external effect carries an idempotency key,
+stored with the posting it produced. If the key already exists, the answer is the previous result, with no second
+posting and no second charge.
+
+## Reconciliation: the ledger against the provider
+
+The internal ledger is never the only source of truth. The payment provider keeps its own record, with its fees, its
+settlement delays and its refunds. Reconciliation compares both every day: each provider charge must have a posting,
+each posting must have a charge, and differences go to a review queue with an owner.
+
+## A worked example
+
+An order of 100 euros with a 3 percent fee (3 euros). The provider settles 97 euros. The postings are: cash 97 debit,
+bank fees 3 debit, revenue 100 credit. If the customer asks for a full refund of 100 euros, a reversal is recorded: revenue 100 debit, cash 100 credit. Cash now shows minus 3 euros: that is the fee the provider does not return, and it stays as an expense. If the refund posting had been 97 instead of 100, reconciliation would flag a 3-euro difference on the settlement date.
+
+## Event order
+
+Payment events can arrive out of order: a refund before the charge, or a late confirmation. The ledger must tolerate
+it. Reasonable rules: a refund can only reverse existing charges, every posting references the operation that caused it,
+and state transitions are explicit. An out-of-order event is queued until its dependencies exist, rather than applied blindly.
+
+## Common mistakes
+
+- **Editing amounts.** A correction on an existing posting destroys the audit trail.
+- **Trusting the webhook.** Without reconciliation, one lost event is a wrong balance forever.
+- **Mixing currency and rounding.** Store amounts in the smallest currency unit, not in floating-point decimals.
+- **Confusing status with postings.** "Paid" is an order status; money moves through postings.
+
+## When it does not apply
+
+For a shop with simple charges and no refunds or complex taxes, a transactions table with idempotency may be enough.
+A ledger pays off when there are accounting obligations, several providers, or a need to audit every cent.
+
+## Checklist
+
+- [ ] Does every posting balance, with debits equal to credits?
+- [ ] Are corrections reversals, and is the history append-only?
+- [ ] Does every operation with an external effect have an idempotency key stored with its posting?
+- [ ] Is there a daily reconciliation with the provider, with an owner for differences?
+- [ ] Are amounts stored in the smallest unit of the currency?
+
+**Further reading:** [sagas, outbox and idempotency](/docs/sagas-outbox-idempotencia) explains how to coordinate a charge
+with other services without losing or duplicating operations, and [data, ACID and isolation](/docs/datos-acid-y-aislamiento)
+covers the transactional guarantees behind the postings.
+
+## Sources
+
+- Luca Pacioli, _Summa de arithmetica, geometria, proportioni et proportionalita_ (1494), treatise on double-entry bookkeeping.
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017), chapters on transactions and consistency.
+- Pat Helland, "Life beyond Distributed Transactions: an Apostate's Opinion" (2007).

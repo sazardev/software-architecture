@@ -1,0 +1,104 @@
+---
+title: 'Búsqueda en la aplicación: cuándo basta la base'
+description: 'Cuándo basta un índice de la base de datos, cuándo conviene un índice invertido dedicado y cómo mantenerlo sincronizado con la fuente sin perder cambios.'
+category: diseno
+tags:
+  - busqueda
+  - indices
+  - sincronizacion
+  - relevancia
+order: 26
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'El índice es dato derivado: se alimenta de la fuente y se reconstruye'
+---
+
+# Búsqueda en la aplicación: cuándo basta la base
+
+Casi toda aplicación necesita buscar. La primera solución suele ser un `LIKE` sobre la tabla
+de productos, y funciona hasta que no funciona: con unos cientos de miles de filas, la consulta
+recorre el texto completo de cada fila, y con millones se vuelve lenta y sin orden útil. La
+pregunta de arquitectura no es qué motor de búsqueda elegir, sino cuándo hace falta uno.
+
+## Cuándo basta la base de datos
+
+Un índice B-tree sobre una columna acelera igualdades, rangos y prefijos. Para un catálogo
+pequeño, con búsquedas por código, nombre exacto o filtros por categoría, la base de datos
+resuelve el problema sin infraestructura nueva. Eso tiene un costo de mantenimiento bajo, y
+rara vez se encarece.
+
+Lo que la base no hace bien es buscar palabras dentro de un texto, tolerar errores tipográficos
+o ordenar por relevancia. Si el requisito incluye esas tres cosas, el índice tradicional deja de
+servir.
+
+## Índice invertido: la estructura de la búsqueda de texto
+
+Un índice invertido guarda, para cada término, la lista de documentos donde aparece. Buscar
+«zapato» consiste en leer una lista, no en recorrer el catálogo. Sobre esa estructura se aplican
+análisis del texto (minúsculas, raíces de palabras, sinónimos) y una puntuación de relevancia.
+
+Un ejemplo con cifras: un catálogo de 3 millones de productos y un término como «zapato» que
+aparece en 12.000 de ellos. El índice devuelve esos 12.000 identificadores, los puntúa y entrega
+los 20 primeros. Sin el índice, la misma consulta exige leer los 3 millones de filas.
+
+## Sincronizar sin perder cambios
+
+El índice es un dato derivado. La fuente de verdad sigue siendo la base, y el índice debe
+reflejarla. Hay dos caminos:
+
+- **Escritura doble:** la aplicación escribe en la base y en el índice. Es simple, pero si la
+  segunda escritura falla, quedan datos desincronizados sin que nadie lo note.
+- **Captura de cambios:** un proceso lee el registro de cambios de la base y actualiza el
+  índice a partir de él. Es más robusto porque el índice solo reacciona a lo que la base
+  confirmó.
+
+Con captura de cambios, la pregunta clave es el retraso. Si llegan 200 eventos por segundo y el
+indexador procesa 150, el atraso crece 50 eventos por segundo: en una hora son 180.000
+cambios pendientes. Hay que medir ese retraso y tratarlo como un indicador operativo.
+
+## Reindexado y relevancia
+
+Cambiar el análisis del texto o el esquema del índice obliga a reindexar. Con 3 millones de
+documentos y un indexador que procesa 1.500 por segundo, la reconstrucción completa tarda 2.000
+segundos, unos 33 minutos. La práctica habitual es construir el índice nuevo en paralelo, validarlo
+y cambiar el alias de lectura cuando esté listo.
+
+La relevancia también es una decisión de diseño. Un resultado puede ser correcto y aun así
+aparecer en el puesto 40. Conviene medir la calidad con un conjunto de consultas reales y
+revisar esos resultados antes de tocar la fórmula.
+
+## Consistencia de los resultados
+
+Un resultado de búsqueda puede estar ligeramente atrasado respecto a la base. Para un catálogo
+eso es aceptable: un producto recién agotado puede aparecer unos segundos. Para un inventario
+crítico no lo es, y la operación de compra debe volver a leer la base antes de confirmar.
+
+## Errores frecuentes
+
+- Usar `LIKE` con comodín al inicio y creer que es una búsqueda de texto.
+- Tratar el índice como fuente de verdad y no poder reconstruirlo.
+- No medir el retraso de sincronización.
+- Cambiar el análisis del texto sin reindexar y obtener resultados inconsistentes.
+
+## Cuándo no aplica
+
+Si el catálogo es pequeño y las búsquedas son por campos exactos, un índice de la base es la
+mejor opción. Un motor dedicado añade operación, monitoreo y costo; solo se justifica cuando la
+búsqueda de texto y la relevancia son parte del producto.
+
+## Checklist
+
+- [ ] ¿Las búsquedas requieren texto libre, tolerancia a errores o relevancia?
+- [ ] ¿La base de datos resuelve el caso sin infraestructura nueva?
+- [ ] ¿El índice puede reconstruirse desde la fuente en un tiempo aceptable?
+- [ ] ¿Se mide el retraso entre la base y el índice?
+- [ ] ¿Hay un conjunto de consultas reales para evaluar la relevancia?
+
+**Para profundizar:** [datos, ACID y aislamiento](/docs/datos-acid-y-aislamiento) explica qué
+garantiza la base antes de confiar en un índice, y [caché, colas y streaming](/docs/caching-colas-streaming)
+describe los flujos de cambios que alimentan la sincronización.
+
+## Fuentes
+
+- Christopher D. Manning, Prabhakar Raghavan y Hinrich Schütze, _Introduction to Information Retrieval_ (2008).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).

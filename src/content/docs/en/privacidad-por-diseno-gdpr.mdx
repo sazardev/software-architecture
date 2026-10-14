@@ -1,0 +1,80 @@
+---
+title: 'Privacy by design: data, retention and deletion'
+description: 'Minimization, legal basis, retention periods and deletion that reaches copies and backups: privacy as an architecture requirement.'
+category: practicas
+tags:
+  - privacy
+  - gdpr
+  - data
+  - retention
+  - security
+order: 12
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Deletion must reach every copy'
+---
+
+# Privacy by design: data, retention and deletion
+
+Privacy usually arrives late. A team builds the product, keeps everything "just in case", and when someone asks
+for their data to be deleted, it discovers copies in ten places. The European General Data Protection Regulation
+(GDPR) anticipates this in Article 25: data protection must be built in by design and by default, so that only
+the data needed is processed. It is an architecture requirement, not paperwork.
+
+## Four decisions that change the design
+
+The first is **minimization**. The principle in Article 5 asks that data be adequate, relevant and limited to what
+is necessary. If the shipping service does not need a date of birth, it should never receive one. Every field you
+do not collect is a field you do not have to protect, encrypt, back up or delete.
+
+The second is **legal basis and consent**. Consent must be demonstrable and as easy to withdraw as it was to give.
+That is why it is worth storing as data: what was accepted, when, under which text version, and for which purpose.
+Consent that lives only in application code is not evidence.
+
+The third is **retention with periods**. Each category of data needs a retention period and a reason. Billing records
+may have a legal period; navigation logs usually need a much shorter one. A period that nobody enforces is the same
+as no period at all.
+
+The fourth is **deletion that reaches everywhere**. Article 17 grants the right to erasure, but data lives in the main
+database, in backups, in logs, in analytics and in caches. If deletion only touches the first, the right is not met.
+You need an inventory of where each personal data item lives and a process that walks that inventory.
+
+## A worked example
+
+A platform has 200,000 users who ask to be deleted in one year. If each request touches five stores, that is one
+million deletion operations. If the process is manual and each takes 10 minutes, that is 166,667 hours, roughly
+83 person-years at 2,000 hours per person. With an inventory and an automated job that walks the five stores, each
+request takes minutes and the result is verified monthly. The difference is not only compliance; it is feasibility.
+
+Backups deserve their own note. Deleting from a backup is expensive, so the usual approach is to document when
+the data expires as backups rotate, and, if a restore is needed, to reapply the pending deletions afterwards.
+
+## Common mistakes
+
+- **Treating privacy as a document.** A privacy policy protects nothing if the system keeps everything.
+- **Forgetting logs.** A personal data item written into an error log survives any deletion from the database.
+- **Confusing encryption with anonymization.** Encrypted data remains personal while the key exists.
+- **Having no inventory.** If you do not know where each item lives, deletion is an empty promise.
+
+## When it does not apply
+
+If the system does not process personal data, these decisions are not needed. They also do not replace legal advice:
+the scope of the legal basis and the exact periods depend on the case and the jurisdiction.
+
+## Checklist
+
+- [ ] Does every personal data field have a documented purpose?
+- [ ] Is consent stored as data, with version and date?
+- [ ] Does each data category have a retention period enforced by a process?
+- [ ] Is there an inventory of every store holding personal data, including logs and backups?
+- [ ] Is deletion verified and recorded?
+
+**Further reading:** [security by design](/docs/seguridad-por-diseno) covers the general security principles, and
+[network, identity and security in the cloud](/docs/redes-identidad-seguridad-nube) covers access control to that data.
+
+## Sources
+
+- Regulation (EU) 2016/679 of the European Parliament and of the Council (General Data Protection Regulation), Articles 5, 17 and 25.
+- Ann Cavoukian, _Privacy by Design: The 7 Foundational Principles_ (2009).
+- NIST, _Privacy Framework: A Tool for Improving Privacy through Enterprise Risk Management_, version 1.0 (2020).
+- ISO/IEC 27701:2019, _Security techniques: extension to ISO/IEC 27001 and ISO/IEC 27002 for privacy information management_.

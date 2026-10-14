@@ -1,0 +1,88 @@
+---
+title: 'Migrar a la nube: las 6R con criterio'
+description: 'Rehost, replatform, refactor, repurchase, retire y retain: cómo elegir la estrategia de migración a la nube por aplicación, con criterio.'
+category: nube
+tags:
+  - migracion
+  - nube
+  - rehost
+  - refactor
+order: 12
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Seis estrategias y un criterio por aplicación'
+---
+
+# Migrar a la nube: las 6R con criterio
+
+«Vamos a la nube» no es una estrategia. Es una dirección. Cada aplicación de una cartera necesita una respuesta distinta:
+moverla tal cual, adaptarla un poco, reescribirla, sustituirla por un producto, apagarla o dejarla donde está. Las
+seis R son un vocabulario para nombrar esas opciones, popularizado por un artículo de AWS de 2016. Lo
+valioso es el criterio con el que se asigna cada aplicación a una de ellas.
+
+## Las seis opciones
+
+- **Rehost.** Mover la aplicación a máquinas virtuales en la nube sin cambiar su código. Es la vía más rápida y la que menos
+  aprovecha la nube: el sistema sigue igual, solo cambia el lugar donde corre.
+- **Replatform.** Cambiar una pieza de la plataforma por un servicio gestionado, como pasar a una base de datos administrada,
+  sin tocar la lógica de negocio. Es el punto medio habitual.
+- **Refactor.** Rediseñar la aplicación para aprovechar la nube, por ejemplo dividiéndola en componentes escalables. Es la opción
+  de mayor valor y de mayor riesgo.
+- **Repurchase.** Sustituir la aplicación por un producto de terceros, como un CRM en lugar de uno propio.
+- **Retire.** Apagarla. Es la opción más subestimada: toda aplicación que se retira deja de costar mantenimiento, seguridad y tiempo.
+- **Retain.** Dejarla donde está por ahora, porque no compensa moverla todavía o porque tiene dependencias que lo impiden.
+
+## Criterios para asignar cada aplicación
+
+Para decidir se necesitan cuatro criterios, mirados juntos: el valor de negocio de la aplicación, su coste actual de operación, el
+riesgo de cambiarla y sus dependencias. Una aplicación de alto valor y alto cambio conviene refactorizarla; una de bajo valor y
+sin uso debe retirarse; una de valor medio con un servicio gestionado equivalente pide replatform.
+
+Las dependencias suelen decidir más que el resto. Una aplicación que consume datos de un sistema en el centro de datos no puede
+ir a la nube sin una estrategia para esos datos; moverla primero sin su vecino puede crear latencia o costos de transferencia
+que nadie previó.
+
+## Un ejemplo con cifras
+
+Una cartera de 40 aplicaciones. Un análisis sencillo da esta distribución: 12 rehost, 8 replatform, 4 refactor, 5 repurchase,
+6 retire y 5 retain. Las seis que se retiran eliminan el 15 % de las aplicaciones, pero su coste de operación es menor, así que
+el ahorro real depende de cuánto cuesta cada una, no de su número. Un error común es medir la migración por el número de
+aplicaciones movidas; importan el coste total y el riesgo de las que se mueven.
+
+Las cuatro refactorizaciones concentran la mayor parte del trabajo y del riesgo. Por eso conviene hacerlas después de las
+migraciones rápidas: el equipo ya tiene la plataforma, la observabilidad y los procesos de despliegue funcionando, y los
+cambios de diseño tienen una base más segura sobre la que apoyarse.
+
+## Por qué el orden importa
+
+Migrar primero lo fácil da aprendizaje y confianza, pero no debe dejar lo difícil para siempre. Hay un orden razonable: retirar lo
+que no sirve, mover lo que no cambia, replataformar lo que se beneficia de servicios gestionados y refactorizar lo que lo justifica. Empezar por la refactorización más compleja suele frenar todo el programa.
+
+## Errores frecuentes
+
+- **Mover todo con rehost por prisa.** Se paga la nube con la factura del centro de datos y apenas obtienes beneficio.
+- **Olvidar retirar.** Una cartera migrada sin retiros conserva aplicaciones que nadie usa.
+- **Asignar sin datos.** Sin coste actual por aplicación, cualquier estrategia es una opinión.
+- **Tratar la migración como un proyecto con fecha de fin.** Las aplicaciones migradas necesitan operación y control de costes desde el primer día.
+
+## Cuándo no aplica
+
+Para una aplicación única y pequeña, un análisis formal de las seis R es excesivo: basta con decidir y medir.
+
+## Checklist
+
+- [ ] ¿Cada aplicación tiene valor de negocio, coste actual y riesgo de cambio anotados?
+- [ ] ¿Las dependencias de datos y de red están identificadas antes de mover nada?
+- [ ] ¿Hay aplicaciones candidatas a retirar, y se han retirado?
+- [ ] ¿Las refactorizaciones se planifican después de tener observabilidad y despliegues estables?
+- [ ] ¿Hay un plan de salida, como se describe en el artículo sobre el costo de salir de la nube?
+
+**Para profundizar:** [cuánto costaría salir de tu nube](/docs/salida-de-la-nube) trata el costo de salida, y
+[modelos de despliegue en la nube](/docs/modelos-de-despliegue-nube) explica las opciones de servicio y de despliegue que
+aparecen al elegir cada estrategia.
+
+## Fuentes
+
+- Peter Mell y Timothy Grance, _The NIST Definition of Cloud Computing_, NIST SP 800-145 (2011).
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020).
+- Stephen Orban, "6 Strategies for Migrating Applications to the Cloud" (2016).

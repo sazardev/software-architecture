@@ -1,0 +1,97 @@
+---
+title: 'Notificaciones: push, correo y SMS con fiabilidad'
+description: 'Servicio de notificaciones desacoplado, una cola por canal, preferencias del usuario, deduplicación y reintentos que evitan pérdidas y reducen duplicados.'
+category: diseno
+tags:
+  - notificaciones
+  - colas
+  - preferencias
+  - reintentos
+order: 27
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Un servicio, una cola por canal: un proveedor caído no frena a los demás'
+---
+
+# Notificaciones: push, correo y SMS con fiabilidad
+
+Una notificación parece trivial: un evento ocurre y el usuario recibe un aviso. En la práctica
+mezcla tres problemas difíciles. Cada canal tiene su proveedor y sus fallos, el usuario tiene
+preferencias que hay que respetar y los reintentos pueden convertir un aviso en diez. Si la
+lógica vive dentro de cada servicio de negocio, el resultado es duplicado y caótico.
+
+## Un servicio desacoplado
+
+La arquitectura razonable separa dos cosas: los servicios de negocio publican eventos («pedido
+enviado»), y un servicio de notificaciones decide qué enviar, a quién y por qué canal. El emisor no
+sabe si el usuario tiene push activo ni qué proveedor usa el correo.
+
+Ese servicio consulta las preferencias y el consentimiento del usuario, y encola un mensaje por
+canal. Una cola por canal aísla los fallos: si el proveedor de SMS cae, la cola de SMS crece y el
+correo sigue saliendo.
+
+## Un ejemplo con cifras
+
+Supón un millón de usuarios que reciben dos notificaciones al día, y que el 30 % de ellas van por SMS.
+El volumen total es de 2 millones diarios, unas 23 por segundo de promedio. El SMS suma 600.000 al
+día, unos 7 por segundo.
+
+Si el proveedor de SMS cae durante dos horas, la cola acumula 7 × 7.200 segundos, unos 50.000 mensajes.
+Cuando el proveedor vuelve, esos mensajes deben salir con un ritmo que el proveedor tolere, no todos a
+la vez. Ese cálculo decide cuánta capacidad de reenvío hay que reservar.
+
+## Preferencias y consentimiento
+
+Las preferencias deben vivir en un lugar único, con el consentimiento como dato separado y con fecha. Un
+usuario que retiró el consentimiento para marketing no debe recibir una promoción aunque el correo sea
+válido. Esta comprobación va antes de encolar, no después, porque un mensaje ya enviado no se devuelve.
+
+## Deduplicación y límites de frecuencia
+
+Un evento puede llegar dos veces, y un reintento puede repetir un envío que sí se hizo. La
+deduplicación usa una clave de idempotencia por notificación y por canal, guardada durante un
+período que cubra los reintentos. Los límites de frecuencia, como un máximo de tres avisos al día
+por usuario, se aplican en el mismo punto para que ningún canal los eluda.
+
+## Reintentos sin perder mensajes
+
+Cada envío puede fallar de forma transitoria. El reintento usa backoff exponencial con jitter, para
+que los reintentos no se concentren. Tras varios intentos, el mensaje pasa a una cola de mensajes
+fallidos para revisión, en lugar de descartarse en silencio. Ningún mensaje debe quedar sin estado: o
+está entregado, o está en reintento, o está en revisión.
+
+Un envío puede haberse aceptado aunque la respuesta del proveedor llegue tarde o se pierda. Por eso el
+reintento debe reutilizar la misma clave de idempotencia, si el proveedor la soporta, y el estado del mensaje
+debe actualizarse con el identificador que devuelve el proveedor. Sin soporte de idempotencia, el canal es de
+entrega al menos una vez: los duplicados son posibles y deben asumirse.
+
+## Errores frecuentes
+
+- Enviar desde el servicio de negocio y repetir la lógica de preferencias en cada uno.
+- Una sola cola para todos los canales, de modo que un canal lento frena a los demás.
+- Reintentar sin límite ni jitter y saturar al proveedor cuando vuelve.
+- Descartar los fallidos sin registrarlos.
+
+## Cuándo no aplica
+
+Si la aplicación envía un solo tipo de aviso por correo y sin preferencias complejas, un módulo dentro
+del servicio de negocio basta. El servicio dedicado se justifica cuando hay varios canales, varios
+emisores y requisitos de consentimiento.
+
+## Checklist
+
+- [ ] ¿Los servicios de negocio solo publican eventos, sin decidir el canal?
+- [ ] ¿Cada canal tiene su cola y su capacidad de reenvío?
+- [ ] ¿El consentimiento se comprueba antes de encolar?
+- [ ] ¿Cada notificación tiene una clave de idempotencia?
+- [ ] ¿Los fallidos quedan registrados para revisión?
+
+**Para profundizar:** [caché, colas y streaming](/docs/caching-colas-streaming) compara semánticas de
+entrega, y [sagas, outbox e idempotencia](/docs/sagas-outbox-idempotencia) explica cómo publicar eventos
+sin perderlos.
+
+## Fuentes
+
+- Gregor Hohpe y Bobby Woolf, _Enterprise Integration Patterns_ (2003).
+- Marc Brooker, "Exponential Backoff And Jitter", AWS Architecture Blog (2015).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).

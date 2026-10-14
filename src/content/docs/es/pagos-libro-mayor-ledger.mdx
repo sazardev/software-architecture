@@ -1,0 +1,88 @@
+---
+title: 'Pagos y libro mayor: partida doble sin errores'
+description: 'Asientos de partida doble inmutables, correcciones por contraasiento, idempotencia de cobros y conciliación con el proveedor de pagos.'
+category: diseno
+tags:
+  - pagos
+  - ledger
+  - contabilidad
+  - idempotencia
+  - conciliacion
+order: 24
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Cada corrección es un asiento nuevo, no una edición'
+---
+
+# Pagos y libro mayor: partida doble sin errores
+
+Un cobro parece simple: el cliente paga, el sistema lo registra. Pero en cuanto hay reembolsos, comisiones,
+impuestos, pagos parciales y reintentos, el saldo de una cuenta depende del orden y de la cantidad de
+operaciones que se aplicaron. La forma de mantenerlo correcto es vieja: la contabilidad por **partida doble**,
+descrita por Luca Pacioli en 1494, y un libro mayor que se escribe solo a base de asientos.
+
+## Asientos inmutables
+
+En partida doble, cada asiento suma lo mismo en el debe que en el haber. Un cobro de 100 euros es un asiento
+con caja en el debe por 100 y un ingreso en el haber por 100. Si el asiento está mal, no se edita: se anula con un
+**contraasiento** que invierte los importes, y se registra el asiento correcto a continuación. El original permanece.
+
+Esto cambia el diseño. La tabla del libro es de solo añadir; no hay `UPDATE` sobre los importes. Cualquier saldo se
+calcula sumando asientos, o se mantiene como proyección que se puede reconstruir desde el historial. El historial
+completo es la prueba de qué pasó y en qué orden, que es lo que pide una auditoría.
+
+## Idempotencia de los cobros
+
+Un cobro puede llegar dos veces: el cliente reintenta, el proveedor reenvía un webhook o el worker cae después de
+confirmar el cobro y antes de registrar el asiento. Por eso cada operación con efecto externo lleva una clave de
+idempotencia, guardada junto con el asiento que produjo. Si la clave ya existe, la respuesta es el resultado anterior,
+sin un segundo asiento ni un segundo cobro.
+
+## Conciliación: el libro frente al proveedor
+
+El libro interno nunca es la única fuente de verdad. El proveedor de pagos tiene su propio registro, con sus comisiones,
+sus retrasos de liquidación y sus devoluciones. La conciliación compara ambos cada día: cada cobro del proveedor debe
+tener un asiento, cada asiento debe tener un cobro, y las diferencias van a una cola de revisión con un dueño.
+
+## Un ejemplo con cifras
+
+Un pedido de 100 euros con comisión del 3 % (3 euros). El proveedor liquida 97 euros. Los asientos son: caja 97 en el
+debe, comisiones bancarias 3 en el debe, ingreso 100 en el haber. Si el cliente pide un reembolso total de 100 euros, se registra un contraasiento por esa cantidad: ingreso 100 en el debe y caja 100 en el haber. La caja queda en menos 3 euros: es la comisión que el proveedor no devuelve, y sigue apareciendo como gasto. Si el asiento de reembolso fuera de 97 en vez de 100, la conciliación lo detectaría con una diferencia de 3 euros en la fecha de liquidación.
+
+## Orden de los eventos
+
+Los eventos del pago pueden llegar desordenados: un reembolso antes que el cobro, o una confirmación tardía. El libro
+debe tolerarlo. Las reglas razonables son: un reembolso solo puede anular cobros existentes, cada asiento referencia
+la operación que lo causó y las transiciones de estado son explícitas. Un evento fuera de orden se encola hasta que
+sus dependencias existan, en lugar de aplicarse a ciegas.
+
+## Errores frecuentes
+
+- **Editar importes.** Una corrección sobre un asiento existente destruye la auditoría.
+- **Confiar en el webhook.** Sin conciliación, un evento perdido es un saldo incorrecto para siempre.
+- **Mezclar moneda y redondeo.** Guarda importes en la unidad mínima (céntimos) y no en decimales de punto flotante.
+- **Confundir estado y asiento.** «Pagado» es un estado del pedido; el dinero se mueve con asientos.
+
+## Cuándo no aplica
+
+Para una tienda con cobros sencillos y sin reembolsos ni impuestos complejos, una tabla de transacciones con
+idempotencia puede bastar. El libro mayor compensa cuando hay obligación contable, varios proveedores o necesidad de
+auditar cada céntimo.
+
+## Checklist
+
+- [ ] ¿Cada asiento cuadra, con debe igual a haber?
+- [ ] ¿Las correcciones son contraasientos y el histórico es de solo añadir?
+- [ ] ¿Cada operación con efecto externo tiene clave de idempotencia guardada con el asiento?
+- [ ] ¿Existe una conciliación diaria con el proveedor, con dueño para las diferencias?
+- [ ] ¿Los importes se guardan en la unidad mínima de la moneda?
+
+**Para profundizar:** [sagas, outbox e idempotencia](/docs/sagas-outbox-idempotencia) explica cómo coordinar el cobro
+con otros servicios sin perder ni duplicar operaciones, y [datos, ACID y aislamiento](/docs/datos-acid-y-aislamiento)
+trata las garantías transaccionales que sostienen los asientos.
+
+## Fuentes
+
+- Luca Pacioli, _Summa de arithmetica, geometria, proportioni et proportionalita_ (1494), tratado sobre la partida doble.
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017), capítulos sobre transacciones y consistencia.
+- Pat Helland, "Life beyond Distributed Transactions: an Apostate's Opinion" (2007).

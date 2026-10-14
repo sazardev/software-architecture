@@ -1,0 +1,92 @@
+---
+title: 'Elegir base de datos: patrones de acceso primero'
+description: 'Antes de elegir una base de datos, define consultas y escrituras: qué tipo de almacén encaja, cuándo compensa la persistencia políglota y qué cuesta operarla.'
+category: diseno
+tags:
+  - bases-de-datos
+  - persistencia
+  - patrones-de-acceso
+  - modelado
+order: 25
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Primero los patrones de acceso; después el almacén'
+---
+
+# Elegir base de datos: patrones de acceso primero
+
+La pregunta habitual, «¿qué base de datos usamos?», empieza por el final. Una base de datos es una respuesta a un
+conjunto de consultas y escrituras, y esas consultas casi nunca están escritas en el equipo cuando se decide. El
+resultado son sistemas con una base relacional forzada a hacer búsqueda de texto, o un almacén documental que
+necesita joins en cada pantalla. Antes de elegir, hay que escribir lo que el sistema va a hacer.
+
+## Primero las consultas
+
+Para cada caso de uso importante, anota cuatro cosas: qué se lee, cómo se busca (por clave, por rango, por texto,
+por relación), con qué frecuencia y qué latencia se necesita. Anota también las escrituras: cuántas por segundo, si
+deben ser atómicas con otras, y si el dato cambia a menudo o solo se añade.
+
+Una lista de veinte patrones concretos suele revelar el perfil. Si la mayoría son lecturas por clave con latencia de
+milisegundos, el almacén es casi un caché persistente. Si son joins entre cinco entidades con transacciones, es una base
+relacional. Si son búsquedas por texto con relevancia, es un motor de búsqueda.
+
+## Tipos de almacén y su patrón natural
+
+- **Relacional.** Esquema estable, relaciones y transacciones entre entidades. Edgar Codd propuso el modelo en 1970 y
+  sigue siendo el punto de partida razonable.
+- **Documental.** Un agregado completo se lee y escribe de una vez, sin joins. Encaja cuando el documento es la unidad
+  de acceso.
+- **Clave-valor.** Lecturas y escrituras por una clave conocida, a gran escala. Pierde todo lo que no sea búsqueda por clave.
+- **Columnar.** Escaneos analíticos sobre muchas filas y pocas columnas. Es el terreno de la analítica.
+- **Grafo.** Recorridos de relaciones de profundidad variable, como rutas de dependencia o detección de fraude en redes.
+- **Búsqueda.** Texto con ranking, sinónimos y facetas. Casi nunca es la fuente de verdad: se alimenta desde otra base.
+
+## Cuándo compensa la persistencia políglota
+
+Usar varios almacenes significa que el dato vive en más de un sitio. Compensa cuando un
+patrón tiene requisitos que el almacén principal no cumple con un coste razonable, como búsqueda con ranking sobre
+millones de documentos. No compensa por moda ni porque «cada servicio debe tener su base».
+
+## Un ejemplo con cifras
+
+Un catálogo con 5 millones de productos, 2.000 búsquedas por segundo en pico y actualizaciones de precio de 200 por
+segundo. Con una base relacional y un índice de texto completo, las búsquedas deben soportar la carga sin tocar las
+escrituras. Si la base responde a 150 búsquedas por segundo por nodo, hacen falta 14 nodos de lectura para 2.000. Un
+motor de búsqueda dedicado suele necesitar menos nodos para esa carga, pero añade un segundo almacén que
+sincronizar: si la sincronización va con 30 segundos de retraso, un precio cambiado puede verse durante ese tiempo. La
+decisión depende de si ese retraso es aceptable para el negocio, no de la tecnología.
+
+## Costo operativo
+
+Cada almacén añade copias de seguridad, monitorización, actualizaciones, perfiles de rendimiento y personas que lo
+entienden. El costo de operar tres tipos de base de datos suele ser mayor que el de cualquier diferencia de rendimiento.
+Por eso la regla práctica es empezar con una base relacional bien usada y añadir un almacén cuando un patrón concreto
+lo exija con datos.
+
+## Errores frecuentes
+
+- **Elegir por popularidad.** La base que todos usan no conoce tu patrón de acceso.
+- **Forzar joins en documentos.** Si cada lectura necesita tres colecciones, el modelo está al revés.
+- **Tratar la búsqueda como almacén principal.** Un índice se reconstruye; la fuente de verdad no debe depender de él.
+
+## Cuándo no aplica
+
+Con pocas tablas y carga modesta, una sola base relacional resuelve casi todo. Un análisis profundo compensa
+cuando el volumen, la forma de los datos o la latencia cambian en un orden de magnitud.
+
+## Checklist
+
+- [ ] ¿Tienes una lista de consultas y escrituras con frecuencia y latencia?
+- [ ] ¿Cada almacén nuevo responde a un patrón que el principal no cubre con coste razonable?
+- [ ] ¿Está claro cuál es la fuente de verdad y cuáles son las copias derivadas?
+- [ ] ¿Sabes cuánto retraso de sincronización es aceptable entre almacenes?
+- [ ] ¿El equipo puede operar cada almacén que propones?
+
+**Para profundizar:** [datos, ACID y aislamiento](/docs/datos-acid-y-aislamiento) explica qué garantías ofrece cada tipo de
+base de datos, y [caching, colas y streaming](/docs/caching-colas-streaming) trata las copias derivadas y su sincronización.
+
+## Fuentes
+
+- Edgar F. Codd, "A Relational Model of Data for Large Shared Data Banks", _Communications of the ACM_ (1970).
+- Pramod J. Sadalage y Martin Fowler, _NoSQL Distilled_ (2012).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).

@@ -1,0 +1,99 @@
+---
+title: 'In-app search: when the database is enough'
+description: 'When a database index is enough, when a dedicated inverted index pays off, and how to keep it in sync with the source without losing changes.'
+category: diseno
+tags:
+  - search
+  - indexes
+  - synchronization
+  - relevance
+order: 26
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'The index is derived data: fed from the source, rebuildable at any time'
+---
+
+# In-app search: when the database is enough
+
+Almost every application needs search. The first solution is usually a `LIKE` over the products
+table, and it works until it does not: with a few hundred thousand rows the query reads the text of
+every row, and with millions it becomes slow and returns no useful order. The architecture question is
+not which search engine to pick, but whether you need one at all.
+
+## When the database is enough
+
+A B-tree index on a column speeds up equality, ranges and prefixes. For a small catalogue searched by
+code, exact name or category filters, the database solves the problem with no new infrastructure.
+That is cheap to maintain, and it rarely becomes expensive.
+
+What the database does not do well is find words inside a text, tolerate typos or rank results by
+relevance. If the requirement includes those three things, a traditional index stops being enough.
+
+## Inverted index: the structure behind text search
+
+An inverted index stores, for each term, the list of documents where it appears. Searching for "shoe"
+means reading one list, not scanning the catalogue. On top of that structure you apply text analysis
+(lowercasing, stemming, synonyms) and a relevance score.
+
+A worked example: a catalogue of 3 million products, and a term such as "shoe" that appears in 12,000 of
+them. The index returns those 12,000 identifiers, scores them and delivers the top 20. Without the index,
+the same query has to read all 3 million rows.
+
+## Keeping it in sync without losing changes
+
+The index is derived data. The source of truth is still the database, and the index must reflect it.
+There are two paths:
+
+- **Dual write:** the application writes to the database and to the index. It is simple, but if the
+  second write fails, the data drifts apart and nobody notices.
+- **Change data capture:** a process reads the database change log and updates the index from it. It
+  is more robust, because the index only reacts to what the database has committed.
+
+With change capture, the key question is lag. If 200 events arrive per second and the indexer processes
+150, the backlog grows by 50 events per second: after one hour there are 180,000 pending changes. Measure
+that lag and treat it as an operational indicator.
+
+## Reindexing and relevance
+
+Changing the text analysis or the index schema forces a reindex. With 3 million documents and an indexer
+that handles 1,500 per second, a full rebuild takes 2,000 seconds, about 33 minutes. The usual practice is to
+build the new index in parallel, validate it and switch the read alias once it is ready.
+
+Relevance is a design decision too. A result can be correct and still sit in position 40. Measure quality
+with a set of real queries and review those results before you touch the scoring formula.
+
+## Consistency of results
+
+A search result can lag behind the database. For a catalogue that is acceptable: a product that just sold
+out may appear for a few seconds. For critical inventory it is not, and the purchase operation must read the
+database again before confirming.
+
+## Common mistakes
+
+- Using `LIKE` with a leading wildcard and believing it is text search.
+- Treating the index as the source of truth and being unable to rebuild it.
+- Not measuring synchronization lag.
+- Changing the text analysis without reindexing, and getting inconsistent results.
+
+## When it does not apply
+
+If the catalogue is small and searches are on exact fields, a database index is the best choice. A dedicated
+engine adds operations, monitoring and cost; it is justified only when text search and relevance are part of
+the product itself.
+
+## Checklist
+
+- [ ] Do searches need free text, typo tolerance or relevance?
+- [ ] Can the database solve the case without new infrastructure?
+- [ ] Can the index be rebuilt from the source in an acceptable time?
+- [ ] Is the lag between the database and the index measured?
+- [ ] Is there a set of real queries to evaluate relevance?
+
+**Further reading:** [data, ACID and isolation](/docs/datos-acid-y-aislamiento) explains what the database
+guarantees before you trust an index, and [caching, queues and streaming](/docs/caching-colas-streaming)
+describes the change flows that feed synchronization.
+
+## Sources
+
+- Christopher D. Manning, Prabhakar Raghavan and Hinrich Schütze, _Introduction to Information Retrieval_ (2008).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).

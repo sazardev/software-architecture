@@ -1,0 +1,91 @@
+---
+title: 'Sessions, tokens and SSO: what to choose and why'
+description: 'Server-side sessions versus self-contained tokens, expiry and rotation, revocation, SSO on top of OAuth 2.0, and where to keep tokens in the browser.'
+category: nube
+tags:
+  - sessions
+  - tokens
+  - sso
+  - identity
+  - oauth
+order: 13
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'A session keeps state on the server; a token carries it and needs a list to be withdrawn'
+---
+
+# Sessions, tokens and SSO: what to choose and why
+
+Every application with users must answer a question thousands of times per second: who is making this request? The
+answer lives in a session or in a token, and the choice has consequences for security, scalability and for what happens
+when a user signs out or a device is stolen.
+
+## Server-side session
+
+With a session, the server keeps the state in a store (shared memory, a database or a dedicated service), and the browser
+holds only an opaque identifier in a cookie. Each request looks up that identifier and gets the state back. The cookie
+should carry the `HttpOnly`, `Secure` and `SameSite` attributes: RFC 6265 describes the first two, and `SameSite` comes from a later IETF draft.
+
+Its great advantage is revocation: signing out means deleting a row, and the effect is immediate. Its cost is the store.
+A worked example: 500,000 sessions of 2 KB each take about 1,000 MB, close to 1 GB. That store must be highly available.
+
+## Self-contained token
+
+A token such as a JWT carries its own data (who the user is, what permissions they have, when it expires) and is signed.
+The server verifies the signature without querying any store. That scales very well, and it lets several services validate the same token without talking to each other.
+
+The real problem appears at revocation. A valid token stays valid until it expires, even if the user signed out or lost
+access. The usual fix is a list of revoked tokens, which sends the check back to a store and gives up part of the benefit.
+So the question is not whether the token is secure, but how long a token that should no longer be valid can keep working.
+
+## Expiry and rotation
+
+Expiry bounds the window of damage. A 15-minute access token limits the risk to that period, and an active user renews it
+96 times a day (24 hours × 60 minutes ÷ 15). That renewal uses a refresh token, which is rotated on every use: if someone reuses an already rotated refresh token, the whole chain is revoked and a new sign-in is required.
+
+The usual combination is a short-lived access token and a long-lived refresh token that is rotated and revocable. With that
+combination, real revocation takes at most as long as the access token lasts.
+
+## SSO and OpenID Connect
+
+Single sign-on lets several applications trust one identity provider. The foundation is OAuth 2.0 (RFC 6749), which solves
+delegated access but does not say who the user is. OpenID Connect adds that layer: a signed identity token (ID token) with
+the user's data, built on the OAuth flow.
+
+To know who is signing in, validate the ID token, not the access token.
+
+## Where to keep tokens in the browser
+
+Storing an access token in `localStorage` puts it within reach of any script on the page, including one injected through a
+cross-site scripting flaw. An `HttpOnly` cookie cannot be read from JavaScript, but it needs protection against forged requests.
+The reasonable practice: refresh token in an `HttpOnly` cookie, access token in memory, lost on reload and renewed silently.
+
+## Common mistakes
+
+- Using a JWT with no short expiry and no revocation plan.
+- Storing long-lived tokens in `localStorage`.
+- Verifying the signature but forgetting to check the issuer, the audience or the expiry.
+
+## When it does not apply
+
+A monolithic application with a single server and internal users almost always works better with server-side sessions.
+Self-contained tokens are justified when several services validate identity and must do it without querying a common store.
+
+## Checklist
+
+- [ ] Do you know how long a token that should have been revoked can keep working?
+- [ ] Does the access token expire in minutes, and is the refresh token rotated on every use?
+- [ ] Do session cookies carry `HttpOnly`, `Secure` and `SameSite`?
+- [ ] Is identity taken from the ID token and not from the access token?
+- [ ] Is there a plan for immediate revocation when it is needed?
+
+**Further reading:** [networks, identity and security in the cloud](/docs/redes-identidad-seguridad-nube) covers workload
+identity and least privilege, and [authorization at scale](/docs/autorizacion-rbac-abac-rebac) explains what the system does
+with an identity once it is verified.
+
+## Sources
+
+- Dick Hardt, _The OAuth 2.0 Authorization Framework_, RFC 6749 (2012).
+- Michael Jones, John Bradley and Nat Sakimura, _JSON Web Token (JWT)_, RFC 7519 (2015).
+- Adam Barth, _HTTP State Management Mechanism_, RFC 6265 (2011).
+- OpenID Foundation, _OpenID Connect Core 1.0_ (2014).

@@ -1,0 +1,93 @@
+---
+title: 'Offline-first mobile: syncing without losing data'
+description: 'How to design an app that writes locally first, syncs a queue of operations in order and resolves conflicts without losing the changes the user made.'
+category: diseno
+tags:
+  - offline
+  - sync
+  - conflicts
+  - mobile
+  - queues
+order: 29
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'The app confirms locally and drains its queue when the network returns'
+---
+
+# Offline-first mobile: syncing without losing data
+
+An app that works only with a network fails exactly where it is most needed: on the metro, in a warehouse without signal or on a
+plane. An offline-first design reverses the usual order. The app confirms each change in its local store, the user keeps working,
+and synchronisation happens later. The hard part is not saving locally, but sending those changes back without losing or duplicating
+any of them.
+
+## Write to the local store first
+
+The local store is what the user sees while offline. Every action is recorded as an operation (create, update, delete) with its full
+data, not as a final state. Recording the intent makes it possible to send it later and to apply business rules on the server. The
+screen cannot depend on the server having confirmed anything: what is visible lives locally, so the interface must show which changes
+are not yet synchronised.
+
+## A queue of pending operations
+
+Pending operations go to a persistent queue that survives closures and restarts. A field technician spends two days without signal and
+accumulates 120 operations. If the server accepts 5 per second, draining the queue takes 24 seconds of continuous traffic; with retries
+and pauses, the process takes minutes. That is acceptable only if the queue drains in order and can resume after an interruption.
+
+Order matters: creating a work report and then editing it must arrive in that order. That is why each operation carries a sequence
+number within its entity.
+
+## Identifiers generated on the client
+
+A record created offline has no server identifier. The usual solution is to generate one on the client, globally unique, so the app can
+refer to the record before it is synchronised. The same identifier doubles as an idempotency key: if an operation arrives twice because a
+response was lost, the server recognises the duplicate and does not apply it again.
+
+## Detecting conflicts
+
+A conflict appears when two devices change the same data without seeing each other's change. There are three strategies, from the
+simplest to the most demanding.
+
+- **Last write wins.** Simple, but it silently discards one of the user's changes. Valid only when losing a change does not matter,
+  such as a visual preference.
+- **Version control.** Each record carries a version. An edit based on an old version is rejected and the conflict is returned for the
+  user to resolve.
+- **Conflict-free replicated data types (CRDTs).** Structures that always merge deterministically, such as counters or sets. They resolve
+  many cases without intervention, but modelling a whole domain with them is a project in itself.
+
+The choice depends on how costly it is to lose a change. In a work report it may mean billing wrongly; in a preference, almost nothing.
+
+## Data that should not be edited offline
+
+Operations that depend on shared real-time state, such as booking the last seat or transferring money, need server confirmation. The same
+holds for actions with external effects that are hard to reverse. The app can prepare the operation offline, but it must present it as
+pending, never as done.
+
+## Common mistakes
+
+- Storing only the final state and losing the intent of the operation.
+- Draining the queue in parallel and breaking the order between operations on the same entity.
+- Showing as confirmed something that exists only locally.
+- Resolving conflicts without telling the user, so the change disappears without a trace.
+
+## When it does not apply
+
+If the app mostly reads data that changes rarely and the connection is usually good, a read cache is enough and a full offline model adds
+needless complexity. It pays off when work happens without a network and losing a piece of data has a real cost.
+
+## Checklist
+
+- [ ] Is each change recorded as an operation with its intent, not only as a final state?
+- [ ] Does the queue survive restarts and drain in order, in a resumable way?
+- [ ] Do new records have an identifier generated on the client?
+- [ ] Is each operation idempotent on the server?
+- [ ] Is there a conflict strategy per data type, and does the user get told?
+
+**Further reading:** [caching, queues and streaming](/docs/caching-colas-streaming) covers delivery semantics and message order;
+[sagas, outbox and idempotency](/docs/sagas-outbox-idempotencia) covers idempotency keys.
+
+## Sources
+
+- Leslie Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", _Communications of the ACM_ (1978).
+- Marc Shapiro, Nuno Preguiça, Carlos Baquero and Marek Zawirski, "Conflict-free Replicated Data Types", SSS (2011).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).

@@ -1,0 +1,87 @@
+---
+title: 'Choosing a database: access patterns first'
+description: 'Before choosing a database, define reads and writes: which store type fits, when polyglot persistence pays off and what it costs to run.'
+category: diseno
+tags:
+  - databases
+  - persistence
+  - access-patterns
+  - modelling
+order: 25
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Access patterns first, then the store'
+---
+
+# Choosing a database: access patterns first
+
+The usual question, "which database do we use?", starts at the wrong end. A database is an answer to a set of reads and
+writes, and those are rarely written down when the decision is made. The result is a relational database forced to do
+full-text search, or a document store that needs joins on every screen. Before choosing, write down what the system will do.
+
+## Queries first
+
+For each important use case, note four things: what is read, how it is searched (by key, by range, by text, by relationship),
+how often, and what latency is needed. Note the writes too: how many per second, whether they must be atomic with other
+writes, and whether the data changes often or is only appended.
+
+A list of twenty concrete patterns usually reveals the profile. If most are key lookups with millisecond latency, the store
+is close to a persistent cache. If they are joins across five entities inside transactions, it is a relational database. If
+they are text searches ranked by relevance, it is a search engine.
+
+## Store types and their natural pattern
+
+- **Relational.** A stable schema, relationships and transactions across entities. Edgar Codd proposed the model in 1970, and
+  it is still the reasonable starting point.
+- **Document.** A whole aggregate is read and written at once, with no joins. It fits when the document is the unit of access.
+- **Key-value.** Reads and writes by a known key, at large scale. It gives up everything that is not a lookup by key.
+- **Columnar.** Analytical scans over many rows and few columns. It is the territory of analytics, not transactions.
+- **Graph.** Traversals of relationships with variable depth, such as dependency paths or fraud rings.
+- **Search.** Text with ranking, synonyms and facets. It is rarely the source of truth: it is fed from another database.
+
+## When polyglot persistence pays off
+
+Several stores mean each one serves a pattern and the data lives in more than one place. It pays off when a pattern has
+requirements the main store cannot meet at a reasonable cost, such as ranked search over millions of documents. It does not
+pay off out of fashion, or because "every service must have its own database".
+
+## A worked example
+
+A catalogue with 5 million products, 2,000 searches per second at peak and 200 price updates per second. With a relational
+database and a full-text index, the searches must be served without touching the writes. If one node serves 150 searches per
+second, 2,000 searches need 14 read nodes. A dedicated search engine usually needs fewer nodes for that load, but it adds a
+second store to keep in sync: if synchronization lags by 30 seconds, a changed price can show the old value for that long.
+
+## Operating cost
+
+Every store adds backups, monitoring, upgrades, performance work and people who understand it. The cost of running three kinds of
+database is usually larger than any difference in performance. That is why a practical rule is to start with a well-used
+relational database and add a store when a specific pattern demands it, with data to prove it.
+
+## Common mistakes
+
+- **Choosing by popularity.** The database everyone uses does not know your access pattern.
+- **Forcing joins into documents.** If every read needs three collections, the model is inverted.
+- **Treating search as the main store.** An index can be rebuilt; the source of truth must not depend on it.
+
+## When it does not apply
+
+If the system is small, with few tables and modest load, one relational database handles almost everything. A deep analysis pays off
+when volume, data shape or latency change by an order of magnitude.
+
+## Checklist
+
+- [ ] Do you have a list of reads and writes with frequency and latency?
+- [ ] Does each new store serve a pattern the main store cannot cover at a reasonable cost?
+- [ ] Is it clear which store is the source of truth and which are derived copies?
+- [ ] Do you know how much synchronization lag is acceptable between stores?
+- [ ] Can the team operate each store you propose?
+
+**Further reading:** [data, ACID and isolation](/docs/datos-acid-y-aislamiento) explains the guarantees each kind of database offers,
+and [caching, queues and streaming](/docs/caching-colas-streaming) covers derived copies and how to keep them in sync.
+
+## Sources
+
+- Edgar F. Codd, "A Relational Model of Data for Large Shared Data Banks", _Communications of the ACM_ (1970).
+- Pramod J. Sadalage and Martin Fowler, _NoSQL Distilled_ (2012).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).

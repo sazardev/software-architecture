@@ -1,0 +1,94 @@
+---
+title: 'Sesiones, tokens y SSO: qué elegir y por qué'
+description: 'Sesiones del servidor frente a tokens autocontenidos, expiración y rotación, revocación, SSO sobre OAuth 2.0 y dónde guardar los tokens.'
+category: nube
+tags:
+  - sesiones
+  - tokens
+  - sso
+  - identidad
+  - oauth
+order: 13
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'La sesión guarda el estado en el servidor; el token lo lleva y se revoca con una lista'
+---
+
+# Sesiones, tokens y SSO: qué elegir y por qué
+
+Cada aplicación con usuarios tiene que responder a una pregunta repetida miles de veces por segundo: ¿quién
+hace esta petición? La respuesta vive en una sesión o en un token, y la elección tiene consecuencias en
+seguridad, en escalabilidad y en lo que pasa cuando un usuario cierra sesión o le roban un dispositivo.
+
+## Sesión en el servidor
+
+Con una sesión, el servidor guarda el estado en un almacén (memoria compartida, una base de datos o un servicio
+dedicado) y el navegador solo guarda un identificador opaco en una cookie. Cada petición busca ese identificador
+y obtiene el estado. La cookie debe llevar los atributos `HttpOnly`, `Secure` y `SameSite`; la RFC 6265 cubre los dos primeros.
+
+Su gran ventaja es la revocación: cerrar una sesión es borrar una fila, y el efecto es inmediato. Su costo es el
+almacén. Un ejemplo con cifras: 500.000 sesiones de 2 KB cada una ocupan unos 1.000 MB, cerca de 1 GB. Ese almacén debe tener alta disponibilidad.
+
+## Token autocontenido
+
+Un token como JWT lleva dentro sus propios datos (quién es el usuario, qué permisos tiene, cuándo expira) y va firmado.
+El servidor verifica la firma sin consultar ningún almacén. Eso escala muy bien y permite que varios servicios validen el mismo token sin hablar entre sí.
+
+El problema real aparece al revocar. Un token válido sigue siendo válido hasta que expira, aunque el usuario haya cerrado
+sesión o le hayan quitado el acceso. La solución habitual es mantener una lista de tokens revocados, lo que devuelve la
+consulta a un almacén y pierde parte de la ventaja. Por eso la pregunta no es si el token es seguro, sino cuánto tiempo
+puede ser válido un token que ya no debería serlo.
+
+## Expiración y rotación
+
+La expiración acota la ventana de daño. Un token de acceso de 15 minutos limita el riesgo a ese plazo, y un usuario activo
+renueva su token 96 veces al día (24 horas × 60 minutos ÷ 15). Esa renovación usa un token de refresco, que se rota en cada uso: si alguien reutiliza un refresco ya rotado, se revoca toda la cadena y se
+pide un nuevo inicio de sesión.
+
+La combinación habitual es un token de acceso corto y un token de refresco largo, rotado y revocable. Con esa combinación,
+la revocación real tarda como máximo lo que dura el token de acceso.
+
+## SSO y OpenID Connect
+
+El inicio de sesión único permite que varias aplicaciones confíen en un mismo proveedor de identidad. La base es OAuth 2.0
+(RFC 6749), que resuelve la delegación de acceso, pero no dice quién es el usuario. OpenID Connect añade esa capa: un token
+de identidad (ID token) firmado, con datos del usuario, sobre el flujo de OAuth.
+
+Para saber quién inicia sesión, valida el ID token, no el token de acceso.
+
+## Dónde guardar los tokens en el navegador
+
+Guardar un token de acceso en `localStorage` lo deja al alcance de cualquier script de la página, incluido uno inyectado por
+un fallo de cross-site scripting. Una cookie `HttpOnly` no es legible desde JavaScript, pero exige protección frente a
+peticiones falsificadas. La práctica razonable: el refresco en una cookie `HttpOnly` y el acceso en memoria, que se pierde al recargar y se renueva en silencio.
+
+## Errores frecuentes
+
+- Usar un JWT sin plazo de expiración corto y sin plan de revocación.
+- Guardar tokens de larga duración en `localStorage`.
+- Validar la firma y olvidar comprobar el emisor, la audiencia o la expiración.
+
+## Cuándo no aplica
+
+Una aplicación monolítica con un solo servidor y usuarios internos casi siempre funciona mejor con sesiones de servidor.
+Los tokens autocontenidos se justifican cuando hay varios servicios que validan identidad y necesitan hacerlo sin consultar
+un almacén común.
+
+## Checklist
+
+- [ ] ¿Sabes cuánto tiempo puede seguir válido un token que debería haberse revocado?
+- [ ] ¿El token de acceso expira en minutos y el de refresco se rota en cada uso?
+- [ ] ¿Las cookies de sesión llevan `HttpOnly`, `Secure` y `SameSite`?
+- [ ] ¿La identidad se obtiene del ID token y no del token de acceso?
+- [ ] ¿Hay un plan para revocar acceso de forma inmediata cuando sea necesario?
+
+**Para profundizar:** [redes, identidad y seguridad en la nube](/docs/redes-identidad-seguridad-nube) describe la identidad
+de cargas de trabajo y el mínimo privilegio, y [autorización a escala](/docs/autorizacion-rbac-abac-rebac) explica qué hace el
+sistema con la identidad una vez verificada.
+
+## Fuentes
+
+- Dick Hardt, _The OAuth 2.0 Authorization Framework_, RFC 6749 (2012).
+- Michael Jones, John Bradley y Nat Sakimura, _JSON Web Token (JWT)_, RFC 7519 (2015).
+- Adam Barth, _HTTP State Management Mechanism_, RFC 6265 (2011).
+- OpenID Foundation, _OpenID Connect Core 1.0_ (2014).

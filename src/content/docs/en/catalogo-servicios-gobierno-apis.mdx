@@ -1,0 +1,90 @@
+---
+title: 'Service catalog and API governance'
+description: 'A service catalog with an owner, a state and a contract for every service, light governance rules, and an API lifecycle with dated deprecation and retirement.'
+category: decisiones
+tags:
+  - catalog
+  - governance
+  - apis
+  - ownership
+order: 18
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Every service has an owner, a state and a contract; obsolete APIs have a retirement date'
+---
+
+# Service catalog and API governance
+
+With ten services, everyone knows who maintains what. With a hundred, nobody does. Duplicated APIs appear that do
+the same thing, orphaned services that nobody dares to switch off, and consumers that depend on a version that has
+not been maintained for two years. A service catalog is the register that prevents that decay: a living list in
+which every service has an owner, a state and a published contract.
+
+## What each entry holds
+
+Every service needs, at a minimum, four pieces of data: the owning team and a contact channel, the state (active,
+migrating, deprecated or retired), the published contract (its API specification or its events) and its dependencies
+on other services. With that, you can answer "who changes this?" and "what breaks if I switch it off?" without
+calling anyone.
+
+The link with team structure is direct. Team Topologies suggests that each team owns a flow or a platform. The
+catalogue makes that ownership visible: a service without an owner is an open decision, not a normal state.
+
+A worked example: a catalogue of 120 services in which 18 have no owner. That is 15%. It is a governance indicator
+worth reviewing every quarter, because those unowned services are usually the ones that fail at the worst moment.
+
+## Discovering what already exists
+
+A catalogue is only useful if people consult it before building. Before creating a new orders service, the team should
+check whether one already exists. Searching by domain, owner and technology prevents duplication, one of the quietest
+costs in a large organisation.
+
+Keeping the catalogue current means automating what you can: the entry is updated from the service's deployment
+template, not from a form someone has to remember to fill in.
+
+## Light governance, not bureaucracy
+
+Governance should be a net of minimum rules, not a committee. Verifiable rules are enough: every production service has
+an owner, every public contract is versioned, and every change that breaks a contract is announced. Rules that require
+manual approval for each change become a bottleneck, and teams start avoiding the catalogue.
+
+Rules are checked like any other architecture characteristic: in the pipeline, not in a meeting.
+
+## Lifecycle and deprecation with dates
+
+An API is not switched off overnight. The usual lifecycle has four states: active, deprecated (it still works, but warns
+and admits no new consumers), retired (it no longer responds) and removed from the catalogue. Each step has a date. For
+example, an API deprecated on 1 March with retirement on 1 September gives six months to migrate. If active consumers
+remain when the date arrives, the retirement is postponed through a recorded decision, not a silent exception.
+
+The HTTP `Sunset` header, defined in RFC 8594, lets you announce the retirement date in every response.
+
+## Common mistakes
+
+- A catalogue filled once and never updated.
+- Services without an owner that still receive traffic.
+- Deprecating without a date, so the API survives by inertia.
+- Manual approvals for every change, which block teams.
+
+## When it does not apply
+
+With a small team and a few services, a shared document is enough. A formal catalogue is justified when there are several
+teams, dozens of services and consumers you do not know by name.
+
+## Checklist
+
+- [ ] Does every production service have an owner and a contact channel?
+- [ ] Is each service's state up to date?
+- [ ] Does the published contract match what is actually deployed?
+- [ ] Does every deprecated API have a retirement date?
+- [ ] Are the governance rules checked automatically?
+
+**Further reading:** [Conway's law and Team Topologies](/docs/ley-de-conway-team-topologies) explains why a service's
+owner should be a team, and [API design](/docs/diseno-de-apis) describes how to version and evolve contracts without
+breaking consumers.
+
+## Sources
+
+- Matthew Skelton and Manuel Pais, _Team Topologies_ (2019).
+- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020).
+- Erik Wilde, _The Sunset HTTP Header Field_, RFC 8594 (2019).

@@ -1,0 +1,87 @@
+---
+title: 'MLOps: taking a model to production'
+description: 'How to version data, code and models separately, deploy with shadow traffic and canaries, watch for drift, and decide when to retrain or retire a model.'
+category: tendencias
+tags:
+  - mlops
+  - models
+  - deployment
+  - monitoring
+  - drift
+order: 7
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Each model is a published version, watched until it is retired'
+---
+
+# MLOps: taking a model to production
+
+A model that works in an analysis notebook is not a service. Between the experiment and production sit questions that
+conventional software already answers: which data trained it, which code produced it, which version is serving and whether it
+is still correct three months later. MLOps is the set of practices that answers them.
+
+## Version data, code and model separately
+
+A model depends on three things that change at different speeds: the training code, the data and the resulting model. If only
+the code is versioned, a result cannot be reproduced because the data changed. The sensible practice is to pin the data version,
+record the code and dependency versions, and store the model under an identifier that points to both. Tools such as DVC or a
+registry such as MLflow help, but the principle matters more than the tool.
+
+## Reproducible training and the registry
+
+Training that cannot be repeated cannot be audited. Fix the random seeds, the environment and the validation set. A model registry
+stores each version with its metrics, its provenance and its state: experimental, candidate or in production. Moving between
+states should be an explicit, reviewed step, like a code change.
+
+## Deploy without exposing users: shadow and canary
+
+Before a model decides anything real, run it in shadow mode: it receives the same requests and its predictions are logged, but
+not used. A canary release then routes a small share of traffic to the new model and compares metrics before widening it.
+
+Take a fraud model that receives 200,000 predictions a day, about 8,333 an hour. A 5 % canary gets about 417 an hour, so two hours
+accumulate roughly 834 predictions. That is the sample used to compare the new model. If the volume is smaller, the comparison says
+nothing and the window must be longer.
+
+## Watching for drift
+
+A model degrades even when its code does not change. **Data drift** happens when the distribution of inputs changes, such as a new
+region with different amounts. **Concept drift** happens when the relationship between inputs and outcomes changes, such as fraud that
+adopts new tactics. The first is detected by comparing distributions; the second needs ground-truth labels, which sometimes arrive
+late. Alerts need thresholds agreed in advance and an owner. Alerting on every variation ends with alerts being ignored.
+
+## Retrain or retire
+
+Retraining is not always the answer. If the drift is in the data and labels arrive in time, a scheduled retraining usually suffices.
+If the relationship changed, the problem may be the business definition, which should be reviewed before training again. A simple
+criterion for retiring: the model stays below the baseline for an agreed period and no retraining fixes it. Retirement should be as
+orderly as deployment, with the version kept for audit.
+
+## Common mistakes
+
+- Deploying the model that scores best on the test set without checking real traffic.
+- Treating the model as a static artefact with no owner and no review date.
+- Confusing an improvement in a technical metric with a business improvement.
+- Logging predictions without the model version that produced them.
+
+## When it does not apply
+
+If a simple rule solves the problem with the same quality, a model adds cost and failure surface for no benefit. Machine learning pays
+off when there is plenty of data, patterns a rule cannot capture and an error cost that justifies the upkeep.
+
+## Checklist
+
+- [ ] Is each model tied to a version of its data, code and dependencies?
+- [ ] Can training be repeated with the same result?
+- [ ] Is there a registry with states and an explicit promotion step?
+- [ ] Does a new model run in shadow or canary before it decides?
+- [ ] Are there drift thresholds with an owner and a retirement criterion?
+
+**Further reading:** [architecture for agents and LLMs](/docs/arquitectura-agentes-llm) covers the components of an application built
+on models; [RAG in production and continuous evaluation](/docs/rag-y-evaluacion-continua) covers how to evaluate answers.
+
+## Sources
+
+- D. Sculley et al., "Hidden Technical Debt in Machine Learning Systems", NIPS (2015).
+- Eric Breck et al., "The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction", IEEE Big Data (2017).
+- João Gama et al., "A Survey on Concept Drift Adaptation", _ACM Computing Surveys_ (2014).
+- Chip Huyen, _Designing Machine Learning Systems_ (2022).

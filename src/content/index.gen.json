@@ -4408,6 +4408,434 @@
       "slug": "tiempo-real-websockets-sse"
     },
     {
+      "category": "diseno",
+      "description": "Asientos de partida doble inmutables, correcciones por contraasiento, idempotencia de cobros y conciliación con el proveedor de pagos.",
+      "figureCaption": "Cada corrección es un asiento nuevo, no una edición",
+      "order": 24,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "pagos",
+        "ledger",
+        "contabilidad",
+        "idempotencia",
+        "conciliacion"
+      ],
+      "title": "Pagos y libro mayor: partida doble sin errores",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "pagos-y-libro-mayor-partida-doble-sin-errores",
+          "level": 1,
+          "text": "Pagos y libro mayor: partida doble sin errores"
+        },
+        {
+          "id": "asientos-inmutables",
+          "level": 2,
+          "text": "Asientos inmutables"
+        },
+        {
+          "id": "idempotencia-de-los-cobros",
+          "level": 2,
+          "text": "Idempotencia de los cobros"
+        },
+        {
+          "id": "conciliación-el-libro-frente-al-proveedor",
+          "level": 2,
+          "text": "Conciliación: el libro frente al proveedor"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "orden-de-los-eventos",
+          "level": 2,
+          "text": "Orden de los eventos"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/pagos-libro-mayor-ledger",
+      "slug": "pagos-libro-mayor-ledger"
+    },
+    {
+      "category": "diseno",
+      "description": "Antes de elegir una base de datos, define consultas y escrituras: qué tipo de almacén encaja, cuándo compensa la persistencia políglota y qué cuesta operarla.",
+      "figureCaption": "Primero los patrones de acceso; después el almacén",
+      "order": 25,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "bases-de-datos",
+        "persistencia",
+        "patrones-de-acceso",
+        "modelado"
+      ],
+      "title": "Elegir base de datos: patrones de acceso primero",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "elegir-base-de-datos-patrones-de-acceso-primero",
+          "level": 1,
+          "text": "Elegir base de datos: patrones de acceso primero"
+        },
+        {
+          "id": "primero-las-consultas",
+          "level": 2,
+          "text": "Primero las consultas"
+        },
+        {
+          "id": "tipos-de-almacén-y-su-patrón-natural",
+          "level": 2,
+          "text": "Tipos de almacén y su patrón natural"
+        },
+        {
+          "id": "cuándo-compensa-la-persistencia-políglota",
+          "level": 2,
+          "text": "Cuándo compensa la persistencia políglota"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "costo-operativo",
+          "level": 2,
+          "text": "Costo operativo"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/persistencia-politica-elegir-bd",
+      "slug": "persistencia-politica-elegir-bd"
+    },
+    {
+      "category": "diseno",
+      "description": "Cuándo basta un índice de la base de datos, cuándo conviene un índice invertido dedicado y cómo mantenerlo sincronizado con la fuente sin perder cambios.",
+      "figureCaption": "El índice es dato derivado: se alimenta de la fuente y se reconstruye",
+      "order": 26,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "busqueda",
+        "indices",
+        "sincronizacion",
+        "relevancia"
+      ],
+      "title": "Búsqueda en la aplicación: cuándo basta la base",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "búsqueda-en-la-aplicación-cuándo-basta-la-base",
+          "level": 1,
+          "text": "Búsqueda en la aplicación: cuándo basta la base"
+        },
+        {
+          "id": "cuándo-basta-la-base-de-datos",
+          "level": 2,
+          "text": "Cuándo basta la base de datos"
+        },
+        {
+          "id": "índice-invertido-la-estructura-de-la-búsqueda-de-texto",
+          "level": 2,
+          "text": "Índice invertido: la estructura de la búsqueda de texto"
+        },
+        {
+          "id": "sincronizar-sin-perder-cambios",
+          "level": 2,
+          "text": "Sincronizar sin perder cambios"
+        },
+        {
+          "id": "reindexado-y-relevancia",
+          "level": 2,
+          "text": "Reindexado y relevancia"
+        },
+        {
+          "id": "consistencia-de-los-resultados",
+          "level": 2,
+          "text": "Consistencia de los resultados"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/busqueda-en-aplicacion",
+      "slug": "busqueda-en-aplicacion"
+    },
+    {
+      "category": "diseno",
+      "description": "Servicio de notificaciones desacoplado, una cola por canal, preferencias del usuario, deduplicación y reintentos que evitan pérdidas y reducen duplicados.",
+      "figureCaption": "Un servicio, una cola por canal: un proveedor caído no frena a los demás",
+      "order": 27,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "notificaciones",
+        "colas",
+        "preferencias",
+        "reintentos"
+      ],
+      "title": "Notificaciones: push, correo y SMS con fiabilidad",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "notificaciones-push-correo-y-sms-con-fiabilidad",
+          "level": 1,
+          "text": "Notificaciones: push, correo y SMS con fiabilidad"
+        },
+        {
+          "id": "un-servicio-desacoplado",
+          "level": 2,
+          "text": "Un servicio desacoplado"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "preferencias-y-consentimiento",
+          "level": 2,
+          "text": "Preferencias y consentimiento"
+        },
+        {
+          "id": "deduplicación-y-límites-de-frecuencia",
+          "level": 2,
+          "text": "Deduplicación y límites de frecuencia"
+        },
+        {
+          "id": "reintentos-sin-perder-mensajes",
+          "level": 2,
+          "text": "Reintentos sin perder mensajes"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/notificaciones-push-correo-sms",
+      "slug": "notificaciones-push-correo-sms"
+    },
+    {
+      "category": "diseno",
+      "description": "Cuándo abrir un sistema a extensiones, puntos de extensión con contrato estable, sandbox con permisos y versionado y deprecación de la API de plugins.",
+      "figureCaption": "Los plugins hablan con el núcleo solo a través de sus puertos",
+      "order": 28,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "plugins",
+        "extensibilidad",
+        "api-publica",
+        "compatibilidad"
+      ],
+      "title": "Arquitectura extensible: plugins y puntos de extensión",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "arquitectura-extensible-plugins-y-puntos-de-extensión",
+          "level": 1,
+          "text": "Arquitectura extensible: plugins y puntos de extensión"
+        },
+        {
+          "id": "cuándo-abrir-el-sistema-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo abrir el sistema y cuándo no"
+        },
+        {
+          "id": "puntos-de-extensión-con-contrato-estable",
+          "level": 2,
+          "text": "Puntos de extensión con contrato estable"
+        },
+        {
+          "id": "sandbox-y-permisos",
+          "level": 2,
+          "text": "Sandbox y permisos"
+        },
+        {
+          "id": "versionado-y-compatibilidad",
+          "level": 2,
+          "text": "Versionado y compatibilidad"
+        },
+        {
+          "id": "deprecación-con-fecha",
+          "level": 2,
+          "text": "Deprecación con fecha"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/arquitectura-extensible-plugins",
+      "slug": "arquitectura-extensible-plugins"
+    },
+    {
+      "category": "diseno",
+      "description": "Cómo diseñar una app que escribe primero en local, sincroniza una cola de operaciones en orden y resuelve conflictos sin perder cambios del usuario.",
+      "figureCaption": "La app confirma en local y vacía su cola cuando hay red",
+      "order": 29,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "offline",
+        "sincronizacion",
+        "conflictos",
+        "movil",
+        "colas"
+      ],
+      "title": "Móvil offline-first: sincronizar sin perder datos",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "móvil-offline-first-sincronizar-sin-perder-datos",
+          "level": 1,
+          "text": "Móvil offline-first: sincronizar sin perder datos"
+        },
+        {
+          "id": "escribir-primero-en-local",
+          "level": 2,
+          "text": "Escribir primero en local"
+        },
+        {
+          "id": "una-cola-de-operaciones-pendientes",
+          "level": 2,
+          "text": "Una cola de operaciones pendientes"
+        },
+        {
+          "id": "identificadores-generados-en-el-cliente",
+          "level": 2,
+          "text": "Identificadores generados en el cliente"
+        },
+        {
+          "id": "detectar-conflictos",
+          "level": 2,
+          "text": "Detectar conflictos"
+        },
+        {
+          "id": "qué-datos-no-deben-editarse-offline",
+          "level": 2,
+          "text": "Qué datos no deben editarse offline"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/movil-offline-first-sincronizacion",
+      "slug": "movil-offline-first-sincronizacion"
+    },
+    {
       "category": "practicas",
       "description": "Guía práctica de código limpio: nombres, funciones, errores, complejidad, tests, refactoring y deuda técnica, con ejemplos y checklist de revisión.",
       "figureCaption": "Del código enredado al código legible: pequeño, claro y consistente",
@@ -5432,6 +5860,212 @@
       "slug": "modelado-de-amenazas-stride"
     },
     {
+      "category": "practicas",
+      "description": "Minimización, base legal, retención con plazos y borrado que llega a copias y respaldos: la privacidad como requisito de arquitectura.",
+      "figureCaption": "El borrado debe propagarse a todas las copias",
+      "order": 12,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "privacidad",
+        "gdpr",
+        "datos",
+        "retencion",
+        "seguridad"
+      ],
+      "title": "Privacidad por diseño: datos, retención y borrado",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "privacidad-por-diseño-datos-retención-y-borrado",
+          "level": 1,
+          "text": "Privacidad por diseño: datos, retención y borrado"
+        },
+        {
+          "id": "cuatro-decisiones-que-cambian-el-diseño",
+          "level": 2,
+          "text": "Cuatro decisiones que cambian el diseño"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/privacidad-por-diseno-gdpr",
+      "slug": "privacidad-por-diseno-gdpr"
+    },
+    {
+      "category": "practicas",
+      "description": "Roles durante un incidente, severidades, comunicación y postmortems sin culpa que terminan en acciones con dueño y fecha.",
+      "figureCaption": "El postmortem busca fallos del sistema, no culpables",
+      "order": 13,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "incidentes",
+        "postmortem",
+        "sre",
+        "cultura",
+        "fiabilidad"
+      ],
+      "title": "Incidentes y postmortems sin culpa",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "incidentes-y-postmortems-sin-culpa",
+          "level": 1,
+          "text": "Incidentes y postmortems sin culpa"
+        },
+        {
+          "id": "roles-durante-el-incidente",
+          "level": 2,
+          "text": "Roles durante el incidente"
+        },
+        {
+          "id": "severidades-y-decisiones",
+          "level": 2,
+          "text": "Severidades y decisiones"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "el-postmortem-sin-culpa",
+          "level": 2,
+          "text": "El postmortem sin culpa"
+        },
+        {
+          "id": "acciones-con-dueño-y-fecha",
+          "level": 2,
+          "text": "Acciones con dueño y fecha"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/gestion-incidentes-postmortems",
+      "slug": "gestion-incidentes-postmortems"
+    },
+    {
+      "category": "practicas",
+      "description": "Por qué los secretos no van en el repositorio, cómo trabajan las bóvedas y las identidades de carga, y cómo rotar claves sin cortar el servicio.",
+      "figureCaption": "La carga se identifica ante la bóveda; el repositorio no guarda nada",
+      "order": 14,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "secretos",
+        "claves",
+        "rotacion",
+        "boveda",
+        "identidad"
+      ],
+      "title": "Secretos y claves: rotación sin sobresaltos",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "secretos-y-claves-rotación-sin-sobresaltos",
+          "level": 1,
+          "text": "Secretos y claves: rotación sin sobresaltos"
+        },
+        {
+          "id": "por-qué-los-secretos-no-van-en-el-repositorio",
+          "level": 2,
+          "text": "Por qué los secretos no van en el repositorio"
+        },
+        {
+          "id": "bóvedas-y-gestores",
+          "level": 2,
+          "text": "Bóvedas y gestores"
+        },
+        {
+          "id": "identidad-de-carga-frente-a-secretos-estáticos",
+          "level": 2,
+          "text": "Identidad de carga frente a secretos estáticos"
+        },
+        {
+          "id": "rotación-con-dos-claves-activas",
+          "level": 2,
+          "text": "Rotación con dos claves activas"
+        },
+        {
+          "id": "claves-de-cifrado-jerarquía-y-envoltura",
+          "level": 2,
+          "text": "Claves de cifrado: jerarquía y envoltura"
+        },
+        {
+          "id": "auditoría-y-fuga-de-secretos",
+          "level": 2,
+          "text": "Auditoría y fuga de secretos"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/gestion-secretos-claves",
+      "slug": "gestion-secretos-claves"
+    },
+    {
       "category": "tendencias",
       "description": "Guía para arquitectos: qué papel juegan Python, TypeScript, Rust, Go, Mojo y Zig en la era de la IA, y cómo elegir entre ellos.",
       "figureCaption": "Los tipos como contrato entre lenguajes y modelos de IA",
@@ -5946,6 +6580,155 @@
       "readingMinutes": 5,
       "route": "/es/docs/software-sostenible-carbono",
       "slug": "software-sostenible-carbono"
+    },
+    {
+      "category": "tendencias",
+      "description": "Cómo versionar datos, código y modelos por separado, desplegar con sombra y canary, vigilar la deriva y decidir cuándo reentrenar o retirar un modelo.",
+      "figureCaption": "Cada modelo es una versión publicada, vigilada hasta que se retira",
+      "order": 7,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "mlops",
+        "modelos",
+        "despliegue",
+        "monitoreo",
+        "deriva"
+      ],
+      "title": "MLOps: llevar un modelo a producción",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "mlops-llevar-un-modelo-a-producción",
+          "level": 1,
+          "text": "MLOps: llevar un modelo a producción"
+        },
+        {
+          "id": "versionar-datos-código-y-modelo-por-separado",
+          "level": 2,
+          "text": "Versionar datos, código y modelo por separado"
+        },
+        {
+          "id": "entrenamiento-reproducible-y-registro",
+          "level": 2,
+          "text": "Entrenamiento reproducible y registro"
+        },
+        {
+          "id": "desplegar-sin-exponer-sombra-y-canary",
+          "level": 2,
+          "text": "Desplegar sin exponer: sombra y canary"
+        },
+        {
+          "id": "monitorizar-la-deriva",
+          "level": 2,
+          "text": "Monitorizar la deriva"
+        },
+        {
+          "id": "reentrenar-o-retirar",
+          "level": 2,
+          "text": "Reentrenar o retirar"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/mlops-modelo-a-produccion",
+      "slug": "mlops-modelo-a-produccion"
+    },
+    {
+      "category": "tendencias",
+      "description": "Qué sirve una CDN, qué puede ejecutarse en el borde, cómo se reparten la latencia y la caché, y cuándo acercar la lógica al usuario no compensa.",
+      "figureCaption": "Sirve desde el borde más cercano; el origen solo si falla la caché",
+      "order": 8,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "edge",
+        "cdn",
+        "latencia",
+        "cache",
+        "despliegue"
+      ],
+      "title": "Edge y CDN: qué ejecutar en el borde",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "edge-y-cdn-qué-ejecutar-en-el-borde",
+          "level": 1,
+          "text": "Edge y CDN: qué ejecutar en el borde"
+        },
+        {
+          "id": "qué-sirve-una-cdn",
+          "level": 2,
+          "text": "Qué sirve una CDN"
+        },
+        {
+          "id": "latencia-frente-a-coste",
+          "level": 2,
+          "text": "Latencia frente a coste"
+        },
+        {
+          "id": "qué-puede-ejecutarse-en-el-borde",
+          "level": 2,
+          "text": "Qué puede ejecutarse en el borde"
+        },
+        {
+          "id": "invalidación-y-ttl",
+          "level": 2,
+          "text": "Invalidación y TTL"
+        },
+        {
+          "id": "coherencia-entre-nodos",
+          "level": 2,
+          "text": "Coherencia entre nodos"
+        },
+        {
+          "id": "datos-que-deben-quedarse-en-el-origen",
+          "level": 2,
+          "text": "Datos que deben quedarse en el origen"
+        },
+        {
+          "id": "cuándo-el-borde-no-compensa",
+          "level": 2,
+          "text": "Cuándo el borde no compensa"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/edge-computing-cdn",
+      "slug": "edge-computing-cdn"
     },
     {
       "category": "nube",
@@ -7325,6 +8108,144 @@
       "readingMinutes": 4,
       "route": "/es/docs/autorizacion-rbac-abac-rebac",
       "slug": "autorizacion-rbac-abac-rebac"
+    },
+    {
+      "category": "nube",
+      "description": "Rehost, replatform, refactor, repurchase, retire y retain: cómo elegir la estrategia de migración a la nube por aplicación, con criterio.",
+      "figureCaption": "Seis estrategias y un criterio por aplicación",
+      "order": 12,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "migracion",
+        "nube",
+        "rehost",
+        "refactor"
+      ],
+      "title": "Migrar a la nube: las 6R con criterio",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "migrar-a-la-nube-las-6r-con-criterio",
+          "level": 1,
+          "text": "Migrar a la nube: las 6R con criterio"
+        },
+        {
+          "id": "las-seis-opciones",
+          "level": 2,
+          "text": "Las seis opciones"
+        },
+        {
+          "id": "criterios-para-asignar-cada-aplicación",
+          "level": 2,
+          "text": "Criterios para asignar cada aplicación"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "por-qué-el-orden-importa",
+          "level": 2,
+          "text": "Por qué el orden importa"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/migracion-nube-6r",
+      "slug": "migracion-nube-6r"
+    },
+    {
+      "category": "nube",
+      "description": "Sesiones del servidor frente a tokens autocontenidos, expiración y rotación, revocación, SSO sobre OAuth 2.0 y dónde guardar los tokens.",
+      "figureCaption": "La sesión guarda el estado en el servidor; el token lo lleva y se revoca con una lista",
+      "order": 13,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "sesiones",
+        "tokens",
+        "sso",
+        "identidad",
+        "oauth"
+      ],
+      "title": "Sesiones, tokens y SSO: qué elegir y por qué",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "sesiones-tokens-y-sso-qué-elegir-y-por-qué",
+          "level": 1,
+          "text": "Sesiones, tokens y SSO: qué elegir y por qué"
+        },
+        {
+          "id": "sesión-en-el-servidor",
+          "level": 2,
+          "text": "Sesión en el servidor"
+        },
+        {
+          "id": "token-autocontenido",
+          "level": 2,
+          "text": "Token autocontenido"
+        },
+        {
+          "id": "expiración-y-rotación",
+          "level": 2,
+          "text": "Expiración y rotación"
+        },
+        {
+          "id": "sso-y-openid-connect",
+          "level": 2,
+          "text": "SSO y OpenID Connect"
+        },
+        {
+          "id": "dónde-guardar-los-tokens-en-el-navegador",
+          "level": 2,
+          "text": "Dónde guardar los tokens en el navegador"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/sesiones-tokens-sso",
+      "slug": "sesiones-tokens-sso"
     },
     {
       "category": "decisiones",
@@ -9108,6 +10029,149 @@
       "readingMinutes": 4,
       "route": "/es/docs/rfc-y-revisiones-de-arquitectura",
       "slug": "rfc-y-revisiones-de-arquitectura"
+    },
+    {
+      "category": "decisiones",
+      "description": "Un catálogo de servicios con dueño, estado y contrato por servicio, reglas de gobierno ligeras y un ciclo de vida de API con fechas de deprecación y retiro.",
+      "figureCaption": "Cada servicio tiene dueño, estado y contrato; las APIs obsoletas tienen fecha de retiro",
+      "order": 18,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "catalogo",
+        "gobierno",
+        "apis",
+        "propiedad"
+      ],
+      "title": "Catálogo de servicios y gobierno de APIs",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "catálogo-de-servicios-y-gobierno-de-apis",
+          "level": 1,
+          "text": "Catálogo de servicios y gobierno de APIs"
+        },
+        {
+          "id": "qué-guarda-cada-entrada",
+          "level": 2,
+          "text": "Qué guarda cada entrada"
+        },
+        {
+          "id": "descubrir-lo-que-existe",
+          "level": 2,
+          "text": "Descubrir lo que existe"
+        },
+        {
+          "id": "gobierno-ligero-no-burocracia",
+          "level": 2,
+          "text": "Gobierno ligero, no burocracia"
+        },
+        {
+          "id": "ciclo-de-vida-y-deprecación-con-fechas",
+          "level": 2,
+          "text": "Ciclo de vida y deprecación con fechas"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/catalogo-servicios-gobierno-apis",
+      "slug": "catalogo-servicios-gobierno-apis"
+    },
+    {
+      "category": "decisiones",
+      "description": "Qué preguntas debe responder la documentación de arquitectura, cómo elegir su nivel de detalle, mantenerla cerca del código y medir si alguien la usa.",
+      "figureCaption": "Documenta por niveles, de lo general a lo particular, y quita lo caduco",
+      "order": 19,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "documentacion",
+        "c4",
+        "adr",
+        "onboarding",
+        "arquitectura"
+      ],
+      "title": "Documentar la arquitectura para que alguien la use",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "documentar-la-arquitectura-para-que-alguien-la-use",
+          "level": 1,
+          "text": "Documentar la arquitectura para que alguien la use"
+        },
+        {
+          "id": "empezar-por-las-preguntas",
+          "level": 2,
+          "text": "Empezar por las preguntas"
+        },
+        {
+          "id": "niveles-de-detalle",
+          "level": 2,
+          "text": "Niveles de detalle"
+        },
+        {
+          "id": "cerca-del-código-y-versionada",
+          "level": 2,
+          "text": "Cerca del código y versionada"
+        },
+        {
+          "id": "qué-quitar",
+          "level": 2,
+          "text": "Qué quitar"
+        },
+        {
+          "id": "caducidad-y-dueño",
+          "level": 2,
+          "text": "Caducidad y dueño"
+        },
+        {
+          "id": "medir-si-sirve",
+          "level": 2,
+          "text": "Medir si sirve"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/documentar-arquitectura-util",
+      "slug": "documentar-arquitectura-util"
     },
     {
       "category": "fundamentos",
@@ -13517,6 +14581,434 @@
       "slug": "tiempo-real-websockets-sse"
     },
     {
+      "category": "diseno",
+      "description": "Immutable double-entry postings, corrections by reversal, idempotent charges and reconciliation with the payment provider.",
+      "figureCaption": "Each correction is a new entry, never an edit",
+      "order": 24,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "payments",
+        "ledger",
+        "accounting",
+        "idempotency",
+        "reconciliation"
+      ],
+      "title": "Payments and the ledger: double entry without errors",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "payments-and-the-ledger-double-entry-without-errors",
+          "level": 1,
+          "text": "Payments and the ledger: double entry without errors"
+        },
+        {
+          "id": "immutable-postings",
+          "level": 2,
+          "text": "Immutable postings"
+        },
+        {
+          "id": "idempotent-charges",
+          "level": 2,
+          "text": "Idempotent charges"
+        },
+        {
+          "id": "reconciliation-the-ledger-against-the-provider",
+          "level": 2,
+          "text": "Reconciliation: the ledger against the provider"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "event-order",
+          "level": 2,
+          "text": "Event order"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/pagos-libro-mayor-ledger",
+      "slug": "pagos-libro-mayor-ledger"
+    },
+    {
+      "category": "diseno",
+      "description": "Before choosing a database, define reads and writes: which store type fits, when polyglot persistence pays off and what it costs to run.",
+      "figureCaption": "Access patterns first, then the store",
+      "order": 25,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "databases",
+        "persistence",
+        "access-patterns",
+        "modelling"
+      ],
+      "title": "Choosing a database: access patterns first",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "choosing-a-database-access-patterns-first",
+          "level": 1,
+          "text": "Choosing a database: access patterns first"
+        },
+        {
+          "id": "queries-first",
+          "level": 2,
+          "text": "Queries first"
+        },
+        {
+          "id": "store-types-and-their-natural-pattern",
+          "level": 2,
+          "text": "Store types and their natural pattern"
+        },
+        {
+          "id": "when-polyglot-persistence-pays-off",
+          "level": 2,
+          "text": "When polyglot persistence pays off"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "operating-cost",
+          "level": 2,
+          "text": "Operating cost"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/persistencia-politica-elegir-bd",
+      "slug": "persistencia-politica-elegir-bd"
+    },
+    {
+      "category": "diseno",
+      "description": "When a database index is enough, when a dedicated inverted index pays off, and how to keep it in sync with the source without losing changes.",
+      "figureCaption": "The index is derived data: fed from the source, rebuildable at any time",
+      "order": 26,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "search",
+        "indexes",
+        "synchronization",
+        "relevance"
+      ],
+      "title": "In-app search: when the database is enough",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "in-app-search-when-the-database-is-enough",
+          "level": 1,
+          "text": "In-app search: when the database is enough"
+        },
+        {
+          "id": "when-the-database-is-enough",
+          "level": 2,
+          "text": "When the database is enough"
+        },
+        {
+          "id": "inverted-index-the-structure-behind-text-search",
+          "level": 2,
+          "text": "Inverted index: the structure behind text search"
+        },
+        {
+          "id": "keeping-it-in-sync-without-losing-changes",
+          "level": 2,
+          "text": "Keeping it in sync without losing changes"
+        },
+        {
+          "id": "reindexing-and-relevance",
+          "level": 2,
+          "text": "Reindexing and relevance"
+        },
+        {
+          "id": "consistency-of-results",
+          "level": 2,
+          "text": "Consistency of results"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/busqueda-en-aplicacion",
+      "slug": "busqueda-en-aplicacion"
+    },
+    {
+      "category": "diseno",
+      "description": "A decoupled notification service with one queue per channel, user preferences, deduplication and retries that avoid losses and reduce duplicates.",
+      "figureCaption": "One service, one queue per channel: a failed provider does not stall the others",
+      "order": 27,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "notifications",
+        "queues",
+        "preferences",
+        "retries"
+      ],
+      "title": "Notifications: push, email and SMS reliably",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "notifications-push-email-and-sms-reliably",
+          "level": 1,
+          "text": "Notifications: push, email and SMS reliably"
+        },
+        {
+          "id": "a-decoupled-service",
+          "level": 2,
+          "text": "A decoupled service"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "preferences-and-consent",
+          "level": 2,
+          "text": "Preferences and consent"
+        },
+        {
+          "id": "deduplication-and-frequency-limits",
+          "level": 2,
+          "text": "Deduplication and frequency limits"
+        },
+        {
+          "id": "retries-that-do-not-lose-messages",
+          "level": 2,
+          "text": "Retries that do not lose messages"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/notificaciones-push-correo-sms",
+      "slug": "notificaciones-push-correo-sms"
+    },
+    {
+      "category": "diseno",
+      "description": "When to open a system to extensions, stable extension points with a permissioned sandbox, and versioning and deprecation of the plugin API.",
+      "figureCaption": "Plugins talk to the core only through its ports",
+      "order": 28,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "plugins",
+        "extensibility",
+        "public-api",
+        "compatibility"
+      ],
+      "title": "Extensible architecture: plugins and extension points",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "extensible-architecture-plugins-and-extension-points",
+          "level": 1,
+          "text": "Extensible architecture: plugins and extension points"
+        },
+        {
+          "id": "when-to-open-the-system-and-when-not-to",
+          "level": 2,
+          "text": "When to open the system and when not to"
+        },
+        {
+          "id": "extension-points-with-a-stable-contract",
+          "level": 2,
+          "text": "Extension points with a stable contract"
+        },
+        {
+          "id": "sandbox-and-permissions",
+          "level": 2,
+          "text": "Sandbox and permissions"
+        },
+        {
+          "id": "versioning-and-compatibility",
+          "level": 2,
+          "text": "Versioning and compatibility"
+        },
+        {
+          "id": "deprecation-with-a-date",
+          "level": 2,
+          "text": "Deprecation with a date"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/arquitectura-extensible-plugins",
+      "slug": "arquitectura-extensible-plugins"
+    },
+    {
+      "category": "diseno",
+      "description": "How to design an app that writes locally first, syncs a queue of operations in order and resolves conflicts without losing the changes the user made.",
+      "figureCaption": "The app confirms locally and drains its queue when the network returns",
+      "order": 29,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "offline",
+        "sync",
+        "conflicts",
+        "mobile",
+        "queues"
+      ],
+      "title": "Offline-first mobile: syncing without losing data",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "offline-first-mobile-syncing-without-losing-data",
+          "level": 1,
+          "text": "Offline-first mobile: syncing without losing data"
+        },
+        {
+          "id": "write-to-the-local-store-first",
+          "level": 2,
+          "text": "Write to the local store first"
+        },
+        {
+          "id": "a-queue-of-pending-operations",
+          "level": 2,
+          "text": "A queue of pending operations"
+        },
+        {
+          "id": "identifiers-generated-on-the-client",
+          "level": 2,
+          "text": "Identifiers generated on the client"
+        },
+        {
+          "id": "detecting-conflicts",
+          "level": 2,
+          "text": "Detecting conflicts"
+        },
+        {
+          "id": "data-that-should-not-be-edited-offline",
+          "level": 2,
+          "text": "Data that should not be edited offline"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/movil-offline-first-sincronizacion",
+      "slug": "movil-offline-first-sincronizacion"
+    },
+    {
       "category": "practicas",
       "description": "A practical clean code guide: names, functions, errors, complexity, tests, refactoring and technical debt, with before/after examples and a review checklist.",
       "figureCaption": "From tangled to readable code: small, clear and consistent",
@@ -14541,6 +16033,212 @@
       "slug": "modelado-de-amenazas-stride"
     },
     {
+      "category": "practicas",
+      "description": "Minimization, legal basis, retention periods and deletion that reaches copies and backups: privacy as an architecture requirement.",
+      "figureCaption": "Deletion must reach every copy",
+      "order": 12,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "privacy",
+        "gdpr",
+        "data",
+        "retention",
+        "security"
+      ],
+      "title": "Privacy by design: data, retention and deletion",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "privacy-by-design-data-retention-and-deletion",
+          "level": 1,
+          "text": "Privacy by design: data, retention and deletion"
+        },
+        {
+          "id": "four-decisions-that-change-the-design",
+          "level": 2,
+          "text": "Four decisions that change the design"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/privacidad-por-diseno-gdpr",
+      "slug": "privacidad-por-diseno-gdpr"
+    },
+    {
+      "category": "practicas",
+      "description": "Incident roles, severities, communication and blameless postmortems that end in owned, dated actions.",
+      "figureCaption": "The postmortem looks for system failures, not culprits",
+      "order": 13,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "incidents",
+        "postmortem",
+        "sre",
+        "culture",
+        "reliability"
+      ],
+      "title": "Incidents and blameless postmortems",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "incidents-and-blameless-postmortems",
+          "level": 1,
+          "text": "Incidents and blameless postmortems"
+        },
+        {
+          "id": "roles-during-the-incident",
+          "level": 2,
+          "text": "Roles during the incident"
+        },
+        {
+          "id": "severities-and-decisions",
+          "level": 2,
+          "text": "Severities and decisions"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "the-blameless-postmortem",
+          "level": 2,
+          "text": "The blameless postmortem"
+        },
+        {
+          "id": "actions-with-owners-and-dates",
+          "level": 2,
+          "text": "Actions with owners and dates"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/gestion-incidentes-postmortems",
+      "slug": "gestion-incidentes-postmortems"
+    },
+    {
+      "category": "practicas",
+      "description": "Why secrets never belong in the repository, how vaults and workload identities work, and how to rotate keys without taking the service down.",
+      "figureCaption": "The workload authenticates to the vault; the repository stores nothing",
+      "order": 14,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "secrets",
+        "keys",
+        "rotation",
+        "vault",
+        "identity"
+      ],
+      "title": "Secrets and keys: rotation without surprises",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "secrets-and-keys-rotation-without-surprises",
+          "level": 1,
+          "text": "Secrets and keys: rotation without surprises"
+        },
+        {
+          "id": "why-secrets-do-not-belong-in-the-repository",
+          "level": 2,
+          "text": "Why secrets do not belong in the repository"
+        },
+        {
+          "id": "vaults-and-managers",
+          "level": 2,
+          "text": "Vaults and managers"
+        },
+        {
+          "id": "workload-identity-versus-static-secrets",
+          "level": 2,
+          "text": "Workload identity versus static secrets"
+        },
+        {
+          "id": "rotation-with-two-active-keys",
+          "level": 2,
+          "text": "Rotation with two active keys"
+        },
+        {
+          "id": "encryption-keys-hierarchy-and-envelopes",
+          "level": 2,
+          "text": "Encryption keys: hierarchy and envelopes"
+        },
+        {
+          "id": "auditing-and-leaks",
+          "level": 2,
+          "text": "Auditing and leaks"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/gestion-secretos-claves",
+      "slug": "gestion-secretos-claves"
+    },
+    {
       "category": "tendencias",
       "description": "A guide for architects: the role of Python, TypeScript, Rust, Go, Mojo and Zig in the AI era, and how to choose between them.",
       "figureCaption": "Types as the contract between languages and AI models",
@@ -15055,6 +16753,155 @@
       "readingMinutes": 4,
       "route": "/en/docs/software-sostenible-carbono",
       "slug": "software-sostenible-carbono"
+    },
+    {
+      "category": "tendencias",
+      "description": "How to version data, code and models separately, deploy with shadow traffic and canaries, watch for drift, and decide when to retrain or retire a model.",
+      "figureCaption": "Each model is a published version, watched until it is retired",
+      "order": 7,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "mlops",
+        "models",
+        "deployment",
+        "monitoring",
+        "drift"
+      ],
+      "title": "MLOps: taking a model to production",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "mlops-taking-a-model-to-production",
+          "level": 1,
+          "text": "MLOps: taking a model to production"
+        },
+        {
+          "id": "version-data-code-and-model-separately",
+          "level": 2,
+          "text": "Version data, code and model separately"
+        },
+        {
+          "id": "reproducible-training-and-the-registry",
+          "level": 2,
+          "text": "Reproducible training and the registry"
+        },
+        {
+          "id": "deploy-without-exposing-users-shadow-and-canary",
+          "level": 2,
+          "text": "Deploy without exposing users: shadow and canary"
+        },
+        {
+          "id": "watching-for-drift",
+          "level": 2,
+          "text": "Watching for drift"
+        },
+        {
+          "id": "retrain-or-retire",
+          "level": 2,
+          "text": "Retrain or retire"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/mlops-modelo-a-produccion",
+      "slug": "mlops-modelo-a-produccion"
+    },
+    {
+      "category": "tendencias",
+      "description": "What a CDN serves, what can run at the edge, how latency and caching divide the work, and when moving logic closer to users does not pay off.",
+      "figureCaption": "Serve from the nearest edge; the origin only when the cache misses",
+      "order": 8,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "edge",
+        "cdn",
+        "latency",
+        "cache",
+        "deployment"
+      ],
+      "title": "Edge and CDN: what to run at the edge",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "edge-and-cdn-what-to-run-at-the-edge",
+          "level": 1,
+          "text": "Edge and CDN: what to run at the edge"
+        },
+        {
+          "id": "what-a-cdn-serves-well",
+          "level": 2,
+          "text": "What a CDN serves well"
+        },
+        {
+          "id": "latency-against-cost",
+          "level": 2,
+          "text": "Latency against cost"
+        },
+        {
+          "id": "what-can-run-at-the-edge",
+          "level": 2,
+          "text": "What can run at the edge"
+        },
+        {
+          "id": "invalidation-and-ttl",
+          "level": 2,
+          "text": "Invalidation and TTL"
+        },
+        {
+          "id": "consistency-across-nodes",
+          "level": 2,
+          "text": "Consistency across nodes"
+        },
+        {
+          "id": "data-that-must-stay-at-the-origin",
+          "level": 2,
+          "text": "Data that must stay at the origin"
+        },
+        {
+          "id": "when-the-edge-does-not-pay-off",
+          "level": 2,
+          "text": "When the edge does not pay off"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/edge-computing-cdn",
+      "slug": "edge-computing-cdn"
     },
     {
       "category": "nube",
@@ -16434,6 +18281,144 @@
       "readingMinutes": 4,
       "route": "/en/docs/autorizacion-rbac-abac-rebac",
       "slug": "autorizacion-rbac-abac-rebac"
+    },
+    {
+      "category": "nube",
+      "description": "Rehost, replatform, refactor, repurchase, retire and retain: choosing the cloud migration strategy per application, with judgement.",
+      "figureCaption": "Six strategies, one judgement per application",
+      "order": 12,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "migration",
+        "cloud",
+        "rehost",
+        "refactor"
+      ],
+      "title": "Cloud migration: the six Rs with judgement",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "cloud-migration-the-six-rs-with-judgement",
+          "level": 1,
+          "text": "Cloud migration: the six Rs with judgement"
+        },
+        {
+          "id": "the-six-options",
+          "level": 2,
+          "text": "The six options"
+        },
+        {
+          "id": "criteria-for-assigning-each-application",
+          "level": 2,
+          "text": "Criteria for assigning each application"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "why-the-order-matters",
+          "level": 2,
+          "text": "Why the order matters"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/migracion-nube-6r",
+      "slug": "migracion-nube-6r"
+    },
+    {
+      "category": "nube",
+      "description": "Server-side sessions versus self-contained tokens, expiry and rotation, revocation, SSO on top of OAuth 2.0, and where to keep tokens in the browser.",
+      "figureCaption": "A session keeps state on the server; a token carries it and needs a list to be withdrawn",
+      "order": 13,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "sessions",
+        "tokens",
+        "sso",
+        "identity",
+        "oauth"
+      ],
+      "title": "Sessions, tokens and SSO: what to choose and why",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "sessions-tokens-and-sso-what-to-choose-and-why",
+          "level": 1,
+          "text": "Sessions, tokens and SSO: what to choose and why"
+        },
+        {
+          "id": "server-side-session",
+          "level": 2,
+          "text": "Server-side session"
+        },
+        {
+          "id": "self-contained-token",
+          "level": 2,
+          "text": "Self-contained token"
+        },
+        {
+          "id": "expiry-and-rotation",
+          "level": 2,
+          "text": "Expiry and rotation"
+        },
+        {
+          "id": "sso-and-openid-connect",
+          "level": 2,
+          "text": "SSO and OpenID Connect"
+        },
+        {
+          "id": "where-to-keep-tokens-in-the-browser",
+          "level": 2,
+          "text": "Where to keep tokens in the browser"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/sesiones-tokens-sso",
+      "slug": "sesiones-tokens-sso"
     },
     {
       "category": "decisiones",
@@ -18217,6 +20202,149 @@
       "readingMinutes": 4,
       "route": "/en/docs/rfc-y-revisiones-de-arquitectura",
       "slug": "rfc-y-revisiones-de-arquitectura"
+    },
+    {
+      "category": "decisiones",
+      "description": "A service catalog with an owner, a state and a contract for every service, light governance rules, and an API lifecycle with dated deprecation and retirement.",
+      "figureCaption": "Every service has an owner, a state and a contract; obsolete APIs have a retirement date",
+      "order": 18,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "catalog",
+        "governance",
+        "apis",
+        "ownership"
+      ],
+      "title": "Service catalog and API governance",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "service-catalog-and-api-governance",
+          "level": 1,
+          "text": "Service catalog and API governance"
+        },
+        {
+          "id": "what-each-entry-holds",
+          "level": 2,
+          "text": "What each entry holds"
+        },
+        {
+          "id": "discovering-what-already-exists",
+          "level": 2,
+          "text": "Discovering what already exists"
+        },
+        {
+          "id": "light-governance-not-bureaucracy",
+          "level": 2,
+          "text": "Light governance, not bureaucracy"
+        },
+        {
+          "id": "lifecycle-and-deprecation-with-dates",
+          "level": 2,
+          "text": "Lifecycle and deprecation with dates"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/catalogo-servicios-gobierno-apis",
+      "slug": "catalogo-servicios-gobierno-apis"
+    },
+    {
+      "category": "decisiones",
+      "description": "Which questions architecture documentation must answer, how to choose its level of detail, keep it close to the code and measure whether anyone uses it.",
+      "figureCaption": "Document in levels, from general to specific, and remove what is outdated",
+      "order": 19,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "documentation",
+        "c4",
+        "adr",
+        "onboarding",
+        "architecture"
+      ],
+      "title": "Documenting architecture so someone uses it",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "documenting-architecture-so-someone-uses-it",
+          "level": 1,
+          "text": "Documenting architecture so someone uses it"
+        },
+        {
+          "id": "start-from-the-questions",
+          "level": 2,
+          "text": "Start from the questions"
+        },
+        {
+          "id": "levels-of-detail",
+          "level": 2,
+          "text": "Levels of detail"
+        },
+        {
+          "id": "close-to-the-code-and-versioned",
+          "level": 2,
+          "text": "Close to the code, and versioned"
+        },
+        {
+          "id": "what-to-remove",
+          "level": 2,
+          "text": "What to remove"
+        },
+        {
+          "id": "expiry-and-ownership",
+          "level": 2,
+          "text": "Expiry and ownership"
+        },
+        {
+          "id": "measure-whether-it-helps",
+          "level": 2,
+          "text": "Measure whether it helps"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/documentar-arquitectura-util",
+      "slug": "documentar-arquitectura-util"
     }
   ]
 }
