@@ -1,0 +1,100 @@
+---
+title: 'Autorización a escala: RBAC, ABAC y ReBAC'
+description: 'Cuándo usar roles, atributos o relaciones para decidir quién puede hacer qué, y cómo evitar duplicar reglas de acceso en cada servicio.'
+category: nube
+tags:
+  - autorizacion
+  - rbac
+  - abac
+  - rebac
+order: 11
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Tres modelos responden a la misma pregunta con fuentes de verdad distintas'
+---
+
+# Autorización a escala: RBAC, ABAC y ReBAC
+
+La autenticación responde «¿quién eres?». La autorización responde «¿puedes hacer esto?», y es la pregunta que
+más veces se hace en un sistema: cada lectura, cada escritura y cada botón. En una aplicación pequeña, una
+comprobación en el código basta. A escala, la misma regla aparece en veinte servicios, cada uno con su
+copia, y un cambio de política tarda semanas en llegar a todos.
+
+Tres modelos clásicos ordenan el problema: el control por roles (RBAC), por atributos (ABAC) y por
+relaciones (ReBAC). Cada uno toma como fuente de verdad una cosa distinta.
+
+## RBAC: el rol como fuente de verdad
+
+En RBAC, a cada persona se le asignan roles (administrador, editor, lector) y cada rol agrupa permisos.
+Es el modelo más fácil de entender y de auditar: la pregunta «¿quién puede borrar facturas?» se responde
+mirando qué roles tienen ese permiso.
+
+Su límite aparece con las excepciones. «Editor, pero solo de su región» o «editor, salvo de documentos
+confidenciales» obligan a crear roles nuevos por cada combinación, y el número de roles crece sin control.
+Ese fenómeno se conoce como _role explosion_.
+
+## ABAC: los atributos como fuente de verdad
+
+En ABAC, la decisión depende de atributos del usuario, del recurso, de la acción y del contexto: región,
+departamento, clasificación del documento, hora del día. Una política dice, por ejemplo, que un usuario
+puede leer un informe si su departamento coincide con el del informe y el informe no está clasificado como
+confidencial.
+
+ABAC expresa bien las reglas finas, pero exige que los atributos sean fiables y estén disponibles en el
+momento de decidir. Si el atributo del departamento está desactualizado en un servicio, la decisión es
+incorrecta sin que nadie lo note. La NIST publicó una guía de referencia para ABAC en 2014 (SP 800-162).
+
+## ReBAC: las relaciones como fuente de verdad
+
+En ReBAC, la decisión sigue el grafo de relaciones entre personas y recursos: X es dueño de un documento,
+el documento pertenece a una carpeta, Y es miembro de un equipo que tiene acceso a esa carpeta. Los
+permisos se derivan recorriendo esas relaciones.
+
+Es el modelo natural para compartir: documentos, proyectos o recursos con jerarquías. Google describió en 2019
+su sistema Zanzibar, que aplica este enfoque a gran escala con consistencia global. Su coste es el grafo
+mismo: necesita almacenamiento, índices y una forma de responder con consistencia suficiente.
+
+## Un ejemplo trabajado
+
+Una plataforma de documentos tiene 40 000 usuarios, 2 millones de documentos y 300 equipos. Con RBAC, habría
+que crear roles como «editor de finanzas en la UE» para cada combinación; con 3 departamentos, 4 regiones y 3
+niveles de acceso, son más de 30 roles, y crecen con cada excepción. Con ABAC, la política es compacta, pero
+cada servicio necesita el departamento y la región del usuario al día. Con ReBAC, un documento compartido con
+un equipo se resuelve recorriendo tres relaciones: documento, carpeta y pertenencia al equipo. Para una
+plataforma de compartir, ReBAC suele ser la opción que menos reglas duplicadas deja.
+
+## Cómo no duplicar reglas
+
+El error más caro es que cada servicio implemente su propia comprobación. La alternativa es centralizar la
+decisión: un servicio de autorización al que los demás consultan, o un motor de políticas (como Open Policy
+Agent o Cedar) que se distribuye como librería con las políticas versionadas. Lo que no conviene es mezclar
+ambos: si un servicio decide por su cuenta, la política central deja de ser la única verdad.
+
+## Errores frecuentes
+
+- Crear roles para cada excepción en lugar de modelar el atributo o la relación que la explica.
+- Confiar en atributos que nadie actualiza, como el departamento de un empleado que cambió de área hace seis meses.
+- Decidir la autorización en el cliente, sin revalidarla en el servidor.
+
+## Cuándo no aplica
+
+Si la aplicación tiene tres roles y ninguna excepción, RBAC es suficiente y no hace falta nada más. La
+complejidad de ABAC o de ReBAC se justifica cuando las reglas dependen de contexto o de jerarquías que cambian.
+
+## Checklist
+
+- [ ] ¿Cuántas excepciones tiene la política y se pueden expresar como atributos o relaciones?
+- [ ] ¿Quién es la fuente de verdad de cada atributo y con qué frecuencia se actualiza?
+- [ ] ¿La decisión se toma en un único lugar o en cada servicio?
+- [ ] ¿Las pruebas cubren las excepciones, no solo los roles básicos?
+
+**Para profundizar:** [redes, identidad y seguridad en la nube](/docs/redes-identidad-seguridad-nube) cubre la
+identidad de cargas de trabajo y el mínimo privilegio, y [seguridad por diseño](/docs/seguridad-por-diseno)
+explica los límites de confianza donde se aplica la autorización.
+
+## Fuentes
+
+- David F. Ferraiolo y D. Richard Kuhn, "Role-Based Access Controls", NIST (1992), origen de RBAC.
+- NIST, _INCITS 359-2004_, estándar de RBAC.
+- Vincent C. Hu y otros, _Guide to Attribute Based Access Control (ABAC) Definition and Considerations_, NIST SP 800-162 (2014).
+- Ruoming Pang y otros, "Zanzibar: Google's Consistent, Global Authorization System", USENIX ATC (2019).

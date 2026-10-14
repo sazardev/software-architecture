@@ -1,0 +1,97 @@
+---
+title: 'Inference cost: model, cache and deployment'
+description: 'How to lower the cost per request of an LLM system: choose the smallest model that works, use caching with judgement and decide where inference runs.'
+category: tendencias
+tags:
+  - inference
+  - cost
+  - cache
+  - models
+  - ai
+order: 5
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Cost per request depends on the model, the cache and the place
+---
+
+# Inference cost: model, cache and deployment
+
+In a system built on language models, cost does not appear in the design and then get billed. It appears on every call. Three
+decisions determine it almost entirely: which model each step uses, how many calls caching avoids, and where inference runs.
+Optimising the price per token while ignoring the other two usually saves little.
+
+## What makes up the cost
+
+A request costs what its input tokens consume (instructions, history and retrieved context), its output tokens, any retries and
+auxiliary calls such as classification or evaluation. On a self-hosted system, reserved GPU time adds to it and is paid even when
+idle.
+
+## Choose the smallest model that works
+
+Not every step needs the largest model. Classifying an intent or extracting a field from a form often works well with a small model;
+writing a complex answer may need a large one. Decide by measuring: run the evaluation set with each candidate and find the cheapest
+one that meets the agreed quality threshold.
+
+## Caching: exact and semantic
+
+An **exact cache** stores answers keyed by a hash of the full prompt. It is safe, but rarely hits if every request includes user data
+or a timestamp.
+
+A **semantic cache** looks for earlier prompts that are similar in embedding space and reuses their answers. It hits more often, but
+introduces a risk: two similar questions can need different answers. It requires a conservative similarity threshold, a time to live
+(TTL) and invalidation when the source data changes.
+
+## Routing by complexity
+
+A cheap classifier decides which model each request goes to. Simple questions are answered by the small model, and only the hard ones
+escalate to the large one.
+
+## Where to run: managed API or your own model
+
+A managed API charges per token and requires no operations. Your own model has a fixed infrastructure cost and almost no marginal cost
+per request. The choice depends on utilisation: at low volume the API wins; at sustained, predictable volume, your own infrastructure
+can win.
+
+The break-even calculation is simple: the fixed monthly cost divided by the cost per token gives the number of tokens you must consume
+before it pays off. Add the cost of operating the infrastructure, which is the part most often underestimated.
+
+## A worked example in numbers
+
+An assistant receives 300,000 requests a month averaging 1,200 tokens: 360 million tokens a month. With a large model at 10 units per
+million tokens, the cost is 3,600 units a month. A small model at 1 unit per million would cost 360. If exact caching hits on 40 % of
+requests, the large model is called only for the remaining 60 %: 2,160 units. Routing 70 % of the remaining traffic to the small model
+brings the total down to about 800 units. The units and prices are illustrative; what matters is the order of the decisions and that
+each one is measured on its own.
+
+## Metrics that matter
+
+Do not optimise cost per request. Optimise **cost per resolution** (what it costs to answer a question correctly), which includes retries
+and human escalations. Track p95 latency alongside it, and the cache hit rate, which shows whether caching is well designed.
+
+## Common mistakes
+
+- **Using the large model for everything.** It is the fastest way to spend without measuring.
+- **A semantic cache without a threshold.** It returns the answer to a similar but different question, and the error goes unnoticed.
+- **Measuring price per token instead of tokens.** A prompt that doubles its context doubles the cost, even if the price stays the same.
+- **Ignoring retries.** An automatic retry can double the spend on a failed request.
+
+## When it does not apply
+
+At low volume, the engineering cost of a router or a semantic cache outweighs the saving. Start with one model, a managed API and
+measurement; optimise when the monthly spend justifies the work.
+
+## Checklist
+
+- [ ] Do you know how many tokens each step of the flow consumes?
+- [ ] Does each step use the smallest model that meets the quality threshold?
+- [ ] Does the cache have a TTL, invalidation and a reviewed similarity threshold?
+- [ ] Do you measure cost per resolution, not only per request?
+- [ ] Is the break-even between a managed API and your own infrastructure calculated?
+
+**Further reading:** [FinOps: cost as a quality attribute](/docs/finops-costo-como-atributo) explains how to govern spend, and
+[cloud deployment models](/docs/modelos-de-despliegue-nube) compares the service models where inference can run.
+
+## Sources
+
+- Kaplan et al., "Scaling Laws for Neural Language Models" (2020).
+- FinOps Foundation, _FinOps Framework_ (public documentation).

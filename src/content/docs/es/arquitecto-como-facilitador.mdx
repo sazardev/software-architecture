@@ -1,0 +1,100 @@
+---
+title: 'El arquitecto como facilitador'
+description: 'Cómo influir sin autoridad formal: cuándo decidir tú, cuándo consultar y cuándo delegar, y cómo mantener al equipo dueño de sus decisiones.'
+category: fundamentos
+tags:
+  - liderazgo
+  - facilitacion
+  - equipos
+  - decisiones
+  - rol-del-arquitecto
+order: 16
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'El arquitecto da forma; el equipo es dueño de la decisión'
+---
+
+# El arquitecto como facilitador
+
+Hay arquitectos que deciden todo y arquitectos que no deciden nada. Los primeros crean dependencia: el equipo
+espera su aprobación para cada cambio. Los segundos crean vacío: nadie sabe quién responde ante un conflicto
+técnico. Ninguno de los dos extremos funciona.
+
+El arquitecto que influye bien tiene autoridad técnica, aunque no tenga autoridad formal. Su trabajo es que las
+decisiones sean buenas y que las tome quien debe tomarlas. Eso exige saber cuándo intervenir y cuándo callar.
+
+## Influir sin autoridad formal
+
+En la mayoría de equipos, el arquitecto no tiene personas a cargo ni presupuesto. Su influencia viene de la calidad
+de sus análisis, de la confianza que genera al escuchar y de la claridad con la que documenta las decisiones.
+Gregor Hohpe compara el papel con un ascensor que lleva información entre la planta de ejecución y la de dirección.
+
+Esto cambia la forma de trabajar. En lugar de imponer una solución, el arquitecto hace preguntas que obligan a
+explicitar criterios y deja que el equipo llegue a su propia conclusión.
+
+## Decidir, consultar o delegar
+
+No todas las decisiones merecen el mismo tratamiento. En 1958, Robert Tannenbaum y Warren Schmidt describieron un
+continuo entre el liderazgo centrado en el jefe y el centrado en el grupo. Adaptado al arquitecto, tiene tres puntos:
+
+- **Decidir.** Cuando la decisión es costosa de revertir, afecta a varios equipos o implica un riesgo de seguridad o
+  de cumplimiento que el equipo no puede evaluar solo.
+- **Consultar.** Cuando el equipo tiene el contexto, pero el arquitecto aporta criterios o experiencia. Es el punto
+  más frecuente y el más difícil de ejecutar bien, porque exige escuchar de verdad antes de opinar.
+- **Delegar.** Cuando la decisión es reversible, de impacto local y el equipo tiene la información necesaria.
+
+La pregunta de control es sencilla: ¿qué pasa si nos equivocamos y cuánto cuesta revertirlo? Si la respuesta es
+«poco», delega. Si es «mucho», decide o consulta con más profundidad.
+
+## Un ejemplo trabajado
+
+Un equipo quiere cambiar la forma de paginar su API pública. Las opciones son paginación por cursor o por página. El
+arquitecto sabe que la paginación por página complica la consistencia cuando los datos cambian, pero el equipo conoce
+mejor a sus clientes.
+
+El arquitecto pide que el equipo escriba los casos de uso reales, evalúa el coste de cada opción sobre ellos y propone
+un criterio de decisión. El equipo elige cursor, porque sus clientes usan desplazamiento infinito. El arquitecto registra
+la decisión en un ADR y no la reabre salvo que cambie el contexto. El equipo entiende el porqué y lo defiende como suyo.
+
+## Errores frecuentes
+
+- **Convertirse en cuello de botella.** Si todas las decisiones pasan por ti, el equipo aprende a esperar en lugar de
+  pensar.
+- **Consultar como trámite.** Pedir opinión y después ignorarla erosiona la confianza más que no preguntar.
+- **Callar lo grave.** Delegar no significa dejar de avisar. Un desacuerdo técnico se expresa con claridad, y un riesgo
+  serio se escala.
+
+## Seguridad psicológica
+
+Nada de esto funciona si el equipo teme equivocarse. Amy Edmondson define la seguridad psicológica como la creencia
+compartida de que el equipo es un lugar seguro para asumir riesgos interpersonales, como admitir un error o hacer una
+pregunta incómoda. Sin esa seguridad, las consultas se vuelven formales y los problemas aparecen tarde, en producción.
+
+El arquitecto contribuye de forma concreta: agradece las objeciones, reconoce sus propios errores de diseño y separa la
+crítica a una propuesta de la crítica a quien la hace.
+
+## Cuándo no aplica
+
+En un equipo nuevo, decidir más de lo habitual es razonable durante un tiempo, cediendo terreno cuanto antes. En un
+incidente activo, la coordinación directa gana a la facilitación. Lo que no debe ser flexible es el objetivo de que el
+equipo decida sin ti.
+
+## Checklist
+
+- [ ] ¿Sabes qué decisiones son tuyas y cuáles son del equipo?
+- [ ] ¿Consultar incluye escuchar antes de opinar?
+- [ ] ¿Cada decisión importante queda registrada con su porqué?
+- [ ] ¿Los desacuerdos se expresan de forma que puedan discutirse?
+- [ ] ¿El equipo decide sin ti en los casos reversibles?
+
+**Para profundizar:** [Ley de Conway y Team Topologies](/docs/ley-de-conway-team-topologies) explica cómo organizar
+los equipos; [pensamiento sistémico y sesgos](/docs/pensamiento-sistemico-y-sesgos) ayuda a detectar qué influencias
+distorsionan una decisión; [DevOps: cultura](/docs/devops-cultura) desarrolla la confianza dentro de los equipos.
+
+## Fuentes
+
+- Robert Tannenbaum y Warren H. Schmidt, "How to Choose a Leadership Pattern", _Harvard Business Review_ (1958).
+- Amy C. Edmondson, "Psychological Safety and Learning Behavior in Work Teams", _Administrative Science Quarterly_ (1999).
+- Amy C. Edmondson, _The Fearless Organization_ (2018).
+- Gregor Hohpe, _The Software Architect Elevator_ (2020).
+- Matthew Skelton y Manuel Pais, _Team Topologies_ (2019).

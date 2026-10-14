@@ -1,0 +1,91 @@
+---
+title: 'Entrega progresiva: flags, canary y blue/green'
+description: 'Desplegar sin exponer a todos los usuarios: feature flags, despliegues canary y blue/green, y cómo revertir sin tener que volver a desplegar.'
+category: practicas
+tags:
+  - despliegue
+  - feature-flags
+  - canary
+  - blue-green
+  - rollback
+order: 10
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'El tráfico sube por escalones y una bandera revierte sin desplegar'
+---
+
+# Entrega progresiva: flags, canary y blue/green
+
+Desplegar y liberar no son lo mismo. Desplegar es poner código en producción; liberar es que los usuarios vean
+el cambio. Separar ambos momentos permite probar con tráfico real sin exponer a todos, y revertir sin una nueva
+ejecución del pipeline, que en muchos equipos tarda entre quince y treinta minutos.
+
+Las tres técnicas más usadas resuelven partes distintas del problema.
+
+## Feature flags: liberar sin desplegar
+
+Una bandera (_feature flag_) es una condición en el código que decide si una funcionalidad está activa. Pete Hodgson
+distingue cuatro tipos: de liberación (activar una función en curso), de operación (apagar una parte si falla),
+de experimento (comparar variantes) y de permiso (activar algo solo para ciertos clientes). Cada tipo tiene un ciclo
+de vida diferente.
+
+El riesgo principal es la deuda: las banderas que nadie retira convierten el código en un laberinto de combinaciones.
+Una bandera de liberación debe tener fecha de retirada en el momento de crearla.
+
+## Canary: exponer por escalones
+
+Un despliegue canary envía una fracción del tráfico a la versión nueva, mientras el resto sigue en la anterior.
+Si las métricas se mantienen sanas, el porcentaje sube por escalones.
+
+**Ejemplo trabajado.** Un servicio con 20 instancias recibe una versión nueva en una instancia, que atiende el 5 %
+del tráfico. Durante quince minutos se compara su tasa de errores con la de la versión anterior. Si la nueva supera
+el 0,5 % cuando la base está en 0,2 %, se detiene y se revierte. Si se mantiene sana, sube al 25 % y después al 100 %.
+Cada escalón necesita criterios de avance definidos antes de empezar.
+
+## Blue/green: dos entornos, un interruptor
+
+En un despliegue blue/green hay dos entornos completos: el activo (azul) y el nuevo (verde). Se despliega en el
+inactivo, se verifica y se cambia el router. Revertir es volver a apuntar al azul. El coste es duplicar la capacidad
+durante la transición, y la base de datos suele ser compartida, lo que obliga a que los cambios de esquema sean
+compatibles con ambas versiones, como en las migraciones sin parada.
+
+## Combinar las tres
+
+Lo habitual es combinar: blue/green o canary para llevar código a producción, y banderas para decidir qué funcionalidad
+se activa. Así, un error se corrige apagando una bandera en segundos, y un problema de infraestructura se corrige
+volviendo a apuntar el router.
+
+## Errores frecuentes
+
+- **Canary sin métricas de comparación.** Subir el porcentaje sin mirar la tasa de errores convierte el canary en un
+  despliegue normal con más pasos.
+- **Banderas sin dueño ni fecha de retirada.** Acumularlas hace imposible razonar sobre el comportamiento.
+- **Cambios de esquema incompatibles.** Revertir la aplicación no revierte la base de datos.
+- **Confiar en la bandera para ocultar código roto.** Una bandera apagada sigue ejecutando el código al desplegarse si
+  se evalúa antes; hay que probar ambos caminos.
+
+## Cuándo no aplica
+
+Un cambio de contrato incompatible con clientes que no controlas no se resuelve con banderas: necesita convivencia de
+versiones de la API. Y un servicio interno sin usuarios sensibles puede desplegarse de forma directa si su reversión
+es sencilla y rápida.
+
+## Checklist
+
+- [ ] ¿Cada bandera tiene tipo, dueño y fecha de retirada?
+- [ ] ¿Los escalones de canary tienen criterios de avance y de reversión definidos antes de empezar?
+- [ ] ¿Los cambios de base de datos son compatibles con la versión anterior?
+- [ ] ¿Revertir es una acción que se puede hacer en minutos y sin el pipeline completo?
+- [ ] ¿Ambos caminos de cada bandera tienen pruebas?
+
+**Para profundizar:** [migraciones de base de datos sin parar el servicio](/docs/migraciones-bd-sin-downtime) explica
+los cambios compatibles que exige el despliegue progresivo; [devops: cultura](/docs/devops-cultura) trata las métricas
+de entrega; [mejora continua y experimentos](/docs/mejora-continua-y-experimentos) muestra cómo usar banderas para
+experimentar con método.
+
+## Fuentes
+
+- Jez Humble y David Farley, _Continuous Delivery_ (2010).
+- Martin Fowler, "BlueGreenDeployment", martinfowler.com (2010).
+- Pete Hodgson, "Feature Toggles (aka Feature Flags)", martinfowler.com (2017).
+- Betsy Beyer y otros, _The Site Reliability Workbook_ (2018), capítulo sobre despliegues canary.

@@ -1,0 +1,90 @@
+---
+title: 'Observability: SLIs, SLOs and error budgets'
+description: 'How to measure what users experience with SLIs, set an SLO and use the error budget to decide when to ship faster and when to slow down.'
+category: practicas
+tags:
+  - observability
+  - slo
+  - sli
+  - error-budget
+  - sre
+order: 8
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'An SLO leaves an error budget that every failure spends'
+---
+
+# Observability: SLIs, SLOs and error budgets
+
+A system can expose a thousand metrics and still nobody knows whether users are fine. CPU and memory describe the
+machine; they do not tell you whether a payment went through. Observability exists to answer questions you did not
+anticipate when you designed the system, and the first step is deciding which questions matter.
+
+## Logs, metrics and traces
+
+Each signal answers a different question:
+
+- **Logs:** what happened in one specific event, with its context. Useful to investigate a single case.
+- **Metrics:** how much, and in which direction. Cheap to store and query, ideal for alerts.
+- **Traces:** the path a request took across services and where it spent its time. Essential once there are many hops.
+
+None replaces the others. The usual mistake is collecting logs without any experience metrics, and then spending hours
+answering a simple question such as "how many payments are failing right now?"
+
+## SLIs: measuring what the user perceives
+
+A service level indicator (SLI) is a ratio of good events to all events. For example:
+
+- Availability: requests with a valid response, divided by all requests.
+- Latency: requests served in under 300 ms, divided by all requests.
+
+Measure at the edge, as close to the user as possible, and along a specific journey such as paying, searching or logging in.
+A well-chosen SLI moves when the user suffers, even if the servers look healthy.
+
+## SLOs and the error budget
+
+A service level objective (SLO) sets a target for the SLI over a period. An SLO of 99.9% over 30 days leaves an error budget
+of 0.1%, which is roughly 43 minutes of full downtime.
+
+**Worked example.** A payments service receives 10 million requests a month. With a 99.9% SLO it may fail 10,000 of them.
+On day 20 (67% of the month) it has 6,200 failures: it has spent 62% of the budget, slightly under the calendar pace. If the
+trend holds, it closes the month with about 9,300 failures and some margin left.
+
+The budget turns a debate into a rule. If margin remains, the team can ship risky changes. If it runs out, a policy agreed
+in advance gives reliability priority and freezes non-urgent changes.
+
+## Alert on consumption, not on loose symptoms
+
+A useful alert fires when the budget is being spent too fast. The burn rate measures that: if one hour consumes 2% of the
+monthly budget, someone should be paged. Using two windows, a short and a long one, avoids alerts on isolated spikes.
+
+## Common mistakes
+
+- **A 100% SLO.** It is unreachable and freezes every change. A realistic target leaves room to deploy.
+- **Measuring resources instead of experience.** A CPU at 30% can coexist with a broken checkout.
+- **Too many SLOs.** Five indicators per service dilute attention. Start with two or three.
+- **Alerts without an action.** If nobody knows what to do when it fires, the alert is noise.
+
+## When it does not apply
+
+A prototype or an internal tool with one user does not need error budgets. Enough logs to debug and a couple of metrics are
+enough. A formal SLO is justified only when there are service expectations to meet.
+
+## Checklist
+
+- [ ] Does every important service have an SLI measured at the edge?
+- [ ] Is the SLO reachable and agreed with the product owner?
+- [ ] Is there a written policy for when the budget runs out?
+- [ ] Do alerts fire on budget consumption, with a defined action?
+- [ ] Do traces let you follow one request across services?
+
+**Further reading:** [quality attributes](/docs/atributos-de-calidad) explains how to turn an attribute into a measurable
+scenario; [resilience in distributed systems](/docs/resiliencia-sistemas-distribuidos) covers the mechanisms that protect the
+budget; [numbers and performance laws](/docs/numeros-y-leyes-de-rendimiento) helps you read latencies and percentiles.
+
+## Sources
+
+- Betsy Beyer, Chris Jones, Jennifer Petoff and Niall Richard Murphy (eds.), _Site Reliability Engineering_ (2016).
+- Betsy Beyer, Niall Richard Murphy, David K. Rensin, Kent Kawahara and Stephen Thorne, _The Site Reliability Workbook_ (2018).
+- Charity Majors, Liz Fong-Jones and George Miranda, _Observability Engineering_ (2022).
+- Benjamin H. Sigelman and others, "Dapper, a Large-Scale Distributed Systems Tracing Infrastructure" (Google, 2010).

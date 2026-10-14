@@ -1,0 +1,97 @@
+---
+title: 'The architect as facilitator'
+description: 'How to influence without formal authority: when to decide yourself, when to consult and when to delegate, and how the team keeps ownership of its choices.'
+category: fundamentos
+tags:
+  - leadership
+  - facilitation
+  - teams
+  - decisions
+  - architect-role
+order: 16
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'The architect shapes the decision; the team owns it'
+---
+
+# The architect as facilitator
+
+Some architects decide everything, and others decide nothing. The first kind creates dependence: the team waits for
+approval on every change. The second kind creates a vacuum: nobody knows who answers when a technical conflict comes up.
+Neither extreme works.
+
+An architect who influences well has technical authority without formal authority. The job is to make sure the decisions
+are good and that the people who should make them do. That requires knowing when to step in and when to hold back.
+
+## Influencing without formal authority
+
+In most teams the architect has no direct reports and no budget. Influence comes from the quality of the analysis, the
+trust built by listening and the clarity with which decisions are documented. Gregor Hohpe compares the role to an elevator
+that carries information between the engineering floor and the executive floor.
+
+This changes how the work gets done. Instead of imposing a solution, the architect asks questions that force criteria into
+the open, and lets the team reach its own conclusion.
+
+## Decide, consult or delegate
+
+Not every decision deserves the same treatment. In 1958, Robert Tannenbaum and Warren Schmidt described a continuum between
+leadership centred on the boss and leadership centred on the group. Adapted to the architect, it has three points:
+
+- **Decide.** When the decision is costly to reverse, affects several teams, or carries a security or compliance risk the
+  team cannot assess on its own.
+- **Consult.** When the team has the context, but the architect adds criteria or experience. This is the most common point
+  and the hardest to do well, because it requires real listening before any opinion is given.
+- **Delegate.** When the decision is reversible, has local impact and the team has the information it needs.
+
+The control question is simple: what happens if we get it wrong, and how expensive is it to reverse? If the answer is "not
+much", delegate. If it is "a lot", decide or consult more deeply.
+
+## A worked example
+
+A team wants to change how its public API paginates. The options are cursor-based and page-based pagination. The architect
+knows that page-based pagination makes consistency harder when the data changes, but the team knows its clients far better.
+
+The architect asks the team to write down the real use cases, evaluates the cost of each option against them and proposes a
+decision criterion. The team chooses cursors, because its clients use infinite scrolling. The architect records the decision
+in an ADR and does not reopen it unless the context changes. The team understands the reasoning and defends it as its own.
+
+## Common mistakes
+
+- **Becoming the bottleneck.** If every decision passes through you, the team learns to wait instead of thinking.
+- **Consulting as a formality.** Asking for an opinion and then ignoring it erodes trust faster than not asking.
+- **Staying silent about serious issues.** Delegating does not mean stop warning. A technical disagreement is stated clearly,
+  and a serious risk is escalated.
+
+## Psychological safety
+
+None of this works if the team is afraid of getting things wrong. Amy Edmondson defines psychological safety as a shared belief
+that the team is a safe place for interpersonal risk-taking, such as admitting a mistake or asking an awkward question. Without
+that safety, consultations become formal and problems surface late, in production.
+
+The architect contributes in concrete ways: thanking people for objections, admitting their own design mistakes and separating
+criticism of a proposal from criticism of the person who made it.
+
+## When it does not apply
+
+In a new team, deciding more than usual is reasonable for a while, handing over ground as soon as possible. During an active
+incident, direct coordination beats facilitation. What should not be flexible is the goal that the team can decide without you.
+
+## Checklist
+
+- [ ] Do you know which decisions are yours and which belong to the team?
+- [ ] Does consulting include listening before giving an opinion?
+- [ ] Is each important decision recorded together with its reasoning?
+- [ ] Are disagreements stated in a way the team can discuss?
+- [ ] Does the team decide without you in the reversible cases?
+
+**Further reading:** [Conway's law and Team Topologies](/docs/ley-de-conway-team-topologies) explains how to organise teams;
+[systems thinking and biases](/docs/pensamiento-sistemico-y-sesgos) helps spot the influences that distort a decision;
+[DevOps culture](/docs/devops-cultura) covers trust inside teams.
+
+## Sources
+
+- Robert Tannenbaum and Warren H. Schmidt, "How to Choose a Leadership Pattern", _Harvard Business Review_ (1958).
+- Amy C. Edmondson, "Psychological Safety and Learning Behavior in Work Teams", _Administrative Science Quarterly_ (1999).
+- Amy C. Edmondson, _The Fearless Organization_ (2018).
+- Gregor Hohpe, _The Software Architect Elevator_ (2020).
+- Matthew Skelton and Manuel Pais, _Team Topologies_ (2019).

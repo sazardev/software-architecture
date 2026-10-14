@@ -1,0 +1,99 @@
+---
+title: 'Modelado de amenazas con STRIDE en un diagrama'
+description: 'Cómo aplicar STRIDE a un diagrama de flujo de datos real: límites de confianza, las seis categorías de amenaza y un ejemplo completo de revisión.'
+category: practicas
+tags:
+  - seguridad
+  - stride
+  - modelado-de-amenazas
+  - diagramas
+order: 11
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Cada flujo que cruza un límite de confianza es una superficie de ataque'
+---
+
+# Modelado de amenazas con STRIDE en un diagrama
+
+Un diagrama de arquitectura muestra cómo funciona un sistema. Un modelo de amenazas muestra cómo podría
+fallar en manos de alguien que quiere romperlo. La mayoría de los equipos hacen lo primero y nunca lo
+segundo, y la revisión de seguridad llega tarde, cuando el cambio ya está en producción.
+
+STRIDE es un método sencillo para llenar esa brecha. No requiere herramientas caras: requiere un diagrama
+y una hora de discusión honesta.
+
+## Los elementos del diagrama
+
+STRIDE se aplica sobre un **diagrama de flujo de datos** (DFD), que solo contiene cuatro piezas: entidades
+externas (usuarios, sistemas de terceros), procesos (servicios, funciones), almacenes de datos (bases de
+datos, colas) y flujos entre ellos. Además, se dibujan los **límites de confianza**: las líneas que separan
+zonas con distinto nivel de control, como internet y la red interna, o el servicio y su base de datos.
+
+Cada flujo que cruza un límite de confianza es una superficie de ataque. Un flujo dentro de la misma zona
+puede ser razonable de confiar; uno que cruza una frontera no lo es sin más.
+
+## Las seis categorías
+
+STRIDE asigna una pregunta a cada categoría de amenaza:
+
+- **Suplantación (_Spoofing_):** ¿puede alguien hacerse pasar por otro?
+- **Manipulación (_Tampering_):** ¿puede alguien alterar datos en tránsito o en reposo?
+- **Repudio (_Repudiation_):** ¿puede alguien negar una acción sin que quede rastro?
+- **Divulgación de información (_Information disclosure_):** ¿puede alguien leer lo que no debe?
+- **Denegación de servicio (_Denial of service_):** ¿puede alguien impedir que el sistema responda?
+- **Elevación de privilegios (_Elevation of privilege_):** ¿puede alguien obtener más permisos de los que tiene?
+
+El método consiste en recorrer cada elemento del diagrama y responder las seis preguntas. Muchas respuestas
+serán «no aplica»; el valor está en las que sí aplican.
+
+## Un ejemplo trabajado
+
+Un sistema de pedidos tiene un usuario en internet, una API pública, un servicio de pagos interno y una base
+de datos. Hay un límite de confianza entre internet y la red interna. Son cinco flujos. Al revisarlos, el
+equipo identifica:
+
+- Usuario → API: suplantación con credenciales robadas. Mitigación: autenticación fuerte y límite de intentos.
+- API → servicio de pagos: manipulación del importe si el mensaje no está firmado o validado. Mitigación:
+  verificación del importe contra el pedido en el servicio de pagos.
+- Servicio de pagos → base de datos: repudio si las operaciones no se registran de forma inmutable. Mitigación:
+  registro de auditoría con la identidad del llamante.
+- Usuario → API: divulgación si los mensajes de error revelan detalles internos. Mitigación: errores genéricos.
+- API: denegación de servicio por volumen. Mitigación: límites de tasa por cliente.
+
+De 30 combinaciones posibles (cinco flujos por seis categorías), el equipo analiza las que aplican y deja
+registradas las que no, con su motivo. Ese registro es el resultado útil del ejercicio.
+
+## Qué hacer con los hallazgos
+
+Cada amenaza tiene tres salidas posibles: mitigar, aceptar con un responsable y una fecha, o transferir (por
+ejemplo, a un proveedor con certificación). Las aceptadas deben quedar en un ADR o en el registro de riesgos,
+no olvidadas en una reunión. El modelo se revisa cuando cambia el diagrama, no una vez al año.
+
+## Errores frecuentes
+
+- Modelar el sistema ideal en lugar del real: el diagrama debe mostrar lo que existe, incluidos los atajos.
+- Olvidar los flujos internos que cruzan límites, como los trabajos nocturnos con credenciales compartidas.
+- Tratar STRIDE como una lista de verificación para cerrar en una tarde, sin discutir las mitigaciones.
+
+## Cuándo no aplica
+
+Para un prototipo sin datos reales ni usuarios externos, un modelo completo es excesivo: basta con anotar los
+límites y los datos sensibles. STRIDE aporta más cuando el sistema procesa datos personales, pagos o accesos
+con privilegios.
+
+## Checklist
+
+- [ ] ¿El diagrama incluye entidades externas, procesos, almacenes y flujos?
+- [ ] ¿Están dibujados los límites de confianza?
+- [ ] ¿Cada flujo que cruza un límite se revisó con las seis categorías?
+- [ ] ¿Cada amenaza tiene una decisión: mitigar, aceptar o transferir, con responsable?
+
+**Para profundizar:** [seguridad por diseño](/docs/seguridad-por-diseno) recoge los principios y los límites de
+confianza en detalle, y [redes, identidad y seguridad en la nube](/docs/redes-identidad-seguridad-nube) cubre
+las mitigaciones más habituales en un entorno de nube.
+
+## Fuentes
+
+- Loren Kohnfelder y Praerit Garg, "The Threats to Our Products", Microsoft (1999), origen de STRIDE.
+- Adam Shostack, _Threat Modeling: Designing for Security_ (2014).
+- Microsoft Security Development Lifecycle, documentación pública sobre modelado de amenazas.

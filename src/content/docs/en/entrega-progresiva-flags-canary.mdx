@@ -1,0 +1,83 @@
+---
+title: 'Progressive delivery: flags, canary and blue/green'
+description: 'Deploying without exposing every user: feature flags, canary and blue/green releases, and how to roll back without deploying again.'
+category: practicas
+tags:
+  - deployment
+  - feature-flags
+  - canary
+  - blue-green
+  - rollback
+order: 10
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Traffic rises in steps and a flag rolls back without a deploy'
+---
+
+# Progressive delivery: flags, canary and blue/green
+
+Deploying and releasing are not the same thing. Deploying puts code in production; releasing is when users see the change. Separating
+the two lets you test with real traffic without exposing everyone, and roll back without running the pipeline again, which in many teams
+takes fifteen to thirty minutes.
+
+Three techniques are commonly used, and each solves a different part of the problem.
+
+## Feature flags: release without deploying
+
+A feature flag is a condition in the code that decides whether a capability is active. Pete Hodgson distinguishes four kinds: release toggles
+(switch on a feature in progress), ops toggles (turn off a part if it fails), experiment toggles (compare variants) and permission toggles
+(enable something for certain customers). Each kind has a different lifecycle.
+
+The main risk is debt: flags nobody removes turn the code into a maze of combinations. A release flag should have a removal date from the
+moment it is created.
+
+## Canary: exposing in steps
+
+A canary release sends a fraction of the traffic to the new version while the rest stays on the previous one. If the metrics stay healthy,
+the percentage rises in steps.
+
+**Worked example.** A service with 20 instances gets the new version on one instance, which serves 5% of the traffic. For fifteen minutes its
+error rate is compared with the previous version. If the new one goes above 0.5% while the baseline sits at 0.2%, the rollout stops and reverts.
+If it stays healthy, it moves to 25% and then to 100%. Each step needs advancement criteria defined before it starts.
+
+## Blue/green: two environments, one switch
+
+In a blue/green deployment there are two complete environments: the active one (blue) and the new one (green). You deploy to the inactive one,
+verify it and switch the router. Rolling back means pointing the router at blue again. The cost is doubled capacity during the transition, and
+the database is usually shared, so schema changes must be compatible with both versions, as in the zero-downtime migrations.
+
+## Combining the three
+
+The usual approach combines them: blue/green or canary to bring code into production, and flags to decide which capability is active. A bug is
+then fixed by switching off a flag in seconds, and an infrastructure problem by pointing the router back.
+
+## Common mistakes
+
+- **A canary without comparison metrics.** Raising the percentage without watching the error rate turns the canary into a normal deployment with more steps.
+- **Flags without an owner or a removal date.** Accumulating them makes the behaviour impossible to reason about.
+- **Incompatible schema changes.** Rolling back the application does not roll back the database.
+- **Relying on a flag to hide broken code.** A flag that is off still ships its code; both paths need tests.
+
+## When it does not apply
+
+A change that breaks the contract with clients you do not control cannot be handled with flags: it needs the API versions to coexist. An
+internal service without sensitive users may be deployed directly if rolling back is simple and fast.
+
+## Checklist
+
+- [ ] Does every flag have a type, an owner and a removal date?
+- [ ] Do the canary steps have advancement and rollback criteria defined before starting?
+- [ ] Are database changes compatible with the previous version of the application?
+- [ ] Can rolling back be done in minutes, without the full pipeline?
+- [ ] Do both paths of every flag have tests?
+
+**Further reading:** [zero-downtime database migrations](/docs/migraciones-bd-sin-downtime) explains the compatible changes progressive delivery
+requires; [DevOps: culture](/docs/devops-cultura) covers delivery metrics; [continuous improvement and experiments](/docs/mejora-continua-y-experimentos)
+shows how to use flags to experiment with method.
+
+## Sources
+
+- Jez Humble and David Farley, _Continuous Delivery_ (2010).
+- Martin Fowler, "BlueGreenDeployment", martinfowler.com (2010).
+- Pete Hodgson, "Feature Toggles (aka Feature Flags)", martinfowler.com (2017).
+- Betsy Beyer and others, _The Site Reliability Workbook_ (2018), chapter on canary releases.

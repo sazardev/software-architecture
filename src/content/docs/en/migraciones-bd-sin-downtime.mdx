@@ -1,0 +1,76 @@
+---
+title: 'Migrating a database without downtime'
+description: 'Expand and contract, backward-compatible schema changes and batched backfills to evolve a database without maintenance windows.'
+category: diseno
+tags:
+  - migrations
+  - database
+  - expand-contract
+  - zero-downtime
+  - schema
+order: 20
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Four compatible phases: each one can be deployed and rolled back'
+---
+
+# Migrating a database without downtime
+
+Renaming a column sounds like a one-line change. In production, with several application versions running at once, it becomes
+a coordination problem: while the new version deploys, the previous one keeps reading and writing the old column. A schema
+change that breaks the previous version forces a maintenance window, or an incident.
+
+The starting rule is simple: **every schema change must be compatible with the previous version of the application**. The
+pattern that delivers this is expand and contract, formally known as _parallel change_.
+
+## The four phases
+
+Renaming `phone` to `phone_e164` in a table with 40 million rows goes like this:
+
+1. **Expand.** Add the new column, nullable and without constraints. The previous version does not notice.
+2. **Write to both.** Deploy a version that writes to both columns and still reads the old one.
+3. **Backfill.** Copy the old values into the new column in batches, in the background. When the backfill finishes, switch
+   reads to the new column.
+4. **Contract.** Stop writing the old column and, weeks later, drop it.
+
+Each phase fits a normal deployment and can be rolled back without touching data.
+
+## The backfill is the slow part
+
+**Worked example.** With batches of 5,000 rows and a 200 ms pause between batches, copying 40 million rows takes 8,000 batches.
+The pauses alone add up to 1,600 seconds, about 27 minutes, before counting the time each batch takes. With short locks and small
+batches, the service keeps responding; a single `UPDATE` over the whole table can block writes for minutes.
+
+Before switching reads, verify the copy: count rows where the two columns differ and re-run the backfill only on those. The
+backfill must also be resumable: if the process dies halfway, it should continue from the last batch, not start over.
+
+## Common mistakes
+
+- **Renaming in one step.** It breaks the previous version as soon as the new one deploys.
+- **Adding a mandatory column without a default.** On large tables it can block writes while the engine rewrites rows, depending
+  on the engine and its version.
+- **Never finishing the contract phase.** The old column keeps costing storage and causing confusion.
+- **Switching reads before verifying the backfill.** Incomplete data then surfaces as business errors.
+
+## When it does not apply
+
+A change to a small table that can be emptied in an agreed window does not need four phases. Nor does it apply when the database
+is not shared between versions: a service with its own database and an atomic deployment can change the schema in a single migration.
+
+## Checklist
+
+- [ ] Is the change compatible with the previous version of the application?
+- [ ] Can each phase be deployed and rolled back on its own?
+- [ ] Is the backfill batched, resumable and paced?
+- [ ] Is there a check that the copy is complete before reads switch?
+- [ ] Is there a date to drop the old column?
+
+**Further reading:** [ACID data and isolation](/docs/datos-acid-y-aislamiento) explains which guarantees hold during the copy;
+[technical debt and evolution](/docs/deuda-tecnica-evolucion) describes how to plan incremental changes; the
+[testing strategy](/docs/estrategia-de-pruebas-contratos) helps you test versions that coexist.
+
+## Sources
+
+- Pramod J. Sadalage and Scott W. Ambler, _Refactoring Databases: Evolutionary Database Design_ (2006).
+- Scott W. Ambler and Pramod J. Sadalage, "Evolutionary Database Design", martinfowler.com (2016).
+- Danilo Sato, "ParallelChange", martinfowler.com (2014).

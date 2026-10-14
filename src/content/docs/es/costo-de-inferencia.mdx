@@ -1,0 +1,97 @@
+---
+title: 'Costo de inferencia: modelo, caché y despliegue'
+description: 'CÃ³mo reducir el costo por peticiÃ³n de un LLM: elegir el modelo mÃ¡s pequeÃ±o que sirve, usar cachÃ© con criterio y decidir dÃ³nde ejecutar la inferencia.'
+category: tendencias
+tags:
+  - inferencia
+  - costo
+  - cache
+  - modelos
+  - ia
+order: 5
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: El costo por petición depende del modelo, la caché y el lugar
+---
+
+# Costo de inferencia: modelo, caché y despliegue
+
+En un sistema con modelos de lenguaje, el costo no aparece en el diseño y luego se factura. Aparece en cada llamada. Tres
+decisiones lo determinan casi por completo: qué modelo se usa en cada paso, cuántas llamadas evitas con caché y dónde se
+ejecuta la inferencia. Optimizar el precio por token sin mirar las otras dos suele ahorrar poco.
+
+## Qué compone el costo
+
+Una petición cuesta lo que consumen sus tokens de entrada (instrucciones, historial y contexto recuperado), sus tokens de salida,
+los reintentos y las llamadas auxiliares, como clasificaciones o evaluaciones.
+
+## Elegir el modelo más pequeño que sirve
+
+No todos los pasos necesitan el modelo más grande. Clasificar una intención o extraer un campo de un formulario suele ir bien con un
+modelo pequeño; redactar una respuesta compleja puede requerir uno grande. La forma de decidirlo es medirlo: ejecuta el conjunto de
+evaluación con cada candidato y busca el más barato que cumpla el umbral de calidad acordado.
+
+## Caché: exacta y semántica
+
+La **caché exacta** guarda la respuesta indexada por el hash del prompt completo. Es segura, pero acierta poco si cada petición
+incluye datos del usuario o una fecha.
+
+La **caché semántica** busca respuestas previas cuyo prompt sea similar por embeddings. Acierta más, pero introduce un riesgo: dos
+preguntas parecidas pueden exigir respuestas distintas. Necesita un umbral de similitud conservador, un tiempo de vida (TTL) y una
+invalidación cuando cambian los datos de origen.
+
+## Enrutamiento por complejidad
+
+Un clasificador barato decide qué petición va a qué modelo. Las preguntas simples se resuelven con el modelo pequeño y solo las
+difíciles escalan al grande.
+
+## Dónde ejecutar: API gestionada o modelo propio
+
+Una API gestionada cobra por token y no requiere operar nada. Un modelo propio tiene un costo fijo de infraestructura y un costo
+marginal casi nulo por petición. La decisión depende de la utilización: con poco volumen, la API gana; con volumen sostenido y
+predecible, la infraestructura propia puede ganar.
+
+La cuenta del punto de equilibrio es sencilla: el costo fijo mensual dividido por el costo por token da los tokens que hay que
+consumir para que compense. Hay que sumar el costo de operar la infraestructura, que suele ser lo que más se subestima.
+
+## Un ejemplo con cifras
+
+Un asistente recibe 300.000 peticiones al mes con 1.200 tokens de promedio: 360 millones de tokens mensuales. Con un modelo grande a
+10 unidades por millón de tokens, el costo es de 3.600 unidades al mes. Con un modelo pequeño a 1 unidad por millón, sería 360.
+Si la caché exacta acierta en el 40 % de las peticiones, el modelo grande solo se llama en el 60 % restante: 2.160 unidades. Enrutando
+el 70 % de las peticiones al modelo pequeño, el total baja a unas 800 unidades. Las unidades y los precios son ilustrativos; lo que
+importa es el orden de las decisiones y que cada una se mide por separado.
+
+## Métricas que importan
+
+No optimices el costo por petición. Optimiza el **costo por resolución** (el coste de contestar bien una pregunta), que incluye los
+reintentos y las escalaciones humanas. Acompáñalo de la latencia p95 y de la tasa de aciertos de caché, que indica si la caché está
+bien diseñada.
+
+## Errores frecuentes
+
+- **Usar el modelo grande para todo.** Es la forma más rápida de gastar sin medir.
+- **Caché semántica sin umbral.** Devuelve la respuesta de otra pregunta parecida y el error pasa desapercibido.
+- **Medir el precio por token y no los tokens.** Un prompt que duplica el contexto duplica el costo aunque el precio no cambie.
+- **Ignorar los reintentos.** Un reintento automático puede duplicar el gasto de una petición fallida.
+
+## Cuándo no aplica
+
+Con poco volumen, el costo de ingeniería de un enrutador o de una caché semántica supera el ahorro. Empieza con un modelo, una API
+y medición; optimiza cuando el gasto mensual justifique el trabajo.
+
+## Checklist
+
+- [ ] ¿Sabes cuántos tokens consume cada paso del flujo?
+- [ ] ¿Cada paso usa el modelo más pequeño que cumple el umbral de calidad?
+- [ ] ¿La caché tiene TTL, invalidación y un umbral de similitud revisado?
+- [ ] ¿Mides el costo por resolución y no solo por petición?
+- [ ] ¿El punto de equilibrio entre API y infraestructura propia está calculado?
+
+**Para profundizar:** [FinOps: el costo como atributo de calidad](/docs/finops-costo-como-atributo) explica cómo gobernar el gasto, y
+[modelos de despliegue en la nube](/docs/modelos-de-despliegue-nube) compara los modelos de servicio donde se puede ejecutar la inferencia.
+
+## Fuentes
+
+- Kaplan et al., "Scaling Laws for Neural Language Models" (2020).
+- FinOps Foundation, _FinOps Framework_ (documentación pública).

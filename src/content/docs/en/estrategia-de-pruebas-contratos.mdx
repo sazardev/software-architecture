@@ -1,0 +1,84 @@
+---
+title: 'Testing strategy: the pyramid and contracts'
+description: 'What to test at each level of the pyramid, how contracts between services prevent broken integrations, and which architecture tests to keep.'
+category: practicas
+tags:
+  - testing
+  - contracts
+  - pyramid
+  - pact
+  - architecture
+order: 9
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Many unit tests, few end-to-end tests, and contracts in between'
+---
+
+# Testing strategy: the pyramid and contracts
+
+A team can have high coverage and still ship a service that breaks another one. Coverage measures which lines ran, not which
+boundary is protected. A testing strategy has to decide what each level verifies and who owns each check.
+
+## The pyramid, with its warning
+
+The test pyramid, popularised by Mike Cohn in 2009, proposes many unit tests at the base, fewer integration tests, and a handful of
+end-to-end (E2E) tests at the top. The reason is cost and speed: a unit test runs in milliseconds and fails for a clear cause; an E2E
+test takes minutes and can fail because of the network, shared data or another team.
+
+The pyramid has a well-known anti-pattern: the "ice cream cone" or "trophy", with many E2E tests and few unit tests. It usually appears when
+nobody designed the strategy and every incident is covered by a new end-to-end test.
+
+## Where contracts fit
+
+Between services there is a boundary that neither unit nor E2E tests protect well. A contract describes what a consumer needs from a
+provider: routes, fields, types and error codes. A contract test verifies both sides separately:
+
+- The **consumer** records its expectations in a contract, for example "`GET /stock/{sku}` returns an integer field `available`".
+- The **provider** runs those contracts against its implementation in its own pipeline.
+
+If the provider renames `available` to `units`, its build fails before deployment, not in production. This approach, consumer-driven
+contracts, was described by Ian Robinson in 2006, and tools such as Pact implement it.
+
+## What to test at each level
+
+- **Unit:** domain rules, calculations and edge cases. Fast and without network access.
+- **Contract:** the shape of each boundary between services, without deploying the whole set.
+- **Integration:** one service with its real database, or with dependencies simulated at the edge.
+- **E2E:** two or three critical journeys, such as paying for an order. Few, and well chosen.
+- **Architecture tests:** dependency and layer rules, run in CI. They check characteristics, like the
+  [fitness functions](/docs/fitness-functions) do.
+
+**Worked example.** An order flow depends on inventory. Before the change there were 40 E2E tests that took 35 minutes and failed every
+week because of shared data. Thirty of them moved to unit tests of the order domain plus a contract with inventory. The pipeline went from
+35 to 4 minutes for those checks, and the remaining 10 E2E tests cover the journeys that really matter.
+
+## Common mistakes
+
+- **Contracts that describe the implementation.** A contract should fix what the consumer uses, not every field the provider returns.
+- **E2E tests covering every business rule.** That rule belongs in a unit test.
+- **Contracts the provider never verifies.** A contract nobody runs is outdated documentation.
+- **Shared test data.** It produces intermittent failures that get blamed on the network.
+
+## When it does not apply
+
+A monolith with a single deployment does not need contract tests between services; integration tests against its own database are enough.
+A prototype can also start without a formal pyramid, as long as the tests it has are unit tests and stable.
+
+## Checklist
+
+- [ ] Does every business rule have a unit test?
+- [ ] Does every boundary between services have a contract verified by the provider?
+- [ ] Do E2E tests cover only critical journeys?
+- [ ] Do architecture tests run in the pipeline?
+- [ ] Are the tests deterministic, with no shared data?
+
+**Further reading:** [fitness functions and evolutionary architecture](/docs/fitness-functions) explains how to turn architecture rules into
+tests; [monolith vs microservices](/docs/monolito-vs-microservicios) describes the boundaries contracts protect; [API design](/docs/diseno-de-apis)
+covers evolving contracts without breaking them.
+
+## Sources
+
+- Mike Cohn, _Succeeding with Agile_ (2009), chapter on the test pyramid.
+- Ian Robinson, "Consumer-Driven Contracts: A Service Evolution Pattern", martinfowler.com (2006).
+- Mike Wacker, "Just Say No to More End-to-End Tests", Google Testing Blog (2015).
+- Neal Ford, Rebecca Parsons, Patrick Kua and Pramod Sadalage, _Building Evolutionary Architectures_ (1st edition, 2017).

@@ -1,0 +1,98 @@
+---
+title: 'RAG en producción y evaluación continua'
+description: 'Cómo llevar un RAG a producción: indexación, recuperación y generación como una cadena medible, con métricas por etapa y evaluación continua de cada cambio.'
+category: tendencias
+tags:
+  - rag
+  - llm
+  - evaluacion
+  - recuperacion
+  - ia
+order: 4
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Sin evaluación en el bucle, no sabes qué cambió
+---
+
+# RAG en producción y evaluación continua
+
+Un sistema RAG (_retrieval-augmented generation_) busca fragmentos de documentos relevantes y se los entrega a un modelo
+generativo para que responda con ellos. Su calidad depende sobre todo de la recuperación: si el fragmento correcto no llega al
+modelo, ningún prompt lo compensa. Por eso un RAG se debe medir como una cadena de cuatro etapas, no como una caja negra que
+produce respuestas.
+
+## Tres fallos distintos, tres métricas
+
+Un fallo de respuesta puede venir de tres lugares, y cada uno exige una corrección diferente:
+
+- **Recuperación insuficiente.** El fragmento correcto no aparece entre los primeros resultados. Se mide con _recall@k_.
+- **Generación no fiel.** Los fragmentos llegaron, pero el modelo afirma algo que no dicen o los ignora. Se mide con _fidelidad_: cada afirmación debe poder rastrearse a un fragmento.
+- **Respuesta correcta pero inútil.** Responde algo verdadero que no contesta la pregunta. Se mide con _relevancia de la respuesta_.
+
+Mezclar los tres en una sola nota impide saber qué arreglar. Si la fidelidad sube mientras el recall baja, quizá el cambio de prompt
+ocultó un problema de recuperación.
+
+## Indexación: decisiones que cuestan después
+
+El tamaño del fragmento, los metadatos y la versión del modelo de embeddings son decisiones que se pagan cada vez que se reindexa.
+Cambiar el modelo de embeddings invalida el índice entero, porque los vectores de dos modelos no son comparables. Por eso conviene
+versionar el índice y guardar qué modelo y qué configuración lo generaron.
+
+El tamaño de fragmento no tiene un valor universal. Es un parámetro que se prueba contra el conjunto de evaluación, junto con el
+solapamiento entre fragmentos.
+
+## Recuperación: léxica, vectorial o híbrida
+
+La búsqueda vectorial encuentra paráfrasis; la léxica encuentra nombres propios, códigos y siglas que los vectores diluyen. Una
+búsqueda híbrida que combina ambas suele mejorar el recall, y un _reranker_ sobre los primeros resultados mejora la precisión a
+costa de latencia.
+
+## Generación: lo que el prompt debe pedir
+
+El prompt debe exigir que cada afirmación cite su fragmento, que el modelo diga «no lo sé» cuando el contexto no basta, y que
+no use conocimiento externo para completar huecos. Son instrucciones que se verifican con la evaluación, no con la intuición.
+
+## Evaluación continua: un conjunto dorado
+
+Se necesita un conjunto de preguntas con su respuesta de referencia y el fragmento que debería recuperarse. Doscientas preguntas
+bien elegidas bastan para empezar. Cada cambio en fragmentos, prompt, modelo o reranker se evalúa contra ese conjunto antes de
+desplegarse.
+
+Si usas otro modelo como juez de las respuestas, calíbralo: compara sus veredictos con una muestra revisada por personas y mide
+el acuerdo. Un juez que no coincide con las personas mide otra cosa.
+
+## Un ejemplo con cifras
+
+Un conjunto de 200 preguntas. La versión inicial tiene recall@5 de 0,71 y fidelidad de 0,88. Al añadir búsqueda híbrida, el recall
+sube a 0,84 y la fidelidad se mantiene en 0,88. Pero el 14 % de las consultas, las difíciles, pasa por el reranker y tarda 120 ms más,
+así que la latencia p95 general sube. La decisión depende del presupuesto de latencia, no de la métrica de calidad sola. Las cifras son
+ilustrativas.
+
+## Errores frecuentes
+
+- **Evaluar con impresiones.** Leer tres respuestas y decidir que «funciona» no detecta regresiones.
+- **Cambiar modelo y prompt a la vez.** No sabrás cuál de los dos causó la mejora o la caída.
+- **Conjunto de prueba contaminado.** Si ajustas el prompt mirando las preguntas de evaluación, la métrica deja de ser honesta.
+- **Índice sin versión.** Sin saber qué índice produjo una respuesta, no hay forma de reproducir un fallo.
+
+## Cuándo no aplica
+
+Si la respuesta cabe entera en el prompt, o si el dato está en una base de datos estructurada, una consulta directa es más exacta y
+más barata que un RAG. Un RAG resuelve el problema de encontrar información en un corpus grande y cambiante.
+
+## Checklist
+
+- [ ] ¿Mides recall, fidelidad y relevancia por separado?
+- [ ] ¿El índice está versionado con su modelo de embeddings?
+- [ ] ¿Existe un conjunto dorado que se ejecuta antes de cada despliegue?
+- [ ] ¿El juez automático se contrasta con revisión humana?
+- [ ] ¿Las consultas y sus fragmentos quedan registrados?
+
+**Para profundizar:** [arquitectura para agentes con LLM](/docs/arquitectura-agentes-llm) describe los componentes de un sistema con modelos de lenguaje, y [controlar la IA: gobierno y autonomía](/docs/controlar-la-ia-gobierno-y-autonomia) cubre la evaluación y los guardarraíles.
+
+## Fuentes
+
+- Lewis et al., "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks", NeurIPS (2020).
+- Es et al., "RAGAS: Automated Evaluation of Retrieval Augmented Generation" (2023).
+- Manning, Raghavan y Schütze, _Introduction to Information Retrieval_ (2008), para recall, precisión y nDCG.
+- OWASP, _Top 10 for Large Language Model Applications_.

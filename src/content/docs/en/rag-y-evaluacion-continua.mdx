@@ -1,0 +1,102 @@
+---
+title: 'RAG in production and continuous evaluation'
+description: 'How to take a RAG system to production: indexing, retrieval and generation as a measurable chain, with metrics per stage and continuous evaluation.'
+category: tendencias
+tags:
+  - rag
+  - llm
+  - evaluation
+  - retrieval
+  - ai
+order: 4
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Without evaluation in the loop, you cannot tell what changed
+---
+
+# RAG in production and continuous evaluation
+
+A retrieval-augmented generation (RAG) system finds relevant document fragments and hands them to a generative model so it
+answers from them. Its quality depends mostly on retrieval: if the right fragment never reaches the model, no prompt will
+compensate. A RAG system should therefore be measured as a chain of stages, not treated as a black box that produces answers.
+
+## Three different failures, three different metrics
+
+A wrong answer can come from three places, and each needs a different fix:
+
+- **Insufficient retrieval.** The right fragment is not among the top results. Measure it with _recall@k_.
+- **Unfaithful generation.** The fragments arrived, but the model asserts something they do not say, or ignores them. Measure
+  it with _faithfulness_: every claim must trace back to a fragment.
+- **Correct but useless answer.** It says something true that does not address the question. Measure it with _answer relevance_.
+
+Mixing the three into one score hides what to fix. If faithfulness rises while recall falls, a prompt change may have masked a
+retrieval problem.
+
+## Indexing: decisions that cost you later
+
+Fragment size, metadata and the version of the embedding model are choices you pay for every time you re-index. Changing the
+embedding model invalidates the whole index, because vectors from two models are not comparable. Version the index, and store
+which model and which configuration produced it.
+
+Fragment size has no universal value. It is a parameter to test against the evaluation set, together with the overlap between
+fragments.
+
+## Retrieval: lexical, vector or hybrid
+
+Vector search finds paraphrases; lexical search finds names, codes and acronyms that vectors blur together. Hybrid search that
+combines both usually improves recall, and a reranker over the top results improves precision at the cost of latency.
+
+## Generation: what the prompt must demand
+
+The prompt should require each claim to cite its fragment, the model should say it does not know when the context is not enough,
+and it should not fill gaps with outside knowledge. These are instructions you verify with evaluation, not with intuition.
+
+## Continuous evaluation: a golden set
+
+You need questions with reference answers and the fragment that should be retrieved for each. Two hundred well-chosen questions
+are enough to start. Every change to fragments, prompt, model or reranker is evaluated against that set before it ships.
+
+If you use another model as the judge of answers, calibrate it: compare its verdicts with a sample reviewed by people and measure
+the agreement. A judge that disagrees with people is measuring something else.
+
+## A worked example in numbers
+
+A set of 200 questions. The first version has recall@5 of 0.71 and faithfulness of 0.88. Adding hybrid search raises recall to 0.84
+and keeps faithfulness at 0.88. But the 14 % of queries that are hard go through the reranker and take 120 ms longer,
+so the overall p95 latency rises.
+The decision depends on the latency budget, not on the quality metric alone. The figures are illustrative.
+
+## Operations
+
+Log every query with its retrieved fragments, the answer and the configuration version. Queries that users flag as bad are the best
+material for growing the golden set. And any change to the source documents should trigger a new evaluation run.
+
+## Common mistakes
+
+- **Evaluating by impression.** Reading three answers and deciding it "works" does not catch regressions.
+- **Changing model and prompt at once.** You will not know which one caused the gain or the drop.
+- **A contaminated test set.** If you tune the prompt while looking at the evaluation questions, the metric stops being honest.
+- **An unversioned index.** Without knowing which index produced an answer, a failure cannot be reproduced.
+
+## When it does not apply
+
+If the answer fits entirely in the prompt, or if the fact lives in a structured database, a direct query is more exact and cheaper
+than a RAG system. RAG solves finding information in a large, changing corpus.
+
+## Checklist
+
+- [ ] Do you measure recall, faithfulness and relevance separately?
+- [ ] Is the index versioned together with its embedding model?
+- [ ] Is there a golden set that runs before every deployment?
+- [ ] Is the automatic judge checked against human review?
+- [ ] Are queries and their fragments logged?
+
+**Further reading:** [architecture for LLM agents](/docs/arquitectura-agentes-llm) describes the components of a system built on
+language models, and [controlling AI: governance and autonomy](/docs/controlar-la-ia-gobierno-y-autonomia) covers evaluation and guardrails.
+
+## Sources
+
+- Lewis et al., "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks", NeurIPS (2020).
+- Es et al., "RAGAS: Automated Evaluation of Retrieval Augmented Generation" (2023).
+- Manning, Raghavan and Schütze, _Introduction to Information Retrieval_ (2008), for recall, precision and nDCG.
+- OWASP, _Top 10 for Large Language Model Applications_.

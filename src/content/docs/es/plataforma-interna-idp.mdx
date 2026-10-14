@@ -1,0 +1,90 @@
+---
+title: 'Plataforma interna: cuándo construir un IDP'
+description: 'Qué es una plataforma interna para desarrolladores, cuándo justifica su coste y cómo tratarla como producto con caminos dorados medibles.'
+category: decisiones
+tags:
+  - plataforma
+  - idp
+  - platform-engineering
+  - team-topologies
+order: 15
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'La plataforma ofrece un camino único a los equipos de producto'
+---
+
+# Plataforma interna: cuándo construir un IDP
+
+Cuando una organización crece, cada equipo de producto empieza a resolver lo mismo: cómo desplegar,
+dónde guardar secretos, cómo observar un servicio, cómo abrir una base de datos. Cada uno lo resuelve
+a su manera. Al cabo de un tiempo hay doce formas de desplegar, nadie sabe cuál es la correcta y los
+equipos pasan días en tareas que no aportan valor al cliente.
+
+Una plataforma interna para desarrolladores, o IDP (_internal developer platform_), intenta cerrar esa
+brecha. Es un conjunto de herramientas y procesos que un equipo de plataforma ofrece a los equipos de
+producto como un servicio interno.
+
+## Qué es y qué no es
+
+Una plataforma no es un portal con un botón ni un conjunto de scripts. Es un producto con usuarios
+(los desarrolladores de la empresa), una hoja de ruta, un backlog y una medida de éxito. Su trabajo es
+reducir la carga cognitiva de los equipos de producto, que es precisamente lo que _Team Topologies_
+propone como misión de un equipo de plataforma.
+
+El concepto central es el **camino dorado**: una forma recomendada y ya construida de hacer algo común,
+como crear un servicio, desplegarlo o publicar una API. Seguir el camino es lo más fácil, pero no es
+obligatorio. Quien necesita otra cosa puede salirse, asumiendo su coste.
+
+## Cuándo justifica su coste
+
+Construir una plataforma cuesta personas, y esas personas no construyen producto. Hay señales claras de
+que compensa:
+
+- Hay varios equipos de producto que resuelven los mismos problemas de infraestructura por separado.
+- El tiempo de incorporación de un ingeniero nuevo se mide en semanas y depende de conocimiento tácito.
+- Los incidentes de configuración se repiten entre equipos distintos.
+
+Con un solo equipo o dos, la plataforma es sobreingeniería: basta con documentar un par de plantillas.
+
+## Un ejemplo trabajado
+
+Supón 12 equipos de producto y 25 despliegues manuales por semana. Cada uno cuesta unas 4 horas y un camino dorado lo reduce a 30 minutos, así que se ahorran unas 87 horas semanales si todos siguen el camino. Una plataforma de dos personas ocupa unas 80 horas semanales de su tiempo. Con todos los servicios adoptando el camino, la inversión compensa, y además reduce el tiempo de incorporación, que no se ha contado aquí. Si solo la mitad de los servicios lo adopta, el ahorro cae a unas 44 horas y deja de compensar las 80.
+
+Las cifras son ilustrativas. Lo importante es la forma del cálculo: horas que se recuperan con la adopción real, frente al tiempo que cuesta operar la plataforma.
+
+## Cómo medirla
+
+Una plataforma se mide por adopción y por resultado. Adopción: qué porcentaje de servicios sigue el camino
+dorado. Resultado: tiempo hasta el primer despliegue, frecuencia de despliegue y tasa de fallos de cambio,
+las métricas DORA. Si la adopción es baja, el problema suele ser de producto (el camino no resuelve el caso
+real), no de adopción forzada.
+
+## Errores frecuentes
+
+- Construir una plataforma antes de tener dos equipos que la necesiten.
+- Imponer el camino dorado sin dejar salidas, lo que convierte la plataforma en un cuello de botella.
+- Tratar el equipo de plataforma como una cola de tickets en lugar de como un producto con usuarios.
+
+## Cuándo no aplica
+
+Si la empresa tiene un solo servicio o un equipo que despliega cada mes, una guía bien escrita y un
+script compartido bastan. La plataforma se justifica cuando la repetición y el número de equipos hacen
+que la fricción cueste más que mantenerla.
+
+## Checklist
+
+- [ ] ¿Hay al menos tres equipos que repiten el mismo trabajo de infraestructura?
+- [ ] ¿El camino dorado resuelve un caso real y está documentado?
+- [ ] ¿Existe una medida de adopción y de tiempo hasta producción?
+- [ ] ¿Los equipos de producto pueden salirse del camino con un coste explícito?
+
+**Para profundizar:** [la ley de Conway y Team Topologies](/docs/ley-de-conway-team-topologies) explica el
+equipo de plataforma y sus modos de interacción, y [DevOps: cultura](/docs/devops-cultura) recoge las
+métricas que sirven para medir el resultado.
+
+## Fuentes
+
+- Matthew Skelton y Manuel Pais, _Team Topologies_ (2019).
+- Nicole Forsgren, Jez Humble y Gene Kim, _Accelerate_ (2018), para las métricas DORA.
+- Gene Kim, Jez Humble, Patrick Debois y John Willis, _The DevOps Handbook_ (2016).
+- Spotify Engineering, artículos sobre la plataforma interna y los caminos dorados (2020).

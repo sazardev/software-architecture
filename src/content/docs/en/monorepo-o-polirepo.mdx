@@ -1,0 +1,90 @@
+---
+title: 'Monorepo or polyrepo: the decision and its costs'
+description: 'When a monorepo pays off, when a polyrepo is better, and which hidden costs each option brings, with explicit criteria for the decision.'
+category: decisiones
+tags:
+  - monorepo
+  - polyrepo
+  - repositories
+  - ci
+order: 16
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'A monorepo lands a change across several packages in one commit'
+---
+
+# Monorepo or polyrepo: the decision and its costs
+
+Most organizations reach this question without having decided it: each service has its own repository because the
+first one was created that way. When a change needs five repositories, the polyrepo becomes a coordination problem.
+When a repository takes twenty minutes to clone, the monorepo becomes another one.
+
+The choice is not between fashion and tradition. It is between two ways of paying for coordinating changes, versioning
+and building.
+
+## What each option means
+
+In a **polyrepo**, each package or service has its own repository, version and release cycle. Consumers update when they
+choose, which gives autonomy but lets versions drift apart. In a **monorepo**, many packages live in the same repository,
+are built together, and a change that touches several of them lands in a single atomic commit.
+
+They are not two ends of one scale: a monorepo can have very clear internal boundaries, and a polyrepo can share a common
+template. What differs is where the coupling lives.
+
+## When a monorepo pays off
+
+A monorepo pays off when changes cross many packages often, when internal libraries must stay on one coherent version,
+and when an incremental build tool can run only what is affected. Google described this model in 2016: one very large
+repository, with tooling that makes working in it feasible.
+
+Its main advantage is that a cross-cutting refactor lands completely or not at all. The trade-off is that CI, code search
+and permissions must scale with the repository.
+
+## When a polyrepo pays off
+
+A polyrepo pays off when teams are independent, when each service has its own lifecycle and risk level, or when access
+controls must separate repositories by team or by customer. Its advantage is autonomy. Its cost is coordination: a contract
+change needs several pull requests, version bumps and waiting for each consumer to respond.
+
+## A worked example
+
+A team has 9 services and 3 shared libraries. Last quarter, 1 in 4 changes had to touch at least two repositories, and each
+contract change took 6 days on average to reach production, against 1 day when the change fitted in one repository. An illustrative
+estimate: if a monorepo halves those cross-cutting changes, and incremental builds cut CI from 12 minutes to 4, the tooling
+investment could pay back within a few months. If instead the 9 services deploy on independent cycles and rarely touch each other,
+the polyrepo remains the cheaper option.
+
+## Hidden costs
+
+- **Monorepo:** CI needs incremental builds and caching, or every commit takes too long. Fine-grained permissions cost more.
+  A failure in a shared dependency can block everyone.
+- **Polyrepo:** versions misaligned across services, copied templates that diverge, and security tooling to configure in
+  every repository.
+
+## Common mistakes
+
+- Moving to a monorepo without first investing in incremental builds.
+- Choosing a polyrepo by default and paying for coordination for years without measuring it.
+- Treating the decision as permanent. It can be changed, but the change is expensive.
+
+## When it does not apply
+
+If the team is small and every service deploys together, either option works. The decision matters when size, the frequency
+of cross-cutting changes or access requirements start to create friction.
+
+## Checklist
+
+- [ ] What share of changes touches more than one package?
+- [ ] How long does CI take today for a small change, and how long would it take with incremental builds?
+- [ ] Do permissions need to be separated by repository?
+- [ ] Is the decision recorded in an ADR, with criteria for review?
+
+**Further reading:** [Conway's law and Team Topologies](/docs/ley-de-conway-team-topologies) explains how team structure
+pushes repository structure, and [ADR, a practical guide](/docs/adr) shows how to record the decision with reviewable criteria.
+
+## Sources
+
+- Rachel Potvin and Josh Levenberg, "Why Google Stores Billions of Lines of Code in a Single Repository",
+  _Communications of the ACM_ (2016).
+- Matthew Skelton and Manuel Pais, _Team Topologies_ (2019).
+- Michael T. Nygard, "Documenting Architecture Decisions" (2011).

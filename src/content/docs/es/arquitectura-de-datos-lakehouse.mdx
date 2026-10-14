@@ -1,0 +1,92 @@
+---
+title: 'Arquitectura de datos: lakehouse y data mesh'
+description: 'Cuándo un data warehouse basta, cuándo conviene un lakehouse sobre formatos de tabla abiertos y cuándo el data mesh tiene sentido organizativo.'
+category: tendencias
+tags:
+  - datos
+  - lakehouse
+  - data-mesh
+  - analitica
+order: 3
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Un almacenamiento abierto sirve a BI y a ML sin copias'
+---
+
+# Arquitectura de datos: lakehouse y data mesh
+
+Durante años, la arquitectura analítica fue sencilla de describir: las aplicaciones escribían en
+sus bases de datos operativas, un proceso nocturno copiaba los datos a un data warehouse y los
+informes leían de ahí. Funcionaba mientras los datos eran estructurados y los consumidores, pocos.
+Hoy aparecen dos problemas: los equipos de ciencia de datos necesitan ficheros, textos e imágenes,
+y cada copia adicional añade latencia, coste y puntos donde los datos se contradicen.
+
+Tres patrones compiten por resolverlo: el warehouse clásico, el lakehouse y el data mesh. No son
+excluyentes, pero exigen decisiones distintas.
+
+## El warehouse: cuando basta
+
+Un warehouse con esquema fijo, modelado dimensional y consultas SQL es la opción más madura. Es
+ideal si los datos son estructurados, los informes son el consumidor principal y el equipo es
+pequeño. Su límite aparece cuando el mismo dato debe servir a un modelo de aprendizaje automático:
+el modelo necesita acceso a ficheros y a historiales completos, y el warehouse se convierte en una
+copia más que mantener.
+
+## El lakehouse: un almacenamiento, varios consumidores
+
+Un lakehouse guarda los datos en almacenamiento de objetos barato, en ficheros columnares, y añade
+encima una capa de tabla abierta, como Delta Lake, Apache Iceberg o Apache Hudi. Esa capa aporta
+transacciones, evolución de esquema y viajes en el tiempo sobre ficheros que cualquier motor puede
+leer. El mismo conjunto de datos sirve a SQL para informes y a Python para modelos.
+
+La ventaja es evitar copias. El riesgo es que el lago se convierta en un pantano si nadie gobierna
+el catálogo, los permisos ni la calidad. Un lakehouse sin catálogo y sin contratos de datos es solo
+un almacenamiento barato con datos difíciles de confiar.
+
+## El data mesh: el dominio como dueño
+
+El data mesh, propuesto por Zhamak Dehghani, no es una tecnología sino un modelo organizativo. Cada
+dominio de negocio publica sus datos como producto, con dueño, calidad medida y contrato explícito.
+Una plataforma común ofrece las herramientas. Tiene sentido cuando hay muchos dominios y el equipo
+central de datos es el cuello de botella. Sin una plataforma madura y sin dueños dispuestos a
+responder por sus datos, el mesh se convierte en silos con otro nombre.
+
+## Un ejemplo trabajado
+
+Una empresa con cuatro dominios (pedidos, pagos, envíos y clientes) y 40 TB de eventos al mes
+necesita informes diarios y un modelo de riesgo de pagos que se reentrena cada semana. Con un
+warehouse, el modelo exigiría exportar unos 40 TB mensuales a un segundo sistema. Con un lakehouse,
+ambos leen la misma tabla abierta: el coste de almacenamiento sigue siendo bajo y no hay copia que
+sincronizar. Si además la empresa tiene 30 equipos de datos independientes, conviene asignar a cada
+dominio la propiedad de sus tablas publicadas, con la plataforma como base común.
+
+## Errores frecuentes
+
+- Elegir data mesh antes de tener una plataforma que los equipos puedan usar sin ayuda.
+- Montar un lakehouse sin catálogo, sin control de acceso y sin medir la calidad de las tablas.
+- Duplicar los mismos datos en el warehouse y en el lago por inercia.
+
+## Cuándo no aplica
+
+Si tu analítica son diez informes semanales y ningún modelo, un warehouse gestionado es suficiente y
+más barato de operar. El lakehouse y el mesh resuelven problemas de escala y de organización; sin
+esos problemas, añaden complejidad.
+
+## Checklist
+
+- [ ] ¿Qué consumidores necesitan el dato: informes, modelos o ambos?
+- [ ] ¿Existe un catálogo con dueños y permisos por tabla?
+- [ ] ¿Cada tabla publicada tiene un contrato y una medida de calidad?
+- [ ] ¿Cuántos dominios produce datos y cuántos equipos los consumen?
+
+**Para profundizar:** [datos, ACID y aislamiento](/docs/datos-acid-y-aislamiento) explica qué garantías
+necesita cada tabla, y [trade-offs y decisiones](/docs/trade-offs-y-decisiones) muestra cómo comparar
+opciones con criterios explícitos.
+
+## Fuentes
+
+- Michael Armbrust, Ali Ghodsi, Reynold Xin y Matei Zaharia, "Lakehouse: A New Generation of Open
+  Platforms that Unify Data Warehousing and Advanced Analytics", CIDR (2021).
+- Zhamak Dehghani, _Data Mesh: Delivering Data-Driven Value at Scale_ (2022).
+- Ralph Kimball y Margy Ross, _The Data Warehouse Toolkit_ (3.ª edición, 2013).
+- Documentación pública de Apache Iceberg, Delta Lake y Apache Hudi sobre formatos de tabla abiertos.

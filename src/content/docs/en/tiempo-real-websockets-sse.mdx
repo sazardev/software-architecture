@@ -1,0 +1,87 @@
+---
+title: 'Real time: WebSockets, SSE and queues'
+description: 'How to choose between SSE, WebSocket and queues to push data in real time: direction of the flow, number of clients and what happens when the connection drops.'
+category: diseno
+tags:
+  - real-time
+  - websocket
+  - sse
+  - queues
+  - scalability
+order: 23
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Flow direction and fan-out decide the technology
+---
+
+# Real time: WebSockets, SSE and queues
+
+"Real time" usually means "under a second of delay", not "instant". With that precision, the useful question stops being
+which technology is newer and becomes: which way does the information travel, how many clients receive it, and what happens
+when the connection drops? Three mechanisms are often combined: SSE, WebSocket and message queues.
+
+## Direction decides between SSE and WebSocket
+
+**Server-Sent Events** (SSE) is a one-way channel, from server to client, over ordinary HTTP. The browser reconnects on its own
+and sends the last identifier it received, so the server can resend what was missed. It suits notifications, task progress or
+price feeds that are only consumed.
+
+**WebSocket** (RFC 6455, 2011) is a persistent two-way connection with its own frame protocol over TCP. It fits when the client
+also sends messages often, as in a collaborative editor or a game. It has a cost that is sometimes ignored: reconnection, flow
+control and authenticating the connection are the application's responsibility.
+
+If the server only needs to push data, SSE is simpler to operate. If the client replies at a similar rate, WebSocket earns its
+complexity.
+
+## Fan-out decides when you need a broker
+
+With a single server instance, every client connects to it and the problem does not arise. With several instances behind a load
+balancer, an event published on one instance must reach clients connected to another. That is where a publish-subscribe broker
+(for example Redis Pub/Sub, NATS or Kafka) comes in, distributing events to every instance.
+
+A queue plays a different role. It absorbs peaks between whoever produces an event and whoever delivers it, and lets the connection
+servers scale without coupling to the producers. Its usual guarantee is "at least once", so the client must discard repeated events
+using an identifier.
+
+## A worked example in numbers
+
+Imagine 50,000 connected clients receiving an update every ten seconds. The send rate is 50,000 / 10 = 5,000 messages per second
+in total. If each instance holds 10,000 connections, you need at least five, and each must receive events from the broker rather
+than from the producer directly. That calculation tells you whether the problem is connections (many open sockets) or fan-out
+(many events per second). Each needs a different solution.
+
+## What happens when the connection drops
+
+Every persistent channel drops eventually: mobile networks, browser suspensions, server deployments. The client must reconnect with
+an increasing, randomised delay (the same principle as [retries with jitter](/docs/resiliencia-sistemas-distribuidos)), and on
+return it must ask for what it missed: from the last identifier or, if that is no longer available, a full snapshot of the state.
+Designing the replay matters more than choosing the protocol.
+
+## Common mistakes
+
+- **Using WebSocket for everything.** If there is only a server-to-client flow, SSE removes complexity without losing anything.
+- **Events without identifiers.** Without a sequence number, reconnection cannot know what is missing.
+- **Unnecessary session affinity.** Pinning each client to one instance complicates deployments; a broker usually removes the need.
+- **Confusing real time with aggressive polling.** Polling thousands of clients every second can cost more than a persistent channel.
+
+## When it does not apply
+
+If the data changes every minute or every hour, an HTTP request with caching is enough and far cheaper to operate. Real time is
+only justified when the delay has a value for the user or the business.
+
+## Checklist
+
+- [ ] Does information flow in one or two directions, and how often?
+- [ ] How many simultaneous clients and how many events per second?
+- [ ] Is more than one instance required to receive the same events?
+- [ ] Does each event carry an identifier for replay and deduplication?
+- [ ] Does reconnection use an increasing delay with jitter?
+
+**Further reading:** [caching, queues and streaming](/docs/caching-colas-streaming) covers delivery guarantees and queue patterns, and
+[resilience in distributed systems](/docs/resiliencia-sistemas-distribuidos) explains how to reconnect without storms.
+
+## Sources
+
+- Fette and Melnikov, _The WebSocket Protocol_, RFC 6455 (2011).
+- WHATWG, _HTML Living Standard_, section "Server-sent events".
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017), chapters on queues and event logs.

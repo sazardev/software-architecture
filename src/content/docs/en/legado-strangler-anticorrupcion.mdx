@@ -1,0 +1,80 @@
+---
+title: 'Legacy systems: strangler and anti-corruption layer'
+description: 'How to modernize a system you cannot rewrite: a strangler that redirects routes and an anti-corruption layer that protects the new model.'
+category: diseno
+tags:
+  - legacy
+  - strangler
+  - anti-corruption-layer
+  - modernization
+  - ddd
+order: 21
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'A translation layer shields the new model while routes migrate'
+---
+
+# Legacy systems: strangler and anti-corruption layer
+
+A legacy system is not replaced over a weekend. It works, it bills, and customers depend on behaviours nobody documented.
+Rewriting it from scratch often fails: the new team chases a moving target while the old system keeps receiving patches for years.
+Joel Spolsky described that trap in 2000, when he analysed Netscape's rewrite.
+
+Modernization works better in parts: migrate one capability at a time, switch nothing off, and let the legacy system run out of work.
+
+## The strangler
+
+The strangler fig pattern puts a facade in front of the old system. Routes are redirected one by one: those already living in the new
+system go there, the rest stay in the legacy. Over time the legacy system has no routes left and can be retired.
+
+Three conditions make it work:
+
+- The facade or router must direct traffic by route, header or client, and revert a change in seconds.
+- Each migrated capability must have its own metrics, so errors and latency can be compared with the legacy system.
+- The migration order is explicit, usually by business value or risk, not by technical convenience.
+
+## The anti-corruption layer
+
+The legacy system has its own language: numeric status codes, fields with implicit meanings, tables that mix concepts. If the new
+service adopts that model, it inherits its mistakes. The anti-corruption layer, a concept Eric Evans introduced in _Domain-Driven
+Design_, is a translator that keeps the two worlds apart.
+
+**Worked example.** The legacy system stores a customer's status as a number from 0 to 9, with no documentation. The anti-corruption
+layer translates it into a domain type with five explicit values, such as `Active`, `Suspended` or `Closed`, and sets aside codes with
+no equivalent, logging them for review. The new service never sees a magic number. When the legacy system disappears, only the layer
+is removed, not the model.
+
+In a case with twelve capabilities, three migrated, the router sends only those three routes to the new services. The other nine stay
+in the legacy system, but the team no longer touches the old code to add new features.
+
+## Common mistakes
+
+- **An anti-corruption layer that copies the legacy model.** If it translates field by field without changing anything, it protects nothing.
+- **Migrating without an owner for the legacy system.** While it exists, someone must answer for its incidents.
+- **A router without metrics.** Without them, the migration advances blindly.
+- **Delaying retirement.** A legacy system that still receives traffic never quite dies.
+
+## When it does not apply
+
+If the system is small, well bounded and can be replaced entirely in an agreed window, the strangler adds work without benefit. Reconsider
+it too if the legacy system cannot have its traffic intercepted, such as a program installed on each client: then start with a different
+integration layer.
+
+## Checklist
+
+- [ ] Is there a facade that can route traffic per route and revert in seconds?
+- [ ] Does each migrated capability have metrics comparable with the legacy system?
+- [ ] Is the migration order agreed and justified?
+- [ ] Does the anti-corruption layer translate into domain concepts, not legacy ones?
+- [ ] Is there a date and an owner for retiring the legacy system?
+
+**Further reading:** [monolith vs microservices](/docs/monolito-vs-microservicios) describes extraction routes by bounded context;
+[domain-driven design](/docs/domain-driven-design) explains bounded contexts and the ubiquitous language;
+[technical debt and evolution](/docs/deuda-tecnica-evolucion) helps prioritise what to modernise first.
+
+## Sources
+
+- Martin Fowler, "StranglerFigApplication", martinfowler.com (2004).
+- Eric Evans, _Domain-Driven Design: Tackling Complexity in the Heart of Software_ (2003).
+- Joel Spolsky, "Things You Should Never Do, Part I" (2000).
+- Sam Newman, _Monolith to Microservices_ (2019).

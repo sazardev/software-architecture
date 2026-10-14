@@ -1,0 +1,90 @@
+---
+title: 'Data architecture: lakehouse and data mesh'
+description: 'When a data warehouse is enough, when an open-table lakehouse pays off, and when a data mesh makes sense as an organizational model.'
+category: tendencias
+tags:
+  - data
+  - lakehouse
+  - data-mesh
+  - analytics
+order: 3
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'One open storage serves BI and ML without copies'
+---
+
+# Data architecture: lakehouse and data mesh
+
+For years, analytics architecture was simple to describe. Applications wrote to their operational
+databases, a nightly job copied the data into a data warehouse, and reports read from there. That
+worked while the data was structured and the consumers were few. Two things have changed: data science
+teams need files, text and images, and every extra copy adds latency, cost and places where the data
+can disagree.
+
+Three patterns compete to solve this: the classic warehouse, the lakehouse and the data mesh. They are
+not mutually exclusive, but each one forces different decisions.
+
+## The warehouse: when it is enough
+
+A warehouse with a fixed schema, dimensional modelling and SQL queries is the most mature option. It is
+the right choice when the data is structured, reports are the main consumer and the team is small. Its
+limit shows up when the same data must also feed a machine learning model. The model needs files and
+full histories, and the warehouse becomes one more copy to maintain.
+
+## The lakehouse: one storage, several consumers
+
+A lakehouse keeps data in cheap object storage, as columnar files, and adds an open table layer on top,
+such as Delta Lake, Apache Iceberg or Apache Hudi. That layer provides transactions, schema evolution and
+time travel over files that any engine can read. The same dataset serves SQL for reports and Python for
+models.
+
+The benefit is avoiding copies. The risk is that the lake turns into a swamp if nobody governs the
+catalogue, the permissions or the quality. A lakehouse without a catalogue and without data contracts is
+just cheap storage with data nobody trusts.
+
+## The data mesh: the domain as owner
+
+The data mesh, proposed by Zhamak Dehghani, is an organizational model rather than a technology. Each
+business domain publishes its data as a product, with an owner, measured quality and an explicit contract.
+A shared platform provides the tooling. It makes sense when there are many domains and a central data team
+has become the bottleneck. Without a mature platform and owners willing to answer for their data, the mesh
+becomes silos with a new name.
+
+## A worked example
+
+A company with four domains (orders, payments, shipping and customers) and 40 TB of events per month needs
+daily reports and a payment-risk model retrained every week. With a warehouse, the model would require
+exporting about 40 TB a month to a second system. With a lakehouse, both read the same open table: storage
+stays cheap and there is no copy to synchronise. If the company also has 30 independent data teams, each
+domain should own its published tables, with the platform as the common base.
+
+## Common mistakes
+
+- Choosing a data mesh before there is a platform that teams can use without help.
+- Building a lakehouse without a catalogue, access control or measured table quality.
+- Keeping the same data in the warehouse and the lake out of habit.
+
+## When it does not apply
+
+If your analytics are ten weekly reports and no models, a managed warehouse is enough and cheaper to run.
+The lakehouse and the mesh solve problems of scale and organization. Without those problems, they only
+add complexity.
+
+## Checklist
+
+- [ ] Which consumers need the data: reports, models or both?
+- [ ] Is there a catalogue with owners and permissions per table?
+- [ ] Does every published table have a contract and a quality measure?
+- [ ] How many domains produce data, and how many teams consume it?
+
+**Further reading:** [data, ACID and isolation](/docs/datos-acid-y-aislamiento) explains which guarantees
+each table needs, and [trade-offs and decisions](/docs/trade-offs-y-decisiones) shows how to compare options
+with explicit criteria.
+
+## Sources
+
+- Michael Armbrust, Ali Ghodsi, Reynold Xin and Matei Zaharia, "Lakehouse: A New Generation of Open
+  Platforms that Unify Data Warehousing and Advanced Analytics", CIDR (2021).
+- Zhamak Dehghani, _Data Mesh: Delivering Data-Driven Value at Scale_ (2022).
+- Ralph Kimball and Margy Ross, _The Data Warehouse Toolkit_ (3rd edition, 2013).
+- Public documentation of Apache Iceberg, Delta Lake and Apache Hudi on open table formats.

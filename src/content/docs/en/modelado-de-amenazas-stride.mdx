@@ -1,0 +1,96 @@
+---
+title: 'Threat modelling with STRIDE on a real diagram'
+description: 'How to apply STRIDE to a real data flow diagram: trust boundaries, the six threat categories and a complete review example.'
+category: practicas
+tags:
+  - security
+  - stride
+  - threat-modelling
+  - threat-modeling
+order: 11
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Every flow that crosses a trust boundary is an attack surface'
+---
+
+# Threat modelling with STRIDE on a real diagram
+
+An architecture diagram shows how a system works. A threat model shows how it could fail in the hands of someone who
+wants to break it. Most teams do the first and never the second, so the security review arrives late, after the change
+is already in production.
+
+STRIDE is a simple method to close that gap. It needs no expensive tools: it needs a diagram and an honest hour of discussion.
+
+## The elements of the diagram
+
+STRIDE is applied to a **data flow diagram** (DFD), which contains only four kinds of element: external entities (users,
+third-party systems), processes (services, functions), data stores (databases, queues) and the flows between them. The
+diagram also shows **trust boundaries**: lines that separate zones with different levels of control, such as the internet
+and the internal network, or a service and its database.
+
+Every flow that crosses a trust boundary is an attack surface. A flow inside one zone may be reasonable to trust; one that
+crosses a boundary is not trusted by default.
+
+## The six categories
+
+STRIDE gives each category one question:
+
+- **Spoofing:** can someone pretend to be someone else?
+- **Tampering:** can someone alter data in transit or at rest?
+- **Repudiation:** can someone deny an action without leaving a trace?
+- **Information disclosure:** can someone read what they should not?
+- **Denial of service:** can someone stop the system from responding?
+- **Elevation of privilege:** can someone gain more permissions than they have?
+
+The method walks through each element of the diagram and answers the six questions. Many answers will be "not applicable";
+the value lies in the ones that are.
+
+## A worked example
+
+An order system has a user on the internet, a public API, an internal payments service and a database. There is a trust
+boundary between the internet and the internal network. There are five flows. Reviewing them, the team identifies:
+
+- User to API: spoofing with stolen credentials. Mitigation: strong authentication and a limit on attempts.
+- API to payments service: tampering with the amount if the message is not signed or validated. Mitigation: the payments
+  service checks the amount against the order.
+- Payments service to database: repudiation if operations are not recorded immutably. Mitigation: an audit log that records
+  the caller's identity.
+- User to API: disclosure if error messages reveal internal details. Mitigation: generic errors.
+- API: denial of service through volume. Mitigation: rate limits per client.
+
+Of the 30 possible combinations (five flows across six categories), the team analyses the ones that apply and records the
+others with the reason. That record is the useful output of the exercise.
+
+## What to do with the findings
+
+Each threat has three possible outcomes: mitigate it, accept it with an owner and a date, or transfer it (for example, to a
+certified provider). Accepted risks belong in an ADR or in the risk register, not forgotten in a meeting. The model is
+reviewed whenever the diagram changes, not once a year.
+
+## Common mistakes
+
+- Modelling the ideal system instead of the real one: the diagram must show what exists, shortcuts included.
+- Forgetting internal flows that cross boundaries, such as nightly jobs with shared credentials.
+- Treating STRIDE as a checklist to close in an afternoon, without discussing the mitigations.
+
+## When it does not apply
+
+For a prototype with no real data and no external users, a full model is excessive: noting the boundaries and the sensitive
+data is enough. STRIDE pays off most when the system handles personal data, payments or privileged access.
+
+## Checklist
+
+- [ ] Does the diagram include external entities, processes, stores and flows?
+- [ ] Are the trust boundaries drawn?
+- [ ] Was every flow that crosses a boundary reviewed against the six categories?
+- [ ] Does every threat have a decision (mitigate, accept or transfer) with an owner?
+
+**Further reading:** [security by design](/docs/seguridad-por-diseno) covers the principles and trust boundaries in
+detail, and [network, identity and security in the cloud](/docs/redes-identidad-seguridad-nube) covers the most common
+mitigations in a cloud environment.
+
+## Sources
+
+- Loren Kohnfelder and Praerit Garg, "The Threats to Our Products", Microsoft (1999), the origin of STRIDE.
+- Adam Shostack, _Threat Modeling: Designing for Security_ (2014).
+- Microsoft Security Development Lifecycle, public documentation on threat modelling.

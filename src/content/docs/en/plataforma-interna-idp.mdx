@@ -1,0 +1,85 @@
+---
+title: 'Internal platform: when to build an IDP'
+description: 'What an internal developer platform is, when it pays for its cost, and how to run it as a product with measurable golden paths.'
+category: decisiones
+tags:
+  - platform
+  - idp
+  - platform-engineering
+  - team-topologies
+order: 15
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'The platform offers product teams one well-built path'
+---
+
+# Internal platform: when to build an IDP
+
+As an organization grows, every product team starts solving the same problems: how to deploy, where to keep
+secrets, how to observe a service, how to provision a database. Each team solves them its own way. After a
+while there are a dozen ways to deploy, nobody knows which is correct, and teams spend days on work that adds
+nothing for the customer.
+
+An internal developer platform, or IDP, tries to close that gap. It is a set of tools and processes that a
+platform team offers to product teams as an internal service.
+
+## What it is and what it is not
+
+A platform is not a portal with a button or a collection of scripts. It is a product with users (the company's
+developers), a roadmap, a backlog and a measure of success. Its job is to reduce the cognitive load of product
+teams, which is exactly the mission _Team Topologies_ gives to a platform team.
+
+The central idea is the **golden path**: a recommended, already-built way to do a common thing, such as creating
+a service, deploying it or publishing an API. Following the path is the easiest option, but it is not mandatory.
+Whoever needs something different can leave it, accepting the cost.
+
+## When it justifies its cost
+
+Building a platform costs people, and those people are not building product. There are clear signs that it pays off:
+
+- Several product teams solve the same infrastructure problems separately.
+- Onboarding a new engineer takes weeks and depends on tacit knowledge.
+- Configuration incidents keep repeating across different teams.
+
+With one or two teams, a platform is over-engineering: documenting a couple of templates is enough.
+
+## A worked example
+
+Suppose 12 product teams and 25 manual deployments a week. Each one costs about 4 hours, and a golden path cuts that to 30 minutes, so about 87 hours a week are saved if every team follows the path. A two-person platform team occupies about 80 hours a week of its time. With all services adopting the path, the investment pays off, and it also shortens onboarding, which is not counted here. If only half of the services adopt it, the saving falls to about 44 hours and no longer covers the 80.
+
+The figures are illustrative. What matters is the shape of the calculation: hours recovered through real adoption, against the time needed to run the platform.
+
+## How to measure it
+
+A platform is measured by adoption and by outcome. Adoption: what share of services follow the golden path. Outcome:
+time to first production deployment, deployment frequency and change failure rate, the DORA metrics. If adoption is
+low, the cause is usually product-related (the path does not solve the real case), not a lack of enforcement.
+
+## Common mistakes
+
+- Building a platform before two teams need it.
+- Mandating the golden path with no way out, which turns the platform into a bottleneck.
+- Treating the platform team as a ticket queue instead of a product with users.
+
+## When it does not apply
+
+If the company has one service or a team that deploys once a month, a well-written guide and a shared script are
+enough. A platform is justified when repetition and the number of teams make the friction cost more than running it.
+
+## Checklist
+
+- [ ] Are at least three teams repeating the same infrastructure work?
+- [ ] Does the golden path solve a real case and is it documented?
+- [ ] Is there a measure of adoption and of time to production?
+- [ ] Can product teams leave the path, with an explicit cost?
+
+**Further reading:** [Conway's law and Team Topologies](/docs/ley-de-conway-team-topologies) covers the platform
+team and its interaction modes, and [DevOps: culture](/docs/devops-cultura) covers the metrics used to measure
+outcomes.
+
+## Sources
+
+- Matthew Skelton and Manuel Pais, _Team Topologies_ (2019).
+- Nicole Forsgren, Jez Humble and Gene Kim, _Accelerate_ (2018), for the DORA metrics.
+- Gene Kim, Jez Humble, Patrick Debois and John Willis, _The DevOps Handbook_ (2016).
+- Spotify Engineering, articles on internal platforms and golden paths (2020).

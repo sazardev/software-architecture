@@ -1,0 +1,92 @@
+---
+title: 'Estrategia de pruebas: pirámide y contratos'
+description: 'Qué probar en cada nivel de la pirámide, cómo los contratos entre servicios evitan integraciones rotas y qué pruebas de arquitectura proteger.'
+category: practicas
+tags:
+  - pruebas
+  - contratos
+  - piramide
+  - pact
+  - arquitectura
+order: 9
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Muchas pruebas unitarias, pocas de extremo a extremo y contratos en medio'
+---
+
+# Estrategia de pruebas: pirámide y contratos
+
+Un equipo puede tener cobertura alta y aun así desplegar un servicio que rompe a otro. La cobertura mide qué
+líneas se ejecutaron, no qué frontera quedó protegida. La estrategia de pruebas debe decidir qué se verifica
+en cada nivel y quién es responsable de cada verificación.
+
+## La pirámide, con su advertencia
+
+La pirámide de pruebas, popularizada por Mike Cohn en 2009, propone muchas pruebas unitarias en la base, menos
+pruebas de integración y pocas pruebas de extremo a extremo (E2E) en la cima. El motivo es el coste y la
+velocidad: una prueba unitaria tarda milisegundos y falla por una causa clara; una E2E tarda minutos y puede
+fallar por la red, por datos o por otro equipo.
+
+La pirámide tiene un antipatrón conocido: la «copa de trofeo», con muchas E2E y pocas unitarias. Suele aparecer
+cuando nadie diseñó la estrategia y cada incidente se cubre con una prueba de extremo a extremo nueva.
+
+## Dónde encaja el contrato
+
+Entre los servicios hay una frontera que ni la prueba unitaria ni la E2E protegen bien. Un contrato describe lo que
+un consumidor necesita de un proveedor: rutas, campos, tipos y códigos de error. La prueba de contrato verifica
+ambos lados por separado:
+
+- El **consumidor** registra sus expectativas en un contrato, por ejemplo «`GET /stock/{sku}` devuelve un campo
+  `disponible` entero».
+- El **proveedor** ejecuta esos contratos contra su implementación en su propio pipeline.
+
+Si el proveedor renombra `disponible` a `unidades`, su build falla antes del despliegue, no en producción. Este
+enfoque, llamado contratos guiados por el consumidor, lo formalizó Ian Robinson en 2006, y herramientas como Pact
+lo implementan.
+
+## Qué probar en cada nivel
+
+- **Unitarias:** reglas de dominio, cálculos y casos límite. Rápidas y sin red.
+- **Contrato:** la forma de cada frontera entre servicios. Sin desplegar el conjunto.
+- **Integración:** un servicio con su base de datos real, o con dependencias simuladas en el borde.
+- **E2E:** dos o tres recorridos críticos, como pagar un pedido. Pocas, y bien elegidas.
+- **Pruebas de arquitectura:** reglas de dependencia y de capas, ejecutadas en CI. Son comprobaciones de
+  características, como las de [fitness functions](/docs/fitness-functions).
+
+**Ejemplo trabajado.** Un flujo de pedidos depende de inventario. Antes había 40 pruebas E2E que tardaban 35
+minutos y fallaban cada semana por datos compartidos. Se movieron 30 de ellas a pruebas unitarias del dominio
+de pedidos más un contrato con inventario. El pipeline pasó de 35 a 4 minutos para esas comprobaciones, y las
+10 E2E restantes cubren los recorridos que realmente importan.
+
+## Errores frecuentes
+
+- **Contratos que describen la implementación.** Un contrato debe fijar lo que el consumidor usa, no cada campo
+  que el proveedor devuelve.
+- **E2E para cubrir cada regla de negocio.** Esa regla pertenece a una prueba unitaria.
+- **Contratos sin verificación del proveedor.** Un contrato que nadie ejecuta es documentación caducada.
+- **Datos de prueba compartidos.** Generan fallos intermitentes que se atribuyen a la red.
+
+## Cuándo no aplica
+
+Un monolito con un solo despliegue no necesita pruebas de contrato entre servicios; basta con integración sobre su
+base de datos. Un prototipo también puede empezar sin pirámide formal, siempre que las pruebas que escriba sean
+unitarias y estables.
+
+## Checklist
+
+- [ ] ¿Cada regla de negocio tiene una prueba unitaria?
+- [ ] ¿Cada frontera entre servicios tiene un contrato verificado por el proveedor?
+- [ ] ¿Las E2E cubren solo recorridos críticos?
+- [ ] ¿Las pruebas de arquitectura corren en el pipeline?
+- [ ] ¿Las pruebas son deterministas, sin datos compartidos?
+
+**Para profundizar:** [fitness functions y arquitectura evolutiva](/docs/fitness-functions) explica cómo convertir reglas
+de arquitectura en pruebas; [monolito vs microservicios](/docs/monolito-vs-microservicios) describe las fronteras que
+los contratos protegen; [diseño de APIs](/docs/diseno-de-apis) trata la evolución de los contratos sin romperlos.
+
+## Fuentes
+
+- Mike Cohn, _Succeeding with Agile_ (2009), capítulo sobre la pirámide de pruebas.
+- Ian Robinson, "Consumer-Driven Contracts: A Service Evolution Pattern", martinfowler.com (2006).
+- Mike Wacker, "Just Say No to More End-to-End Tests", Google Testing Blog (2015).
+- Neal Ford, Rebecca Parsons, Patrick Kua y Pramod Sadalage, _Building Evolutionary Architectures_ (1.ª edición, 2017).

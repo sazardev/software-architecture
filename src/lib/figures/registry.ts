@@ -2,11 +2,14 @@ import { acoplamientoCohesion } from './designs/acoplamiento-cohesion';
 import { adr } from './designs/adr';
 import { adrCicloDeVida } from './designs/adr-ciclo-de-vida';
 import { antesDeEscalarLaCuenta } from './designs/antes-de-escalar-la-cuenta';
+import { arquitectoComoFacilitador } from './designs/arquitecto-como-facilitador';
 import { arquitecturaAgentesLlm } from './designs/arquitectura-agentes-llm';
+import { arquitecturaDeDatosLakehouse } from './designs/arquitectura-de-datos-lakehouse';
 import { arquitecturaEnCapasCleanOnion } from './designs/arquitectura-en-capas-clean-onion';
 import { arquitecturaHexagonal } from './designs/arquitectura-hexagonal';
 import { atributosDeCalidad } from './designs/atributos-de-calidad';
 import { autonomiaDeLaIa } from './designs/autonomia-de-la-ia';
+import { autorizacionRbacAbacRebac } from './designs/autorizacion-rbac-abac-rebac';
 import { c4Model } from './designs/c4-model';
 import { cachingColasStreaming } from './designs/caching-colas-streaming';
 import { capPacelc } from './designs/cap-pacelc';
@@ -18,6 +21,7 @@ import { complejidadAccidentalDeHerramientas } from './designs/complejidad-accid
 import { complejidadEsencialYAccidental } from './designs/complejidad-esencial-y-accidental';
 import { controlarLaIaGobiernoYAutonomia } from './designs/controlar-la-ia-gobierno-y-autonomia';
 import { coordinarServiciosSin2pc } from './designs/coordinar-servicios-sin-2pc';
+import { costoDeInferencia } from './designs/costo-de-inferencia';
 import { datosAcidYAislamiento } from './designs/datos-acid-y-aislamiento';
 import { deudaTecnicaEvolucion } from './designs/deuda-tecnica-evolucion';
 import { devopsCultura } from './designs/devops-cultura';
@@ -25,8 +29,10 @@ import { diagramasComoCodigo } from './designs/diagramas-como-codigo';
 import { disenarFlujosConAgentes } from './designs/disenar-flujos-con-agentes';
 import { disenoDeApis } from './designs/diseno-de-apis';
 import { domainDrivenDesign } from './designs/domain-driven-design';
+import { entregaProgresivaFlagsCanary } from './designs/entrega-progresiva-flags-canary';
 import { escalabilidadCasosClasicos } from './designs/escalabilidad-casos-clasicos';
 import { estilosArquitectonicos } from './designs/estilos-arquitectonicos';
+import { estrategiaDePruebasContratos } from './designs/estrategia-de-pruebas-contratos';
 import { eventDrivenCqrsEventSourcing } from './designs/event-driven-cqrs-event-sourcing';
 import { finopsCostoComoAtributo } from './designs/finops-costo-como-atributo';
 import { fitnessEnElCi } from './designs/fitness-en-el-ci';
@@ -36,34 +42,45 @@ import { gettingStarted } from './designs/getting-started';
 import { harnessEngineeringClaudeCode } from './designs/harness-engineering-claude-code';
 import { herramientasParaDecidirYDocumentar } from './designs/herramientas-para-decidir-y-documentar';
 import { iaParaDecidirNegocio } from './designs/ia-para-decidir-negocio';
+import { legadoStranglerAnticorrupcion } from './designs/legado-strangler-anticorrupcion';
 import { lenguajesEraIa } from './designs/lenguajes-era-ia';
 import { leyDeConwayTeamTopologies } from './designs/ley-de-conway-team-topologies';
 import { marcosDeDecisionEstrategica } from './designs/marcos-de-decision-estrategica';
 import { marcosDePriorizacion } from './designs/marcos-de-priorizacion';
 import { medirDecisionesOkrKpi } from './designs/medir-decisiones-okr-kpi';
 import { mejoraContinuaYExperimentos } from './designs/mejora-continua-y-experimentos';
+import { microFrontendsYBff } from './designs/micro-frontends-y-bff';
+import { migracionesBdSinDowntime } from './designs/migraciones-bd-sin-downtime';
+import { modeladoDeAmenazasStride } from './designs/modelado-de-amenazas-stride';
 import { modelosDeDespliegueNube } from './designs/modelos-de-despliegue-nube';
 import { monolitoModularPrimero } from './designs/monolito-modular-primero';
 import { monolitoVsMicroservicios } from './designs/monolito-vs-microservicios';
+import { monorepoOPolirepo } from './designs/monorepo-o-polirepo';
 import { multiTenancy } from './designs/multi-tenancy';
 import { multinubeCuandoTieneSentido } from './designs/multinube-cuando-tiene-sentido';
 import { nubeHibridaEnDetalle } from './designs/nube-hibrida-en-detalle';
 import { numerosYLeyesDeRendimiento } from './designs/numeros-y-leyes-de-rendimiento';
+import { observabilidadSloPresupuestoError } from './designs/observabilidad-slo-presupuesto-error';
 import { organigramaYSistema } from './designs/organigrama-y-sistema';
 import { patronesDeDiseno } from './designs/patrones-de-diseno';
 import { pensamientoSistemicoYSesgos } from './designs/pensamiento-sistemico-y-sesgos';
+import { plataformaInternaIdp } from './designs/plataforma-interna-idp';
 import { presentarIdeasYPropuestas } from './designs/presentar-ideas-y-propuestas';
 import { principiosDeDisenoBasicos } from './designs/principios-de-diseno-basicos';
+import { ragYEvaluacionContinua } from './designs/rag-y-evaluacion-continua';
 import { redesIdentidadSeguridadNube } from './designs/redes-identidad-seguridad-nube';
 import { regionesZonasYRecuperacion } from './designs/regiones-zonas-y-recuperacion';
 import { reintentosConJitter } from './designs/reintentos-con-jitter';
 import { resilienciaSistemasDistribuidos } from './designs/resiliencia-sistemas-distribuidos';
+import { rfcYRevisionesDeArquitectura } from './designs/rfc-y-revisiones-de-arquitectura';
 import { sagasOutboxIdempotencia } from './designs/sagas-outbox-idempotencia';
 import { salidaDeLaNube } from './designs/salida-de-la-nube';
 import { seguridadPorDiseno } from './designs/seguridad-por-diseno';
 import { serverlessYComputacionGestionada } from './designs/serverless-y-computacion-gestionada';
 import { serviciosNubeParaArquitectos } from './designs/servicios-nube-para-arquitectos';
+import { softwareSostenibleCarbono } from './designs/software-sostenible-carbono';
 import { solid } from './designs/solid';
+import { tiempoRealWebsocketsSse } from './designs/tiempo-real-websockets-sse';
 import { tradeOffsYDecisiones } from './designs/trade-offs-y-decisiones';
 import type { Figure, FigureBuilder, FigureLocale } from './figure-types';
 
@@ -139,6 +156,23 @@ const entries: readonly (readonly [slug: string, build: FigureBuilder])[] = [
   ['autonomia-de-la-ia', autonomiaDeLaIa],
   ['antes-de-escalar-la-cuenta', antesDeEscalarLaCuenta],
   ['complejidad-accidental-de-herramientas', complejidadAccidentalDeHerramientas],
+  ['observabilidad-slo-presupuesto-error', observabilidadSloPresupuestoError],
+  ['migraciones-bd-sin-downtime', migracionesBdSinDowntime],
+  ['legado-strangler-anticorrupcion', legadoStranglerAnticorrupcion],
+  ['estrategia-de-pruebas-contratos', estrategiaDePruebasContratos],
+  ['entrega-progresiva-flags-canary', entregaProgresivaFlagsCanary],
+  ['arquitectura-de-datos-lakehouse', arquitecturaDeDatosLakehouse],
+  ['plataforma-interna-idp', plataformaInternaIdp],
+  ['monorepo-o-polirepo', monorepoOPolirepo],
+  ['modelado-de-amenazas-stride', modeladoDeAmenazasStride],
+  ['autorizacion-rbac-abac-rebac', autorizacionRbacAbacRebac],
+  ['micro-frontends-y-bff', microFrontendsYBff],
+  ['tiempo-real-websockets-sse', tiempoRealWebsocketsSse],
+  ['rag-y-evaluacion-continua', ragYEvaluacionContinua],
+  ['costo-de-inferencia', costoDeInferencia],
+  ['software-sostenible-carbono', softwareSostenibleCarbono],
+  ['rfc-y-revisiones-de-arquitectura', rfcYRevisionesDeArquitectura],
+  ['arquitecto-como-facilitador', arquitectoComoFacilitador],
 ];
 
 const builders = new Map<string, FigureBuilder>(entries);

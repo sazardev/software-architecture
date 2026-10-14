@@ -1,0 +1,94 @@
+---
+title: 'Authorization at scale: RBAC, ABAC and ReBAC'
+description: 'When to decide access with roles, attributes or relationships, and how to avoid duplicating access rules across every service.'
+category: nube
+tags:
+  - authorization
+  - rbac
+  - abac
+  - rebac
+order: 11
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Three models answer the same question from different sources of truth'
+---
+
+# Authorization at scale: RBAC, ABAC and ReBAC
+
+Authentication answers "who are you?". Authorization answers "may you do this?", and it is the question asked most often
+in any system: every read, every write, every button. In a small application, one check in the code is enough. At scale,
+the same rule appears in twenty services, each with its own copy, and a policy change takes weeks to reach all of them.
+
+Three classic models organize the problem: role-based access control (RBAC), attribute-based access control (ABAC) and
+relationship-based access control (ReBAC). Each one takes a different thing as its source of truth.
+
+## RBAC: the role as the source of truth
+
+In RBAC, each person is assigned roles (administrator, editor, reader) and each role groups permissions. It is the easiest
+model to understand and to audit: the question "who may delete invoices?" is answered by looking at which roles hold that permission.
+
+Its limit appears with exceptions. "Editor, but only in their region" or "editor, except for confidential documents" forces
+a new role for every combination, and the number of roles grows out of control. This is known as _role explosion_.
+
+## ABAC: attributes as the source of truth
+
+In ABAC, the decision depends on attributes of the user, the resource, the action and the context: region, department,
+document classification, time of day. A policy might say that a user may read a report if their department matches the
+report's and the report is not classified as confidential.
+
+ABAC expresses fine-grained rules well, but it requires attributes to be reliable and available at the moment of deciding.
+If the department attribute is stale in one service, the decision is wrong and nobody notices. NIST published a reference
+guide for ABAC in 2014 (SP 800-162).
+
+## ReBAC: relationships as the source of truth
+
+In ReBAC, the decision follows the graph of relationships between people and resources: X owns a document, the document
+belongs to a folder, Y is a member of a team that has access to that folder. Permissions are derived by walking those relationships.
+
+It is the natural model for sharing: documents, projects or resources with hierarchies. In 2019 Google described Zanzibar, its
+system that applies this approach at large scale with global consistency. Its cost is the graph itself: it needs storage,
+indexes and a way to answer with enough consistency.
+
+## A worked example
+
+A document platform has 40,000 users, 2 million documents and 300 teams. With RBAC, roles such as "finance editor in the EU"
+would have to be created for each combination; with 3 departments, 4 regions and 3 access levels, that is more than 30 roles,
+and the number grows with every exception. With ABAC, the policy is compact, but every service needs the user's department
+and region kept up to date. With ReBAC, a document shared with a team is resolved by walking three relationships: document,
+folder and team membership. For a sharing platform, ReBAC usually leaves the fewest duplicated rules.
+
+## How not to duplicate rules
+
+The most expensive mistake is for each service to implement its own check. The alternative is to centralize the decision: an
+authorization service that other services query, or a policy engine (such as Open Policy Agent or Cedar) distributed as a
+library with versioned policies. What does not work is mixing both: if one service decides on its own, the central policy
+stops being the only source of truth.
+
+## Common mistakes
+
+- Creating a role for every exception instead of modelling the attribute or relationship that explains it.
+- Trusting attributes nobody updates, such as the department of an employee who changed area six months ago.
+- Deciding authorization in the client without rechecking it on the server.
+
+## When it does not apply
+
+If the application has three roles and no exceptions, RBAC is enough and nothing more is needed. The complexity of ABAC or
+ReBAC is justified when rules depend on context or on hierarchies that change.
+
+## Checklist
+
+- [ ] How many exceptions does the policy have, and can they be expressed as attributes or relationships?
+- [ ] Who is the source of truth for each attribute, and how often is it updated?
+- [ ] Is the decision made in one place or in each service?
+- [ ] Do the tests cover the exceptions, not only the basic roles?
+
+**Further reading:** [network, identity and security in the cloud](/docs/redes-identidad-seguridad-nube) covers workload
+identity and least privilege, and [security by design](/docs/seguridad-por-diseno) explains the trust boundaries where
+authorization is enforced.
+
+## Sources
+
+- David F. Ferraiolo and D. Richard Kuhn, "Role-Based Access Controls", NIST (1992), the origin of RBAC.
+- NIST, _INCITS 359-2004_, the RBAC standard.
+- Vincent C. Hu and others, _Guide to Attribute Based Access Control (ABAC) Definition and Considerations_, NIST SP 800-162 (2014).
+- Ruoming Pang and others, "Zanzibar: Google's Consistent, Global Authorization System", USENIX ATC (2019).

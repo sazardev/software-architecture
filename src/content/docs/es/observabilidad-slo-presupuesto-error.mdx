@@ -1,0 +1,96 @@
+---
+title: 'Observabilidad: SLI, SLO y presupuesto de error'
+description: 'Cómo medir lo que vive el usuario con SLI, fijar un SLO y usar el presupuesto de error para decidir cuándo acelerar y cuándo frenar.'
+category: practicas
+tags:
+  - observabilidad
+  - slo
+  - sli
+  - presupuesto-de-error
+  - sre
+order: 8
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Un SLO deja un presupuesto de error que cada fallo consume'
+---
+
+# Observabilidad: SLI, SLO y presupuesto de error
+
+Un sistema puede tener mil métricas y aun así nadie sabe si los usuarios están bien. Las métricas de CPU
+o de memoria describen la máquina; no dicen si un pago se completó. La observabilidad sirve para responder
+preguntas que no previste al diseñar el sistema, y el primer paso es decidir qué preguntas importan.
+
+## Logs, métricas y trazas
+
+Cada señal responde una pregunta distinta:
+
+- **Logs:** qué pasó en un evento concreto, con su contexto. Útiles para investigar un caso.
+- **Métricas:** cuánto y con qué tendencia. Baratas de almacenar y de consultar, ideales para alertas.
+- **Trazas:** por dónde viajó una petición entre servicios y dónde tardó. Imprescindibles cuando hay
+  muchos saltos.
+
+Ninguna sustituye a las demás. El error habitual es acumular logs sin métricas de experiencia, y luego
+tardar horas en contestar una pregunta simple como «¿cuántos pagos fallan ahora?».
+
+## SLI: medir lo que el usuario percibe
+
+Un indicador de nivel de servicio (SLI) es una proporción de eventos buenos sobre el total. Por ejemplo:
+
+- Disponibilidad: peticiones con respuesta válida entre todas las peticiones.
+- Latencia: peticiones servidas en menos de 300 ms entre todas las peticiones.
+
+Mide en el borde, lo más cerca posible del usuario, y sobre un recorrido concreto (pagar, buscar, entrar).
+Un SLI bien elegido cambia cuando el usuario sufre, aunque los servidores parezcan sanos.
+
+## SLO y presupuesto de error
+
+El objetivo de nivel de servicio (SLO) fija un valor para el SLI en un periodo. Un SLO de 99,9 % en 30 días
+deja un presupuesto de error de 0,1 %, es decir, unos 43 minutos de indisponibilidad equivalente.
+
+**Ejemplo trabajado.** Un servicio de pagos recibe 10 millones de peticiones al mes. Con un SLO de 99,9 %,
+puede fallar en 10.000 peticiones. A día 20 (67 % del mes) lleva 6.200 fallos: ha consumido el 62 % del
+presupuesto, un poco por debajo del ritmo del calendario. Si el ritmo se mantiene, cierra el mes con 9.300
+fallos y le queda margen.
+
+El presupuesto convierte una discusión en una regla. Si queda margen, el equipo puede desplegar cambios
+arriesgados. Si se agota, la política acordada de antemano prioriza la fiabilidad y congela cambios no urgentes.
+
+## Alertar por consumo, no por síntomas sueltos
+
+Una alerta útil avisa cuando el presupuesto se gasta demasiado deprisa. La tasa de consumo (burn rate) mide
+eso: si en una hora se consume el 2 % del presupuesto mensual, la alerta debe despertar a alguien. Usar dos
+ventanas (una corta y otra larga) evita avisos por picos aislados.
+
+## Errores frecuentes
+
+- **SLO del 100 %.** Es inalcanzable y paraliza cualquier cambio. Un objetivo realista deja margen para
+  desplegar.
+- **Medir recursos en lugar de experiencia.** Una CPU al 30 % puede convivir con un checkout roto.
+- **Demasiados SLO.** Cinco indicadores por servicio diluyen la atención. Empieza por dos o tres.
+- **Alertas sin acción.** Si nadie sabe qué hacer al recibirla, la alerta es ruido.
+
+## Cuándo no aplica
+
+Un prototipo o una herramienta interna con un solo usuario no necesita presupuestos de error. Basta con logs
+suficientes para depurar y con un par de métricas. El coste de un SLO formal solo se justifica cuando hay
+expectativas de servicio que cumplir.
+
+## Checklist
+
+- [ ] ¿Cada servicio importante tiene un SLI medido en el borde?
+- [ ] ¿El SLO es alcanzable y está acordado con producto?
+- [ ] ¿Existe una política escrita para cuando se agota el presupuesto?
+- [ ] ¿Las alertas se disparan por consumo del presupuesto, con una acción asociada?
+- [ ] ¿Las trazas permiten seguir una petición entre servicios?
+
+**Para profundizar:** [atributos de calidad](/docs/atributos-de-calidad) explica cómo convertir un atributo en
+escenario medible; [resiliencia en sistemas distribuidos](/docs/resiliencia-sistemas-distribuidos) muestra qué
+mecanismos protegen el presupuesto; [números y leyes de rendimiento](/docs/numeros-y-leyes-de-rendimiento)
+ayuda a interpretar latencias y percentiles.
+
+## Fuentes
+
+- Betsy Beyer, Chris Jones, Jennifer Petoff y Niall Richard Murphy (eds.), _Site Reliability Engineering_ (2016).
+- Betsy Beyer, Niall Richard Murphy, David K. Rensin, Kent Kawahara y Stephen Thorne, _The Site Reliability Workbook_ (2018).
+- Charity Majors, Liz Fong-Jones y George Miranda, _Observability Engineering_ (2022).
+- Benjamin H. Sigelman y otros, "Dapper, a Large-Scale Distributed Systems Tracing Infrastructure" (Google, 2010).

@@ -1,0 +1,68 @@
+---
+title: 'Micro-frontends y BFF: cuándo sí y cuándo no'
+description: 'Cuándo partir el frontend en micro-frontends y cuándo basta con un BFF por canal. Criterios de acoplamiento, equipos y costo de coordinar los despliegues.'
+category: diseno
+tags:
+  - micro-frontends
+  - bff
+  - frontend
+  - acoplamiento
+  - equipos
+order: 22
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Un BFF por canal, y un punto de acoplamiento compartido
+---
+
+# Micro-frontends y BFF: cuándo sí y cuándo no
+
+Se mencionan juntos, pero resuelven problemas distintos. Un **micro-frontend** parte la interfaz en piezas que un equipo puede desplegar sin esperar a los demás. Un **BFF** (_backend for frontend_) es un servicio que adapta los datos a un canal concreto: web, móvil o un panel interno. Elegir mal cualquiera de los dos añade complejidad sin resolver el problema que tenías.
+
+## Qué resuelve cada uno
+
+El micro-frontend resuelve un problema de **organización**: varios equipos son dueños de secciones de una misma aplicación y necesitan publicar cambios por separado. El BFF resuelve un problema de **forma de los datos**: la web y el móvil necesitan respuestas distintas, y un endpoint genérico obliga a uno de los dos a descartar campos en cada llamada. Sam Newman describió el patrón BFF en _Building Microservices_ (2015).
+
+## Cuándo un micro-frontend tiene sentido
+
+Tiene sentido cuando hay varios equipos con páginas o secciones propias, con ritmos de despliegue distintos, y cuando la integración en tiempo de ejecución es viable. No tiene sentido cuando un solo equipo mantiene la aplicación, o cuando las secciones comparten mucho estado (carrito, sesión, formularios que se leen entre sí).
+
+Los costos suelen aparecer después de la decisión: versiones distintas de la misma librería cargadas a la vez, CSS que se pisa, una navegación que se siente en dos aplicaciones, y pruebas de extremo a extremo más lentas. Si tu problema es que dos equipos tocan la misma pantalla, antes de partirla conviene probar un monolito de frontend con módulos bien delimitados.
+
+## Cuándo un BFF tiene sentido
+
+Tiene sentido cuando hay dos o más canales con necesidades de forma distintas y los servicios internos son genéricos. No tiene sentido cuando solo hay un cliente, porque el BFF se convierte en una capa más que no aporta nada.
+
+Hay una regla que evita el problema más común: **el BFF adapta, no decide**. Si empieza a contener reglas de negocio, como cálculos de precios o validaciones de stock, esas reglas están en el lugar equivocado y deben volver a los servicios de dominio.
+
+## Ejemplo trabajado
+
+Una tienda con web y app móvil. La lista de productos en el móvil muestra seis campos y pagina de veinte en veinte; la web muestra catorce campos y filtros. Con un endpoint genérico, cada elemento pesa unos 2 KB, así que cada página en el móvil transfiere unos 40 KB de los que solo usa una parte. Con un BFF móvil, cada elemento baja a unos 0,3 KB y la página a unos 6 KB. Las cifras son ilustrativas, pero el orden de magnitud es el que motiva el patrón.
+
+¿Justifica eso un micro-frontend? Solo si el catálogo y el pago pertenecen a equipos distintos con despliegues semanales. Si los trabaja el mismo equipo, un frontend con módulos internos resuelve el mismo problema con menos coste.
+
+## Errores frecuentes
+
+- **Partir por tecnología, no por dominio.** Un equipo para React y otro para Vue produce dos aplicaciones que nadie puede cambiar en conjunto.
+- **Un BFF que replica el dominio.** Acaba con dos copias de la misma regla que divergen.
+- **Micro-frontends sin contrato.** Sin acuerdos sobre eventos, estado compartido y diseño, cada pieza se comporta distinto.
+- **Medir el éxito por número de piezas.** Más piezas significan más coordinación, no más autonomía.
+
+## Cuándo no aplica
+
+Un equipo pequeño, una aplicación con pocas pantallas o una sola plataforma no necesitan ninguno de los dos. Un frontend modular y una API única son la opción más barata y la más fácil de cambiar.
+
+## Checklist
+
+- [ ] ¿Hay equipos distintos que necesitan desplegar sin coordinarse?
+- [ ] ¿Las secciones comparten poco estado?
+- [ ] ¿Cada BFF adapta datos y no decide reglas de negocio?
+- [ ] ¿Existe un contrato compartido para eventos, rutas y diseño?
+- [ ] ¿Probaste antes un frontend modular?
+
+**Para profundizar:** [monolito vs microservicios](/docs/monolito-vs-microservicios) explica el mismo dilema en el backend, y [diseño de APIs](/docs/diseno-de-apis) cubre los contratos que sostienen un BFF.
+
+## Fuentes
+
+- Sam Newman, _Building Microservices_ (2015), capítulo sobre el patrón BFF.
+- Cam Jackson, "Micro Frontends", martinfowler.com (2019).
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020).

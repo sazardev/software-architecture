@@ -1,0 +1,94 @@
+---
+title: 'RFCs and architecture reviews without bureaucracy'
+description: 'How to take technical proposals through review with timeboxes, clear decision criteria and an ADR record, without turning every change into a committee.'
+category: decisiones
+tags:
+  - rfc
+  - architecture-review
+  - adr
+  - governance
+  - collaboration
+order: 17
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'One proposal, one timebox and one recorded decision'
+---
+
+# RFCs and architecture reviews without bureaucracy
+
+A change that affects three teams should not be decided in a hallway or in a chat with forty messages. It
+should not wait six weeks for a committee that meets once a month either. Between those two extremes sits a
+simple format: the RFC, a written proposal with a deadline for comments and a recorded outcome.
+
+Review processes usually fail for one of two reasons. Either they have no deadline, so proposals stay open
+forever, or they have so many steps that nobody wants to go through them, even for a small change. A good
+RFC fixes both problems at once.
+
+## What an RFC is, and how it differs from an ADR
+
+An RFC (request for comments) is the proposal document. It describes a problem, the options considered and a
+recommendation, and it goes to review before anyone builds anything. An ADR is the record of the decision once
+it has been made. The RFC answers "what are we proposing, and what do others think?"; the ADR answers "what did
+we decide, and why?"
+
+The natural flow has two linked steps: the RFC is reviewed and decided, and the decision is copied into an ADR
+that links back to the RFC. Without the RFC, the ADR arrives with no context. Without the ADR, the RFC gets lost
+in a channel's history.
+
+## A flow with deadlines
+
+The most practical model has three stages:
+
+- **Draft.** The author describes the problem, at least two options and a recommendation. If the document runs
+  past two or three pages, the problem is usually not well bounded yet.
+- **Timeboxed review.** The proposal is published with a closing date, for example five working days. Comments
+  can be informative or blocking. Only blocking comments stop the decision, and they must describe a concrete risk.
+- **Decision.** At the close, the author or the person accountable for the decision summarises the comments,
+  accepts or rejects the proposal, and records the outcome in an ADR.
+
+The silence rule is the key piece: if nobody responds within the deadline, the proposal counts as accepted. That
+forces reviewers to take part, and it stops proposals from drifting in limbo.
+
+## Criteria for what goes to review
+
+Not every change needs an RFC. A useful test is to ask whether the change meets any of these conditions: it affects
+more than one team, it is hard to reverse, it touches a public contract or it commits a significant budget. If it
+meets none, a note in the pull request is enough.
+
+A worked example: a team wants to replace its message queue library. It affects three services, changes the message
+format and the migration takes two months. It meets three of the criteria, so it deserves an RFC. Upgrading a date
+formatting library that is backwards compatible does not.
+
+## Common mistakes
+
+- **Reviewing without a deadline.** Proposals that stay open indefinitely are the fastest way to stall a team.
+- **Turning review into a vote.** Review looks for risks, not for a majority. A blocking comment should rest on a
+  fact, not only on a preference.
+- **Writing the RFC after building.** A document that justifies something already built is a late record, not a proposal.
+- **Forgetting the option of doing nothing.** An RFC that does not compare against leaving things as they are does not
+  really compare anything.
+
+## When it does not apply
+
+An RFC has a cost. In a small team that sits together, a fifteen-minute conversation and a note in the ADR are enough.
+It is also a poor fit for reversible decisions that would take a week to review, because the process would take longer
+than the mistake. Bureaucracy appears when the same format is applied to everything.
+
+## Checklist
+
+- [ ] Does the proposal describe the problem before the solution?
+- [ ] Are there at least two options, including doing nothing?
+- [ ] Does it have a closing date, and is it clear who decides?
+- [ ] Do blocking comments describe a concrete risk?
+- [ ] Is the decision recorded in an ADR that links to the RFC?
+
+**Further reading:** [ADRs, a practical guide](/docs/adr) explains how to record the decision;
+[presenting ideas and proposals](/docs/presentar-ideas-y-propuestas) covers how to write the proposal;
+[trade-offs and decisions](/docs/trade-offs-y-decisiones) helps compare options.
+
+## Sources
+
+- Michael T. Nygard, "Documenting Architecture Decisions" (2011).
+- Gregor Hohpe, _The Software Architect Elevator_ (2020).
+- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020).
+- The public RFC process of the Rust project, as an example of timeboxed review with a final comment period.

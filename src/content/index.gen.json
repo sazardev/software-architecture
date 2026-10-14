@@ -1962,6 +1962,73 @@
       "slug": "complejidad-accidental-de-herramientas"
     },
     {
+      "category": "fundamentos",
+      "description": "Cómo influir sin autoridad formal: cuándo decidir tú, cuándo consultar y cuándo delegar, y cómo mantener al equipo dueño de sus decisiones.",
+      "figureCaption": "El arquitecto da forma; el equipo es dueño de la decisión",
+      "order": 16,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "liderazgo",
+        "facilitacion",
+        "equipos",
+        "decisiones",
+        "rol-del-arquitecto"
+      ],
+      "title": "El arquitecto como facilitador",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "el-arquitecto-como-facilitador",
+          "level": 1,
+          "text": "El arquitecto como facilitador"
+        },
+        {
+          "id": "influir-sin-autoridad-formal",
+          "level": 2,
+          "text": "Influir sin autoridad formal"
+        },
+        {
+          "id": "decidir-consultar-o-delegar",
+          "level": 2,
+          "text": "Decidir, consultar o delegar"
+        },
+        {
+          "id": "un-ejemplo-trabajado",
+          "level": 2,
+          "text": "Un ejemplo trabajado"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "seguridad-psicológica",
+          "level": 2,
+          "text": "Seguridad psicológica"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/arquitecto-como-facilitador",
+      "slug": "arquitecto-como-facilitador"
+    },
+    {
       "category": "diseno",
       "description": "Aprende los cuatro niveles del modelo C4 con un ejemplo completo: contexto, contenedores, componentes y código, más reglas de notación y errores típicos.",
       "figureCaption": "Cuatro niveles de zoom: contexto, contenedores, componentes y código",
@@ -4093,6 +4160,254 @@
       "slug": "antes-de-escalar-la-cuenta"
     },
     {
+      "category": "diseno",
+      "description": "Expand y contract, cambios de esquema compatibles hacia atrás y backfills por lotes para evolucionar una base de datos sin ventanas de mantenimiento.",
+      "figureCaption": "Cuatro fases compatibles: cada una se despliega y se revierte sola",
+      "order": 20,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "migraciones",
+        "base-de-datos",
+        "expand-contract",
+        "sin-downtime",
+        "esquema"
+      ],
+      "title": "Migrar la base de datos sin parar el servicio",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "migrar-la-base-de-datos-sin-parar-el-servicio",
+          "level": 1,
+          "text": "Migrar la base de datos sin parar el servicio"
+        },
+        {
+          "id": "las-cuatro-fases",
+          "level": 2,
+          "text": "Las cuatro fases"
+        },
+        {
+          "id": "el-backfill-es-la-parte-lenta",
+          "level": 2,
+          "text": "El backfill es la parte lenta"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/migraciones-bd-sin-downtime",
+      "slug": "migraciones-bd-sin-downtime"
+    },
+    {
+      "category": "diseno",
+      "description": "Cómo modernizar un sistema que no puedes reescribir: un estrangulador que desvía rutas y una capa anticorrupción que protege el modelo nuevo.",
+      "figureCaption": "Una capa traduce el modelo antiguo mientras migran las rutas",
+      "order": 21,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "legado",
+        "strangler",
+        "anticorrupcion",
+        "modernizacion",
+        "ddd"
+      ],
+      "title": "Legado: estrangulador y capa anticorrupción",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "legado-estrangulador-y-capa-anticorrupción",
+          "level": 1,
+          "text": "Legado: estrangulador y capa anticorrupción"
+        },
+        {
+          "id": "el-estrangulador",
+          "level": 2,
+          "text": "El estrangulador"
+        },
+        {
+          "id": "la-capa-anticorrupción",
+          "level": 2,
+          "text": "La capa anticorrupción"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/legado-strangler-anticorrupcion",
+      "slug": "legado-strangler-anticorrupcion"
+    },
+    {
+      "category": "diseno",
+      "description": "Cuándo partir el frontend en micro-frontends y cuándo basta con un BFF por canal. Criterios de acoplamiento, equipos y costo de coordinar los despliegues.",
+      "figureCaption": "Un BFF por canal, y un punto de acoplamiento compartido",
+      "order": 22,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "micro-frontends",
+        "bff",
+        "frontend",
+        "acoplamiento",
+        "equipos"
+      ],
+      "title": "Micro-frontends y BFF: cuándo sí y cuándo no",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "micro-frontends-y-bff-cuándo-sí-y-cuándo-no",
+          "level": 1,
+          "text": "Micro-frontends y BFF: cuándo sí y cuándo no"
+        },
+        {
+          "id": "qué-resuelve-cada-uno",
+          "level": 2,
+          "text": "Qué resuelve cada uno"
+        },
+        {
+          "id": "cuándo-un-micro-frontend-tiene-sentido",
+          "level": 2,
+          "text": "Cuándo un micro-frontend tiene sentido"
+        },
+        {
+          "id": "cuándo-un-bff-tiene-sentido",
+          "level": 2,
+          "text": "Cuándo un BFF tiene sentido"
+        },
+        {
+          "id": "ejemplo-trabajado",
+          "level": 2,
+          "text": "Ejemplo trabajado"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/micro-frontends-y-bff",
+      "slug": "micro-frontends-y-bff"
+    },
+    {
+      "category": "diseno",
+      "description": "Cómo elegir entre SSE, WebSocket y colas para empujar datos en tiempo real: dirección del flujo, número de clientes y qué pasa cuando se cae la conexión.",
+      "figureCaption": "La dirección del flujo y el reparto deciden la tecnología",
+      "order": 23,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "tiempo-real",
+        "websocket",
+        "sse",
+        "colas",
+        "escalabilidad"
+      ],
+      "title": "Tiempo real: WebSockets, SSE y colas",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "tiempo-real-websockets-sse-y-colas",
+          "level": 1,
+          "text": "Tiempo real: WebSockets, SSE y colas"
+        },
+        {
+          "id": "la-dirección-decide-entre-sse-y-websocket",
+          "level": 2,
+          "text": "La dirección decide entre SSE y WebSocket"
+        },
+        {
+          "id": "el-reparto-decide-cuándo-hace-falta-un-broker",
+          "level": 2,
+          "text": "El reparto decide cuándo hace falta un broker"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "qué-pasa-cuando-se-corta-la-conexión",
+          "level": 2,
+          "text": "Qué pasa cuando se corta la conexión"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/tiempo-real-websockets-sse",
+      "slug": "tiempo-real-websockets-sse"
+    },
+    {
       "category": "practicas",
       "description": "Guía práctica de código limpio: nombres, funciones, errores, complejidad, tests, refactoring y deuda técnica, con ejemplos y checklist de revisión.",
       "figureCaption": "Del código enredado al código legible: pequeño, claro y consistente",
@@ -4855,6 +5170,268 @@
       "slug": "reintentos-con-jitter"
     },
     {
+      "category": "practicas",
+      "description": "Cómo medir lo que vive el usuario con SLI, fijar un SLO y usar el presupuesto de error para decidir cuándo acelerar y cuándo frenar.",
+      "figureCaption": "Un SLO deja un presupuesto de error que cada fallo consume",
+      "order": 8,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "observabilidad",
+        "slo",
+        "sli",
+        "presupuesto-de-error",
+        "sre"
+      ],
+      "title": "Observabilidad: SLI, SLO y presupuesto de error",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "observabilidad-sli-slo-y-presupuesto-de-error",
+          "level": 1,
+          "text": "Observabilidad: SLI, SLO y presupuesto de error"
+        },
+        {
+          "id": "logs-métricas-y-trazas",
+          "level": 2,
+          "text": "Logs, métricas y trazas"
+        },
+        {
+          "id": "sli-medir-lo-que-el-usuario-percibe",
+          "level": 2,
+          "text": "SLI: medir lo que el usuario percibe"
+        },
+        {
+          "id": "slo-y-presupuesto-de-error",
+          "level": 2,
+          "text": "SLO y presupuesto de error"
+        },
+        {
+          "id": "alertar-por-consumo-no-por-síntomas-sueltos",
+          "level": 2,
+          "text": "Alertar por consumo, no por síntomas sueltos"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/observabilidad-slo-presupuesto-error",
+      "slug": "observabilidad-slo-presupuesto-error"
+    },
+    {
+      "category": "practicas",
+      "description": "Qué probar en cada nivel de la pirámide, cómo los contratos entre servicios evitan integraciones rotas y qué pruebas de arquitectura proteger.",
+      "figureCaption": "Muchas pruebas unitarias, pocas de extremo a extremo y contratos en medio",
+      "order": 9,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "pruebas",
+        "contratos",
+        "piramide",
+        "pact",
+        "arquitectura"
+      ],
+      "title": "Estrategia de pruebas: pirámide y contratos",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "estrategia-de-pruebas-pirámide-y-contratos",
+          "level": 1,
+          "text": "Estrategia de pruebas: pirámide y contratos"
+        },
+        {
+          "id": "la-pirámide-con-su-advertencia",
+          "level": 2,
+          "text": "La pirámide, con su advertencia"
+        },
+        {
+          "id": "dónde-encaja-el-contrato",
+          "level": 2,
+          "text": "Dónde encaja el contrato"
+        },
+        {
+          "id": "qué-probar-en-cada-nivel",
+          "level": 2,
+          "text": "Qué probar en cada nivel"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/estrategia-de-pruebas-contratos",
+      "slug": "estrategia-de-pruebas-contratos"
+    },
+    {
+      "category": "practicas",
+      "description": "Desplegar sin exponer a todos los usuarios: feature flags, despliegues canary y blue/green, y cómo revertir sin tener que volver a desplegar.",
+      "figureCaption": "El tráfico sube por escalones y una bandera revierte sin desplegar",
+      "order": 10,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "despliegue",
+        "feature-flags",
+        "canary",
+        "blue-green",
+        "rollback"
+      ],
+      "title": "Entrega progresiva: flags, canary y blue/green",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "entrega-progresiva-flags-canary-y-bluegreen",
+          "level": 1,
+          "text": "Entrega progresiva: flags, canary y blue/green"
+        },
+        {
+          "id": "feature-flags-liberar-sin-desplegar",
+          "level": 2,
+          "text": "Feature flags: liberar sin desplegar"
+        },
+        {
+          "id": "canary-exponer-por-escalones",
+          "level": 2,
+          "text": "Canary: exponer por escalones"
+        },
+        {
+          "id": "bluegreen-dos-entornos-un-interruptor",
+          "level": 2,
+          "text": "Blue/green: dos entornos, un interruptor"
+        },
+        {
+          "id": "combinar-las-tres",
+          "level": 2,
+          "text": "Combinar las tres"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/entrega-progresiva-flags-canary",
+      "slug": "entrega-progresiva-flags-canary"
+    },
+    {
+      "category": "practicas",
+      "description": "Cómo aplicar STRIDE a un diagrama de flujo de datos real: límites de confianza, las seis categorías de amenaza y un ejemplo completo de revisión.",
+      "figureCaption": "Cada flujo que cruza un límite de confianza es una superficie de ataque",
+      "order": 11,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "seguridad",
+        "stride",
+        "modelado-de-amenazas",
+        "diagramas"
+      ],
+      "title": "Modelado de amenazas con STRIDE en un diagrama",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "modelado-de-amenazas-con-stride-en-un-diagrama",
+          "level": 1,
+          "text": "Modelado de amenazas con STRIDE en un diagrama"
+        },
+        {
+          "id": "los-elementos-del-diagrama",
+          "level": 2,
+          "text": "Los elementos del diagrama"
+        },
+        {
+          "id": "las-seis-categorías",
+          "level": 2,
+          "text": "Las seis categorías"
+        },
+        {
+          "id": "un-ejemplo-trabajado",
+          "level": 2,
+          "text": "Un ejemplo trabajado"
+        },
+        {
+          "id": "qué-hacer-con-los-hallazgos",
+          "level": 2,
+          "text": "Qué hacer con los hallazgos"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/modelado-de-amenazas-stride",
+      "slug": "modelado-de-amenazas-stride"
+    },
+    {
       "category": "tendencias",
       "description": "Guía para arquitectos: qué papel juegan Python, TypeScript, Rust, Go, Mojo y Zig en la era de la IA, y cómo elegir entre ellos.",
       "figureCaption": "Los tipos como contrato entre lenguajes y modelos de IA",
@@ -5067,6 +5644,303 @@
       "readingMinutes": 19,
       "route": "/es/docs/arquitectura-agentes-llm",
       "slug": "arquitectura-agentes-llm"
+    },
+    {
+      "category": "tendencias",
+      "description": "Cuándo un data warehouse basta, cuándo conviene un lakehouse sobre formatos de tabla abiertos y cuándo el data mesh tiene sentido organizativo.",
+      "figureCaption": "Un almacenamiento abierto sirve a BI y a ML sin copias",
+      "order": 3,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "datos",
+        "lakehouse",
+        "data-mesh",
+        "analitica"
+      ],
+      "title": "Arquitectura de datos: lakehouse y data mesh",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "arquitectura-de-datos-lakehouse-y-data-mesh",
+          "level": 1,
+          "text": "Arquitectura de datos: lakehouse y data mesh"
+        },
+        {
+          "id": "el-warehouse-cuando-basta",
+          "level": 2,
+          "text": "El warehouse: cuando basta"
+        },
+        {
+          "id": "el-lakehouse-un-almacenamiento-varios-consumidores",
+          "level": 2,
+          "text": "El lakehouse: un almacenamiento, varios consumidores"
+        },
+        {
+          "id": "el-data-mesh-el-dominio-como-dueño",
+          "level": 2,
+          "text": "El data mesh: el dominio como dueño"
+        },
+        {
+          "id": "un-ejemplo-trabajado",
+          "level": 2,
+          "text": "Un ejemplo trabajado"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/arquitectura-de-datos-lakehouse",
+      "slug": "arquitectura-de-datos-lakehouse"
+    },
+    {
+      "category": "tendencias",
+      "description": "Cómo llevar un RAG a producción: indexación, recuperación y generación como una cadena medible, con métricas por etapa y evaluación continua de cada cambio.",
+      "figureCaption": "Sin evaluación en el bucle, no sabes qué cambió",
+      "order": 4,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "rag",
+        "llm",
+        "evaluacion",
+        "recuperacion",
+        "ia"
+      ],
+      "title": "RAG en producción y evaluación continua",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "rag-en-producción-y-evaluación-continua",
+          "level": 1,
+          "text": "RAG en producción y evaluación continua"
+        },
+        {
+          "id": "tres-fallos-distintos-tres-métricas",
+          "level": 2,
+          "text": "Tres fallos distintos, tres métricas"
+        },
+        {
+          "id": "indexación-decisiones-que-cuestan-después",
+          "level": 2,
+          "text": "Indexación: decisiones que cuestan después"
+        },
+        {
+          "id": "recuperación-léxica-vectorial-o-híbrida",
+          "level": 2,
+          "text": "Recuperación: léxica, vectorial o híbrida"
+        },
+        {
+          "id": "generación-lo-que-el-prompt-debe-pedir",
+          "level": 2,
+          "text": "Generación: lo que el prompt debe pedir"
+        },
+        {
+          "id": "evaluación-continua-un-conjunto-dorado",
+          "level": 2,
+          "text": "Evaluación continua: un conjunto dorado"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/rag-y-evaluacion-continua",
+      "slug": "rag-y-evaluacion-continua"
+    },
+    {
+      "category": "tendencias",
+      "description": "CÃ³mo reducir el costo por peticiÃ³n de un LLM: elegir el modelo mÃ¡s pequeÃ±o que sirve, usar cachÃ© con criterio y decidir dÃ³nde ejecutar la inferencia.",
+      "figureCaption": "El costo por petición depende del modelo, la caché y el lugar",
+      "order": 5,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "inferencia",
+        "costo",
+        "cache",
+        "modelos",
+        "ia"
+      ],
+      "title": "Costo de inferencia: modelo, caché y despliegue",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "costo-de-inferencia-modelo-caché-y-despliegue",
+          "level": 1,
+          "text": "Costo de inferencia: modelo, caché y despliegue"
+        },
+        {
+          "id": "qué-compone-el-costo",
+          "level": 2,
+          "text": "Qué compone el costo"
+        },
+        {
+          "id": "elegir-el-modelo-más-pequeño-que-sirve",
+          "level": 2,
+          "text": "Elegir el modelo más pequeño que sirve"
+        },
+        {
+          "id": "caché-exacta-y-semántica",
+          "level": 2,
+          "text": "Caché: exacta y semántica"
+        },
+        {
+          "id": "enrutamiento-por-complejidad",
+          "level": 2,
+          "text": "Enrutamiento por complejidad"
+        },
+        {
+          "id": "dónde-ejecutar-api-gestionada-o-modelo-propio",
+          "level": 2,
+          "text": "Dónde ejecutar: API gestionada o modelo propio"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "métricas-que-importan",
+          "level": 2,
+          "text": "Métricas que importan"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/costo-de-inferencia",
+      "slug": "costo-de-inferencia"
+    },
+    {
+      "category": "tendencias",
+      "description": "Cómo tratar la huella de carbono del software como atributo de calidad: qué medir, dónde se genera y cómo elegir región, horario y cómputo con criterio.",
+      "figureCaption": "Misma carga, menos energía y una red más limpia",
+      "order": 6,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "sostenibilidad",
+        "carbono",
+        "green-software",
+        "finops",
+        "region"
+      ],
+      "title": "Software sostenible: la huella como atributo",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "software-sostenible-la-huella-como-atributo",
+          "level": 1,
+          "text": "Software sostenible: la huella como atributo"
+        },
+        {
+          "id": "qué-medir",
+          "level": 2,
+          "text": "Qué medir"
+        },
+        {
+          "id": "dónde-se-genera",
+          "level": 2,
+          "text": "Dónde se genera"
+        },
+        {
+          "id": "palancas",
+          "level": 2,
+          "text": "Palancas"
+        },
+        {
+          "id": "un-ejemplo-con-cifras",
+          "level": 2,
+          "text": "Un ejemplo con cifras"
+        },
+        {
+          "id": "cómo-medir-sin-inventar",
+          "level": 2,
+          "text": "Cómo medir sin inventar"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/software-sostenible-carbono",
+      "slug": "software-sostenible-carbono"
     },
     {
       "category": "nube",
@@ -6375,6 +7249,77 @@
       "readingMinutes": 3,
       "route": "/es/docs/salida-de-la-nube",
       "slug": "salida-de-la-nube"
+    },
+    {
+      "category": "nube",
+      "description": "Cuándo usar roles, atributos o relaciones para decidir quién puede hacer qué, y cómo evitar duplicar reglas de acceso en cada servicio.",
+      "figureCaption": "Tres modelos responden a la misma pregunta con fuentes de verdad distintas",
+      "order": 11,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "autorizacion",
+        "rbac",
+        "abac",
+        "rebac"
+      ],
+      "title": "Autorización a escala: RBAC, ABAC y ReBAC",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "autorización-a-escala-rbac-abac-y-rebac",
+          "level": 1,
+          "text": "Autorización a escala: RBAC, ABAC y ReBAC"
+        },
+        {
+          "id": "rbac-el-rol-como-fuente-de-verdad",
+          "level": 2,
+          "text": "RBAC: el rol como fuente de verdad"
+        },
+        {
+          "id": "abac-los-atributos-como-fuente-de-verdad",
+          "level": 2,
+          "text": "ABAC: los atributos como fuente de verdad"
+        },
+        {
+          "id": "rebac-las-relaciones-como-fuente-de-verdad",
+          "level": 2,
+          "text": "ReBAC: las relaciones como fuente de verdad"
+        },
+        {
+          "id": "un-ejemplo-trabajado",
+          "level": 2,
+          "text": "Un ejemplo trabajado"
+        },
+        {
+          "id": "cómo-no-duplicar-reglas",
+          "level": 2,
+          "text": "Cómo no duplicar reglas"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 5,
+      "route": "/es/docs/autorizacion-rbac-abac-rebac",
+      "slug": "autorizacion-rbac-abac-rebac"
     },
     {
       "category": "decisiones",
@@ -7959,6 +8904,205 @@
       "readingMinutes": 3,
       "route": "/es/docs/autonomia-de-la-ia",
       "slug": "autonomia-de-la-ia"
+    },
+    {
+      "category": "decisiones",
+      "description": "Qué es una plataforma interna para desarrolladores, cuándo justifica su coste y cómo tratarla como producto con caminos dorados medibles.",
+      "figureCaption": "La plataforma ofrece un camino único a los equipos de producto",
+      "order": 15,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "plataforma",
+        "idp",
+        "platform-engineering",
+        "team-topologies"
+      ],
+      "title": "Plataforma interna: cuándo construir un IDP",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "plataforma-interna-cuándo-construir-un-idp",
+          "level": 1,
+          "text": "Plataforma interna: cuándo construir un IDP"
+        },
+        {
+          "id": "qué-es-y-qué-no-es",
+          "level": 2,
+          "text": "Qué es y qué no es"
+        },
+        {
+          "id": "cuándo-justifica-su-coste",
+          "level": 2,
+          "text": "Cuándo justifica su coste"
+        },
+        {
+          "id": "un-ejemplo-trabajado",
+          "level": 2,
+          "text": "Un ejemplo trabajado"
+        },
+        {
+          "id": "cómo-medirla",
+          "level": 2,
+          "text": "Cómo medirla"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/plataforma-interna-idp",
+      "slug": "plataforma-interna-idp"
+    },
+    {
+      "category": "decisiones",
+      "description": "Cuándo un monorepo compensa, cuándo un polirepo es mejor y qué costos ocultos aparecen en cada opción, con criterios explícitos para decidir.",
+      "figureCaption": "Un monorepo aplica un cambio a varios paquetes en un solo commit",
+      "order": 16,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "monorepo",
+        "polirepo",
+        "repositorios",
+        "ci"
+      ],
+      "title": "Monorepo o polirepo: la decisión con sus costos",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "monorepo-o-polirepo-la-decisión-con-sus-costos",
+          "level": 1,
+          "text": "Monorepo o polirepo: la decisión con sus costos"
+        },
+        {
+          "id": "qué-significa-cada-opción",
+          "level": 2,
+          "text": "Qué significa cada opción"
+        },
+        {
+          "id": "cuándo-compensa-el-monorepo",
+          "level": 2,
+          "text": "Cuándo compensa el monorepo"
+        },
+        {
+          "id": "cuándo-compensa-el-polirepo",
+          "level": 2,
+          "text": "Cuándo compensa el polirepo"
+        },
+        {
+          "id": "un-ejemplo-trabajado",
+          "level": 2,
+          "text": "Un ejemplo trabajado"
+        },
+        {
+          "id": "costos-ocultos",
+          "level": 2,
+          "text": "Costos ocultos"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/monorepo-o-polirepo",
+      "slug": "monorepo-o-polirepo"
+    },
+    {
+      "category": "decisiones",
+      "description": "Cómo llevar propuestas técnicas a revisión con plazos, criterios claros de decisión y registro en ADR, sin convertir cada cambio en un comité.",
+      "figureCaption": "Una propuesta, un plazo y una decisión registrada",
+      "order": 17,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "rfc",
+        "revision-de-arquitectura",
+        "adr",
+        "gobierno",
+        "colaboracion"
+      ],
+      "title": "RFC y revisiones de arquitectura sin burocracia",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "rfc-y-revisiones-de-arquitectura-sin-burocracia",
+          "level": 1,
+          "text": "RFC y revisiones de arquitectura sin burocracia"
+        },
+        {
+          "id": "qué-es-un-rfc-y-en-qué-se-distingue-de-un-adr",
+          "level": 2,
+          "text": "Qué es un RFC y en qué se distingue de un ADR"
+        },
+        {
+          "id": "un-flujo-con-plazos",
+          "level": 2,
+          "text": "Un flujo con plazos"
+        },
+        {
+          "id": "criterios-para-decidir-qué-pasa-por-revisión",
+          "level": 2,
+          "text": "Criterios para decidir qué pasa por revisión"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 4,
+      "route": "/es/docs/rfc-y-revisiones-de-arquitectura",
+      "slug": "rfc-y-revisiones-de-arquitectura"
     },
     {
       "category": "fundamentos",
@@ -9920,6 +11064,73 @@
       "readingMinutes": 3,
       "route": "/en/docs/complejidad-accidental-de-herramientas",
       "slug": "complejidad-accidental-de-herramientas"
+    },
+    {
+      "category": "fundamentos",
+      "description": "How to influence without formal authority: when to decide yourself, when to consult and when to delegate, and how the team keeps ownership of its choices.",
+      "figureCaption": "The architect shapes the decision; the team owns it",
+      "order": 16,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "leadership",
+        "facilitation",
+        "teams",
+        "decisions",
+        "architect-role"
+      ],
+      "title": "The architect as facilitator",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "the-architect-as-facilitator",
+          "level": 1,
+          "text": "The architect as facilitator"
+        },
+        {
+          "id": "influencing-without-formal-authority",
+          "level": 2,
+          "text": "Influencing without formal authority"
+        },
+        {
+          "id": "decide-consult-or-delegate",
+          "level": 2,
+          "text": "Decide, consult or delegate"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "psychological-safety",
+          "level": 2,
+          "text": "Psychological safety"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/arquitecto-como-facilitador",
+      "slug": "arquitecto-como-facilitador"
     },
     {
       "category": "diseno",
@@ -12053,6 +13264,254 @@
       "slug": "antes-de-escalar-la-cuenta"
     },
     {
+      "category": "diseno",
+      "description": "Expand and contract, backward-compatible schema changes and batched backfills to evolve a database without maintenance windows.",
+      "figureCaption": "Four compatible phases: each one can be deployed and rolled back",
+      "order": 20,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "migrations",
+        "database",
+        "expand-contract",
+        "zero-downtime",
+        "schema"
+      ],
+      "title": "Migrating a database without downtime",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "migrating-a-database-without-downtime",
+          "level": 1,
+          "text": "Migrating a database without downtime"
+        },
+        {
+          "id": "the-four-phases",
+          "level": 2,
+          "text": "The four phases"
+        },
+        {
+          "id": "the-backfill-is-the-slow-part",
+          "level": 2,
+          "text": "The backfill is the slow part"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 3,
+      "route": "/en/docs/migraciones-bd-sin-downtime",
+      "slug": "migraciones-bd-sin-downtime"
+    },
+    {
+      "category": "diseno",
+      "description": "How to modernize a system you cannot rewrite: a strangler that redirects routes and an anti-corruption layer that protects the new model.",
+      "figureCaption": "A translation layer shields the new model while routes migrate",
+      "order": 21,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "legacy",
+        "strangler",
+        "anti-corruption-layer",
+        "modernization",
+        "ddd"
+      ],
+      "title": "Legacy systems: strangler and anti-corruption layer",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "legacy-systems-strangler-and-anti-corruption-layer",
+          "level": 1,
+          "text": "Legacy systems: strangler and anti-corruption layer"
+        },
+        {
+          "id": "the-strangler",
+          "level": 2,
+          "text": "The strangler"
+        },
+        {
+          "id": "the-anti-corruption-layer",
+          "level": 2,
+          "text": "The anti-corruption layer"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/legado-strangler-anticorrupcion",
+      "slug": "legado-strangler-anticorrupcion"
+    },
+    {
+      "category": "diseno",
+      "description": "When to split the frontend into micro-frontends and when a BFF per channel is enough. Criteria on coupling, teams and the cost of coordinating deployments.",
+      "figureCaption": "One BFF per channel, and one shared point of coupling",
+      "order": 22,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "micro-frontends",
+        "bff",
+        "frontend",
+        "coupling",
+        "teams"
+      ],
+      "title": "Micro-frontends and BFF: when yes and when no",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "micro-frontends-and-bff-when-yes-and-when-no",
+          "level": 1,
+          "text": "Micro-frontends and BFF: when yes and when no"
+        },
+        {
+          "id": "what-each-one-solves",
+          "level": 2,
+          "text": "What each one solves"
+        },
+        {
+          "id": "when-a-micro-frontend-makes-sense",
+          "level": 2,
+          "text": "When a micro-frontend makes sense"
+        },
+        {
+          "id": "when-a-bff-makes-sense",
+          "level": 2,
+          "text": "When a BFF makes sense"
+        },
+        {
+          "id": "worked-example",
+          "level": 2,
+          "text": "Worked example"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/micro-frontends-y-bff",
+      "slug": "micro-frontends-y-bff"
+    },
+    {
+      "category": "diseno",
+      "description": "How to choose between SSE, WebSocket and queues to push data in real time: direction of the flow, number of clients and what happens when the connection drops.",
+      "figureCaption": "Flow direction and fan-out decide the technology",
+      "order": 23,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "real-time",
+        "websocket",
+        "sse",
+        "queues",
+        "scalability"
+      ],
+      "title": "Real time: WebSockets, SSE and queues",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "real-time-websockets-sse-and-queues",
+          "level": 1,
+          "text": "Real time: WebSockets, SSE and queues"
+        },
+        {
+          "id": "direction-decides-between-sse-and-websocket",
+          "level": 2,
+          "text": "Direction decides between SSE and WebSocket"
+        },
+        {
+          "id": "fan-out-decides-when-you-need-a-broker",
+          "level": 2,
+          "text": "Fan-out decides when you need a broker"
+        },
+        {
+          "id": "a-worked-example-in-numbers",
+          "level": 2,
+          "text": "A worked example in numbers"
+        },
+        {
+          "id": "what-happens-when-the-connection-drops",
+          "level": 2,
+          "text": "What happens when the connection drops"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/tiempo-real-websockets-sse",
+      "slug": "tiempo-real-websockets-sse"
+    },
+    {
       "category": "practicas",
       "description": "A practical clean code guide: names, functions, errors, complexity, tests, refactoring and technical debt, with before/after examples and a review checklist.",
       "figureCaption": "From tangled to readable code: small, clear and consistent",
@@ -12815,6 +14274,268 @@
       "slug": "reintentos-con-jitter"
     },
     {
+      "category": "practicas",
+      "description": "How to measure what users experience with SLIs, set an SLO and use the error budget to decide when to ship faster and when to slow down.",
+      "figureCaption": "An SLO leaves an error budget that every failure spends",
+      "order": 8,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "observability",
+        "slo",
+        "sli",
+        "error-budget",
+        "sre"
+      ],
+      "title": "Observability: SLIs, SLOs and error budgets",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "observability-slis-slos-and-error-budgets",
+          "level": 1,
+          "text": "Observability: SLIs, SLOs and error budgets"
+        },
+        {
+          "id": "logs-metrics-and-traces",
+          "level": 2,
+          "text": "Logs, metrics and traces"
+        },
+        {
+          "id": "slis-measuring-what-the-user-perceives",
+          "level": 2,
+          "text": "SLIs: measuring what the user perceives"
+        },
+        {
+          "id": "slos-and-the-error-budget",
+          "level": 2,
+          "text": "SLOs and the error budget"
+        },
+        {
+          "id": "alert-on-consumption-not-on-loose-symptoms",
+          "level": 2,
+          "text": "Alert on consumption, not on loose symptoms"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/observabilidad-slo-presupuesto-error",
+      "slug": "observabilidad-slo-presupuesto-error"
+    },
+    {
+      "category": "practicas",
+      "description": "What to test at each level of the pyramid, how contracts between services prevent broken integrations, and which architecture tests to keep.",
+      "figureCaption": "Many unit tests, few end-to-end tests, and contracts in between",
+      "order": 9,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "testing",
+        "contracts",
+        "pyramid",
+        "pact",
+        "architecture"
+      ],
+      "title": "Testing strategy: the pyramid and contracts",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "testing-strategy-the-pyramid-and-contracts",
+          "level": 1,
+          "text": "Testing strategy: the pyramid and contracts"
+        },
+        {
+          "id": "the-pyramid-with-its-warning",
+          "level": 2,
+          "text": "The pyramid, with its warning"
+        },
+        {
+          "id": "where-contracts-fit",
+          "level": 2,
+          "text": "Where contracts fit"
+        },
+        {
+          "id": "what-to-test-at-each-level",
+          "level": 2,
+          "text": "What to test at each level"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/estrategia-de-pruebas-contratos",
+      "slug": "estrategia-de-pruebas-contratos"
+    },
+    {
+      "category": "practicas",
+      "description": "Deploying without exposing every user: feature flags, canary and blue/green releases, and how to roll back without deploying again.",
+      "figureCaption": "Traffic rises in steps and a flag rolls back without a deploy",
+      "order": 10,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "deployment",
+        "feature-flags",
+        "canary",
+        "blue-green",
+        "rollback"
+      ],
+      "title": "Progressive delivery: flags, canary and blue/green",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "progressive-delivery-flags-canary-and-bluegreen",
+          "level": 1,
+          "text": "Progressive delivery: flags, canary and blue/green"
+        },
+        {
+          "id": "feature-flags-release-without-deploying",
+          "level": 2,
+          "text": "Feature flags: release without deploying"
+        },
+        {
+          "id": "canary-exposing-in-steps",
+          "level": 2,
+          "text": "Canary: exposing in steps"
+        },
+        {
+          "id": "bluegreen-two-environments-one-switch",
+          "level": 2,
+          "text": "Blue/green: two environments, one switch"
+        },
+        {
+          "id": "combining-the-three",
+          "level": 2,
+          "text": "Combining the three"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/entrega-progresiva-flags-canary",
+      "slug": "entrega-progresiva-flags-canary"
+    },
+    {
+      "category": "practicas",
+      "description": "How to apply STRIDE to a real data flow diagram: trust boundaries, the six threat categories and a complete review example.",
+      "figureCaption": "Every flow that crosses a trust boundary is an attack surface",
+      "order": 11,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "security",
+        "stride",
+        "threat-modelling",
+        "threat-modeling"
+      ],
+      "title": "Threat modelling with STRIDE on a real diagram",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "threat-modelling-with-stride-on-a-real-diagram",
+          "level": 1,
+          "text": "Threat modelling with STRIDE on a real diagram"
+        },
+        {
+          "id": "the-elements-of-the-diagram",
+          "level": 2,
+          "text": "The elements of the diagram"
+        },
+        {
+          "id": "the-six-categories",
+          "level": 2,
+          "text": "The six categories"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "what-to-do-with-the-findings",
+          "level": 2,
+          "text": "What to do with the findings"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/modelado-de-amenazas-stride",
+      "slug": "modelado-de-amenazas-stride"
+    },
+    {
       "category": "tendencias",
       "description": "A guide for architects: the role of Python, TypeScript, Rust, Go, Mojo and Zig in the AI era, and how to choose between them.",
       "figureCaption": "Types as the contract between languages and AI models",
@@ -13027,6 +14748,308 @@
       "readingMinutes": 17,
       "route": "/en/docs/arquitectura-agentes-llm",
       "slug": "arquitectura-agentes-llm"
+    },
+    {
+      "category": "tendencias",
+      "description": "When a data warehouse is enough, when an open-table lakehouse pays off, and when a data mesh makes sense as an organizational model.",
+      "figureCaption": "One open storage serves BI and ML without copies",
+      "order": 3,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "data",
+        "lakehouse",
+        "data-mesh",
+        "analytics"
+      ],
+      "title": "Data architecture: lakehouse and data mesh",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "data-architecture-lakehouse-and-data-mesh",
+          "level": 1,
+          "text": "Data architecture: lakehouse and data mesh"
+        },
+        {
+          "id": "the-warehouse-when-it-is-enough",
+          "level": 2,
+          "text": "The warehouse: when it is enough"
+        },
+        {
+          "id": "the-lakehouse-one-storage-several-consumers",
+          "level": 2,
+          "text": "The lakehouse: one storage, several consumers"
+        },
+        {
+          "id": "the-data-mesh-the-domain-as-owner",
+          "level": 2,
+          "text": "The data mesh: the domain as owner"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/arquitectura-de-datos-lakehouse",
+      "slug": "arquitectura-de-datos-lakehouse"
+    },
+    {
+      "category": "tendencias",
+      "description": "How to take a RAG system to production: indexing, retrieval and generation as a measurable chain, with metrics per stage and continuous evaluation.",
+      "figureCaption": "Without evaluation in the loop, you cannot tell what changed",
+      "order": 4,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "rag",
+        "llm",
+        "evaluation",
+        "retrieval",
+        "ai"
+      ],
+      "title": "RAG in production and continuous evaluation",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "rag-in-production-and-continuous-evaluation",
+          "level": 1,
+          "text": "RAG in production and continuous evaluation"
+        },
+        {
+          "id": "three-different-failures-three-different-metrics",
+          "level": 2,
+          "text": "Three different failures, three different metrics"
+        },
+        {
+          "id": "indexing-decisions-that-cost-you-later",
+          "level": 2,
+          "text": "Indexing: decisions that cost you later"
+        },
+        {
+          "id": "retrieval-lexical-vector-or-hybrid",
+          "level": 2,
+          "text": "Retrieval: lexical, vector or hybrid"
+        },
+        {
+          "id": "generation-what-the-prompt-must-demand",
+          "level": 2,
+          "text": "Generation: what the prompt must demand"
+        },
+        {
+          "id": "continuous-evaluation-a-golden-set",
+          "level": 2,
+          "text": "Continuous evaluation: a golden set"
+        },
+        {
+          "id": "a-worked-example-in-numbers",
+          "level": 2,
+          "text": "A worked example in numbers"
+        },
+        {
+          "id": "operations",
+          "level": 2,
+          "text": "Operations"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/rag-y-evaluacion-continua",
+      "slug": "rag-y-evaluacion-continua"
+    },
+    {
+      "category": "tendencias",
+      "description": "How to lower the cost per request of an LLM system: choose the smallest model that works, use caching with judgement and decide where inference runs.",
+      "figureCaption": "Cost per request depends on the model, the cache and the place",
+      "order": 5,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "inference",
+        "cost",
+        "cache",
+        "models",
+        "ai"
+      ],
+      "title": "Inference cost: model, cache and deployment",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "inference-cost-model-cache-and-deployment",
+          "level": 1,
+          "text": "Inference cost: model, cache and deployment"
+        },
+        {
+          "id": "what-makes-up-the-cost",
+          "level": 2,
+          "text": "What makes up the cost"
+        },
+        {
+          "id": "choose-the-smallest-model-that-works",
+          "level": 2,
+          "text": "Choose the smallest model that works"
+        },
+        {
+          "id": "caching-exact-and-semantic",
+          "level": 2,
+          "text": "Caching: exact and semantic"
+        },
+        {
+          "id": "routing-by-complexity",
+          "level": 2,
+          "text": "Routing by complexity"
+        },
+        {
+          "id": "where-to-run-managed-api-or-your-own-model",
+          "level": 2,
+          "text": "Where to run: managed API or your own model"
+        },
+        {
+          "id": "a-worked-example-in-numbers",
+          "level": 2,
+          "text": "A worked example in numbers"
+        },
+        {
+          "id": "metrics-that-matter",
+          "level": 2,
+          "text": "Metrics that matter"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/costo-de-inferencia",
+      "slug": "costo-de-inferencia"
+    },
+    {
+      "category": "tendencias",
+      "description": "How to treat software carbon footprint as a quality attribute: what to measure, where it comes from and how to choose region, timing and compute with judgement.",
+      "figureCaption": "Same load, less energy and a cleaner grid",
+      "order": 6,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "sustainability",
+        "carbon",
+        "green-software",
+        "finops",
+        "region"
+      ],
+      "title": "Sustainable software: footprint as an attribute",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "sustainable-software-footprint-as-an-attribute",
+          "level": 1,
+          "text": "Sustainable software: footprint as an attribute"
+        },
+        {
+          "id": "what-to-measure",
+          "level": 2,
+          "text": "What to measure"
+        },
+        {
+          "id": "where-it-comes-from",
+          "level": 2,
+          "text": "Where it comes from"
+        },
+        {
+          "id": "levers",
+          "level": 2,
+          "text": "Levers"
+        },
+        {
+          "id": "a-worked-example-in-numbers",
+          "level": 2,
+          "text": "A worked example in numbers"
+        },
+        {
+          "id": "measuring-without-inventing-numbers",
+          "level": 2,
+          "text": "Measuring without inventing numbers"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/software-sostenible-carbono",
+      "slug": "software-sostenible-carbono"
     },
     {
       "category": "nube",
@@ -14335,6 +16358,77 @@
       "readingMinutes": 3,
       "route": "/en/docs/salida-de-la-nube",
       "slug": "salida-de-la-nube"
+    },
+    {
+      "category": "nube",
+      "description": "When to decide access with roles, attributes or relationships, and how to avoid duplicating access rules across every service.",
+      "figureCaption": "Three models answer the same question from different sources of truth",
+      "order": 11,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "authorization",
+        "rbac",
+        "abac",
+        "rebac"
+      ],
+      "title": "Authorization at scale: RBAC, ABAC and ReBAC",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "authorization-at-scale-rbac-abac-and-rebac",
+          "level": 1,
+          "text": "Authorization at scale: RBAC, ABAC and ReBAC"
+        },
+        {
+          "id": "rbac-the-role-as-the-source-of-truth",
+          "level": 2,
+          "text": "RBAC: the role as the source of truth"
+        },
+        {
+          "id": "abac-attributes-as-the-source-of-truth",
+          "level": 2,
+          "text": "ABAC: attributes as the source of truth"
+        },
+        {
+          "id": "rebac-relationships-as-the-source-of-truth",
+          "level": 2,
+          "text": "ReBAC: relationships as the source of truth"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "how-not-to-duplicate-rules",
+          "level": 2,
+          "text": "How not to duplicate rules"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 5,
+      "route": "/en/docs/autorizacion-rbac-abac-rebac",
+      "slug": "autorizacion-rbac-abac-rebac"
     },
     {
       "category": "decisiones",
@@ -15919,6 +18013,205 @@
       "readingMinutes": 3,
       "route": "/en/docs/autonomia-de-la-ia",
       "slug": "autonomia-de-la-ia"
+    },
+    {
+      "category": "decisiones",
+      "description": "What an internal developer platform is, when it pays for its cost, and how to run it as a product with measurable golden paths.",
+      "figureCaption": "The platform offers product teams one well-built path",
+      "order": 15,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "platform",
+        "idp",
+        "platform-engineering",
+        "team-topologies"
+      ],
+      "title": "Internal platform: when to build an IDP",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "internal-platform-when-to-build-an-idp",
+          "level": 1,
+          "text": "Internal platform: when to build an IDP"
+        },
+        {
+          "id": "what-it-is-and-what-it-is-not",
+          "level": 2,
+          "text": "What it is and what it is not"
+        },
+        {
+          "id": "when-it-justifies-its-cost",
+          "level": 2,
+          "text": "When it justifies its cost"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "how-to-measure-it",
+          "level": 2,
+          "text": "How to measure it"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/plataforma-interna-idp",
+      "slug": "plataforma-interna-idp"
+    },
+    {
+      "category": "decisiones",
+      "description": "When a monorepo pays off, when a polyrepo is better, and which hidden costs each option brings, with explicit criteria for the decision.",
+      "figureCaption": "A monorepo lands a change across several packages in one commit",
+      "order": 16,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "monorepo",
+        "polyrepo",
+        "repositories",
+        "ci"
+      ],
+      "title": "Monorepo or polyrepo: the decision and its costs",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "monorepo-or-polyrepo-the-decision-and-its-costs",
+          "level": 1,
+          "text": "Monorepo or polyrepo: the decision and its costs"
+        },
+        {
+          "id": "what-each-option-means",
+          "level": 2,
+          "text": "What each option means"
+        },
+        {
+          "id": "when-a-monorepo-pays-off",
+          "level": 2,
+          "text": "When a monorepo pays off"
+        },
+        {
+          "id": "when-a-polyrepo-pays-off",
+          "level": 2,
+          "text": "When a polyrepo pays off"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "hidden-costs",
+          "level": 2,
+          "text": "Hidden costs"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/monorepo-o-polirepo",
+      "slug": "monorepo-o-polirepo"
+    },
+    {
+      "category": "decisiones",
+      "description": "How to take technical proposals through review with timeboxes, clear decision criteria and an ADR record, without turning every change into a committee.",
+      "figureCaption": "One proposal, one timebox and one recorded decision",
+      "order": 17,
+      "publishedAt": "2026-10-14",
+      "tags": [
+        "rfc",
+        "architecture-review",
+        "adr",
+        "governance",
+        "collaboration"
+      ],
+      "title": "RFCs and architecture reviews without bureaucracy",
+      "updatedAt": "2026-10-14",
+      "headings": [
+        {
+          "id": "rfcs-and-architecture-reviews-without-bureaucracy",
+          "level": 1,
+          "text": "RFCs and architecture reviews without bureaucracy"
+        },
+        {
+          "id": "what-an-rfc-is-and-how-it-differs-from-an-adr",
+          "level": 2,
+          "text": "What an RFC is, and how it differs from an ADR"
+        },
+        {
+          "id": "a-flow-with-deadlines",
+          "level": 2,
+          "text": "A flow with deadlines"
+        },
+        {
+          "id": "criteria-for-what-goes-to-review",
+          "level": 2,
+          "text": "Criteria for what goes to review"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 4,
+      "route": "/en/docs/rfc-y-revisiones-de-arquitectura",
+      "slug": "rfc-y-revisiones-de-arquitectura"
     }
   ]
 }

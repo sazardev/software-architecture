@@ -1,0 +1,83 @@
+---
+title: 'Legado: estrangulador y capa anticorrupción'
+description: 'Cómo modernizar un sistema que no puedes reescribir: un estrangulador que desvía rutas y una capa anticorrupción que protege el modelo nuevo.'
+category: diseno
+tags:
+  - legado
+  - strangler
+  - anticorrupcion
+  - modernizacion
+  - ddd
+order: 21
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Una capa traduce el modelo antiguo mientras migran las rutas'
+---
+
+# Legado: estrangulador y capa anticorrupción
+
+Un sistema legado no se reemplaza en un fin de semana. Funciona, factura y tiene clientes que dependen de cada
+comportamiento, incluidos los que nadie documentó. Reescribirlo de cero suele fallar: el equipo nuevo persigue
+un objetivo que se mueve, y el legado sigue recibiendo parches durante años. Joel Spolsky describió esa trampa en
+2000, al analizar la reescritura de Netscape.
+
+Por eso la modernización funciona mejor por partes: se migra una capacidad cada vez, sin apagar nada, y el legado
+se va quedando sin trabajo.
+
+## El estrangulador
+
+El patrón estrangulador (_strangler fig_) pone una fachada delante del sistema antiguo. Las rutas se redirigen una
+a una: las que ya viven en el sistema nuevo van allí, el resto sigue en el legado. Con el tiempo, el legado queda
+sin rutas y se retira.
+
+Tres condiciones hacen que funcione:
+
+- La fachada o router debe poder dirigir tráfico por ruta, cabecera o cliente, y revertir un cambio en segundos.
+- Cada capacidad migrada debe tener métricas propias, para comparar errores y latencia con el legado.
+- Hay un orden de migración explícito, normalmente por valor de negocio o por riesgo, no por comodidad técnica.
+
+## La capa anticorrupción
+
+El legado tiene su propio lenguaje: códigos numéricos de estado, campos con significados implícitos, tablas que
+mezclan conceptos. Si el servicio nuevo usa ese modelo, hereda sus errores. La capa anticorrupción, un concepto de
+Eric Evans en _Domain-Driven Design_, es un traductor que separa los dos mundos.
+
+**Ejemplo trabajado.** El legado guarda el estado de un cliente como un número del 0 al 9, sin documentación. La capa
+anticorrupción lo traduce a un tipo de dominio con cinco valores explícitos, por ejemplo `Activo`, `Suspendido` o
+`Baja`, y descarta los códigos que no tienen equivalente, registrándolos para revisión. El servicio nuevo nunca ve un
+número mágico. Cuando el legado desaparezca, solo se elimina la capa, no el modelo.
+
+En un caso con doce capacidades, tres migradas, el router envía a los nuevos servicios solo esas tres rutas. Las nueve
+restantes siguen en el legado, pero el equipo ya no toca el código antiguo para añadir funcionalidad nueva.
+
+## Errores frecuentes
+
+- **Una capa anticorrupción que copia el legado.** Si traduce campo por campo sin cambiar nada, no protege nada.
+- **Migrar sin dueño para el legado.** Mientras exista, alguien debe responder por sus incidentes.
+- **Un router sin métricas.** Sin ellas, la migración avanza a ciegas.
+- **Retrasar la retirada.** Un legado que sigue recibiendo tráfico nunca termina de morir.
+
+## Cuándo no aplica
+
+Si el sistema es pequeño, bien acotado y puede reemplazarse entero en una ventana acordada, el estrangulador añade
+trabajo sin beneficio. También conviene reconsiderarlo si el legado no admite interceptar tráfico, como un programa
+instalado en cada cliente: entonces hay que empezar por una capa de integración distinta.
+
+## Checklist
+
+- [ ] ¿Existe una fachada que puede dirigir tráfico por ruta y revertir en segundos?
+- [ ] ¿Cada capacidad migrada tiene métricas comparables con el legado?
+- [ ] ¿El orden de migración está acordado y justificado?
+- [ ] ¿La capa anticorrupción traduce a conceptos del dominio, no a los del legado?
+- [ ] ¿Hay una fecha y un responsable para retirar el legado?
+
+**Para profundizar:** [monolito vs microservicios](/docs/monolito-vs-microservicios) describe las rutas de extracción
+por contexto; [domain-driven design](/docs/domain-driven-design) explica los contextos delimitados y el lenguaje
+ubicuo; [deuda técnica y evolución](/docs/deuda-tecnica-evolucion) ayuda a priorizar qué modernizar primero.
+
+## Fuentes
+
+- Martin Fowler, "StranglerFigApplication", martinfowler.com (2004).
+- Eric Evans, _Domain-Driven Design: Tackling Complexity in the Heart of Software_ (2003).
+- Joel Spolsky, "Things You Should Never Do, Part I" (2000).
+- Sam Newman, _Monolith to Microservices_ (2019).

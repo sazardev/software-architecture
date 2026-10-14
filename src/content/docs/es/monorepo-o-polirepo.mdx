@@ -1,0 +1,98 @@
+---
+title: 'Monorepo o polirepo: la decisión con sus costos'
+description: 'Cuándo un monorepo compensa, cuándo un polirepo es mejor y qué costos ocultos aparecen en cada opción, con criterios explícitos para decidir.'
+category: decisiones
+tags:
+  - monorepo
+  - polirepo
+  - repositorios
+  - ci
+order: 16
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Un monorepo aplica un cambio a varios paquetes en un solo commit'
+---
+
+# Monorepo o polirepo: la decisión con sus costos
+
+Casi todas las organizaciones llegan a esta pregunta sin haberla decidido: cada servicio tiene su
+repositorio porque así se creó el primero. Cuando un cambio exige tocar cinco repositorios, el
+polirepo se convierte en un problema de coordinación. Cuando un repositorio tarda veinte minutos en
+clonarse, el monorepo se convierte en otro.
+
+La elección no es entre moda y tradición. Es entre dos formas de repartir el coste de coordinar
+cambios, de versionar y de construir.
+
+## Qué significa cada opción
+
+En un **polirepo**, cada paquete o servicio tiene su repositorio, su versión y su ciclo de publicación.
+Los consumidores actualizan cuando quieren, lo que da autonomía pero hace que las versiones se
+dispersen. En un **monorepo**, muchos paquetes viven en el mismo repositorio, se construyen juntos y
+un cambio que afecta a varios entra en un único commit atómico.
+
+No son dos extremos de una misma escala: un monorepo puede tener límites internos muy claros, y un
+polirepo puede compartir una plantilla común. Lo que los diferencia es dónde vive el acoplamiento.
+
+## Cuándo compensa el monorepo
+
+El monorepo compensa cuando los cambios cruzan muchos paquetes con frecuencia, cuando hay que
+mantener una versión coherente de librerías internas y cuando una herramienta de construcción
+incremental puede ejecutar solo lo afectado. Google describió este modelo en 2016: un repositorio
+enorme, con herramientas que hacen posible trabajar en él.
+
+Su ventaja principal es que un refactor transversal entra completo o no entra. La contrapartida es
+que la infraestructura de CI, la búsqueda y los permisos deben escalar con el repositorio.
+
+## Cuándo compensa el polirepo
+
+El polirepo compensa cuando los equipos son independientes, cuando cada servicio tiene un ciclo de
+vida y un nivel de riesgo distintos, o cuando los controles de acceso deben separar repositorios por
+equipo o por cliente. Su ventaja es la autonomía. Su costo es la coordinación: un cambio de contrato
+exige abrir varios pull requests, actualizar versiones y esperar a que cada consumidor responda.
+
+## Un ejemplo trabajado
+
+Un equipo tiene 9 servicios y 3 librerías compartidas. En el último trimestre, 1 de cada 4 cambios
+necesitó tocar al menos dos repositorios, y cada cambio de contrato tardó de media 6 días en llegar a
+producción, frente a 1 día cuando el cambio cabía en un único repositorio. Una estimación ilustrativa: si
+el monorepo reduce a la mitad esos cambios transversales y el CI tarda 12 minutos en lugar de 4 gracias
+a la construcción incremental, la inversión en herramientas podría pagarse en unos meses. Si, en cambio, los 9
+servicios se despliegan con ciclos independientes y casi nunca se tocan entre sí, el polirepo sigue
+siendo la opción más barata.
+
+## Costos ocultos
+
+- **Monorepo:** el CI necesita construcción incremental y caché, o cada commit tarda demasiado. Los permisos
+  finos cuestan más. Un fallo en una dependencia compartida puede bloquear a todos.
+- **Polirepo:** versiones desalineadas entre servicios, plantillas copiadas que divergen y herramientas de
+  seguridad que hay que configurar en cada repositorio.
+
+## Errores frecuentes
+
+- Migrar a monorepo sin invertir antes en construcción incremental.
+- Elegir polirepo por defecto y pagar la coordinación durante años sin medirla.
+- Tratar la decisión como permanente. Se puede cambiar, pero cuesta.
+
+## Cuándo no aplica
+
+Si el equipo es pequeño y todos los servicios se despliegan juntos, cualquiera de las dos opciones funciona.
+La decisión importa cuando el tamaño, la frecuencia de cambios transversales o los requisitos de acceso
+empiezan a generar fricción.
+
+## Checklist
+
+- [ ] ¿Qué porcentaje de los cambios toca más de un paquete?
+- [ ] ¿Cuánto tarda hoy el CI de un cambio pequeño, y cuánto tardaría con construcción incremental?
+- [ ] ¿Los permisos deben separarse por repositorio?
+- [ ] ¿Se registra la decisión en un ADR, con su criterio de revisión?
+
+**Para profundizar:** [la ley de Conway y Team Topologies](/docs/ley-de-conway-team-topologies) explica cómo la
+estructura de los equipos empuja la de los repositorios, y [ADR, guía práctica](/docs/adr) muestra cómo
+registrar la decisión con criterios revisables.
+
+## Fuentes
+
+- Rachel Potvin y Josh Levenberg, "Why Google Stores Billions of Lines of Code in a Single Repository",
+  _Communications of the ACM_ (2016).
+- Matthew Skelton y Manuel Pais, _Team Topologies_ (2019).
+- Michael T. Nygard, "Documenting Architecture Decisions" (2011).

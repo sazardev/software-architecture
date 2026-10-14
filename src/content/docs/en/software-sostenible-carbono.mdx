@@ -1,0 +1,92 @@
+---
+title: 'Sustainable software: footprint as an attribute'
+description: 'How to treat software carbon footprint as a quality attribute: what to measure, where it comes from and how to choose region, timing and compute with judgement.'
+category: tendencias
+tags:
+  - sustainability
+  - carbon
+  - green-software
+  - finops
+  - region
+order: 6
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Same load, less energy and a cleaner grid
+---
+
+# Sustainable software: footprint as an attribute
+
+All software consumes electricity, and electricity carries a carbon cost that changes with place and time. So the footprint of a
+system is not a fixed property: it depends on how much energy each operation uses and which grid powers it at that moment. Treating
+it as a quality attribute means measuring it, attributing it to concrete decisions and comparing alternatives, just as you would
+latency or cost.
+
+## What to measure
+
+The most useful approach multiplies two figures: the **energy** a unit of work consumes, in kWh, and the **carbon intensity** of the
+grid where and when it runs, in grams of CO₂ equivalent per kWh. Hardware's embodied emissions add to that, though they are harder to
+allocate.
+
+The _Software Carbon Intensity_ (SCI) specification, published as ISO/IEC 21031:2024, expresses the result per **functional unit**: per
+request, per active user or per transaction. That choice matters, because a total can fall simply because the service has fewer users.
+
+There is no universal factor to copy. Grid intensity depends on country, generation mix and time of day, and it varies with the source
+you use. Document which source you used and when you checked it.
+
+## Where it comes from
+
+The footprint tends to concentrate in a few sources. Idle compute: oversized servers and test environments left on all day. Redundant
+work: repeated queries, missing caches, jobs that recompute what has not changed. Unused data: logs and copies that nobody reads. And
+transfers: moving data between regions consumes energy and often goes unnoticed.
+
+## Levers
+
+There are four levers, roughly in order of typical effect. **Reduce the work**: fewer cycles per request, caching and minimal data.
+**Retire what nobody uses**: environments, copies and logs without consumers. **Adjust usage**: scale idle components to zero and batch
+work that is not urgent. **Choose region and time**: shift flexible load to regions or hours with a cleaner grid.
+
+The first two carry no technical trade-off. The last one does: a cleaner region may be further from users, which raises latency, and it
+can clash with data residency rules.
+
+## A worked example in numbers
+
+A weekly report consumes 40 kWh per run. In region A the grid is at 400 gCO₂e/kWh: 40 × 400 = 16,000 g, or 16 kg per run. Moving the report
+to a nightly batch in region B, at 150 gCO₂e/kWh, brings it down to 6 kg. If the work is also cut by 25 % (skipping recalculation of data
+that has not changed), consumption drops to 30 kWh and the footprint to 4.5 kg. The figures are illustrative, not official factors; the
+point is that the region change and the compute change add up, and each can be measured on its own.
+
+## Measuring without inventing numbers
+
+Use the provider's measurements where they exist, and documented estimates where they do not. Report ranges rather than falsely precise
+figures, and record the method: what the estimate includes, what it leaves out and which grid-intensity source was used. A figure without a
+method cannot support a decision.
+
+## Common mistakes
+
+- **Trusting a declared neutrality.** Buying certificates says nothing about the grid the system draws from in each hour. Look at the real
+  intensity at the time.
+- **Measuring only compute.** Storage, copies and network traffic also use energy.
+- **Optimising one metric at the cost of another.** Moving everything to the cleanest region can worsen latency and transfer costs.
+- **Treating it as a marketing initiative.** If it does not appear in design reviews, nothing changes.
+
+## When it does not apply
+
+The principle always applies, but the depth of measurement should be proportionate. An internal tool that runs once a month does not
+justify a detailed measurement system, though it does justify not leaving it running for no reason.
+
+## Checklist
+
+- [ ] Do you know how much energy a unit of work of the service consumes?
+- [ ] Is the footprint expressed per functional unit, with its grid-intensity source documented?
+- [ ] Are there environments, copies or logs without consumers?
+- [ ] Can flexible load move to a cleaner hour or region without breaking other requirements?
+- [ ] Does the footprint appear in design reviews alongside cost and latency?
+
+**Further reading:** [FinOps: cost as a quality attribute](/docs/finops-costo-como-atributo) shares the same tagging and business-unit levers, and
+[regions, zones and recovery](/docs/regiones-zonas-y-recuperacion) explains the trade-off between region, latency and resilience.
+
+## Sources
+
+- ISO/IEC 21031:2024, _Software Carbon Intensity (SCI) specification_.
+- GHG Protocol, _Scope 2 Guidance_ (2015).
+- Patterson et al., "The Carbon Footprint of Machine Learning Training Will Plateau, Then Shrink", _IEEE Computer_ (2022).

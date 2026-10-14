@@ -1,0 +1,89 @@
+---
+title: 'Tiempo real: WebSockets, SSE y colas'
+description: 'Cómo elegir entre SSE, WebSocket y colas para empujar datos en tiempo real: dirección del flujo, número de clientes y qué pasa cuando se cae la conexión.'
+category: diseno
+tags:
+  - tiempo-real
+  - websocket
+  - sse
+  - colas
+  - escalabilidad
+order: 23
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: La dirección del flujo y el reparto deciden la tecnología
+---
+
+# Tiempo real: WebSockets, SSE y colas
+
+«Tiempo real» casi siempre significa «con menos de un segundo de retraso», no «instantáneo». Con esa precisión, la pregunta
+útil deja de ser qué tecnología es más moderna y pasa a ser otra: ¿en qué dirección viaja la información, cuántos clientes
+la reciben y qué ocurre cuando la conexión se corta? Hay tres mecanismos que se usan juntos con frecuencia: SSE, WebSocket y
+colas de mensajes.
+
+## La dirección decide entre SSE y WebSocket
+
+**Server-Sent Events** (SSE) es un canal de una sola vía, del servidor al cliente, sobre HTTP normal. El navegador lo reconecta
+solo y envía el último identificador recibido, así que el servidor puede reenviar lo que se perdió. Sirve para notificaciones,
+progreso de una tarea o cotizaciones que solo se consumen.
+
+**WebSocket** (RFC 6455, 2011) es una conexión persistente de dos vías, con su propio protocolo de tramas sobre TCP. Conviene
+cuando el cliente también envía mensajes con frecuencia, como en un editor colaborativo o un juego. Tiene un coste que a
+veces se ignora: la reconexión, el control de flujo y la autenticación de la conexión son responsabilidad de la aplicación.
+
+Si solo necesitas que el servidor empuje datos, SSE es más simple de operar. Si el cliente responde con la misma frecuencia,
+WebSocket compensa la complejidad.
+
+## El reparto decide cuándo hace falta un broker
+
+Con una sola instancia del servidor, cada cliente se conecta a ella y el problema no existe. Con varias instancias detrás de un
+balanceador, un evento publicado en una instancia tiene que llegar a clientes conectados a otra. Ahí entra un broker de
+publicación y suscripción (por ejemplo Redis Pub/Sub, NATS o Kafka) que distribuye los eventos a todas las instancias.
+
+La cola cumple otro papel. Absorbe los picos entre quien produce el evento y quien lo entrega, y permite que el servidor de
+conexiones se escale sin acoplarse a los productores. Su garantía habitual es «al menos una vez», así que el cliente debe
+descartar los eventos repetidos usando un identificador.
+
+## Un ejemplo con cifras
+
+Imagina 50.000 clientes conectados que reciben una actualización cada diez segundos. La tasa de envío
+es de 50.000 / 10 = 5.000 mensajes por segundo que cada instancia debe sostener. Si cada instancia mantiene 10.000 conexiones,
+necesitas al menos cinco, y cada una debe recibir los eventos desde el broker, no del productor directo. Esa cuenta decide
+si el problema es de conexiones (muchos sockets abiertos) o de reparto (muchos eventos por segundo). Las dos cosas exigen
+soluciones distintas.
+
+## Qué pasa cuando se corta la conexión
+
+Todo canal persistente se corta: redes móviles, suspensiones del navegador, despliegues del servidor. El cliente debe reconectar
+con un retardo creciente y aleatorio (el mismo principio de los [reintentos con jitter](/docs/resiliencia-sistemas-distribuidos)),
+y al volver debe pedir lo que se perdió: desde el último identificador o, si ya no está disponible, una foto completa del estado.
+Diseñar el reenvío es más importante que elegir el protocolo.
+
+## Errores frecuentes
+
+- **Usar WebSocket para todo.** Si solo hay un flujo de servidor a cliente, SSE reduce la complejidad sin perder nada.
+- **Eventos sin identificador.** Sin un número de secuencia, la reconexión no puede saber qué falta.
+- **Afinidad de sesión innecesaria.** Pegar cada cliente a una instancia complica los despliegues; el broker suele eliminar esa necesidad.
+- **Confundir tiempo real con polling agresivo.** Consultar cada segundo a miles de clientes puede costar más que un canal persistente.
+
+## Cuándo no aplica
+
+Si los datos cambian cada minuto o cada hora, una petición HTTP con caché es suficiente y mucho más barata de operar. El tiempo
+real solo se justifica cuando el retraso tiene un valor para el usuario o para el negocio.
+
+## Checklist
+
+- [ ] ¿La información viaja en una o en dos direcciones, y con qué frecuencia?
+- [ ] ¿Cuántos clientes simultáneos y cuántos eventos por segundo?
+- [ ] ¿Hay más de una instancia que deba recibir los mismos eventos?
+- [ ] ¿Cada evento lleva un identificador para reenvío y deduplicación?
+- [ ] ¿La reconexión tiene retardo creciente con jitter?
+
+**Para profundizar:** [caching, colas y streaming](/docs/caching-colas-streaming) describe las garantías de entrega y los patrones de
+colas, y [resiliencia en sistemas distribuidos](/docs/resiliencia-sistemas-distribuidos) explica cómo reconectar sin tormentas.
+
+## Fuentes
+
+- Fette y Melnikov, _The WebSocket Protocol_, RFC 6455 (2011).
+- WHATWG, _HTML Living Standard_, sección «Server-sent events».
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017), capítulos sobre colas y registros de eventos.

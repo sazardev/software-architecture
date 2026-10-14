@@ -1,0 +1,96 @@
+---
+title: 'RFC y revisiones de arquitectura sin burocracia'
+description: 'Cómo llevar propuestas técnicas a revisión con plazos, criterios claros de decisión y registro en ADR, sin convertir cada cambio en un comité.'
+category: decisiones
+tags:
+  - rfc
+  - revision-de-arquitectura
+  - adr
+  - gobierno
+  - colaboracion
+order: 17
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Una propuesta, un plazo y una decisión registrada'
+---
+
+# RFC y revisiones de arquitectura sin burocracia
+
+Un cambio que afecta a tres equipos no debería decidirse en un pasillo ni en un chat de cuarenta
+mensajes. Tampoco debería esperar seis semanas a un comité que se reúne una vez al mes. Entre esos
+dos extremos hay un formato sencillo: el RFC, una propuesta escrita con plazo para comentar y un
+resultado que queda registrado.
+
+Los procesos de revisión suelen fracasar por una de dos razones. O no tienen plazo, y la propuesta se
+queda abierta para siempre, o tienen tantos pasos que nadie quiere pasar por ellos ni para un cambio
+pequeño. Un buen RFC resuelve las dos cosas a la vez.
+
+## Qué es un RFC y en qué se distingue de un ADR
+
+Un RFC (_request for comments_) es el documento de propuesta. Describe un problema, las opciones que se
+consideran y una recomendación, y lo envía a revisión antes de que nadie construya nada. Un ADR es el
+registro de la decisión una vez tomada. El RFC responde a «qué proponemos y qué piensan los demás»; el
+ADR responde a «qué decidimos y por qué».
+
+El flujo natural tiene dos pasos encadenados: el RFC se revisa y se decide, y la decisión se copia en un
+ADR que enlaza al RFC. Sin RFC, el ADR llega sin contexto. Sin ADR, el RFC se pierde en el historial de un
+canal.
+
+## Un flujo con plazos
+
+El modelo más práctico tiene tres etapas:
+
+- **Borrador.** El autor escribe el problema, al menos dos opciones y una recomendación. Si el documento
+  pasa de dos o tres páginas, suele significar que el problema no está bien acotado.
+- **Revisión acotada.** La propuesta se publica con fecha de cierre, por ejemplo cinco días laborables. Los
+  comentarios pueden ser informativos o bloqueantes. Solo los bloqueantes detienen la decisión, y deben
+  describir un riesgo concreto.
+- **Decisión.** Al cierre, el autor o la persona responsable de la decisión resume los comentarios, acepta
+  o rechaza la propuesta y registra el resultado en un ADR.
+
+La regla del silencio es la pieza clave: si nadie responde en el plazo, la propuesta se considera aceptada.
+Así los revisores participan de verdad y las propuestas no se quedan en un limbo.
+
+## Criterios para decidir qué pasa por revisión
+
+No todo cambio necesita un RFC. Un criterio útil es preguntarse si el cambio cumple alguna de estas
+condiciones: afecta a más de un equipo, es difícil de revertir, toca un contrato público o compromete un
+presupuesto relevante. Si no cumple ninguna, basta una nota en el pull request.
+
+Un ejemplo trabajado: un equipo quiere cambiar la biblioteca de colas de mensajes. Afecta a tres servicios,
+cambia el formato de los mensajes y migrar lleva dos meses. Cumple tres criterios, así que merece un RFC.
+En cambio, subir una biblioteca de formato de fechas que es compatible hacia atrás no lo necesita.
+
+## Errores frecuentes
+
+- **Revisar sin plazo.** Las propuestas abiertas indefinidamente son la forma más rápida de frenar a un equipo.
+- **Convertir la revisión en votación.** La revisión busca riesgos, no mayoría. Un comentario bloqueante debe
+  apoyarse en un hecho, no solo en una preferencia.
+- **Escribir el RFC después de construir.** Un documento que justifica algo ya hecho es un registro tardío,
+  no una propuesta.
+- **Olvidar la opción de no hacer nada.** Un RFC que no compara con no cambiar nada no compara de verdad.
+
+## Cuándo no aplica
+
+Un RFC tiene coste. En un equipo pequeño que trabaja junto, una conversación de quince minutos y una nota en
+el ADR bastan. Tampoco conviene para decisiones reversibles en una semana, porque el proceso tardaría más que
+el error. La burocracia aparece cuando el mismo formato se aplica por igual a todo.
+
+## Checklist
+
+- [ ] ¿La propuesta describe el problema antes que la solución?
+- [ ] ¿Hay al menos dos opciones, incluida la de no hacer nada?
+- [ ] ¿Tiene fecha de cierre y se sabe quién decide?
+- [ ] ¿Los comentarios bloqueantes describen un riesgo concreto?
+- [ ] ¿La decisión queda registrada en un ADR que enlaza al RFC?
+
+**Para profundizar:** [ADR, guía práctica](/docs/adr) explica cómo registrar la decisión;
+[presentar ideas y propuestas](/docs/presentar-ideas-y-propuestas) trabaja la forma de escribir la
+propuesta; [trade-offs y decisiones](/docs/trade-offs-y-decisiones) ayuda a comparar opciones.
+
+## Fuentes
+
+- Michael T. Nygard, "Documenting Architecture Decisions" (2011).
+- Gregor Hohpe, _The Software Architect Elevator_ (2020).
+- Mark Richards y Neal Ford, _Fundamentals of Software Architecture_ (2020).
+- Proceso público de RFC del proyecto Rust, como ejemplo de revisión con plazo y periodo final de comentarios.

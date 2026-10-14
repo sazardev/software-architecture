@@ -1,0 +1,80 @@
+---
+title: 'Migrar la base de datos sin parar el servicio'
+description: 'Expand y contract, cambios de esquema compatibles hacia atrás y backfills por lotes para evolucionar una base de datos sin ventanas de mantenimiento.'
+category: diseno
+tags:
+  - migraciones
+  - base-de-datos
+  - expand-contract
+  - sin-downtime
+  - esquema
+order: 20
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: 'Cuatro fases compatibles: cada una se despliega y se revierte sola'
+---
+
+# Migrar la base de datos sin parar el servicio
+
+Renombrar una columna parece un cambio de una línea. En producción, con varias versiones de la aplicación
+ejecutándose a la vez, es un problema de coordinación: mientras se despliega la versión nueva, la anterior
+sigue leyendo y escribiendo la columna antigua. Un cambio de esquema que rompe a la versión anterior obliga
+a una ventana de mantenimiento, o a un incidente.
+
+La regla de partida es sencilla: **cada cambio de esquema debe ser compatible con la versión anterior de la
+aplicación**. El patrón que lo cumple se llama expand y contract, y su versión formal es _parallel change_.
+
+## Las cuatro fases
+
+Un renombrado de `telefono` a `telefono_e164` en una tabla de 40 millones de filas se hace así:
+
+1. **Expandir.** Añadir la columna nueva, nula y sin restricciones. La versión anterior ni se entera.
+2. **Escribir en ambas.** Desplegar una versión que escribe en las dos columnas y sigue leyendo la antigua.
+3. **Rellenar (backfill).** Copiar los valores antiguos a la columna nueva por lotes, en segundo plano.
+   Cuando el backfill termina, cambiar las lecturas a la columna nueva.
+4. **Contraer.** Dejar de escribir la columna antigua y, semanas después, eliminarla.
+
+Cada fase cabe en un despliegue normal y se puede revertir sin tocar datos.
+
+## El backfill es la parte lenta
+
+**Ejemplo trabajado.** Con lotes de 5.000 filas y una pausa de 200 ms entre lotes, la copia de 40 millones de
+filas necesita 8.000 lotes. Solo las pausas suman 1.600 segundos, unos 27 minutos, sin contar el tiempo de
+cada lote. Con bloqueos cortos y lotes pequeños, el servicio sigue respondiendo; con un único `UPDATE` sobre
+toda la tabla, bloquea escrituras durante minutos.
+
+Antes de cambiar las lecturas, conviene verificar la copia: contar filas con valores distintos entre ambas
+columnas y repetir el backfill solo sobre esas. Y el backfill debe ser reanudable: si el proceso se cae a
+mitad, debe continuar desde el último lote, no empezar de cero.
+
+## Errores frecuentes
+
+- **Renombrar en un solo paso.** Rompe la versión anterior en cuanto se despliega la nueva.
+- **Añadir una columna obligatoria sin valor por defecto.** En tablas grandes puede bloquear la escritura
+  mientras el motor reescribe las filas, según el motor y su versión.
+- **Dejar la fase de contracción para siempre.** La columna antigua sigue costando almacenamiento y confusión.
+- **Lecturas que cambian antes de verificar el backfill.** Los datos incompletos se ven como errores de negocio.
+
+## Cuándo no aplica
+
+Un cambio que afecta a una tabla pequeña que se puede vaciar en una ventana acordada no necesita cuatro fases.
+Tampoco aplica si la base de datos no se comparte entre versiones: un servicio con su propia base y un despliegue
+atómico puede cambiar el esquema en una sola migración.
+
+## Checklist
+
+- [ ] ¿El cambio es compatible con la versión anterior de la aplicación?
+- [ ] ¿Cada fase se despliega y se puede revertir por separado?
+- [ ] ¿El backfill es por lotes, reanudable y con pausas?
+- [ ] ¿Hay una comprobación de que la copia está completa antes de cambiar las lecturas?
+- [ ] ¿Existe una fecha para eliminar la columna antigua?
+
+**Para profundizar:** [datos ACID y aislamiento](/docs/datos-acid-y-aislamiento) explica qué garantías tienes durante
+la copia; [deuda técnica y evolución](/docs/deuda-tecnica-evolucion) describe cómo planear cambios incrementales;
+[estrategia de pruebas](/docs/estrategia-de-pruebas-contratos) sirve para probar las versiones que coexisten.
+
+## Fuentes
+
+- Pramod J. Sadalage y Scott W. Ambler, _Refactoring Databases: Evolutionary Database Design_ (2006).
+- Scott W. Ambler y Pramod J. Sadalage, "Evolutionary Database Design", martinfowler.com (2016).
+- Danilo Sato, "ParallelChange", martinfowler.com (2014).

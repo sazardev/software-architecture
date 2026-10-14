@@ -1,0 +1,93 @@
+---
+title: 'Software sostenible: la huella como atributo'
+description: 'Cómo tratar la huella de carbono del software como atributo de calidad: qué medir, dónde se genera y cómo elegir región, horario y cómputo con criterio.'
+category: tendencias
+tags:
+  - sostenibilidad
+  - carbono
+  - green-software
+  - finops
+  - region
+order: 6
+publishedAt: 2026-10-14
+updatedAt: 2026-10-14
+figureCaption: Misma carga, menos energía y una red más limpia
+---
+
+# Software sostenible: la huella como atributo
+
+Todo software consume electricidad, y la electricidad tiene un costo de carbono que cambia según el lugar y la hora. Por eso la
+huella de un sistema no es una propiedad fija: depende de cuánta energía usa cada operación y de qué red la alimenta en ese
+momento. Tratarla como atributo de calidad significa medirla, asignarla a decisiones concretas y poder compararla entre
+alternativas, igual que la latencia o el costo.
+
+## Qué medir
+
+La aproximación más útil es multiplicar dos cifras: la **energía** consumida por una unidad de trabajo, en kWh, y la **intensidad
+de carbono** de la red en ese lugar y momento, en gramos de CO₂ equivalente por kWh. A eso se suman las emisiones incorporadas del
+hardware, que son más difíciles de repartir.
+
+La especificación _Software Carbon Intensity_ (SCI), publicada como ISO/IEC 21031:2024, propone expresar el resultado por **unidad
+funcional**: por petición, por usuario activo o por transacción. Esa elección importa, porque una métrica total puede bajar solo
+porque el servicio tiene menos usuarios.
+
+La intensidad de la red depende del país, del mix de generación y de la hora, y
+cambia según la fuente que uses.
+
+## Dónde se genera
+
+La huella suele concentrarse en pocas fuentes. Cómputo ocioso: servidores sobredimensionados y entornos de prueba encendidos todo el
+día. Trabajo redundante: consultas repetidas, cachés inexistentes, procesos que recalculan lo que no cambió. Datos sin uso: almacenamiento
+de registros y copias que nadie lee. Y transferencias entre regiones, que consumen energía y suelen pasar desapercibidas.
+
+## Palancas
+
+Hay cuatro palancas, en orden de efecto habitual. **Reducir el trabajo**: menos ciclos por petición, caché y datos mínimos. **Retirar lo
+que nadie usa**: entornos, copias y registros sin consumidores. **Ajustar el uso**: escalar a cero lo que está ocioso y procesar en lotes
+lo que no es urgente. **Elegir región y hora**: desplazar la carga flexible a regiones o franjas con red más limpia.
+
+La última sí tiene compromiso técnico, porque una región más limpia puede estar más lejos del usuario, y eso sube la
+latencia; además puede chocar con reglas de residencia de datos.
+
+## Un ejemplo con cifras
+
+Un informe semanal consume 40 kWh por ejecución. En la región A, la red tiene 400 gCO₂e/kWh: 40 × 400 = 16.000 g, es decir, 16 kg por
+ejecución. Si el informe pasa a un lote nocturno en la región B, con 150 gCO₂e/kWh, baja a 6 kg. Si además se reduce el trabajo un 25 %
+(evitando recalcular datos sin cambios), el consumo pasa a 30 kWh y la huella a 4,5 kg. Las cifras son ilustrativas, no factores
+oficiales; el mensaje es que el cambio de región y el de cómputo se suman y que cada uno se puede medir por separado.
+
+## Cómo medir sin inventar
+
+Usa las mediciones del proveedor cuando existan, y estimaciones documentadas cuando no. Reporta rangos en lugar de cifras falsamente
+precisas, y registra el método: qué incluye la estimación, qué queda fuera y con qué fuente de intensidad de red se calculó. Una cifra
+sin método no sirve para decidir.
+
+## Errores frecuentes
+
+- **Confiar en la neutralidad declarada.** Una compra de certificados no dice nada sobre la red en la que el sistema consume en cada hora.
+  Conviene mirar la intensidad real del momento.
+- **Medir solo el cómputo.** El almacenamiento, las copias y el tráfico de red también consumen energía.
+- **Optimizar una métrica a costa de otra.** Mover todo a la región más limpia puede empeorar la latencia y el costo de transferencia.
+- **Tratarlo como iniciativa de marketing.** Si no entra en las revisiones de diseño, no cambia nada.
+
+## Cuándo no aplica
+
+El principio siempre aplica, pero la profundidad de la medición debe ser proporcional. Una herramienta interna que corre una vez al mes no
+justifica un sistema de medición detallado; sí justifica no dejarla encendida sin necesidad.
+
+## Checklist
+
+- [ ] ¿Sabes cuánta energía consume una unidad de trabajo del servicio?
+- [ ] ¿La huella se expresa por unidad funcional, con su fuente de intensidad de red documentada?
+- [ ] ¿Existen entornos, copias o registros sin consumidores?
+- [ ] ¿La carga flexible puede desplazarse a una hora o región más limpia sin romper otros requisitos?
+- [ ] ¿La huella aparece en las revisiones de diseño junto al costo y la latencia?
+
+**Para profundizar:** [FinOps: el costo como atributo de calidad](/docs/finops-costo-como-atributo) comparte las mismas palancas de etiquetado y
+unidad de negocio, y [regiones, zonas y recuperación](/docs/regiones-zonas-y-recuperacion) explica el compromiso entre región, latencia y resiliencia.
+
+## Fuentes
+
+- ISO/IEC 21031:2024, _Software Carbon Intensity (SCI) specification_.
+- GHG Protocol, _Scope 2 Guidance_ (2015).
+- Patterson et al., "The Carbon Footprint of Machine Learning Training Will Plateau, Then Shrink", _IEEE Computer_ (2022).
