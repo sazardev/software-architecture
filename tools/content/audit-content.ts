@@ -7,7 +7,8 @@ import type { Issue } from '../report';
 import { collectFigureIssues } from './audit-figures';
 import { collectLinkIssues } from './audit-links';
 import { collectLocaleIssues } from './audit-locales';
-import { buildContentIndex, getIndexPath } from './content-index';
+import { collectRoadmapIssues } from './audit-roadmaps';
+import { buildContentIndex, getIndexPath, readRoadmaps } from './content-index';
 import { extractHeadings, type ContentHeading } from './extract-headings';
 import { isLocale, locales } from './locales';
 import { parseFrontmatter } from './parse-frontmatter';
@@ -216,6 +217,7 @@ function parseDocument(
       headings: headingCheck.headings,
       locale,
       relativeFile,
+      roadmap: parsed.data.roadmap,
       slug,
     },
     issues: [...issues, ...headingCheck.issues],
@@ -232,7 +234,20 @@ async function readCurrentIndex(): Promise<string> {
 
 async function collectIndexIssues(): Promise<Issue[]> {
   const currentIndex = await readCurrentIndex();
-  const expectedIndex = await buildContentIndex();
+  let expectedIndex: string;
+
+  try {
+    expectedIndex = await buildContentIndex();
+  } catch (error) {
+    return [
+      {
+        code: 'E-INDEX',
+        file: 'src/content/index.gen.json',
+        level: 'error',
+        message: `no se pudo generar el índice → ${error instanceof Error ? error.message : String(error)}`,
+      },
+    ];
+  }
 
   if (currentIndex !== expectedIndex) {
     return [
@@ -284,8 +299,9 @@ export async function auditContent(): Promise<ContentAuditResult> {
   const linkIssues = collectLinkIssues(parsedDocs);
   const figureIssues = await collectFigureIssues(parsedDocs);
   const localeIssues = await collectLocaleIssues(taxonomy, parsedDocs);
+  const roadmapIssues = collectRoadmapIssues(await readRoadmaps(), parsedDocs);
   const indexIssues = await collectIndexIssues();
-  issues.push(...linkIssues, ...figureIssues, ...localeIssues, ...indexIssues);
+  issues.push(...linkIssues, ...figureIssues, ...localeIssues, ...roadmapIssues, ...indexIssues);
 
   return { docCount: parsedDocs.size, issues };
 }

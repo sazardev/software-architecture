@@ -17,7 +17,7 @@ denegada mecánicamente): tu única salida es el veredicto. La fuente autoritati
 3. Revisa punto por punto: capas e imports (`import-x/no-restricted-paths`), barriles,
    nombres de archivo, orden de imports, alias `@/`, ausencia de `any`/`!`, 300 líneas
    y complejidad, `loader` antes de `head`, `useMessages()` sin literales, frontmatter
-   y enlaces MDX, commits convencionales.
+   (sección `category` + `roadmap` asignados) y enlaces MDX, commits convencionales.
 
 ## Veredicto
 

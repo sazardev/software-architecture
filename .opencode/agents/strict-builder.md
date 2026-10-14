@@ -37,7 +37,8 @@ las reglas del proyecto al pie de la letra. La fuente autoritativa de reglas es
   validados en `lib/*/**-params.ts` (`validateSearch`). SEO con `buildPageHead()`;
   la búsqueda es la paleta de comandos (sin ruta propia). Textos de UI solo vía `useMessages()`, nunca literales.
 - **Contenido MDX:** frontmatter válido (title 3–60, description 40–160, categoría
-  existente, ≤5 tags kebab-case únicos, `updatedAt` no futuro); al menos un `h2`,
+  existente, `roadmap: { id, stage, step }` existente en `roadmaps.json` e idéntico entre
+  idiomas, ≤5 tags kebab-case únicos, `updatedAt` no futuro); al menos un `h2`,
   sin saltos de nivel, anclas únicas, enlaces internos `/docs/<slug>#ancla`
   existentes. Sin emojis salvo petición expresa.
 - **Git:** no hagas commit, amend, push ni PRs salvo petición explícita. Mensajes

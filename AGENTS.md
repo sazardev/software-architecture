@@ -52,7 +52,8 @@ src/
   components/  # atomic design: atoms → molecules → organisms → templates (con barriles)
   lib/
     config/    # site, nav (constantes tipadas)
-    content/   # taxonomía, tipos, registry (índice generado)
+    content/   # taxonomía, roadmaps.json, tipos, registry (índice generado)
+    roadmap/   # roadmaps: pasos por etapa, geometría del plano y progreso del lector
     i18n/      # locales.json, mensajes tipados (es/en), provider y hooks
     theme/     # preferencias de tema (claro/oscuro/sistema), provider y hooks
     search/    # motor de búsqueda, sintaxis y items de la paleta de comandos, provider y atajos
@@ -128,8 +129,13 @@ Frontmatter obligatorio (validado con zod en la auditoría):
 | `tags`          | hasta 5, kebab-case, únicos                                                                |
 | `publishedAt`   | `YYYY-MM-DD`, ≤ `updatedAt`; ordena «lo último» de la portada y el RSS                     |
 | `order`         | entero ≥ 0 (orden dentro de la sección)                                                    |
+| `roadmap`       | `{ id, stage, step }`: roadmap y etapa existentes en `roadmaps.json`, paso entero > 0      |
 | `figureCaption` | 12–90 caracteres: pie de la figura del artículo («FIG. NN — …») y alt de la tarjeta social |
 | `updatedAt`     | `YYYY-MM-DD`, no puede ser futuro                                                          |
+
+**Cada artículo pertenece a una sección y a un roadmap (obligatorio).** `category` es la
+sección temática (`taxonomy.json`); `roadmap` es su lugar en una ruta guiada
+(`src/lib/content/roadmaps.json`, ver §6.1). Ambos se deciden al crear el artículo.
 
 **Cada artículo tiene su propia figura (obligatorio).** Es el equivalente del «FIG. 01» de la
 portada: un plano elegante y animado que aparece en la cabecera del artículo y viaja en la
@@ -167,6 +173,31 @@ completos. Bloques de ≤ 15 líneas y, como referencia, ≤ 40 líneas de códi
 Disponible sin importar dentro de MDX: `<Callout>`, `<InteractiveMap>`, bloques ` ```mermaid `
 (se convierten en diagramas interactivos lazy). Los componentes del sistema de diseño se añaden
 en `src/mdx/mdx-components.tsx`.
+
+### 6.1 Roadmaps (`/<locale>/roadmap`)
+
+Rutas de lectura guiadas, paso a paso. El catálogo vive en `src/lib/content/roadmaps.json`
+(id, `order`, `icon` de `SectionGlyph`, `labels` por idioma y `stages` ordenadas con sus
+`labels`). Cada artículo declara su lugar en el frontmatter:
+
+```yaml
+roadmap:
+  id: sistemas # roadmap de roadmaps.json
+  stage: datos # etapa de ese roadmap
+  step: 30 # orden dentro de la etapa (no consecutivo: deja huecos para insertar)
+```
+
+- Todo es dinámico: listados, plano, numeración visible («Paso 8 de 25»), anterior/siguiente,
+  SEO y sitemap salen del índice. Un artículo nuevo aparece solo en su etapa; las etapas sin
+  artículos no se pintan (aviso `W-ROADMAP-EMPTY`).
+- Las traducciones de un artículo comparten exactamente `id/stage/step` (`E-ROADMAP-LOCALE`) y
+  dos artículos no pueden ocupar el mismo paso de una etapa (`E-ROADMAP-STEP`).
+- Páginas: `/<locale>/roadmap` (catálogo) y `/<locale>/roadmap/<id>` (plano interactivo con
+  pan/zoom, ficha del paso y lista paso a paso). Cada artículo muestra su posición en la cabecera
+  (`RUTA · … · Paso N de M`) y el bloque `RoadmapTrail` al final («hecho · siguiente paso»).
+- El progreso del lector se guarda solo en su navegador (`localStorage`, clave
+  `sa:roadmap-done`, lista de slugs común a todos los idiomas).
+- Nuevo roadmap o etapa: añádelo a `roadmaps.json` con textos en cada idioma; el resto se genera.
 
 ### Mapas interactivos
 
@@ -234,7 +265,7 @@ siempre rutas absolutas y anclas del idioma correspondiente.
   (papel cuadriculado, patrón SVG), panel cianotipo `bp-panel`, `BlueprintFrame` (marcas de
   registro `+` en las esquinas), `TitleBlock` (cajetín de hoja/escala/revisión), cotas en
   `Eyebrow` y tipografía mono para metadatos. Las tarjetas son planas (borde, sin sombra).
-- Layout: páginas envuelven su contenido en el atom `Container` (`narrow`/`reading`/`wide`);
+- Layout: páginas envuelven su contenido en el atom `Container` (`narrow`/`reading`/`wide`/`bleed`, este para mesas de trabajo como el plano del roadmap);
   `SiteShell` ya no limita el ancho de `main` para permitir secciones a sangre.
 
 ### Tema global (claro/oscuro/sistema)
@@ -318,24 +349,30 @@ Todo el SEO sale del contenido: no hay que tocar nada al añadir artículos o te
 
 ## 9. Auditoría (`bun run audit`)
 
-| Código                        | Nivel   | Regla                                                     |
-| ----------------------------- | ------- | --------------------------------------------------------- |
-| E-FRONTMATTER                 | error   | frontmatter inválido (zod)                                |
-| E-SLUG / E-CATEGORY           | error   | slug kebab / categoría existente                          |
-| E-TITLE / E-DESCRIPTION       | error   | longitudes SEO                                            |
-| E-UPDATED-AT                  | error   | fecha ISO válida y no futura                              |
-| E-HEADINGS / -UNIQUE / -LEVEL | error   | estructura de encabezados                                 |
-| E-LINK / E-ANCHOR             | error   | enlaces internos y anclas existentes                      |
-| E-INDEX                       | error   | `index.gen.json` actualizado                              |
-| E-FIGURE-MISSING / -REGISTRY  | error   | cada artículo tiene diseño `designs/<slug>.ts` registrado |
-| E-FIGURE-CAPTION              | error   | `figureCaption` de 12–90 caracteres                       |
-| W-FIGURE-ORPHAN               | warning | diseño de figura sin artículo                             |
-| E-TAXONOMY-ID / -ORDER        | error   | ids y órdenes de sección únicos                           |
-| E-TAXONOMY-LABELS             | error   | cada sección tiene label/description por idioma           |
-| E-LOCALE / E-LOCALE-MESSAGES  | error   | carpeta de idioma y diccionario de mensajes               |
-| E-ROUTE-*                     | error   | rutas: id ↔ archivo, root correcto                        |
-| W-FENCE / W-ROUTE-DEFAULT     | warning | bloques sin cerrar / `export default` en rutas            |
-| W-TRANSLATION                 | warning | falta la traducción de un documento                       |
+| Código                         | Nivel   | Regla                                                     |
+| ------------------------------ | ------- | --------------------------------------------------------- |
+| E-FRONTMATTER                  | error   | frontmatter inválido (zod)                                |
+| E-SLUG / E-CATEGORY            | error   | slug kebab / categoría existente                          |
+| E-TITLE / E-DESCRIPTION        | error   | longitudes SEO                                            |
+| E-UPDATED-AT                   | error   | fecha ISO válida y no futura                              |
+| E-HEADINGS / -UNIQUE / -LEVEL  | error   | estructura de encabezados                                 |
+| E-LINK / E-ANCHOR              | error   | enlaces internos y anclas existentes                      |
+| E-INDEX                        | error   | `index.gen.json` actualizado                              |
+| E-FIGURE-MISSING / -REGISTRY   | error   | cada artículo tiene diseño `designs/<slug>.ts` registrado |
+| E-FIGURE-CAPTION               | error   | `figureCaption` de 12–90 caracteres                       |
+| W-FIGURE-ORPHAN                | warning | diseño de figura sin artículo                             |
+| E-TAXONOMY-ID / -ORDER         | error   | ids y órdenes de sección únicos                           |
+| E-ROADMAP                      | error   | `roadmap.id`/`stage` existentes en `roadmaps.json`        |
+| E-ROADMAP-STEP                 | error   | un paso por artículo dentro de cada etapa e idioma        |
+| E-ROADMAP-LOCALE               | error   | mismo `roadmap` en todas las traducciones                 |
+| E-ROADMAP-ID / -ORDER / -STAGE | error   | ids, órdenes y etapas únicos en el catálogo               |
+| E-ROADMAP-LABELS               | error   | roadmap y etapas con label/description por idioma         |
+| W-ROADMAP-EMPTY                | warning | etapa sin artículos                                       |
+| E-TAXONOMY-LABELS              | error   | cada sección tiene label/description por idioma           |
+| E-LOCALE / E-LOCALE-MESSAGES   | error   | carpeta de idioma y diccionario de mensajes               |
+| E-ROUTE-*                      | error   | rutas: id ↔ archivo, root correcto                        |
+| W-FENCE / W-ROUTE-DEFAULT      | warning | bloques sin cerrar / `export default` en rutas            |
+| W-TRANSLATION                  | warning | falta la traducción de un documento                       |
 
 Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes/`) que devuelva
 `Issue[]` y enlázala en `tools/audit.ts`. Los errores bloquean `check` y el push.
@@ -354,8 +391,10 @@ Añadir reglas: crea una función en `tools/content/audit-*.ts` (o `tools/routes
   en el frontmatter. Nada más: portada (rejilla de temas, máx. 6 + "ver todos"), índice lateral
   de `/docs`, filtros, pie, conteos, cajetín y etiquetas se generan desde el contenido. Sin
   `icon`, el glifo se deriva del id; para uno nuevo, añádelo al mapa de `SectionGlyph`.
-- **Nuevo artículo**: MDX en cada idioma + su figura propia y `figureCaption` (§6); sin figura no
-  pasa la auditoría.
+- **Nuevo artículo**: MDX en cada idioma con su sección (`category`) y su lugar en un roadmap
+  (`roadmap`, §6.1) + su figura propia y `figureCaption` (§6); sin figura o sin roadmap no pasa
+  la auditoría.
+- **Nuevo roadmap o etapa**: entrada en `src/lib/content/roadmaps.json` (§6.1).
 - **Nuevo componente**: crea la carpeta en la capa correcta con `Componente.tsx` + `index.ts`
   y expórtalo en el barril de la capa. Si es usable en MDX, mapea en `src/mdx/mdx-components.tsx`.
 - **Nueva ruta**: crea el archivo en `src/routes/$locale/` (la auditoría verifica la coherencia).

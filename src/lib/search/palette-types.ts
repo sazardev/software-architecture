@@ -10,7 +10,8 @@ Intención de un elemento de la paleta; la UI decide cómo ejecutarla (navegar, 
 export type PaletteAction =
   | { hash: string | undefined; slug: string; type: 'doc' }
   | { locale: Locale; type: 'locale' }
-  | { page: 'docs' | 'home'; type: 'page' }
+  | { page: 'docs' | 'home' | 'roadmap'; type: 'page' }
+  | { roadmapId: string; type: 'roadmap' }
   | { sectionId: string; type: 'section' }
   | { tag: string; type: 'tag' }
   | { next: ThemePreference; type: 'theme' };

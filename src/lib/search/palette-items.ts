@@ -1,6 +1,7 @@
 import { getDocsBySection, getTopTags, type TagCount } from '@/lib/content/registry';
 import { getSectionLabel, getSectionText } from '@/lib/content/taxonomy';
 import { getLocaleDefinition, locales } from '@/lib/i18n/locales';
+import { getRoadmapPaths, getRoadmapText } from '@/lib/roadmap/roadmap-registry';
 import { parsePaletteQuery } from '@/lib/search/palette-query';
 import type {
   PaletteContext,
@@ -52,8 +53,22 @@ function tagItems(tags: TagCount[], { messages }: PaletteContext): PaletteItem[]
   }));
 }
 
-function navigationItems({ messages }: PaletteContext): PaletteItem[] {
-  const { actions } = messages.palette;
+function roadmapItems({ locale, messages }: PaletteContext): PaletteItem[] {
+  return getRoadmapPaths(locale).map(({ roadmap, steps }) => {
+    const text = getRoadmapText(roadmap, locale);
+
+    return {
+      action: { roadmapId: roadmap.id, type: 'roadmap' },
+      detail: text.description,
+      id: `roadmap:${roadmap.id}`,
+      label: messages.palette.actions.roadmap(text.label),
+      meta: messages.roadmap.stepCount(steps.length),
+    };
+  });
+}
+
+function navigationItems(context: PaletteContext): PaletteItem[] {
+  const { actions } = context.messages.palette;
 
   return [
     {
@@ -70,6 +85,14 @@ function navigationItems({ messages }: PaletteContext): PaletteItem[] {
       label: actions.docs,
       meta: undefined,
     },
+    {
+      action: { page: 'roadmap', type: 'page' },
+      detail: undefined,
+      id: 'page:roadmap',
+      label: actions.roadmaps,
+      meta: undefined,
+    },
+    ...roadmapItems(context),
   ];
 }
 

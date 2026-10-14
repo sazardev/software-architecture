@@ -14,6 +14,10 @@ type ContentIndexEntry = {
   updatedAt: string;
 };
 
+type RoadmapsConfig = {
+  roadmaps: { id: string }[];
+};
+
 type LocalesConfig = {
   default: string;
   locales: { code: string }[];
@@ -130,10 +134,25 @@ export function staticSeoPlugin(options: StaticSeoOptions): Plugin {
       const docsAlternates = new Map(
         codes.map((code) => [code, `${base}/${code}/docs`] as [string, string]),
       );
+      const roadmapConfig = JSON.parse(
+        await readFile('src/lib/content/roadmaps.json', 'utf8'),
+      ) as RoadmapsConfig;
+      const roadmapPaths = ['', ...roadmapConfig.roadmaps.map((roadmap) => `/${roadmap.id}`)];
+      const roadmapUrls = roadmapPaths.map((suffix) =>
+        sitemapUrl(
+          new Map(
+            codes.map((code) => [code, `${base}/${code}/roadmap${suffix}`] as [string, string]),
+          ),
+          localeConfig.default,
+          '0.7',
+          globalLastmod,
+        ),
+      );
 
       const entries = [
         sitemapUrl(homeAlternates, localeConfig.default, '1.0', globalLastmod),
         sitemapUrl(docsAlternates, localeConfig.default, '0.8', globalLastmod),
+        ...roadmapUrls,
         ...buildDocUrls(index.docs, base, localeConfig.default),
       ];
 

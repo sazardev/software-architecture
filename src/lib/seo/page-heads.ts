@@ -4,6 +4,7 @@ import { getSectionLabel } from '@/lib/content/taxonomy';
 import type { ContentEntry } from '@/lib/content/types';
 import { locales, type Locale } from '@/lib/i18n/locales';
 import { getMessages } from '@/lib/i18n/messages';
+import { getRoadmapPaths, getRoadmapText, type RoadmapPath } from '@/lib/roadmap/roadmap-registry';
 import {
   articleJsonLd,
   breadcrumbJsonLd,
@@ -109,5 +110,68 @@ export function docSeo(entry: ContentEntry): PageSeo {
       ]),
     ],
     noscript: { description: entry.description, title: entry.title },
+  };
+}
+
+export function roadmapIndexSeo(locale: Locale): PageSeo {
+  const messages = getMessages(locale);
+  const { roadmap } = messages;
+  const title = `${roadmap.title} · ${site.name}`;
+  const path = `/${locale}/roadmap`;
+
+  return {
+    head: buildPageHead({
+      description: roadmap.description,
+      image: { alt: roadmap.title, url: ogImageUrl(locale) },
+      locale,
+      path,
+      title,
+    }),
+    jsonLd: [
+      collectionJsonLd(
+        locale,
+        roadmap.title,
+        roadmap.description,
+        getRoadmapPaths(locale).flatMap((entry) => entry.steps.map((step) => step.entry)),
+        path,
+      ),
+      breadcrumbJsonLd([
+        { name: messages.docs.breadcrumbHome, path: `/${locale}` },
+        { name: roadmap.breadcrumb, path },
+      ]),
+    ],
+    noscript: { description: roadmap.description, title: roadmap.title },
+  };
+}
+
+export function roadmapSeo(locale: Locale, roadmapPath: RoadmapPath): PageSeo {
+  const messages = getMessages(locale);
+  const text = getRoadmapText(roadmapPath.roadmap, locale);
+  const path = `/${locale}/roadmap/${roadmapPath.roadmap.id}`;
+  const title = `${text.label} · ${messages.roadmap.title} · ${site.name}`;
+
+  return {
+    head: buildPageHead({
+      description: text.description,
+      image: { alt: text.label, url: ogImageUrl(locale) },
+      locale,
+      path,
+      title,
+    }),
+    jsonLd: [
+      collectionJsonLd(
+        locale,
+        text.label,
+        text.description,
+        roadmapPath.steps.map((step) => step.entry),
+        path,
+      ),
+      breadcrumbJsonLd([
+        { name: messages.docs.breadcrumbHome, path: `/${locale}` },
+        { name: messages.roadmap.breadcrumb, path: `/${locale}/roadmap` },
+        { name: text.label, path },
+      ]),
+    ],
+    noscript: { description: text.description, title: text.label },
   };
 }

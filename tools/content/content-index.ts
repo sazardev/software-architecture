@@ -5,7 +5,13 @@ import { Glob } from 'bun';
 import { extractHeadings, type ContentHeading } from './extract-headings';
 import { isLocale, locales } from './locales';
 import { parseFrontmatter } from './parse-frontmatter';
-import { frontmatterSchema, taxonomySchema } from './schema';
+import {
+  frontmatterSchema,
+  roadmapsSchema,
+  taxonomySchema,
+  type ContentRoadmaps,
+  type RoadmapPlacement,
+} from './schema';
 
 export type ContentEntry = {
   category: string;
@@ -16,6 +22,7 @@ export type ContentEntry = {
   order: number;
   publishedAt: string;
   readingMinutes: number;
+  roadmap: RoadmapPlacement;
   route: string;
   slug: string;
   tags: string[];
@@ -30,6 +37,7 @@ export type ContentIndexData = {
 const contentDir = join(import.meta.dir, '..', '..', 'src', 'content');
 const docsDir = join(contentDir, 'docs');
 const taxonomyFile = join(import.meta.dir, '..', '..', 'src', 'lib', 'content', 'taxonomy.json');
+const roadmapsFile = join(import.meta.dir, '..', '..', 'src', 'lib', 'content', 'roadmaps.json');
 const indexPath = join(contentDir, 'index.gen.json');
 const wordsPerMinute = 200;
 
@@ -38,6 +46,32 @@ function countWords(markdown: string): number {
     .replaceAll(/```[\s\S]*?```/g, '')
     .split(/\s+/)
     .filter((word) => word.length > 0).length;
+}
+
+export async function readRoadmaps(): Promise<ContentRoadmaps> {
+  return roadmapsSchema.parse(JSON.parse(await Bun.file(roadmapsFile).text()) as unknown);
+}
+
+/**
+Mensaje de error si la ruta o la etapa no existen en roadmaps.json; `undefined` si es válida.
+*/
+export function describeRoadmapError(
+  roadmaps: ContentRoadmaps,
+  placement: RoadmapPlacement,
+): string | undefined {
+  const roadmap = roadmaps.roadmaps.find((candidate) => candidate.id === placement.id);
+
+  if (roadmap === undefined) {
+    const valid = roadmaps.roadmaps.map((candidate) => candidate.id).join(', ');
+    return `roadmap desconocido "${placement.id}" (válidos: ${valid})`;
+  }
+
+  if (roadmap.stages.every((stage) => stage.id !== placement.stage)) {
+    const valid = roadmap.stages.map((stage) => stage.id).join(', ');
+    return `etapa desconocida "${placement.stage}" en el roadmap "${roadmap.id}" (válidas: ${valid})`;
+  }
+
+  return undefined;
 }
 
 export function getIndexPath(): string {
@@ -50,6 +84,7 @@ export async function buildContentIndex(): Promise<string> {
     taxonomy.sections.map((section, index) => [section.id, index] as [string, number]),
   );
 
+  const roadmaps = await readRoadmaps();
   const entries: ContentEntry[] = [];
   const glob = new Glob('*/*.mdx');
 
@@ -82,6 +117,14 @@ export async function buildContentIndex(): Promise<string> {
     if (!categoryOrder.has(data.category)) {
       throw new Error(
         `src/content/docs/${file} → categoría desconocida "${data.category}" (revisa src/lib/content/taxonomy.json)`,
+      );
+    }
+
+    const roadmapError = describeRoadmapError(roadmaps, data.roadmap);
+
+    if (roadmapError !== undefined) {
+      throw new Error(
+        `src/content/docs/${file} → ${roadmapError} (revisa src/lib/content/roadmaps.json)`,
       );
     }
 

@@ -1,0 +1,63 @@
+import type { roadmapEs } from '@/lib/i18n/messages/roadmap-es';
+
+export const roadmapEn: typeof roadmapEs = {
+  allRoadmaps: 'All roadmaps',
+  breadcrumb: 'Roadmap',
+  canvas: {
+    fit: 'Show all',
+    focus: 'Center on the next step',
+    hint: 'Drag to move · Ctrl + wheel or pinch to zoom · tap a step to open its card',
+    label: (title: string) => `Interactive plan of the ${title} roadmap`,
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+  },
+  completed: 'Roadmap completed',
+  continue: 'Continue',
+  description:
+    'Guided software architecture roadmaps: every article has its stage and step. Follow the line, read in order and track your progress.',
+  eyebrow: 'Guided paths',
+  howItWorks: [
+    {
+      body: 'Each roadmap orders articles by stage, from essentials to advanced. New ones join their stage automatically.',
+      title: 'Pick a path',
+    },
+    {
+      body: 'The plan marks your next step in ember. Move it, zoom in and open the card of any article.',
+      title: 'Follow the line',
+    },
+    {
+      body: 'Mark each article as done. Your progress is saved in this browser, no account needed.',
+      title: 'Track your progress',
+    },
+  ],
+  inRoadmap: 'On the roadmap',
+  legend: { done: 'Done', next: 'Next', pending: 'Pending' },
+  markDone: 'Mark as done',
+  markDoneNext: 'Done · next step',
+  markedDone: 'Done',
+  minutes: (minutes: number) => `${minutes} min`,
+  nextStep: 'Next step',
+  notFoundDescription: 'That roadmap does not exist. Check the list of available paths.',
+  notFoundTitle: 'Roadmap not found',
+  open: 'View roadmap',
+  previousStep: 'Previous step',
+  progress: (done: number, total: number) => `${done} of ${total} steps`,
+  progressLabel: 'Progress',
+  readStep: 'Read article',
+  readingHours: (minutes: number) =>
+    minutes < 60 ? `${minutes} min of reading` : `${Math.round(minutes / 60)} h of reading`,
+  reset: 'Reset progress',
+  stage: 'Stage',
+  stagesLabel: 'Stages',
+  stepsLabel: 'Steps',
+  stageCount: (count: number) => (count === 1 ? '1 stage' : `${count} stages`),
+  start: 'Start the path',
+  step: 'Step',
+  stepCount: (count: number) => (count === 1 ? '1 step' : `${count} steps`),
+  stepList: 'Step by step',
+  stepListDescription: 'The same path as a list: read in order and mark each step when done.',
+  stepOf: (step: number, total: number) => `Step ${step} of ${total}`,
+  title: 'Roadmap',
+  undo: 'Unmark',
+  youAreHere: 'You are here',
+};

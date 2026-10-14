@@ -21,6 +21,10 @@ export type ContentEntry = {
   */
   publishedAt: string;
   readingMinutes: number;
+  /**
+  Lugar del artículo en su roadmap (ver `roadmaps.json`): ruta, etapa y paso dentro de la etapa.
+  */
+  roadmap: RoadmapPlacement;
   route: string;
   slug: string;
   tags: string[];
@@ -41,4 +45,29 @@ export type Section = {
   id: string;
   labels: Record<Locale, LocalizedText>;
   order: number;
+};
+
+type RoadmapPlacement = {
+  id: string;
+  stage: string;
+  /**
+  Ordena dentro de la etapa; no tiene que ser consecutivo (la numeración visible se calcula).
+  */
+  step: number;
+};
+
+export type RoadmapStage = {
+  id: string;
+  labels: Record<Locale, LocalizedText>;
+};
+
+export type Roadmap = {
+  /**
+  Glifo de plano (ver atom SectionGlyph). Opcional: si falta, se deriva del id.
+  */
+  icon?: string;
+  id: string;
+  labels: Record<Locale, LocalizedText>;
+  order: number;
+  stages: RoadmapStage[];
 };

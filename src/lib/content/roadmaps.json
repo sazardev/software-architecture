@@ -1,0 +1,379 @@
+{
+  "roadmaps": [
+    {
+      "id": "fundamentos",
+      "icon": "layers",
+      "order": 1,
+      "labels": {
+        "es": {
+          "label": "Fundamentos del arquitecto",
+          "description": "Del primer principio a los estilos arquitectónicos: el vocabulario y el criterio que sostienen todo lo demás."
+        },
+        "en": {
+          "label": "Architect foundations",
+          "description": "From first principles to architectural styles: the vocabulary and judgment everything else rests on."
+        }
+      },
+      "stages": [
+        {
+          "id": "orientacion",
+          "labels": {
+            "es": {
+              "label": "Punto de partida",
+              "description": "Qué es arquitectura, cómo se mide la calidad de un diseño y de dónde sale la complejidad."
+            },
+            "en": {
+              "label": "Starting point",
+              "description": "What architecture is, how design quality is measured and where complexity comes from."
+            }
+          }
+        },
+        {
+          "id": "principios",
+          "labels": {
+            "es": {
+              "label": "Principios y patrones",
+              "description": "Las reglas de diseño y los patrones clásicos que aparecen en cualquier base de código."
+            },
+            "en": {
+              "label": "Principles and patterns",
+              "description": "The design rules and classic patterns that show up in any codebase."
+            }
+          }
+        },
+        {
+          "id": "decisiones",
+          "labels": {
+            "es": {
+              "label": "Calidad y decisiones",
+              "description": "Atributos de calidad, números de rendimiento y cómo dejar escrito el porqué de cada decisión."
+            },
+            "en": {
+              "label": "Quality and decisions",
+              "description": "Quality attributes, performance numbers and how to write down the why of each decision."
+            }
+          }
+        },
+        {
+          "id": "estilos",
+          "labels": {
+            "es": {
+              "label": "Estilos arquitectónicos",
+              "description": "Capas, cebolla, hexagonal y el resto de estilos: qué resuelve cada uno y qué cuesta."
+            },
+            "en": {
+              "label": "Architectural styles",
+              "description": "Layers, onion, hexagonal and the other styles: what each one solves and what it costs."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sistemas",
+      "icon": "nodes",
+      "order": 2,
+      "labels": {
+        "es": {
+          "label": "Diseño de sistemas",
+          "description": "Del dominio a la escala: modelar, guardar datos, integrar servicios y aguantar la carga sin perder consistencia."
+        },
+        "en": {
+          "label": "System design",
+          "description": "From domain to scale: model, store data, integrate services and hold the load without losing consistency."
+        }
+      },
+      "stages": [
+        {
+          "id": "dominio",
+          "labels": {
+            "es": {
+              "label": "Dominio y fronteras",
+              "description": "Modelar desde el negocio y decidir dónde cortar: monolito modular, servicios, legado y extensiones."
+            },
+            "en": {
+              "label": "Domain and boundaries",
+              "description": "Model from the business and decide where to cut: modular monolith, services, legacy and extensions."
+            }
+          }
+        },
+        {
+          "id": "datos",
+          "labels": {
+            "es": {
+              "label": "Datos y consistencia",
+              "description": "Transacciones, elección de base de datos, CAP y migraciones sin parar el servicio."
+            },
+            "en": {
+              "label": "Data and consistency",
+              "description": "Transactions, database choice, CAP and migrations without stopping the service."
+            }
+          }
+        },
+        {
+          "id": "integracion",
+          "labels": {
+            "es": {
+              "label": "Integración y eventos",
+              "description": "APIs, eventos, sagas y tiempo real: cómo conversan las piezas sin acoplarse."
+            },
+            "en": {
+              "label": "Integration and events",
+              "description": "APIs, events, sagas and real time: how the parts talk without coupling."
+            }
+          }
+        },
+        {
+          "id": "escala",
+          "labels": {
+            "es": {
+              "label": "Escala y resiliencia",
+              "description": "Caché, colas, búsqueda, fallos parciales y multi-tenancy cuando el tráfico crece."
+            },
+            "en": {
+              "label": "Scale and resilience",
+              "description": "Caching, queues, search, partial failures and multi-tenancy as traffic grows."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "entrega",
+      "icon": "gear",
+      "order": 3,
+      "labels": {
+        "es": {
+          "label": "Entrega y operación",
+          "description": "Código sano, entrega continua, operación en producción y seguridad desde el diseño."
+        },
+        "en": {
+          "label": "Delivery and operations",
+          "description": "Healthy code, continuous delivery, running in production and security by design."
+        }
+      },
+      "stages": [
+        {
+          "id": "codigo",
+          "labels": {
+            "es": {
+              "label": "Código que evoluciona",
+              "description": "Legibilidad, deuda técnica y fitness functions que protegen la arquitectura en el CI."
+            },
+            "en": {
+              "label": "Code that evolves",
+              "description": "Readability, technical debt and fitness functions that guard the architecture in CI."
+            }
+          }
+        },
+        {
+          "id": "entrega",
+          "labels": {
+            "es": {
+              "label": "Entregar y operar",
+              "description": "Cultura DevOps, pruebas, despliegue progresivo, observabilidad e incidentes."
+            },
+            "en": {
+              "label": "Deliver and operate",
+              "description": "DevOps culture, testing, progressive delivery, observability and incidents."
+            }
+          }
+        },
+        {
+          "id": "seguridad",
+          "labels": {
+            "es": {
+              "label": "Seguridad y privacidad",
+              "description": "Amenazas, identidad, autorización, secretos y datos personales tratados como requisito."
+            },
+            "en": {
+              "label": "Security and privacy",
+              "description": "Threats, identity, authorization, secrets and personal data treated as requirements."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "nube",
+      "icon": "cloud",
+      "order": 4,
+      "labels": {
+        "es": {
+          "label": "Arquitectura en la nube",
+          "description": "Servicios, estrategia de adopción y operación con garantías: la nube como decisión de arquitectura."
+        },
+        "en": {
+          "label": "Cloud architecture",
+          "description": "Services, adoption strategy and operating with guarantees: the cloud as an architecture decision."
+        }
+      },
+      "stages": [
+        {
+          "id": "servicios",
+          "labels": {
+            "es": {
+              "label": "Servicios y modelos",
+              "description": "Qué ofrece la nube, cómo se despliega y qué conviene ejecutar en el borde."
+            },
+            "en": {
+              "label": "Services and models",
+              "description": "What the cloud offers, how it is deployed and what belongs at the edge."
+            }
+          }
+        },
+        {
+          "id": "estrategia",
+          "labels": {
+            "es": {
+              "label": "Estrategia y dependencia",
+              "description": "Migrar, combinar entornos y medir cuánto te ata un proveedor antes de firmar."
+            },
+            "en": {
+              "label": "Strategy and dependency",
+              "description": "Migrate, combine environments and measure how tied you are to a vendor before signing."
+            }
+          }
+        },
+        {
+          "id": "operacion",
+          "labels": {
+            "es": {
+              "label": "Operar con garantías",
+              "description": "Red, identidad, recuperación ante desastres, costo y huella de carbono."
+            },
+            "en": {
+              "label": "Operate with guarantees",
+              "description": "Networking, identity, disaster recovery, cost and carbon footprint."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "ia",
+      "icon": "flask",
+      "order": 5,
+      "labels": {
+        "es": {
+          "label": "IA y datos",
+          "description": "Aplicaciones con LLM y agentes, datos para alimentarlas y el gobierno que las mantiene bajo control."
+        },
+        "en": {
+          "label": "AI and data",
+          "description": "Applications with LLMs and agents, the data that feeds them and the governance that keeps them in check."
+        }
+      },
+      "stages": [
+        {
+          "id": "panorama",
+          "labels": {
+            "es": {
+              "label": "Panorama",
+              "description": "Lenguajes, arquitectura de aplicaciones con LLM y plataformas de datos."
+            },
+            "en": {
+              "label": "Landscape",
+              "description": "Languages, LLM application architecture and data platforms."
+            }
+          }
+        },
+        {
+          "id": "produccion",
+          "labels": {
+            "es": {
+              "label": "Llevar a producción",
+              "description": "RAG con evaluación continua, MLOps y el costo real de la inferencia."
+            },
+            "en": {
+              "label": "Into production",
+              "description": "RAG with continuous evaluation, MLOps and the real cost of inference."
+            }
+          }
+        },
+        {
+          "id": "gobierno",
+          "labels": {
+            "es": {
+              "label": "Agentes bajo control",
+              "description": "Diseñar flujos con agentes, acotar su autonomía y construir el harness que los vigila."
+            },
+            "en": {
+              "label": "Agents under control",
+              "description": "Design agent workflows, bound their autonomy and build the harness that watches them."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "liderazgo",
+      "icon": "compass",
+      "order": 6,
+      "labels": {
+        "es": {
+          "label": "Liderazgo y decisiones",
+          "description": "Comunicar la arquitectura, organizar equipos, decidir con método y mejorar el flujo de valor."
+        },
+        "en": {
+          "label": "Leadership and decisions",
+          "description": "Communicate the architecture, organize teams, decide with method and improve the value flow."
+        }
+      },
+      "stages": [
+        {
+          "id": "comunicar",
+          "labels": {
+            "es": {
+              "label": "Documentar y comunicar",
+              "description": "Diagramas por niveles, documentación útil, propuestas y revisiones sin burocracia."
+            },
+            "en": {
+              "label": "Document and communicate",
+              "description": "Layered diagrams, useful documentation, proposals and reviews without bureaucracy."
+            }
+          }
+        },
+        {
+          "id": "equipos",
+          "labels": {
+            "es": {
+              "label": "Equipos y organización",
+              "description": "Ley de Conway, topologías de equipo, facilitación y gobierno de servicios."
+            },
+            "en": {
+              "label": "Teams and organization",
+              "description": "Conway's law, team topologies, facilitation and service governance."
+            }
+          }
+        },
+        {
+          "id": "decidir",
+          "labels": {
+            "es": {
+              "label": "Decidir y priorizar",
+              "description": "Pensamiento sistémico, sesgos, marcos estratégicos y de priorización, con y sin IA."
+            },
+            "en": {
+              "label": "Decide and prioritize",
+              "description": "Systems thinking, biases, strategic and prioritization frameworks, with and without AI."
+            }
+          }
+        },
+        {
+          "id": "mejorar",
+          "labels": {
+            "es": {
+              "label": "Medir y mejorar",
+              "description": "Flujo de valor, métricas que guían y experimentos que cierran el ciclo."
+            },
+            "en": {
+              "label": "Measure and improve",
+              "description": "Value flow, metrics that guide and experiments that close the loop."
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

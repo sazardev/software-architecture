@@ -4,9 +4,17 @@ import { dirname, join } from 'node:path';
 import { site } from '@/lib/config/site';
 import { getDocsByLocale } from '@/lib/content/registry';
 import { defaultLocale, locales, type Locale } from '@/lib/i18n/locales';
+import { getRoadmapPaths } from '@/lib/roadmap/roadmap-registry';
 import { absoluteUrl } from '@/lib/seo/absolute-url';
 import { feedPath, llmsFullPath, llmsPath, ogImagePath } from '@/lib/seo/og';
-import { docSeo, docsIndexSeo, homeSeo, type PageSeo } from '@/lib/seo/page-heads';
+import {
+  docSeo,
+  docsIndexSeo,
+  homeSeo,
+  roadmapIndexSeo,
+  roadmapSeo,
+  type PageSeo,
+} from '@/lib/seo/page-heads';
 
 import { parseArticleBlocks, readDocBody } from './article-blocks';
 import { blocksToHtml } from './article-serializers';
@@ -57,6 +65,12 @@ async function listPages(): Promise<PageJob[]> {
     pages.push(
       { locale, path: `${locale}/index.html`, seo: homeSeo(locale) },
       { locale, path: `${locale}/docs/index.html`, seo: docsIndexSeo(locale) },
+      { locale, path: `${locale}/roadmap/index.html`, seo: roadmapIndexSeo(locale) },
+      ...getRoadmapPaths(locale).map((roadmap) => ({
+        locale,
+        path: `${locale}/roadmap/${roadmap.roadmap.id}/index.html`,
+        seo: roadmapSeo(locale, roadmap),
+      })),
     );
 
     for (const entry of getDocsByLocale(locale)) {

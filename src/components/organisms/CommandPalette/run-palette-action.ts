@@ -15,6 +15,12 @@ export type PaletteActionRuntime = {
   setTheme: (preference: ThemePreference) => void;
 };
 
+const pageRoutes = {
+  docs: '/$locale/docs',
+  home: '/$locale',
+  roadmap: '/$locale/roadmap',
+} as const;
+
 /**
 Ejecuta una acción de la paleta que no es de filtrado (las etiquetas las gestiona la propia paleta).
 */
@@ -31,11 +37,14 @@ export function runPaletteAction(action: PaletteAction, runtime: PaletteActionRu
       break;
     }
     case 'page': {
-      void navigate(
-        action.page === 'home'
-          ? { params: { locale }, to: '/$locale' }
-          : { params: { locale }, to: '/$locale/docs' },
-      );
+      void navigate({ params: { locale }, to: pageRoutes[action.page] });
+      break;
+    }
+    case 'roadmap': {
+      void navigate({
+        params: { locale, roadmap: action.roadmapId },
+        to: '/$locale/roadmap/$roadmap',
+      });
       break;
     }
     case 'section': {

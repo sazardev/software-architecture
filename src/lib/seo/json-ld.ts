@@ -67,6 +67,7 @@ export function collectionJsonLd(
   name: string,
   description: string,
   entries: ContentEntry[],
+  path = `/${locale}/docs`,
 ): string {
   return JSON.stringify({
     '@context': context,
@@ -83,7 +84,7 @@ export function collectionJsonLd(
       })),
     },
     name,
-    url: absoluteUrl(`/${locale}/docs`),
+    url: absoluteUrl(path),
   });
 }
 

@@ -14,6 +14,8 @@ import { Route as LocaleRouteImport } from './routes/$locale'
 import { Route as LocaleIndexRouteImport } from './routes/$locale/index'
 import { Route as LocaleDocsIndexRouteImport } from './routes/$locale/docs/index'
 import { Route as LocaleDocsSlugRouteImport } from './routes/$locale/docs/$slug'
+import { Route as LocaleRoadmapIndexRouteImport } from './routes/$locale/roadmap/index'
+import { Route as LocaleRoadmapRoadmapRouteImport } from './routes/$locale/roadmap/$roadmap'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,19 +42,33 @@ const LocaleDocsSlugRoute = LocaleDocsSlugRouteImport.update({
   path: '/docs/$slug',
   getParentRoute: () => LocaleRoute,
 } as any)
+const LocaleRoadmapIndexRoute = LocaleRoadmapIndexRouteImport.update({
+  id: '/roadmap/',
+  path: '/roadmap/',
+  getParentRoute: () => LocaleRoute,
+} as any)
+const LocaleRoadmapRoadmapRoute = LocaleRoadmapRoadmapRouteImport.update({
+  id: '/roadmap/$roadmap',
+  path: '/roadmap/$roadmap',
+  getParentRoute: () => LocaleRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$locale': typeof LocaleRouteWithChildren
   '/$locale/': typeof LocaleIndexRoute
   '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
+  '/$locale/roadmap/$roadmap': typeof LocaleRoadmapRoadmapRoute
   '/$locale/docs/': typeof LocaleDocsIndexRoute
+  '/$locale/roadmap/': typeof LocaleRoadmapIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$locale': typeof LocaleIndexRoute
   '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
+  '/$locale/roadmap/$roadmap': typeof LocaleRoadmapRoadmapRoute
   '/$locale/docs': typeof LocaleDocsIndexRoute
+  '/$locale/roadmap': typeof LocaleRoadmapIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -60,21 +76,37 @@ export interface FileRoutesById {
   '/$locale': typeof LocaleRouteWithChildren
   '/$locale/': typeof LocaleIndexRoute
   '/$locale/docs/$slug': typeof LocaleDocsSlugRoute
+  '/$locale/roadmap/$roadmap': typeof LocaleRoadmapRoadmapRoute
   '/$locale/docs/': typeof LocaleDocsIndexRoute
+  '/$locale/roadmap/': typeof LocaleRoadmapIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/$locale' | '/$locale/' | '/$locale/docs/$slug' | '/$locale/docs/'
+    | '/'
+    | '/$locale'
+    | '/$locale/'
+    | '/$locale/docs/$slug'
+    | '/$locale/roadmap/$roadmap'
+    | '/$locale/docs/'
+    | '/$locale/roadmap/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$locale' | '/$locale/docs/$slug' | '/$locale/docs'
+  to:
+    | '/'
+    | '/$locale'
+    | '/$locale/docs/$slug'
+    | '/$locale/roadmap/$roadmap'
+    | '/$locale/docs'
+    | '/$locale/roadmap'
   id:
     | '__root__'
     | '/'
     | '/$locale'
     | '/$locale/'
     | '/$locale/docs/$slug'
+    | '/$locale/roadmap/$roadmap'
     | '/$locale/docs/'
+    | '/$locale/roadmap/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,19 +151,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleDocsSlugRouteImport
       parentRoute: typeof LocaleRoute
     }
+    '/$locale/roadmap/': {
+      id: '/$locale/roadmap/'
+      path: '/roadmap'
+      fullPath: '/$locale/roadmap/'
+      preLoaderRoute: typeof LocaleRoadmapIndexRouteImport
+      parentRoute: typeof LocaleRoute
+    }
+    '/$locale/roadmap/$roadmap': {
+      id: '/$locale/roadmap/$roadmap'
+      path: '/roadmap/$roadmap'
+      fullPath: '/$locale/roadmap/$roadmap'
+      preLoaderRoute: typeof LocaleRoadmapRoadmapRouteImport
+      parentRoute: typeof LocaleRoute
+    }
   }
 }
 
 interface LocaleRouteChildren {
   LocaleIndexRoute: typeof LocaleIndexRoute
   LocaleDocsSlugRoute: typeof LocaleDocsSlugRoute
+  LocaleRoadmapRoadmapRoute: typeof LocaleRoadmapRoadmapRoute
   LocaleDocsIndexRoute: typeof LocaleDocsIndexRoute
+  LocaleRoadmapIndexRoute: typeof LocaleRoadmapIndexRoute
 }
 
 const LocaleRouteChildren: LocaleRouteChildren = {
   LocaleIndexRoute: LocaleIndexRoute,
   LocaleDocsSlugRoute: LocaleDocsSlugRoute,
+  LocaleRoadmapRoadmapRoute: LocaleRoadmapRoadmapRoute,
   LocaleDocsIndexRoute: LocaleDocsIndexRoute,
+  LocaleRoadmapIndexRoute: LocaleRoadmapIndexRoute,
 }
 
 const LocaleRouteWithChildren =

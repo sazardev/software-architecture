@@ -5,6 +5,7 @@ import { Container } from '@/components/atoms';
 import {
   DocPager,
   ReadingProgress,
+  RoadmapTrail,
   SelectionToolbar,
   ShareActions,
   TableOfContents,
@@ -97,6 +98,7 @@ function DocPage() {
             <DocContent />
           </article>
           <ArticleFooter entry={entry} />
+          <RoadmapTrail entry={entry} />
           <DocPager next={next} previous={previous} />
           <RelatedDocs docs={getRelatedDocs(entry, 2, neighborSlugs)} />
         </div>

@@ -6,6 +6,11 @@
       "figureCaption": "Del primer paso a la cima: un sendero con tres hitos",
       "order": 1,
       "publishedAt": "2026-10-10",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 10
+      },
       "tags": [
         "guia",
         "roadmap",
@@ -107,6 +112,11 @@
       "figureCaption": "Cinco columnas, un solo diseño: cada principio sostiene la viga",
       "order": 2,
       "publishedAt": "2026-10-10",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "principios",
+        "step": 10
+      },
       "tags": [
         "solid",
         "diseno",
@@ -404,6 +414,11 @@
       "figureCaption": "Registros de decisión en el tiempo: cada ADR reemplaza al anterior sin borrarlo",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 50
+      },
       "tags": [
         "adr",
         "decisiones",
@@ -500,6 +515,11 @@
       "figureCaption": "Módulos cohesivos por dentro y acoplados por un contrato estrecho",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 30
+      },
       "tags": [
         "acoplamiento",
         "cohesion",
@@ -592,6 +612,11 @@
       "figureCaption": "Radar de atributos: lo que ganas en uno lo pagas en otro",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 10
+      },
       "tags": [
         "atributos-de-calidad",
         "trade-offs",
@@ -694,6 +719,11 @@
       "figureCaption": "El bucle infinito: desarrollo y operación como un solo flujo continuo",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 10
+      },
       "tags": [
         "devops",
         "cultura",
@@ -821,6 +851,11 @@
       "figureCaption": "Patrón Strategy: una interfaz, varios comportamientos intercambiables",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "principios",
+        "step": 20
+      },
       "tags": [
         "patrones-de-diseno",
         "gof",
@@ -933,6 +968,11 @@
       "figureCaption": "La balanza de la decisión: velocidad frente a coste",
       "order": 7,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 20
+      },
       "tags": [
         "trade-offs",
         "toma-de-decisiones",
@@ -1085,6 +1125,11 @@
       "figureCaption": "Una regla con una sola casa y un interior al que nadie llega directo",
       "order": 8,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 20
+      },
       "tags": [
         "dry",
         "kiss",
@@ -1267,6 +1312,11 @@
       "figureCaption": "El problema en el núcleo, rodeado de las capas que añadimos al resolverlo",
       "order": 9,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 40
+      },
       "tags": [
         "complejidad",
         "no-silver-bullet",
@@ -1438,6 +1488,11 @@
       "figureCaption": "Organigrama y sistema como reflejos: la frontera que duplica la comunicación",
       "order": 10,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 10
+      },
       "tags": [
         "ley-de-conway",
         "team-topologies",
@@ -1540,6 +1595,11 @@
       "figureCaption": "Dos transacciones leen la misma fila y la última escritura borra la otra",
       "order": 11,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 10
+      },
       "tags": [
         "modelado-de-datos",
         "transacciones",
@@ -1662,6 +1722,11 @@
       "figureCaption": "Latencia frente a utilización en una cola M/M/1: el codo llega antes del 100 %",
       "order": 12,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 30
+      },
       "tags": [
         "ley-de-little",
         "ley-de-amdahl",
@@ -1779,6 +1844,11 @@
       "figureCaption": "Nueve estilos dibujados como cajas y conectores; el acento marca el basado en servicios",
       "order": 13,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "estilos",
+        "step": 10
+      },
       "tags": [
         "estilos-arquitectonicos",
         "componentes-conectores",
@@ -1911,6 +1981,11 @@
       "figureCaption": "Lo esencial no se toca; lo accidental se reduce",
       "order": 15,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 50
+      },
       "tags": [
         "complejidad",
         "herramientas",
@@ -1967,6 +2042,11 @@
       "figureCaption": "El arquitecto da forma; el equipo es dueño de la decisión",
       "order": 16,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 30
+      },
       "tags": [
         "liderazgo",
         "facilitacion",
@@ -2034,6 +2114,11 @@
       "figureCaption": "Cuatro niveles de zoom: contexto, contenedores, componentes y código",
       "order": 1,
       "publishedAt": "2026-10-10",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 10
+      },
       "tags": [
         "c4",
         "diagramas",
@@ -2140,6 +2225,11 @@
       "figureCaption": "Mapa de contextos: contextos acotados y sus relaciones aguas arriba y abajo",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 10
+      },
       "tags": [
         "ddd",
         "dominio",
@@ -2257,6 +2347,11 @@
       "figureCaption": "Hexágono con puertos y adaptadores: el dominio no conoce la tecnología",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "estilos",
+        "step": 40
+      },
       "tags": [
         "hexagonal",
         "puertos-adaptadores",
@@ -2389,6 +2484,11 @@
       "figureCaption": "Del texto versionado al diagrama: el código fuente se renderiza",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 20
+      },
       "tags": [
         "diagramas-como-codigo",
         "mermaid",
@@ -2515,6 +2615,11 @@
       "figureCaption": "El espectro: del monolito a los microservicios, más autonomía y más despliegues",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 20
+      },
       "tags": [
         "monolito",
         "microservicios",
@@ -2667,6 +2772,11 @@
       "figureCaption": "Capas concéntricas: todas las dependencias apuntan hacia el dominio",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "estilos",
+        "step": 20
+      },
       "tags": [
         "capas",
         "clean-architecture",
@@ -2794,6 +2904,11 @@
       "figureCaption": "El triángulo CAP y PACELC: con partición, A o C; sin ella, latencia o C",
       "order": 7,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 30
+      },
       "tags": [
         "cap",
         "pacelc",
@@ -2936,6 +3051,11 @@
       "figureCaption": "El comando añade eventos a un registro inmutable; de él salen las proyecciones",
       "order": 8,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 20
+      },
       "tags": [
         "eventos",
         "cqrs",
@@ -3058,6 +3178,11 @@
       "figureCaption": "Transacción local con tabla outbox, un relay que publica y el broker que entrega",
       "order": 9,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 30
+      },
       "tags": [
         "sagas",
         "outbox",
@@ -3195,6 +3320,11 @@
       "figureCaption": "Un contrato con varios consumidores: la v1 y la v2 conviven sobre el mismo servicio",
       "order": 10,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 10
+      },
       "tags": [
         "apis",
         "rest",
@@ -3332,6 +3462,11 @@
       "figureCaption": "Una llamada agota su timeout, reintenta con jitter y el circuito se abre",
       "order": 11,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 40
+      },
       "tags": [
         "resiliencia",
         "sistemas-distribuidos",
@@ -3464,6 +3599,11 @@
       "figureCaption": "Caché delante de la base de datos y log particionado leído por grupos de consumidores",
       "order": 12,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 10
+      },
       "tags": [
         "cache",
         "colas",
@@ -3611,6 +3751,11 @@
       "figureCaption": "Tráfico, servicios sin estado y particiones: el cuello de botella es la clave caliente",
       "order": 13,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 30
+      },
       "tags": [
         "escalabilidad",
         "estimacion-capacidad",
@@ -3783,6 +3928,11 @@
       "figureCaption": "Pool y silo en un mismo sistema: la frontera de aislamiento separa a los tenants",
       "order": 14,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 60
+      },
       "tags": [
         "multi-tenancy",
         "saas",
@@ -3890,6 +4040,11 @@
       "figureCaption": "Las dependencias apuntan hacia el dominio, nunca al revés",
       "order": 15,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "estilos",
+        "step": 30
+      },
       "tags": [
         "capas",
         "dependencias",
@@ -3941,6 +4096,11 @@
       "figureCaption": "Módulos con API pública y datos propios dentro de un proceso",
       "order": 16,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 30
+      },
       "tags": [
         "monolito-modular",
         "microservicios",
@@ -3997,6 +4157,11 @@
       "figureCaption": "Si falla el envío, las compensaciones deshacen lo anterior",
       "order": 17,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 40
+      },
       "tags": [
         "sagas",
         "outbox",
@@ -4053,6 +4218,11 @@
       "figureCaption": "Cada operación elige su punto entre consistencia y disponibilidad",
       "order": 18,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 40
+      },
       "tags": [
         "cap",
         "pacelc",
@@ -4109,6 +4279,11 @@
       "figureCaption": "Concurrencia = caudal × tiempo de respuesta",
       "order": 19,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 40
+      },
       "tags": [
         "escalabilidad",
         "rendimiento",
@@ -4165,6 +4340,11 @@
       "figureCaption": "Cuatro fases compatibles: cada una se despliega y se revierte sola",
       "order": 20,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 50
+      },
       "tags": [
         "migraciones",
         "base-de-datos",
@@ -4222,6 +4402,11 @@
       "figureCaption": "Una capa traduce el modelo antiguo mientras migran las rutas",
       "order": 21,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 40
+      },
       "tags": [
         "legado",
         "strangler",
@@ -4279,6 +4464,11 @@
       "figureCaption": "Un BFF por canal, y un punto de acoplamiento compartido",
       "order": 22,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 70
+      },
       "tags": [
         "micro-frontends",
         "bff",
@@ -4346,6 +4536,11 @@
       "figureCaption": "La dirección del flujo y el reparto deciden la tecnología",
       "order": 23,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 50
+      },
       "tags": [
         "tiempo-real",
         "websocket",
@@ -4413,6 +4608,11 @@
       "figureCaption": "Cada corrección es un asiento nuevo, no una edición",
       "order": 24,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 60
+      },
       "tags": [
         "pagos",
         "ledger",
@@ -4495,6 +4695,11 @@
       "figureCaption": "Primero los patrones de acceso; después el almacén",
       "order": 25,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 20
+      },
       "tags": [
         "bases-de-datos",
         "persistencia",
@@ -4571,6 +4776,11 @@
       "figureCaption": "El índice es dato derivado: se alimenta de la fuente y se reconstruye",
       "order": 26,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 20
+      },
       "tags": [
         "busqueda",
         "indices",
@@ -4652,6 +4862,11 @@
       "figureCaption": "Un servicio, una cola por canal: un proveedor caído no frena a los demás",
       "order": 27,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 60
+      },
       "tags": [
         "notificaciones",
         "colas",
@@ -4733,6 +4948,11 @@
       "figureCaption": "Los plugins hablan con el núcleo solo a través de sus puertos",
       "order": 28,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 50
+      },
       "tags": [
         "plugins",
         "extensibilidad",
@@ -4819,6 +5039,11 @@
       "figureCaption": "La app confirma en local y vacía su cola cuando hay red",
       "order": 29,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 80
+      },
       "tags": [
         "offline",
         "sincronizacion",
@@ -4891,6 +5116,11 @@
       "figureCaption": "Del código enredado al código legible: pequeño, claro y consistente",
       "order": 1,
       "publishedAt": "2026-10-10",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 10
+      },
       "tags": [
         "clean-code",
         "calidad",
@@ -5013,6 +5243,11 @@
       "figureCaption": "Un arnés de compuertas: hooks, reglas, pruebas y revisión guían al agente",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 40
+      },
       "tags": [
         "claude-code",
         "harness-engineering",
@@ -5145,6 +5380,11 @@
       "figureCaption": "Una fitness function cruza su umbral y frena el despliegue",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 30
+      },
       "tags": [
         "fitness-functions",
         "arquitectura-evolutiva",
@@ -5267,6 +5507,11 @@
       "figureCaption": "El interés de la deuda: sin amortizar, el coste de cambiar se dispara",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 20
+      },
       "tags": [
         "deuda-tecnica",
         "evolucion-arquitectonica",
@@ -5424,6 +5669,11 @@
       "figureCaption": "Dos límites de confianza: authn y esquema en la frontera, authz más adentro",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 10
+      },
       "tags": [
         "seguridad",
         "threat-modeling",
@@ -5546,6 +5796,11 @@
       "figureCaption": "Un import que rompe una regla de capas hace fallar el pipeline",
       "order": 6,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 40
+      },
       "tags": [
         "fitness-functions",
         "ci",
@@ -5602,6 +5857,11 @@
       "figureCaption": "Sin jitter, los reintentos llegan todos a la vez",
       "order": 7,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 50
+      },
       "tags": [
         "resiliencia",
         "reintentos",
@@ -5653,6 +5913,11 @@
       "figureCaption": "Un SLO deja un presupuesto de error que cada fallo consume",
       "order": 8,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 40
+      },
       "tags": [
         "observabilidad",
         "slo",
@@ -5720,6 +5985,11 @@
       "figureCaption": "Muchas pruebas unitarias, pocas de extremo a extremo y contratos en medio",
       "order": 9,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 20
+      },
       "tags": [
         "pruebas",
         "contratos",
@@ -5782,6 +6052,11 @@
       "figureCaption": "El tráfico sube por escalones y una bandera revierte sin desplegar",
       "order": 10,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 30
+      },
       "tags": [
         "despliegue",
         "feature-flags",
@@ -5849,6 +6124,11 @@
       "figureCaption": "Cada flujo que cruza un límite de confianza es una superficie de ataque",
       "order": 11,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 20
+      },
       "tags": [
         "seguridad",
         "stride",
@@ -5915,6 +6195,11 @@
       "figureCaption": "El borrado debe propagarse a todas las copias",
       "order": 12,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 60
+      },
       "tags": [
         "privacidad",
         "gdpr",
@@ -5987,6 +6272,11 @@
       "figureCaption": "El postmortem busca fallos del sistema, no culpables",
       "order": 13,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 50
+      },
       "tags": [
         "incidentes",
         "postmortem",
@@ -6064,6 +6354,11 @@
       "figureCaption": "La carga se identifica ante la bóveda; el repositorio no guarda nada",
       "order": 14,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 50
+      },
       "tags": [
         "secretos",
         "claves",
@@ -6136,6 +6431,11 @@
       "figureCaption": "Los tipos como contrato entre lenguajes y modelos de IA",
       "order": 1,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 10
+      },
       "tags": [
         "lenguajes",
         "ia",
@@ -6228,6 +6528,11 @@
       "figureCaption": "El bucle de un agente: planear, actuar, observar y reflexionar alrededor del modelo",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 20
+      },
       "tags": [
         "llm",
         "agentes",
@@ -6350,6 +6655,11 @@
       "figureCaption": "Un almacenamiento abierto sirve a BI y a ML sin copias",
       "order": 3,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 30
+      },
       "tags": [
         "datos",
         "lakehouse",
@@ -6416,6 +6726,11 @@
       "figureCaption": "Sin evaluación en el bucle, no sabes qué cambió",
       "order": 4,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "produccion",
+        "step": 10
+      },
       "tags": [
         "rag",
         "llm",
@@ -6498,6 +6813,11 @@
       "figureCaption": "El costo por petición depende del modelo, la caché y el lugar",
       "order": 5,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "produccion",
+        "step": 30
+      },
       "tags": [
         "inferencia",
         "costo",
@@ -6580,6 +6900,11 @@
       "figureCaption": "Misma carga, menos energía y una red más limpia",
       "order": 6,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 40
+      },
       "tags": [
         "sostenibilidad",
         "carbono",
@@ -6652,6 +6977,11 @@
       "figureCaption": "Cada modelo es una versión publicada, vigilada hasta que se retira",
       "order": 7,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "produccion",
+        "step": 20
+      },
       "tags": [
         "mlops",
         "modelos",
@@ -6724,6 +7054,11 @@
       "figureCaption": "Sirve desde el borde más cercano; el origen solo si falla la caché",
       "order": 8,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 40
+      },
       "tags": [
         "edge",
         "cdn",
@@ -6811,6 +7146,11 @@
       "figureCaption": "Pila de responsabilidades: sobre la línea operas tú; debajo, el proveedor",
       "order": 1,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 10
+      },
       "tags": [
         "nube",
         "modelos-de-servicio",
@@ -6952,6 +7292,11 @@
       "figureCaption": "Cuatro fronteras de despliegue: la aplicación se queda junto a sus datos",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 20
+      },
       "tags": [
         "modelos-de-despliegue",
         "nube-privada",
@@ -7079,6 +7424,11 @@
       "figureCaption": "Local y nube unidos por un enlace: si se corta, el flujo local sigue en pie",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 20
+      },
       "tags": [
         "nube-hibrida",
         "conectividad",
@@ -7221,6 +7571,11 @@
       "figureCaption": "El costo de salida crece con el uso hasta superar lo que cuesta quedarse",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 30
+      },
       "tags": [
         "lock-in",
         "portabilidad",
@@ -7373,6 +7728,11 @@
       "figureCaption": "Tres nubes alrededor de una capa de plataforma común; el enlace entre ellas es lo caro",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 40
+      },
       "tags": [
         "multinube",
         "nube",
@@ -7515,6 +7875,11 @@
       "figureCaption": "Una petición cruza la función: en frío paga la fase INIT antes del handler",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 30
+      },
       "tags": [
         "serverless",
         "faas",
@@ -7647,6 +8012,11 @@
       "figureCaption": "Red virtual con dos subredes contiguas y una compuerta de identidad entre ambas",
       "order": 7,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 10
+      },
       "tags": [
         "redes-nube",
         "identidad",
@@ -7794,6 +8164,11 @@
       "figureCaption": "Dos regiones con réplica asíncrona: el hueco entre la última copia y la caída es el RPO",
       "order": 8,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 20
+      },
       "tags": [
         "recuperacion-ante-desastres",
         "rto-rpo",
@@ -7941,6 +8316,11 @@
       "figureCaption": "Costo fijo frente a variable: la conveniencia cambia en el punto de cruce",
       "order": 9,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 30
+      },
       "tags": [
         "finops",
         "costos-nube",
@@ -8063,6 +8443,11 @@
       "figureCaption": "El costo de salida pesa más en los datos que en la API",
       "order": 10,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 50
+      },
       "tags": [
         "lock-in",
         "costo-de-salida",
@@ -8119,6 +8504,11 @@
       "figureCaption": "Tres modelos responden a la misma pregunta con fuentes de verdad distintas",
       "order": 11,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 40
+      },
       "tags": [
         "autorizacion",
         "rbac",
@@ -8190,6 +8580,11 @@
       "figureCaption": "Seis estrategias y un criterio por aplicación",
       "order": 12,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 10
+      },
       "tags": [
         "migracion",
         "nube",
@@ -8266,6 +8661,11 @@
       "figureCaption": "La sesión guarda el estado en el servidor; el token lo lleva y se revoca con una lista",
       "order": 13,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 30
+      },
       "tags": [
         "sesiones",
         "tokens",
@@ -8343,6 +8743,11 @@
       "figureCaption": "Cinco iniciativas cambian de puesto al dividir por el esfuerzo",
       "order": 1,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "decidir",
+        "step": 30
+      },
       "tags": [
         "priorizacion",
         "rice",
@@ -8485,6 +8890,11 @@
       "figureCaption": "Mapa de evolución: el video deja de ser a medida y pasa a ser commodity",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "decidir",
+        "step": 20
+      },
       "tags": [
         "cynefin",
         "mapas-de-wardley",
@@ -8607,6 +9017,11 @@
       "figureCaption": "Pirámide de Minto: la idea arriba y tres niveles de soporte que la sostienen",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 50
+      },
       "tags": [
         "propuestas",
         "comunicacion",
@@ -8714,6 +9129,11 @@
       "figureCaption": "Cinco etapas en serie: la espera se acumula ante el cuello de botella",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "mejorar",
+        "step": 10
+      },
       "tags": [
         "flujo-de-valor",
         "teoria-de-restricciones",
@@ -8816,6 +9236,11 @@
       "figureCaption": "Ciclo PDSA cuyo experimento termina en una decisión que abre el ciclo siguiente",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "mejorar",
+        "step": 30
+      },
       "tags": [
         "mejora-continua",
         "pdsa",
@@ -8948,6 +9373,11 @@
       "figureCaption": "Árbol de métricas: objetivo, resultados clave, palancas y una métrica guía",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "mejorar",
+        "step": 20
+      },
       "tags": [
         "metricas",
         "okr",
@@ -9065,6 +9495,11 @@
       "figureCaption": "Una pregunta cruza tres filtros: fuente, cifra y contraargumento, y decide una persona",
       "order": 7,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "decidir",
+        "step": 40
+      },
       "tags": [
         "ia-generativa",
         "toma-de-decisiones",
@@ -9242,6 +9677,11 @@
       "figureCaption": "Escalera de autonomía con aprobación obligatoria y una barrera de guardrails",
       "order": 8,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 30
+      },
       "tags": [
         "gobierno-ia",
         "autonomia",
@@ -9359,6 +9799,11 @@
       "figureCaption": "Un paso de reglas y otro de agente, con validación y aprobación humana antes de actuar",
       "order": 9,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 10
+      },
       "tags": [
         "agentes",
         "flujos-de-trabajo",
@@ -9456,6 +9901,11 @@
       "figureCaption": "Embudo de criterios que filtra herramientas; el costo de salida decide al final",
       "order": 10,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 40
+      },
       "tags": [
         "herramientas",
         "documentacion",
@@ -9598,6 +10048,11 @@
       "figureCaption": "Bucle de refuerzo con un retraso marcado y un único punto de intervención",
       "order": 11,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "decidir",
+        "step": 10
+      },
       "tags": [
         "pensamiento-sistemico",
         "sesgos-cognitivos",
@@ -9759,6 +10214,11 @@
       "figureCaption": "El sistema hereda la estructura de comunicación del equipo",
       "order": 12,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 20
+      },
       "tags": [
         "ley-de-conway",
         "team-topologies",
@@ -9810,6 +10270,11 @@
       "figureCaption": "Un ADR cambia de estado; no se borra",
       "order": 13,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 60
+      },
       "tags": [
         "adr",
         "decisiones",
@@ -9866,6 +10331,11 @@
       "figureCaption": "Cada nivel de autonomía exige un permiso más explícito",
       "order": 14,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 20
+      },
       "tags": [
         "ia",
         "agentes",
@@ -9927,6 +10397,11 @@
       "figureCaption": "La plataforma ofrece un camino único a los equipos de producto",
       "order": 15,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 60
+      },
       "tags": [
         "plataforma",
         "idp",
@@ -9993,6 +10468,11 @@
       "figureCaption": "Un monorepo aplica un cambio a varios paquetes en un solo commit",
       "order": 16,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 50
+      },
       "tags": [
         "monorepo",
         "polirepo",
@@ -10064,6 +10544,11 @@
       "figureCaption": "Una propuesta, un plazo y una decisión registrada",
       "order": 17,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 60
+      },
       "tags": [
         "rfc",
         "revision-de-arquitectura",
@@ -10126,6 +10611,11 @@
       "figureCaption": "Cada servicio tiene dueño, estado y contrato; las APIs obsoletas tienen fecha de retiro",
       "order": 18,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 40
+      },
       "tags": [
         "catalogo",
         "gobierno",
@@ -10212,6 +10702,11 @@
       "figureCaption": "Documenta por niveles, de lo general a lo particular, y quita lo caduco",
       "order": 19,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 30
+      },
       "tags": [
         "documentacion",
         "c4",
@@ -10299,6 +10794,11 @@
       "figureCaption": "From first step to summit: a trail with three milestones",
       "order": 1,
       "publishedAt": "2026-10-10",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 10
+      },
       "tags": [
         "guide",
         "roadmap",
@@ -10400,6 +10900,11 @@
       "figureCaption": "Five columns, one design: each principle holds up the beam",
       "order": 2,
       "publishedAt": "2026-10-10",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "principios",
+        "step": 10
+      },
       "tags": [
         "solid",
         "design",
@@ -10697,6 +11202,11 @@
       "figureCaption": "Decision records over time: each ADR supersedes the last without erasing it",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 50
+      },
       "tags": [
         "adr",
         "decisions",
@@ -10793,6 +11303,11 @@
       "figureCaption": "Cohesive modules inside, joined by one narrow contract",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 30
+      },
       "tags": [
         "coupling",
         "cohesion",
@@ -10885,6 +11400,11 @@
       "figureCaption": "Quality attribute radar: what you gain in one you pay for in another",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 10
+      },
       "tags": [
         "quality-attributes",
         "trade-offs",
@@ -10987,6 +11507,11 @@
       "figureCaption": "The infinity loop: development and operations as one continuous flow",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 10
+      },
       "tags": [
         "devops",
         "culture",
@@ -11114,6 +11639,11 @@
       "figureCaption": "The Strategy pattern: one interface, many interchangeable behaviors",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "principios",
+        "step": 20
+      },
       "tags": [
         "design-patterns",
         "gof",
@@ -11226,6 +11756,11 @@
       "figureCaption": "The decision scale: speed weighed against cost",
       "order": 7,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 20
+      },
       "tags": [
         "trade-offs",
         "decision-making",
@@ -11378,6 +11913,11 @@
       "figureCaption": "One rule, one home: callers share tax() and never reach the hidden rates",
       "order": 8,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 20
+      },
       "tags": [
         "dry",
         "kiss",
@@ -11560,6 +12100,11 @@
       "figureCaption": "The problem at the core, wrapped in the layers we add while solving it",
       "order": 9,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 40
+      },
       "tags": [
         "complexity",
         "no-silver-bullet",
@@ -11731,6 +12276,11 @@
       "figureCaption": "Org chart and system as mirror images: the boundary that doubles communication",
       "order": 10,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 10
+      },
       "tags": [
         "conways-law",
         "team-topologies",
@@ -11833,6 +12383,11 @@
       "figureCaption": "Two transactions read the same row; the later write silently erases the other",
       "order": 11,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 10
+      },
       "tags": [
         "data-modeling",
         "transactions",
@@ -11955,6 +12510,11 @@
       "figureCaption": "Latency against utilization in an M/M/1 queue: the knee arrives well before 100%",
       "order": 12,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 30
+      },
       "tags": [
         "littles-law",
         "amdahls-law",
@@ -12072,6 +12632,11 @@
       "figureCaption": "Nine styles drawn as boxes and connectors, with service-based highlighted",
       "order": 13,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "estilos",
+        "step": 10
+      },
       "tags": [
         "architectural-styles",
         "components-connectors",
@@ -12204,6 +12769,11 @@
       "figureCaption": "Essential complexity stays; accidental complexity shrinks",
       "order": 15,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "orientacion",
+        "step": 50
+      },
       "tags": [
         "complexity",
         "tools",
@@ -12260,6 +12830,11 @@
       "figureCaption": "The architect shapes the decision; the team owns it",
       "order": 16,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 30
+      },
       "tags": [
         "leadership",
         "facilitation",
@@ -12327,6 +12902,11 @@
       "figureCaption": "Four zoom levels: context, containers, components and code",
       "order": 1,
       "publishedAt": "2026-10-10",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 10
+      },
       "tags": [
         "c4",
         "diagrams",
@@ -12433,6 +13013,11 @@
       "figureCaption": "Context map: bounded contexts and their upstream and downstream relations",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 10
+      },
       "tags": [
         "ddd",
         "domain",
@@ -12550,6 +13135,11 @@
       "figureCaption": "Hexagon with ports and adapters: the domain knows no technology",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "estilos",
+        "step": 40
+      },
       "tags": [
         "hexagonal",
         "ports-adapters",
@@ -12682,6 +13272,11 @@
       "figureCaption": "From versioned text to diagram: the source renders itself",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 20
+      },
       "tags": [
         "diagrams-as-code",
         "mermaid",
@@ -12808,6 +13403,11 @@
       "figureCaption": "The spectrum: from monolith to microservices, more autonomy, more deploys",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 20
+      },
       "tags": [
         "monolith",
         "microservices",
@@ -12960,6 +13560,11 @@
       "figureCaption": "Concentric layers: every dependency points toward the domain",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "estilos",
+        "step": 20
+      },
       "tags": [
         "layers",
         "clean-architecture",
@@ -13087,6 +13692,11 @@
       "figureCaption": "The CAP triangle and PACELC: A or C under partition, latency or C without",
       "order": 7,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 30
+      },
       "tags": [
         "cap",
         "pacelc",
@@ -13229,6 +13839,11 @@
       "figureCaption": "Commands append to an immutable event log; read projections are derived from it",
       "order": 8,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 20
+      },
       "tags": [
         "events",
         "cqrs",
@@ -13351,6 +13966,11 @@
       "figureCaption": "A local transaction writes an outbox row; a relay publishes it to the broker",
       "order": 9,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 30
+      },
       "tags": [
         "sagas",
         "outbox",
@@ -13488,6 +14108,11 @@
       "figureCaption": "One contract, many consumers: v1 and v2 live side by side on the same service",
       "order": 10,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 10
+      },
       "tags": [
         "apis",
         "rest",
@@ -13625,6 +14250,11 @@
       "figureCaption": "A call hits its timeout, retries with jitter, and the open breaker fails fast",
       "order": 11,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 40
+      },
       "tags": [
         "resilience",
         "distributed-systems",
@@ -13757,6 +14387,11 @@
       "figureCaption": "A cache in front of the database and a partitioned log read by consumer groups",
       "order": 12,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 10
+      },
       "tags": [
         "caching",
         "queues",
@@ -13904,6 +14539,11 @@
       "figureCaption": "Traffic, stateless services and shards: the bottleneck is the hot key",
       "order": 13,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 30
+      },
       "tags": [
         "scalability",
         "capacity-estimation",
@@ -14076,6 +14716,11 @@
       "figureCaption": "Pool and silo in one system: the isolation boundary keeps tenants apart",
       "order": 14,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 60
+      },
       "tags": [
         "multi-tenancy",
         "saas",
@@ -14183,6 +14828,11 @@
       "figureCaption": "Dependencies point toward the domain, never away from it",
       "order": 15,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "estilos",
+        "step": 30
+      },
       "tags": [
         "layers",
         "dependencies",
@@ -14234,6 +14884,11 @@
       "figureCaption": "Modules with a public API and their own data inside one process",
       "order": 16,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 30
+      },
       "tags": [
         "modular-monolith",
         "microservices",
@@ -14290,6 +14945,11 @@
       "figureCaption": "If shipping fails, compensations undo the earlier steps",
       "order": 17,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 40
+      },
       "tags": [
         "sagas",
         "outbox",
@@ -14346,6 +15006,11 @@
       "figureCaption": "Each operation picks its own point between consistency and availability",
       "order": 18,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 40
+      },
       "tags": [
         "cap",
         "pacelc",
@@ -14402,6 +15067,11 @@
       "figureCaption": "Concurrency = throughput × response time",
       "order": 19,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 40
+      },
       "tags": [
         "scalability",
         "performance",
@@ -14458,6 +15128,11 @@
       "figureCaption": "Four compatible phases: each one can be deployed and rolled back",
       "order": 20,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 50
+      },
       "tags": [
         "migrations",
         "database",
@@ -14515,6 +15190,11 @@
       "figureCaption": "A translation layer shields the new model while routes migrate",
       "order": 21,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 40
+      },
       "tags": [
         "legacy",
         "strangler",
@@ -14572,6 +15252,11 @@
       "figureCaption": "One BFF per channel, and one shared point of coupling",
       "order": 22,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 70
+      },
       "tags": [
         "micro-frontends",
         "bff",
@@ -14639,6 +15324,11 @@
       "figureCaption": "Flow direction and fan-out decide the technology",
       "order": 23,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 50
+      },
       "tags": [
         "real-time",
         "websocket",
@@ -14706,6 +15396,11 @@
       "figureCaption": "Each correction is a new entry, never an edit",
       "order": 24,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 60
+      },
       "tags": [
         "payments",
         "ledger",
@@ -14788,6 +15483,11 @@
       "figureCaption": "Access patterns first, then the store",
       "order": 25,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 20
+      },
       "tags": [
         "databases",
         "persistence",
@@ -14864,6 +15564,11 @@
       "figureCaption": "The index is derived data: it is fed from the source and can be rebuilt",
       "order": 26,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 20
+      },
       "tags": [
         "search",
         "indexes",
@@ -14945,6 +15650,11 @@
       "figureCaption": "One service, one queue per channel: a failed provider does not stall the others",
       "order": 27,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 60
+      },
       "tags": [
         "notifications",
         "queues",
@@ -15021,6 +15731,11 @@
       "figureCaption": "Plugins talk to the core only through its ports",
       "order": 28,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 50
+      },
       "tags": [
         "plugins",
         "extensibility",
@@ -15107,6 +15822,11 @@
       "figureCaption": "The app confirms locally and drains its queue when the network returns",
       "order": 29,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 80
+      },
       "tags": [
         "offline",
         "sync",
@@ -15179,6 +15899,11 @@
       "figureCaption": "From tangled to readable code: small, clear and consistent",
       "order": 1,
       "publishedAt": "2026-10-10",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 10
+      },
       "tags": [
         "clean-code",
         "quality",
@@ -15301,6 +16026,11 @@
       "figureCaption": "A harness of gates: hooks, rules, tests and review guide the agent",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 40
+      },
       "tags": [
         "claude-code",
         "harness-engineering",
@@ -15433,6 +16163,11 @@
       "figureCaption": "A fitness function crosses its threshold and stops the deploy",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 30
+      },
       "tags": [
         "fitness-functions",
         "evolutionary-architecture",
@@ -15555,6 +16290,11 @@
       "figureCaption": "The interest on debt: left unpaid, the cost of change soars",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 20
+      },
       "tags": [
         "technical-debt",
         "evolutionary-architecture",
@@ -15712,6 +16452,11 @@
       "figureCaption": "Two trust boundaries: authn and schema at the edge, authz further in",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 10
+      },
       "tags": [
         "security",
         "threat-modeling",
@@ -15834,6 +16579,11 @@
       "figureCaption": "An import that breaks a layer rule fails the pipeline",
       "order": 6,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 40
+      },
       "tags": [
         "fitness-functions",
         "ci",
@@ -15890,6 +16640,11 @@
       "figureCaption": "Without jitter, every retry lands at the same moment",
       "order": 7,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 50
+      },
       "tags": [
         "resilience",
         "retries",
@@ -15941,6 +16696,11 @@
       "figureCaption": "An SLO leaves an error budget that every failure spends",
       "order": 8,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 40
+      },
       "tags": [
         "observability",
         "slo",
@@ -16008,6 +16768,11 @@
       "figureCaption": "Many unit tests, few end-to-end tests, and contracts in between",
       "order": 9,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 20
+      },
       "tags": [
         "testing",
         "contracts",
@@ -16070,6 +16835,11 @@
       "figureCaption": "Traffic rises in steps and a flag rolls back without a deploy",
       "order": 10,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 30
+      },
       "tags": [
         "deployment",
         "feature-flags",
@@ -16137,6 +16907,11 @@
       "figureCaption": "Every flow that crosses a trust boundary is an attack surface",
       "order": 11,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 20
+      },
       "tags": [
         "security",
         "stride",
@@ -16203,6 +16978,11 @@
       "figureCaption": "Deletion must reach every copy",
       "order": 12,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 60
+      },
       "tags": [
         "privacy",
         "gdpr",
@@ -16275,6 +17055,11 @@
       "figureCaption": "The postmortem looks for system failures, not culprits",
       "order": 13,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 50
+      },
       "tags": [
         "incidents",
         "postmortem",
@@ -16352,6 +17137,11 @@
       "figureCaption": "The workload authenticates to the vault; the repository stores nothing",
       "order": 14,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 50
+      },
       "tags": [
         "secrets",
         "keys",
@@ -16424,6 +17214,11 @@
       "figureCaption": "Types as the contract between languages and AI models",
       "order": 1,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 10
+      },
       "tags": [
         "languages",
         "ai",
@@ -16516,6 +17311,11 @@
       "figureCaption": "The agent loop: plan, act, observe and reflect around the model",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 20
+      },
       "tags": [
         "llm",
         "agents",
@@ -16638,6 +17438,11 @@
       "figureCaption": "One open storage serves BI and ML without copies",
       "order": 3,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 30
+      },
       "tags": [
         "data",
         "lakehouse",
@@ -16704,6 +17509,11 @@
       "figureCaption": "Without evaluation in the loop, you cannot tell what changed",
       "order": 4,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "produccion",
+        "step": 10
+      },
       "tags": [
         "rag",
         "llm",
@@ -16786,6 +17596,11 @@
       "figureCaption": "Cost per request depends on the model, the cache and the place",
       "order": 5,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "produccion",
+        "step": 30
+      },
       "tags": [
         "inference",
         "cost",
@@ -16868,6 +17683,11 @@
       "figureCaption": "Same load, less energy and a cleaner grid",
       "order": 6,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 40
+      },
       "tags": [
         "sustainability",
         "carbon",
@@ -16940,6 +17760,11 @@
       "figureCaption": "Each model is a published version, watched until it is retired",
       "order": 7,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "produccion",
+        "step": 20
+      },
       "tags": [
         "mlops",
         "models",
@@ -17012,6 +17837,11 @@
       "figureCaption": "Serve from the nearest edge; reach the origin only when the cache misses",
       "order": 8,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 40
+      },
       "tags": [
         "edge",
         "cdn",
@@ -17099,6 +17929,11 @@
       "figureCaption": "Responsibility stack: you run what sits above the line, the provider the rest",
       "order": 1,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 10
+      },
       "tags": [
         "cloud",
         "service-models",
@@ -17240,6 +18075,11 @@
       "figureCaption": "Four deployment boundaries: the application stays on the same side as its data",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 20
+      },
       "tags": [
         "deployment-models",
         "private-cloud",
@@ -17367,6 +18207,11 @@
       "figureCaption": "On-premises and cloud joined by one link; when it breaks, the local flow keeps running",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 20
+      },
       "tags": [
         "hybrid-cloud",
         "connectivity",
@@ -17509,6 +18354,11 @@
       "figureCaption": "Exit cost grows with use until leaving costs more than staying",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 30
+      },
       "tags": [
         "lock-in",
         "portability",
@@ -17661,6 +18511,11 @@
       "figureCaption": "Three clouds around a common platform layer; the link between them is the costly part",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 40
+      },
       "tags": [
         "multicloud",
         "cloud",
@@ -17803,6 +18658,11 @@
       "figureCaption": "A request through a function: a cold one pays the INIT phase first",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 30
+      },
       "tags": [
         "serverless",
         "faas",
@@ -17935,6 +18795,11 @@
       "figureCaption": "A virtual network with two adjacent subnets and an identity gate between them",
       "order": 7,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 10
+      },
       "tags": [
         "cloud-networking",
         "identity",
@@ -18082,6 +18947,11 @@
       "figureCaption": "Two regions with async replication: the gap before the outage is the RPO",
       "order": 8,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 20
+      },
       "tags": [
         "disaster-recovery",
         "rto-rpo",
@@ -18229,6 +19099,11 @@
       "figureCaption": "Fixed versus variable cost: the cheaper option flips where the lines cross",
       "order": 9,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 30
+      },
       "tags": [
         "finops",
         "cloud-costs",
@@ -18351,6 +19226,11 @@
       "figureCaption": "Exit cost weighs far more on data than on the API",
       "order": 10,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 50
+      },
       "tags": [
         "lock-in",
         "exit-cost",
@@ -18407,6 +19287,11 @@
       "figureCaption": "Three models answer the same question from different sources of truth",
       "order": 11,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 40
+      },
       "tags": [
         "authorization",
         "rbac",
@@ -18478,6 +19363,11 @@
       "figureCaption": "Six strategies, one judgement per application",
       "order": 12,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "nube",
+        "stage": "estrategia",
+        "step": 10
+      },
       "tags": [
         "migration",
         "cloud",
@@ -18554,6 +19444,11 @@
       "figureCaption": "A session keeps state on the server; a token carries it and needs a list to be withdrawn",
       "order": 13,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 30
+      },
       "tags": [
         "sessions",
         "tokens",
@@ -18631,6 +19526,11 @@
       "figureCaption": "Five initiatives swap places once you divide by effort",
       "order": 1,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "decidir",
+        "step": 30
+      },
       "tags": [
         "prioritization",
         "rice",
@@ -18773,6 +19673,11 @@
       "figureCaption": "Evolution map: video moves from custom-built to commodity",
       "order": 2,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "decidir",
+        "step": 20
+      },
       "tags": [
         "cynefin",
         "wardley-maps",
@@ -18895,6 +19800,11 @@
       "figureCaption": "Minto pyramid: the idea on top, held up by three levels of support",
       "order": 3,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 50
+      },
       "tags": [
         "proposals",
         "communication",
@@ -19002,6 +19912,11 @@
       "figureCaption": "Five stages in series: waiting piles up in front of the bottleneck",
       "order": 4,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "mejorar",
+        "step": 10
+      },
       "tags": [
         "value-stream",
         "theory-of-constraints",
@@ -19104,6 +20019,11 @@
       "figureCaption": "A PDSA loop whose experiment ends in a go or no-go that opens the next cycle",
       "order": 5,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "mejorar",
+        "step": 30
+      },
       "tags": [
         "continuous-improvement",
         "pdsa",
@@ -19236,6 +20156,11 @@
       "figureCaption": "Metric tree: objective, key results, levers and one guardrail metric",
       "order": 6,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "mejorar",
+        "step": 20
+      },
       "tags": [
         "metrics",
         "okr",
@@ -19353,6 +20278,11 @@
       "figureCaption": "A question passes source, figure and counterargument checks before a person decides",
       "order": 7,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "decidir",
+        "step": 40
+      },
       "tags": [
         "generative-ai",
         "decision-making",
@@ -19530,6 +20460,11 @@
       "figureCaption": "An autonomy ladder with a mandatory approval point and a guardrail barrier",
       "order": 8,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 30
+      },
       "tags": [
         "ai-governance",
         "autonomy",
@@ -19647,6 +20582,11 @@
       "figureCaption": "A rules step and an agent step, validated and then approved by a person before acting",
       "order": 9,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 10
+      },
       "tags": [
         "agents",
         "workflows",
@@ -19744,6 +20684,11 @@
       "figureCaption": "A funnel of criteria filters candidate tools; exit cost makes the final cut",
       "order": 10,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 40
+      },
       "tags": [
         "tools",
         "documentation",
@@ -19886,6 +20831,11 @@
       "figureCaption": "A reinforcing loop with a visible delay and one point of intervention",
       "order": 11,
       "publishedAt": "2026-10-12",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "decidir",
+        "step": 10
+      },
       "tags": [
         "systems-thinking",
         "cognitive-biases",
@@ -20047,6 +20997,11 @@
       "figureCaption": "The system inherits the communication structure of the teams",
       "order": 12,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 20
+      },
       "tags": [
         "conways-law",
         "team-topologies",
@@ -20098,6 +21053,11 @@
       "figureCaption": "An ADR changes state; it is never deleted",
       "order": 13,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "fundamentos",
+        "stage": "decisiones",
+        "step": 60
+      },
       "tags": [
         "adr",
         "decisions",
@@ -20154,6 +21114,11 @@
       "figureCaption": "Each autonomy level requires a more explicit approval",
       "order": 14,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 20
+      },
       "tags": [
         "ai",
         "agents",
@@ -20215,6 +21180,11 @@
       "figureCaption": "The platform offers product teams one well-built path",
       "order": 15,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 60
+      },
       "tags": [
         "platform",
         "idp",
@@ -20281,6 +21251,11 @@
       "figureCaption": "A monorepo lands a change across several packages in one commit",
       "order": 16,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 50
+      },
       "tags": [
         "monorepo",
         "polyrepo",
@@ -20352,6 +21327,11 @@
       "figureCaption": "One proposal, one timebox and one recorded decision",
       "order": 17,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 60
+      },
       "tags": [
         "rfc",
         "architecture-review",
@@ -20414,6 +21394,11 @@
       "figureCaption": "Every service has an owner, a status and a contract; obsolete APIs have a retirement date",
       "order": 18,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 40
+      },
       "tags": [
         "catalogue",
         "governance",
@@ -20500,6 +21485,11 @@
       "figureCaption": "Document by levels, from general to specific, and remove what is out of date",
       "order": 19,
       "publishedAt": "2026-10-14",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "comunicar",
+        "step": 30
+      },
       "tags": [
         "documentation",
         "c4",

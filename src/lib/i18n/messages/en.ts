@@ -1,4 +1,5 @@
 import type { Messages } from '@/lib/i18n/messages/es';
+import { roadmapEn } from '@/lib/i18n/messages/roadmap-en';
 
 export const en: Messages = {
   a11y: {
@@ -134,6 +135,7 @@ export const en: Messages = {
     figure: 'FIG.',
     project: 'PROJECT',
     reading: 'READING',
+    route: 'PATH',
     rev: 'REV.',
     scale: 'SCALE',
     sheet: 'SHEET',
@@ -198,6 +200,7 @@ export const en: Messages = {
   nav: {
     docs: 'Documentation',
     home: 'Home',
+    roadmap: 'Roadmap',
   },
   notFound: {
     code: '404',
@@ -216,6 +219,8 @@ export const en: Messages = {
     actions: {
       docs: 'Documentation',
       home: 'Home',
+      roadmap: (label: string) => `Roadmap: ${label}`,
+      roadmaps: 'Roadmap',
       language: (label: string) => `Switch to ${label}`,
       theme: (next: string) => `Switch to ${next} theme`,
     },
@@ -238,6 +243,7 @@ export const en: Messages = {
     taggedWith: (tag: string) => `Tagged #${tag}`,
     trigger: 'Search',
   },
+  roadmap: roadmapEn,
   site: {
     description:
       'An engineering notebook on software architecture: in-depth articles, living diagrams and clear examples to design systems that scale.',

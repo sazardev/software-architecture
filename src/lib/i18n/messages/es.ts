@@ -1,3 +1,5 @@
+import { roadmapEs } from '@/lib/i18n/messages/roadmap-es';
+
 export const es = {
   a11y: {
     backToTop: 'Volver arriba',
@@ -132,6 +134,7 @@ export const es = {
     figure: 'FIG.',
     project: 'PROYECTO',
     reading: 'LECTURA',
+    route: 'RUTA',
     rev: 'REV.',
     scale: 'ESC.',
     sheet: 'HOJA',
@@ -197,6 +200,7 @@ export const es = {
   nav: {
     docs: 'Documentación',
     home: 'Inicio',
+    roadmap: 'Roadmap',
   },
   notFound: {
     code: '404',
@@ -215,6 +219,8 @@ export const es = {
     actions: {
       docs: 'Documentación',
       home: 'Inicio',
+      roadmap: (label: string) => `Roadmap: ${label}`,
+      roadmaps: 'Roadmap',
       language: (label: string) => `Cambiar a ${label}`,
       theme: (next: string) => `Cambiar a tema ${next}`,
     },
@@ -237,6 +243,7 @@ export const es = {
     taggedWith: (tag: string) => `Etiquetado con #${tag}`,
     trigger: 'Buscar',
   },
+  roadmap: roadmapEs,
   site: {
     description:
       'Cuaderno de ingeniería sobre arquitectura de software: artículos a fondo, diagramas vivos y ejemplos claros para diseñar sistemas que escalan.',
