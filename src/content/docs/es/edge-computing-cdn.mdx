@@ -14,79 +14,199 @@ updatedAt: 2026-10-14
 figureCaption: 'Sirve desde el borde más cercano; el origen solo si falla la caché'
 ---
 
-# Edge y CDN: qué ejecutar en el borde
+«Llevar la aplicación al borde» suena a una mejora sin coste: el código se ejecuta cerca del usuario y la espera
+desaparece. En la práctica, la mayor parte de lo que una CDN hace bien es servir contenido que no cambia, y la mayor
+parte de lo que se intenta mover al borde no mejora la experiencia, porque la lentitud estaba en otra parte: en la base
+de datos, en una cadena de llamadas o en el propio tamaño de la página.
 
-Una red de distribución de contenidos (CDN) lleva copias de los recursos a nodos cercanos al usuario. Hoy esos nodos también
-pueden ejecutar pequeñas funciones antes de responder. La pregunta de arquitectura ya no es si usar el borde, sino qué le
-conviene ejecutar en él y qué debe quedarse en el origen.
+La tesis de este artículo es que **el borde compensa cuando lo que se acerca es contenido o decisiones sin estado, y
+no compensa cuando lo que se acerca es el estado**. Antes de mover código, hay que medir dónde se gasta el tiempo de la
+petición y qué parte de ese tiempo puede eliminar la cercanía física. Lo demás es traslado de complejidad: más sitios
+donde desplegar, más sitios donde depurar y más copias de los datos que pueden divergir.
 
-## Qué sirve una CDN
+## Qué hace una CDN de verdad
 
-Funciona bien con respuestas idénticas para muchos usuarios durante un tiempo: imágenes, scripts, hojas de estilo, páginas
-públicas o respuestas de solo lectura. Lo que depende de cada usuario, como el saldo de una cuenta, debe ir al origen o
-personalizarse explícitamente. Una regla práctica: cachear lo que es igual para muchos y cambia poco, y dejar en el origen lo
-que es único por usuario o cambia en cada escritura.
+Una red de distribución de contenido tiene tres funciones principales. La primera es **guardar copias de respuestas**
+en nodos repartidos geográficamente, de modo que una imagen o un script se sirva desde el nodo más cercano en lugar de
+desde el origen. La segunda es **terminar las conexiones seguras** cerca del usuario, de forma que el apretón inicial de
+TLS se negocia con un nodo próximo y no con un servidor lejano. La tercera es **absorber carga**: los picos de tráfico
+sobre contenido popular golpean al borde y no al origen, que sigue dimensionado para lo que no está en caché.
 
-## Latencia frente a coste
+Esas tres funciones son muy eficaces para recursos estáticos, páginas que cambian poco y respuestas públicas que se
+repiten. Son menos útiles para respuestas personalizadas por usuario, que no se pueden compartir entre peticiones, y para
+escrituras, que siempre deben llegar al sistema que tiene la verdad.
 
-Acercar la respuesta reduce la latencia de red, pero no el cálculo ni las consultas a datos. Con un usuario a 20 ms del borde y
-a 200 ms del origen, un 90 % de aciertos da una latencia media de 0,9 × 20 + 0,1 × (20 + 200) = 40 ms. Con un 60 % de aciertos
-sube a 0,6 × 20 + 0,4 × 220 = 100 ms. Lo que decide la experiencia es la tasa de aciertos, no solo la proximidad.
+## Dónde se gasta la latencia
 
-El coste también cambia: cada nodo que ejecuta código se factura por invocación y por tiempo, y el tráfico que sale del borde
-tiene su propia tarifa. Un cálculo que solo mire la latencia puede descartar una opción más cara de lo que parece.
+La velocidad de la luz en fibra óptica es de unos 200.000 km por segundo, dos tercios de su velocidad en el vacío. Eso
+implica que una ida y vuelta a 1.000 km de distancia en línea recta cuesta al menos 10 milisegundos solo de propagación,
+y que los cables reales son más largos que la línea recta. Acercar el servidor al usuario reduce ese término, y es lo que
+la CDN consigue con los recursos estáticos.
 
-## Qué puede ejecutarse en el borde
+Pero en una petición dinámica el tiempo se reparte en varios sitios: la resolución DNS, el apretón TCP y TLS, la espera
+en el servidor, las consultas a la base de datos y las llamadas a otros servicios. Si la latencia de propagación es de 20
+milisegundos y la consulta a la base tarda 300, mover la aplicación a la ciudad del usuario ahorra 20 y deja intactos los 300. Antes de decidir, desglosa el tiempo de respuesta por componente. La cifra que casi siempre sorprende es lo poco que
+ocupa la distancia cuando el resto del sistema es lento.
 
-Las funciones en el borde sirven para decisiones pequeñas que no necesitan datos completos: reescribir una URL, elegir una
-variante de página según el idioma, validar una cabecera o comprobar un token firmado. No sirven para lógica que necesita muchos
-datos o estado compartido, como calcular un precio que consulta el inventario. Los proveedores limitan tiempo, memoria y acceso
-a datos; si una función necesita tres consultas a una base central, probablemente pertenece al origen.
+## La caché: quién decide cuánto dura una copia
 
-## Invalidación y TTL
+Una caché en el borde responde con una copia guardada, y la calidad del sistema depende de cuánto tiempo considera válida
+esa copia. El origen expresa esa decisión con cabeceras HTTP como `Cache-Control`, que indican si la respuesta puede
+guardarse, durante cuánto tiempo y si es compartible.
 
-El TTL fija cuánto puede estar desactualizada una copia. Un TTL largo reduce la carga del origen pero tarda en reflejar un cambio;
-uno corto reduce el riesgo pero aumenta las peticiones al origen. Una estrategia habitual combina TTL moderados con invalidación
-explícita al publicar, y sirve la copia antigua mientras se renueva en segundo plano si unos segundos de retraso son aceptables.
-La invalidación tarda en llegar a todos los nodos, así que durante ese tiempo conviven versiones.
+Dos extensiones de la RFC 5861 resuelven casos frecuentes. La directiva `stale-while-revalidate` permite servir una copia
+caducada de inmediato mientras el borde la actualiza en segundo plano, de modo que el usuario no espera a la validación.
+La directiva `stale-if-error` permite servir una copia caducada cuando el origen falla, en lugar de devolver un error. La
+RFC, de mayo de 2010, las define como extensiones independientes del control de caché. Ambas tienen un coste: durante la
+ventana de copia caducada, el usuario puede ver datos viejos. Por eso conviene usarlas en contenido donde la frescura no es
+crítica, y nunca en saldos, permisos o estados de pedido.
 
-## Coherencia entre nodos
+<Callout tone="warning" title="La caché no distingue entre usuarios">
+  Si la respuesta depende de una cookie o de una cabecera de autorización y el borde la guarda sin
+  separar esas variantes, un usuario puede recibir datos de otro. Antes de cachear una respuesta
+  personalizada, revisa qué cabeceras forman parte de la clave de caché y marca como no compartible
+  todo lo que dependa de la identidad.
+</Callout>
 
-Cada nodo tiene su caché, y dos usuarios de regiones distintas pueden ver versiones diferentes un rato. Para recursos que varían
-por usuario, la clave de caché debe incluir las cabeceras o cookies que cambian la respuesta; si no, un usuario puede recibir la
-página de otro. El hashing consistente reparte las claves entre nodos para no duplicar lo mismo en todos.
+## Capas: borde, capa superior y origen
 
-## Datos que deben quedarse en el origen
+Una CDN moderna no tiene un solo nivel de caché. Cloudflare, por ejemplo, documenta una caché por niveles: los nodos de
+borde consultan a una capa superior, que concentra las conexiones al origen desde un número reducido de centros de datos.
+Su funcionalidad Smart Tiered Cache elige la capa superior más cercana a cada origen usando datos de latencia. El efecto
+práctico es el que se ve en el diagrama: cada fallo de caché no llega directamente al origen, sino que se resuelve en una
+capa intermedia cuando es posible.
 
-Las escrituras, las transacciones y los datos personales sensibles deben quedarse en el origen o en una región controlada. Llevarlos
-al borde multiplica las copias y complica el cumplimiento de la normativa de protección de datos.
+```mermaid
+flowchart LR
+  U["Usuario"] --> E["Nodo de borde"]
+  E -->|acierto| U
+  E -->|fallo| T["Capa superior de caché"]
+  T -->|acierto| E
+  T -->|fallo| O["Origen"]
+  O --> T
+```
 
-## Cuándo el borde no compensa
+Esta estructura tiene una consecuencia importante para el diseño. El origen recibe menos peticiones, pero también sirve de
+respaldo cuando las capas superiores fallan, y su dimensionamiento debe seguir pensando en el peor caso: una purga masiva
+o un despliegue que invalida todo el contenido a la vez puede llevar a un pico de tráfico sobre el origen que nadie
+planificó.
 
-No compensa cuando las peticiones casi no se repiten, cuando el usuario ya está cerca del origen, cuando la lógica necesita datos
-centrales o cuando el equipo no puede observar código distribuido en muchos puntos. Entonces una caché bien configurada en el
-origen suele ser más barata y más fácil de operar.
+## Qué ejecutar en el borde
+
+Las funciones que se ejecutan en el borde sirven para decisiones pequeñas, rápidas y sin estado: reescribir una ruta,
+redirigir según el idioma o el país, añadir o quitar cabeceras, hacer una prueba A/B, validar un token firmado sin consultar
+a un servicio, o devolver una respuesta predeterminada cuando el origen no está disponible. Son casos donde la entrada cabe
+en la petición y la salida no requiere datos de un sistema central.
+
+No conviene ejecutar en el borde la lógica que necesita una transacción, un estado fuerte o una consulta a una base de
+datos única. Cada nodo tendría una copia del estado, y mantenerlas coherentes exige protocolos que anulan la ventaja de
+latencia. Tampoco compensa el código que hace muchos cálculos: los entornos de borde tienen límites de tiempo de CPU y de
+memoria, y una función que tarda cientos de milisegundos en un nodo lejano del origen no mejora nada.
+
+Hay un punto intermedio que funciona bien: el borde lee una copia de los datos que cambian poco, como configuración, precios
+publicados o listas de regiones, y el origen sigue siendo la fuente de verdad para las escrituras. La copia se refresca con
+un intervalo conocido y la aplicación acepta que puede estar ligeramente desactualizada. Esa decisión tiene que estar escrita
+en el contrato del servicio, porque define qué puede prometer el sistema.
+
+Las funciones en el borde tienen además un coste que no aparece en las demostraciones: el arranque en frío. Cuando un nodo recibe una
+función por primera vez, o tras un periodo sin uso, hay un retraso adicional para cargar el código. Para una redirección eso es
+irrelevante; para una validación que se ejecuta en el camino crítico de cada petición, puede dominar la latencia en las horas de poco
+tráfico. Medir la distribución de tiempos, y no solo la mediana, revela ese problema antes que los usuarios.
+
+Tampoco conviene olvidar los límites de la plataforma: tiempo de CPU por petición, tamaño del código, memoria y número de subrequests
+hacia otros servicios. Una lógica que cabe en un servidor tradicional puede no caber en un entorno de borde sin rediseño, y descubrirlo
+después de haber movido el código cuesta más que comprobarlo antes con un prototipo de la función más pesada.
+
+## Cuándo acercar la lógica no compensa
+
+Hay tres señales de que mover código al borde no va a ayudar. La primera es que **el tiempo dominante no es la red**: si la
+mayor parte de la latencia está en la base de datos o en llamadas en cadena, el borde solo traslada la espera. La segunda es
+que **los datos necesarios no pueden replicarse** sin violar reglas de negocio o de privacidad, porque entonces cada petición
+vuelve al origen de todos modos. La tercera es que **el equipo no puede depurar el borde**: un error que solo aparece en un
+nodo concreto, sin trazas ni reproducción local, cuesta más en horas de diagnóstico que la latencia que se ahorró.
+
+Este último punto se subestima. El despliegue en el borde multiplica los entornos, y las herramientas de observabilidad que
+funcionan con un único servidor no siempre cubren varias decenas de nodos con versiones de runtime distintas.
+
+## Un caso: personalizar la portada sin perder la caché
+
+Pensemos en la portada de un periódico digital. La mayor parte de la página es igual para todos: el encabezado, el menú, los
+titulares destacados. Una parte depende del usuario: el saludo, los artículos «para ti» y la indicación de que tiene una suscripción
+activa. La versión inicial trata toda la página como personalizada, porque la cookie de sesión viaja con cada petición. El resultado
+es previsible: ninguna respuesta se comparte, todo llega al origen y la portada tarda lo que tarda el origen en el peor momento del día.
+
+La solución separa las dos partes en tres capas. La estructura de la portada se cachea como respuesta compartida, con un TTL corto
+y `stale-while-revalidate`. Un minuto de desactualización en los titulares es aceptable, y el usuario recibe la portada desde el borde
+mientras el nodo la refresca en segundo plano. La parte personal se carga después, con una petición pequeña a un endpoint que el borde
+no cachea. El usuario ve la portada de inmediato y los artículos personales aparecen unos instantes más tarde.
+
+La tercera capa es la clave de caché. Si la clave incluyera la cookie completa, cada usuario tendría su propia copia y la caché no serviría
+para nada. La clave debe incluir solo lo que cambia la estructura de la página, por ejemplo el idioma y la región. Así, miles de usuarios
+con la misma región comparten una sola copia, y la personalización nunca se mezcla con ella.
+
+El coste de esta solución tiene dos partes. La primera es que la estructura puede estar un minuto desactualizada, y eso debe figurar en el
+contrato con el equipo de contenidos. La segunda es que hay dos peticiones en lugar de una, con más complejidad en el cliente. A cambio, la
+carga en el origen baja de forma notable en las horas de máxima audiencia, que es justo cuando más se necesita.
+
+La verificación es lo que más se descuida. Conviene un test que pida la portada con dos cookies distintas y compruebe que ninguna respuesta con
+datos personales lleva cabeceras de caché compartida. Ese test es barato y evita el fallo de seguridad más caro de este tipo de arquitectura.
+
+## Invalidación: la parte difícil de la caché
+
+Hay un dicho famoso sobre la caché: lo difícil es invalidarla. En el borde se vuelve más difícil porque las copias están en
+muchos sitios a la vez. Hay tres estrategias prácticas. La primera es **versionar la URL**: un recurso con el hash de su
+contenido en el nombre puede tener un TTL muy largo, porque un cambio genera una URL nueva y la copia antigua deja de
+consultarse. Es la opción más robusta para estáticos. La segunda es **purgar por clave** cuando el contenido cambia y la
+URL no puede cambiar; requiere un mecanismo de etiquetas o claves para no purgar todo. La tercera es **TTL corto con
+revalidación**, que acepta cierta desactualización a cambio de simplicidad.
+
+Lo que conviene evitar es depender de una purga manual para corregir datos. Cuando el proceso de purga es parte de la
+operación, tarde o temprano falla, y el usuario ve datos viejos sin que nadie lo sepa.
+
+## Medir lo que aporta
+
+La caché y el borde deben justificarse con cifras, no con intuiciones. Tres medidas bastan para empezar. La **tasa de aciertos**
+de la caché, por tipo de contenido, dice qué parte del tráfico se resuelve en el borde. La **latencia por región**, medida desde
+el usuario y no desde el servidor, dice si la cercanía se traduce en una mejora perceptible. Y la **carga que llega al origen**
+dice si la caché cumple su función de absorber tráfico. Si la tasa de aciertos es baja en el contenido que más se consulta,
+probablemente las cabeceras o las claves de caché están mal configuradas, y ese es el primer lugar donde mirar.
+
+También conviene medir el coste. Las peticiones al borde, las funciones ejecutadas y el tráfico de salida tienen precio, y en
+algunos casos superan el ahorro en el origen. Un análisis de costo unitario por petición evita sorpresas.
 
 ## Errores frecuentes
 
-- Cachear respuestas personalizadas sin incluir las cabeceras que las diferencian.
-- Mover al borde una lógica que consulta una base central en cada petición.
-- Medir solo la latencia media, sin la tasa de aciertos ni el percentil 95.
-- Asumir que la invalidación es inmediata en todas las regiones.
+El primer error es **mover la lógica al borde sin medir**. Se traslada un servicio a un nodo cercano y la latencia total apenas
+cambia, porque el cuello de botella seguía en la base de datos.
+
+El segundo es **cachear respuestas personalizadas sin separar variantes**. Es un fallo de seguridad disfrazado de optimización, y
+se detecta tarde.
+
+El tercero es **TTL largos sin estrategia de invalidación**. El contenido correcto ayer queda incorrecto hoy y nadie sabe por qué
+un usuario ve datos viejos.
+
+El cuarto es **tratar el borde como un segundo origen**. Replicar escrituras en muchos nodos sin protocolo de consistencia produce
+datos que divergen y que son difíciles de reconciliar.
+
+## Herramientas
+
+Una CDN con caché configurable por cabeceras y reglas, funciones en el borde para las decisiones pequeñas y una capa de caché
+superior cuando el tráfico lo justifica cubren la mayoría de los casos. La herramienta importa menos que las decisiones que la
+configuran: qué se cachea, durante cuánto tiempo, cómo se invalida y qué datos pueden leerse desde una copia. Esas decisiones
+deben quedar escritas junto al servicio, porque son las que cambian el comportamiento del sistema.
 
 ## Checklist
 
-- [ ] ¿Qué respuestas son idénticas para muchos usuarios, y durante cuánto tiempo?
-- [ ] ¿La clave de caché incluye todo lo que cambia la respuesta?
-- [ ] ¿Hay plan de invalidación, y se aceptan versiones mezcladas durante la propagación?
-- [ ] ¿La lógica en el borde es pequeña y no necesita datos centrales?
-- [ ] ¿Los datos personales y las escrituras se quedan en una región controlada?
-
-**Para profundizar:** [caché, colas y streaming](/docs/caching-colas-streaming) explica los patrones de caché e invalidación;
-[modelos de despliegue en la nube](/docs/modelos-de-despliegue-nube) sitúa el borde entre las opciones de despliegue.
+- [ ] Se ha desglosado el tiempo de respuesta por componente antes de decidir qué mover al borde.
+- [ ] Cada respuesta cacheada tiene una política explícita de `Cache-Control`, con las variantes que forman su clave.
+- [ ] Las respuestas que dependen de la identidad no se comparten entre usuarios.
+- [ ] `stale-while-revalidate` y `stale-if-error` solo se usan donde la frescura no es crítica.
+- [ ] Los recursos versionados usan URL con hash y un TTL largo; el resto tiene estrategia de invalidación definida.
+- [ ] La lógica en el borde es pequeña, sin estado fuerte ni consultas a una base central.
+- [ ] Hay medidas de tasa de aciertos, latencia por región, carga en el origen y coste por petición.
+- [ ] El plan de contingencia dimensiona el origen para una purga masiva.
 
 ## Fuentes
 
-- Roy Fielding et al., RFC 9111, _HTTP Caching_ (2022).
-- David Karger et al., "Consistent Hashing and Random Trees", _ACM STOC_ (1997).
-- David Gourley y Brian Totty, _HTTP: The Definitive Guide_ (2002).
+- [RFC 5861: HTTP Cache-Control Extensions for Stale Content](https://www.rfc-editor.org/rfc/rfc5861), M. Nottingham, mayo de 2010, informativa.
+- [Cloudflare Docs: Tiered Cache](https://developers.cloudflare.com/cache/how-to/tiered-cache/), documentación de la caché por niveles.

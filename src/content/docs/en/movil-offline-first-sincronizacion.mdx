@@ -14,80 +14,166 @@ updatedAt: 2026-10-14
 figureCaption: 'The app confirms locally and drains its queue when the network returns'
 ---
 
-# Offline-first mobile: syncing without losing data
+A mobile app loses the network in the subway, in the lift, in the field or on a plane. If its design assumes a
+connection is always there, each of those moments becomes an error, a lost change or a screen that does not respond.
+The thesis of this article is that the right model is to **write locally first and synchronise afterwards**: the app
+confirms what the user does immediately, stores the intention in a persistent queue and sends it to the server when it
+can. The hard part is not saving locally. It is deciding what happens when two copies of the same data diverge.
 
-An app that works only with a network fails exactly where it is most needed: on the metro, in a warehouse without signal or on a
-plane. An offline-first design reverses the usual order. The app confirms each change in its local store, the user keeps working,
-and synchronisation happens later. The hard part is not saving locally, but sending those changes back without losing or duplicating
-any of them.
+This approach has an explicit formulation in "Local-first software: You own your data, in spite of the cloud" (Kleppmann,
+Wiggins, van Hardenberg and McGranaghan, Onward! 2019), which argues that the device should be the primary copy of the user's
+data and that the cloud should serve to synchronise it across devices. Not every app needs to go that far, but nearly every
+app benefits from assuming the network will fail.
 
-## Write to the local store first
+<Callout tone="info" title="Offline-first does not mean no server">
+  The server is still needed to share data, back it up and resolve conflicts between devices. What
+  changes is that the app does not block while it waits for the server, and that local state is the
+  first thing the user sees.
+</Callout>
 
-The local store is what the user sees while offline. Every action is recorded as an operation (create, update, delete) with its full
-data, not as a final state. Recording the intent makes it possible to send it later and to apply business rules on the server. The
-screen cannot depend on the server having confirmed anything: what is visible lives locally, so the interface must show which changes
-are not yet synchronised.
+## What offline-first really means
 
-## A queue of pending operations
+An offline-first design has three properties. The first is that reads are served from local storage, so the screen appears without
+waiting for the network. The second is that writes are confirmed locally and recorded in a queue that survives closes and restarts.
+The third is that synchronisation is a background process, with retries and visible status, that never blocks interaction.
 
-Pending operations go to a persistent queue that survives closures and restarts. A field technician spends two days without signal and
-accumulates 120 operations. If the server accepts 5 per second, draining the queue takes 24 seconds of continuous traffic; with retries
-and pauses, the process takes minutes. That is acceptable only if the queue drains in order and can resume after an interruption.
+A design that only caches reads is not offline-first. If a user action fails when there is no network, the user has lost something,
+even though the screen loaded. The acid test is this: close the app in the middle of an operation without network, reopen it, and
+check that the user's intention is still there.
 
-Order matters: creating a work report and then editing it must arrive in that order. That is why each operation carries a sequence
-number within its entity.
+There is a cost to accept from the start. Every piece of data written locally can diverge from the server. For each entity, the design
+must answer three questions: which changes can be made without a network, which changes need server validation, and how the copies are
+reconciled when they meet again.
 
-## Identifiers generated on the client
+## The operation queue as a contract
 
-A record created offline has no server identifier. The usual solution is to generate one on the client, globally unique, so the app can
-refer to the record before it is synchronised. The same identifier doubles as an idempotency key: if an operation arrives twice because a
-response was lost, the server recognises the duplicate and does not apply it again.
+The unit of synchronisation is not the final state of the data but the **operation**: create an order, mark a task as done, change a field.
+The queue stores each one with a unique identifier, its local timestamp, the entity it affects and the content of the change. Sending
+operations instead of states has two advantages: the server can replay the history and detect conflicts precisely, and the user can see
+which changes are still pending.
 
-## Detecting conflicts
+The queue must follow three rules. It is persisted to local storage before the action is confirmed on screen, so an abrupt close does not
+lose it. It is drained in order within each entity, because a later edit cannot arrive before the creation it depends on. And each operation
+is idempotent: if the server receives it twice because the network dropped before the confirmation, the result must be the same. That last
+property connects with the design of [idempotency in sagas and the outbox](/docs/sagas-outbox-idempotencia), where the same problem appears
+between services.
 
-A conflict appears when two devices change the same data without seeing each other's change. There are three strategies, from the
-simplest to the most demanding.
+Sending needs a retry policy with growing delays and random variation, so that thousands of devices regaining connectivity at once do not
+hit the server at the same instant. The mechanism is the one described in [retries with jitter](/docs/reintentos-con-jitter).
 
-- **Last write wins.** Simple, but it silently discards one of the user's changes. Valid only when losing a change does not matter,
-  such as a visual preference.
-- **Version control.** Each record carries a version. An edit based on an old version is rejected and the conflict is returned for the
-  user to resolve.
-- **Conflict-free replicated data types (CRDTs).** Structures that always merge deterministically, such as counters or sets. They resolve
-  many cases without intervention, but modelling a whole domain with them is a project in itself.
+```mermaid
+flowchart LR
+  A["User action"] --> B["Write locally"]
+  B --> C["Persist operation in the queue"]
+  C --> D["Confirm on screen: pending"]
+  C --> E{"Network available?"}
+  E -- "No" --> F["Wait; retry with growing delay"]
+  F --> E
+  E -- "Yes" --> G["Send idempotent operation"]
+  G -- "Accepted" --> H["Mark as confirmed"]
+  G -- "Conflict" --> I["Resolution screen"]
+```
 
-The choice depends on how costly it is to lose a change. In a work report it may mean billing wrongly; in a preference, almost nothing.
+## Conflicts: when there is a real conflict
 
-## Data that should not be edited offline
+A conflict appears when two devices modify the same data without knowing about each other's change. Not all conflicts are the same, and treating
+them all with one strategy is a frequent source of data loss. Three cases are worth distinguishing.
 
-Operations that depend on shared real-time state, such as booking the last seat or transferring money, need server confirmation. The same
-holds for actions with external effects that are hard to reverse. The app can prepare the operation offline, but it must present it as
-pending, never as done.
+- **Changes to different fields of the same entity**: these can usually be merged without the user's help. One device changes the phone number
+  and another changes the address; the correct result has both changes.
+- **Changes to the same field**: here a rule must be chosen. The simplest is last writer wins, using its timestamp. It is correct when losing the
+  previous value does not matter, and dangerous when the user has written a long text that is silently overwritten.
+- **Changes that break a business rule**: two bookings for the same seat, or a stock level that goes negative on sync. Automatic merging is not
+  enough; the server must reject the operation, and the app must explain the rejection and offer a way out.
+
+The golden rule is not to lose the user's text. If an automatic resolution would discard a change the user wrote, the app must keep it and show
+it. A conflict resolved silently that erases work is worse than one that asks for a decision.
+
+## Structures that merge without coordination
+
+For data edited in parallel, such as collaborative text or ordered lists, there are data structures designed to converge without central
+coordination. Conflict-free replicated data types (CRDTs) were formalised in the work of Shapiro, Preguiça, Baquero and Zawirski (SSS 2011,
+published by Springer as LNCS 6976). It shows that certain designs converge to the same copy regardless of the order in which operations arrive.
+
+Before CRDTs, collaborative applications used operational transformation (OT). Ellis and Gibbs described it in "Concurrency Control in Groupware
+Systems" (SIGMOD 1989): each operation is transformed against concurrent ones so that the result is the same on every copy. OT is powerful but hard
+to reason about and to implement well; CRDTs pay in metadata size what they gain in simplicity.
+
+For most business apps a full CRDT is excessive. A good starting point is to model each field as a last-writer-wins register, to use counters that only
+add for quantities, and to reserve convergent structures for the few pieces of data that several users really edit at the same time.
+
+## Interface: the user must know what happened
+
+An offline-first app has to show its synchronisation state. The user must be able to tell a value confirmed by the server, a value saved only on the device
+and a rejected value that needs attention. Without that distinction the app seems to lie: the user believes the change is in the cloud when it is still in
+the queue.
+
+The interface should confirm the action immediately with a discreet pending indicator, and switch to confirmed when the server responds. Rejections deserve a
+resolution screen, not a generic error that forces the user to repeat the work. And the app should have a view of pending operations, so that the user, or
+support, can see what is still to be sent.
+
+## App versions and the local schema
+
+Offline-first apps face a risk that connected apps do not: local storage lives on the device for months, and the new
+version of the app must be able to read it. A pending operation created by version 3.2 may reach the server when the user
+already runs 3.4, or it may have been created by a version the server no longer accepts. Testing in the development
+build avoids neither situation.
+
+Two practices reduce the risk. The first is to version the local schema with explicit migrations, as with a server
+database: each structural change has a number, is applied once and is recorded. The second is to version the format of
+the queued operations too. The server should accept at least the last two formats, and the app should tag each operation
+with the format it was created in. An old operation can then be translated instead of rejected.
+
+A retirement policy is also needed. When a format stops being accepted, the app must warn the user before discarding their
+pending operations, and support must be able to export them. Discarding in silence is the same as losing data. The
+[expand and contract](/docs/migraciones-bd-sin-downtime) pattern used for server databases applies here almost unchanged:
+first the new format is accepted, then it is emitted, and only at the end is the old one removed.
+
+Not everything needs to be offline-first. A holiday request form that is submitted once a day, or a bank balance check,
+may require a connection without the user losing anything useful. The decision depends on three questions: how often people
+use the app without a network, how much a lost change costs and how much a badly resolved conflict costs. If the answer to
+the first is "almost never" and to the others is "little", the cost of maintaining a queue, retries and conflict resolution
+outweighs the benefit. Being offline-first is an investment to be justified with usage data, not a quality the app should
+have by default.
+
+## Tools
+
+- **Transactional local storage** on the device, with atomic writes between the entity and its operation in the queue.
+- **An operation identifier** generated on the client, unique and stable, for idempotency.
+- **A retry mechanism** with growing delays, random variation and an attempt limit before asking for intervention.
+- **An idempotent endpoint** on the server that accepts operations, applies each one once and returns the exact result even when they arrive repeated.
+- **Queue telemetry**: how many operations are pending, how long they have waited and how many are rejected, per app version.
+
+Libraries implement parts of this pattern, but it is worth understanding the model before adopting one. A synchronisation library that nobody understands
+produces failures that nobody knows how to diagnose.
 
 ## Common mistakes
 
-- Storing only the final state and losing the intent of the operation.
-- Draining the queue in parallel and breaking the order between operations on the same entity.
-- Showing as confirmed something that exists only locally.
-- Resolving conflicts without telling the user, so the change disappears without a trace.
-
-## When it does not apply
-
-If the app mostly reads data that changes rarely and the connection is usually good, a read cache is enough and a full offline model adds
-needless complexity. It pays off when work happens without a network and losing a piece of data has a real cost.
+- **Confirming the action on screen before persisting it in the queue.** An abrupt close erases the intention, and the user believes the change is saved.
+- **Synchronising states instead of operations.** The history is lost, and conflicts are detected late or not at all.
+- **Resolving every conflict with "last writer wins".** The user's text is silently lost.
+- **Not making operations idempotent.** A retry after a network drop duplicates orders or payments.
+- **Retrying with no delay or variation.** When the network returns, every device hits the server at once.
+- **Hiding synchronisation status.** The user cannot tell what is confirmed and what is not, and stops trusting the app.
+- **Testing only on a stable network.** Most failures appear with intermittent drops, network changes and closes during an operation.
 
 ## Checklist
 
-- [ ] Is each change recorded as an operation with its intent, not only as a final state?
-- [ ] Does the queue survive restarts and drain in order, in a resumable way?
-- [ ] Do new records have an identifier generated on the client?
-- [ ] Is each operation idempotent on the server?
-- [ ] Is there a conflict strategy per data type, and does the user get told?
-
-**Further reading:** [caching, queues and streaming](/docs/caching-colas-streaming) covers delivery semantics and message order;
-[sagas, outbox and idempotency](/docs/sagas-outbox-idempotencia) covers idempotency keys.
+- [ ] Reads are served from local storage, and the screen does not wait for the network.
+- [ ] Each action is persisted in a local queue before it is confirmed on screen.
+- [ ] Operations have a stable identifier and the server applies each one only once.
+- [ ] The queue drains in order within each entity, with growing and randomised retry delays.
+- [ ] Each entity has a written conflict rule, different for each kind of change.
+- [ ] The user's text changes are never discarded silently: they are kept or shown for a decision.
+- [ ] The interface distinguishes confirmed, pending and rejected, with a resolution screen.
+- [ ] There are tests with network drops, closes during an operation and restarts with a full queue.
 
 ## Sources
 
-- Leslie Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", _Communications of the ACM_ (1978).
-- Marc Shapiro, Nuno Preguiça, Carlos Baquero and Marek Zawirski, "Conflict-free Replicated Data Types", SSS (2011).
-- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).
+Checked in October 2026. The Kleppmann et al. article was confirmed through its metadata (Onward! 2019, DOI 10.1145/3359591.3359737);
+the full text was not consulted. The Shapiro et al. paper was confirmed through its LNCS 6976 record, pp. 386–400. The Ellis and Gibbs
+article was confirmed through its SIGMOD 1989 record. The conflict and queue examples are illustrative and do not describe a specific product.
+
+- Kleppmann, Wiggins, van Hardenberg and McGranaghan, "Local-first software: You own your data, in spite of the cloud", Onward! 2019.
+- Shapiro, Preguiça, Baquero and Zawirski, "Conflict-free Replicated Data Types", SSS 2011, LNCS 6976, pp. 386–400.
+- Ellis and Gibbs, "Concurrency Control in Groupware Systems", SIGMOD 1989, pp. 399–407.

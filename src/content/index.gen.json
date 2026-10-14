@@ -4424,44 +4424,54 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "pagos-y-libro-mayor-partida-doble-sin-errores",
-          "level": 1,
-          "text": "Pagos y libro mayor: partida doble sin errores"
+          "id": "por-qué-un-saldo-no-es-suficiente",
+          "level": 2,
+          "text": "Por qué un saldo no es suficiente"
         },
         {
-          "id": "asientos-inmutables",
+          "id": "la-partida-doble-en-una-página",
           "level": 2,
-          "text": "Asientos inmutables"
+          "text": "La partida doble en una página"
         },
         {
-          "id": "idempotencia-de-los-cobros",
+          "id": "asientos-inmutables-y-correcciones-por-contraasiento",
           "level": 2,
-          "text": "Idempotencia de los cobros"
+          "text": "Asientos inmutables y correcciones por contraasiento"
         },
         {
-          "id": "conciliación-el-libro-frente-al-proveedor",
+          "id": "modelo-mínimo-cuentas-asientos-y-líneas",
           "level": 2,
-          "text": "Conciliación: el libro frente al proveedor"
+          "text": "Modelo mínimo: cuentas, asientos y líneas"
         },
         {
-          "id": "un-ejemplo-con-cifras",
+          "id": "idempotencia-del-cobro",
           "level": 2,
-          "text": "Un ejemplo con cifras"
+          "text": "Idempotencia del cobro"
         },
         {
-          "id": "orden-de-los-eventos",
+          "id": "conciliación-con-el-proveedor",
           "level": 2,
-          "text": "Orden de los eventos"
+          "text": "Conciliación con el proveedor"
+        },
+        {
+          "id": "moneda-redondeo-y-fechas",
+          "level": 3,
+          "text": "Moneda, redondeo y fechas"
+        },
+        {
+          "id": "cierres-de-periodo-y-cuentas-transitorias",
+          "level": 3,
+          "text": "Cierres de periodo y cuentas transitorias"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -4475,7 +4485,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/pagos-libro-mayor-ledger",
       "slug": "pagos-libro-mayor-ledger"
     },
@@ -4495,44 +4505,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "elegir-base-de-datos-patrones-de-acceso-primero",
-          "level": 1,
-          "text": "Elegir base de datos: patrones de acceso primero"
+          "id": "empezar-por-la-lista-de-consultas",
+          "level": 2,
+          "text": "Empezar por la lista de consultas"
         },
         {
-          "id": "primero-las-consultas",
+          "id": "qué-dimensiones-importan",
           "level": 2,
-          "text": "Primero las consultas"
+          "text": "Qué dimensiones importan"
         },
         {
-          "id": "tipos-de-almacén-y-su-patrón-natural",
+          "id": "familias-de-almacenes-y-para-qué-sirven",
           "level": 2,
-          "text": "Tipos de almacén y su patrón natural"
+          "text": "Familias de almacenes y para qué sirven"
         },
         {
-          "id": "cuándo-compensa-la-persistencia-políglota",
+          "id": "persistencia-políglota-cuándo-compensa",
           "level": 2,
-          "text": "Cuándo compensa la persistencia políglota"
+          "text": "Persistencia políglota: cuándo compensa"
         },
         {
-          "id": "un-ejemplo-con-cifras",
+          "id": "lo-que-cuesta-operar-cada-almacén",
           "level": 2,
-          "text": "Un ejemplo con cifras"
+          "text": "Lo que cuesta operar cada almacén"
         },
         {
-          "id": "costo-operativo",
+          "id": "modelar-para-el-acceso-no-para-la-teoría",
           "level": 2,
-          "text": "Costo operativo"
+          "text": "Modelar para el acceso, no para la teoría"
+        },
+        {
+          "id": "un-caso-reservas-que-no-pueden-solaparse",
+          "level": 3,
+          "text": "Un caso: reservas que no pueden solaparse"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -4546,7 +4561,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/persistencia-politica-elegir-bd",
       "slug": "persistencia-politica-elegir-bd"
     },
@@ -4566,34 +4581,44 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "búsqueda-en-la-aplicación-cuándo-basta-la-base",
-          "level": 1,
-          "text": "Búsqueda en la aplicación: cuándo basta la base"
+          "id": "qué-pide-la-búsqueda-en-concreto",
+          "level": 2,
+          "text": "Qué pide la búsqueda, en concreto"
         },
         {
-          "id": "cuándo-basta-la-base-de-datos",
+          "id": "el-índice-de-texto-dentro-de-la-base",
           "level": 2,
-          "text": "Cuándo basta la base de datos"
+          "text": "El índice de texto dentro de la base"
         },
         {
-          "id": "índice-invertido-la-estructura-de-la-búsqueda-de-texto",
+          "id": "cuándo-conviene-un-índice-invertido-dedicado",
           "level": 2,
-          "text": "Índice invertido: la estructura de la búsqueda de texto"
+          "text": "Cuándo conviene un índice invertido dedicado"
         },
         {
-          "id": "sincronizar-sin-perder-cambios",
+          "id": "modelar-el-documento-de-búsqueda",
           "level": 2,
-          "text": "Sincronizar sin perder cambios"
+          "text": "Modelar el documento de búsqueda"
         },
         {
-          "id": "reindexado-y-relevancia",
+          "id": "mantener-el-índice-sincronizado",
           "level": 2,
-          "text": "Reindexado y relevancia"
+          "text": "Mantener el índice sincronizado"
         },
         {
-          "id": "consistencia-de-los-resultados",
+          "id": "un-caso-un-catálogo-que-crece",
           "level": 2,
-          "text": "Consistencia de los resultados"
+          "text": "Un caso: un catálogo que crece"
+        },
+        {
+          "id": "relevancia-medir-antes-de-ajustar",
+          "level": 2,
+          "text": "Relevancia: medir antes de ajustar"
+        },
+        {
+          "id": "operación-y-costos-ocultos",
+          "level": 2,
+          "text": "Operación y costos ocultos"
         },
         {
           "id": "errores-frecuentes",
@@ -4601,9 +4626,9 @@
           "text": "Errores frecuentes"
         },
         {
-          "id": "cuándo-no-aplica",
+          "id": "herramientas",
           "level": 2,
-          "text": "Cuándo no aplica"
+          "text": "Herramientas"
         },
         {
           "id": "checklist",
@@ -4617,7 +4642,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/busqueda-en-aplicacion",
       "slug": "busqueda-en-aplicacion"
     },
@@ -4637,44 +4662,54 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "notificaciones-push-correo-y-sms-con-fiabilidad",
-          "level": 1,
-          "text": "Notificaciones: push, correo y SMS con fiabilidad"
+          "id": "por-qué-no-basta-con-llamar-al-proveedor-desde-el-código",
+          "level": 2,
+          "text": "Por qué no basta con llamar al proveedor desde el código"
         },
         {
-          "id": "un-servicio-desacoplado",
+          "id": "un-servicio-una-cola-por-canal",
           "level": 2,
-          "text": "Un servicio desacoplado"
+          "text": "Un servicio, una cola por canal"
         },
         {
-          "id": "un-ejemplo-con-cifras",
+          "id": "preferencias-el-usuario-decide-no-el-equipo",
           "level": 2,
-          "text": "Un ejemplo con cifras"
+          "text": "Preferencias: el usuario decide, no el equipo"
         },
         {
-          "id": "preferencias-y-consentimiento",
+          "id": "entrega-al-menos-una-vez-y-deduplicación",
           "level": 2,
-          "text": "Preferencias y consentimiento"
+          "text": "Entrega al menos una vez y deduplicación"
         },
         {
-          "id": "deduplicación-y-límites-de-frecuencia",
+          "id": "reintentos-caducidad-y-canal-de-respaldo",
           "level": 2,
-          "text": "Deduplicación y límites de frecuencia"
+          "text": "Reintentos, caducidad y canal de respaldo"
         },
         {
-          "id": "reintentos-sin-perder-mensajes",
+          "id": "proveedores-cambiar-sin-reescribir-el-sistema",
           "level": 2,
-          "text": "Reintentos sin perder mensajes"
+          "text": "Proveedores: cambiar sin reescribir el sistema"
+        },
+        {
+          "id": "plantillas-idioma-y-textos",
+          "level": 3,
+          "text": "Plantillas, idioma y textos"
+        },
+        {
+          "id": "observabilidad-de-entregas",
+          "level": 3,
+          "text": "Observabilidad de entregas"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -4688,7 +4723,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 14,
       "route": "/es/docs/notificaciones-push-correo-sms",
       "slug": "notificaciones-push-correo-sms"
     },
@@ -4708,34 +4743,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "arquitectura-extensible-plugins-y-puntos-de-extensión",
-          "level": 1,
-          "text": "Arquitectura extensible: plugins y puntos de extensión"
+          "id": "cuándo-abrir-el-sistema",
+          "level": 2,
+          "text": "Cuándo abrir el sistema"
         },
         {
-          "id": "cuándo-abrir-el-sistema-y-cuándo-no",
+          "id": "puntos-de-extensión-contratos-no-ganchos-sueltos",
           "level": 2,
-          "text": "Cuándo abrir el sistema y cuándo no"
+          "text": "Puntos de extensión: contratos, no ganchos sueltos"
         },
         {
-          "id": "puntos-de-extensión-con-contrato-estable",
+          "id": "dónde-se-ejecuta-el-plugin",
           "level": 2,
-          "text": "Puntos de extensión con contrato estable"
+          "text": "Dónde se ejecuta el plugin"
         },
         {
-          "id": "sandbox-y-permisos",
+          "id": "permisos-y-sandbox",
           "level": 2,
-          "text": "Sandbox y permisos"
+          "text": "Permisos y sandbox"
         },
         {
-          "id": "versionado-y-compatibilidad",
+          "id": "versionado-de-la-api-pública",
           "level": 2,
-          "text": "Versionado y compatibilidad"
+          "text": "Versionado de la API pública"
         },
         {
-          "id": "deprecación-con-fecha",
+          "id": "deprecación-y-retiro",
           "level": 2,
-          "text": "Deprecación con fecha"
+          "text": "Deprecación y retiro"
+        },
+        {
+          "id": "un-caso-cambiar-el-formato-de-exportación-sin-romper-a-nadie",
+          "level": 2,
+          "text": "Un caso: cambiar el formato de exportación sin romper a nadie"
+        },
+        {
+          "id": "fallos-aislados-y-ciclo-de-vida",
+          "level": 2,
+          "text": "Fallos aislados y ciclo de vida"
+        },
+        {
+          "id": "pruebas-de-contrato-con-plugins",
+          "level": 2,
+          "text": "Pruebas de contrato con plugins"
         },
         {
           "id": "errores-frecuentes",
@@ -4743,9 +4793,9 @@
           "text": "Errores frecuentes"
         },
         {
-          "id": "cuándo-no-aplica",
+          "id": "herramientas",
           "level": 2,
-          "text": "Cuándo no aplica"
+          "text": "Herramientas"
         },
         {
           "id": "checklist",
@@ -4759,7 +4809,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 14,
       "route": "/es/docs/arquitectura-extensible-plugins",
       "slug": "arquitectura-extensible-plugins"
     },
@@ -4780,44 +4830,44 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "móvil-offline-first-sincronizar-sin-perder-datos",
-          "level": 1,
-          "text": "Móvil offline-first: sincronizar sin perder datos"
+          "id": "qué-significa-offline-first-de-verdad",
+          "level": 2,
+          "text": "Qué significa offline-first de verdad"
         },
         {
-          "id": "escribir-primero-en-local",
+          "id": "la-cola-de-operaciones-como-contrato",
           "level": 2,
-          "text": "Escribir primero en local"
+          "text": "La cola de operaciones como contrato"
         },
         {
-          "id": "una-cola-de-operaciones-pendientes",
+          "id": "conflictos-cuándo-hay-conflicto-de-verdad",
           "level": 2,
-          "text": "Una cola de operaciones pendientes"
+          "text": "Conflictos: cuándo hay conflicto de verdad"
         },
         {
-          "id": "identificadores-generados-en-el-cliente",
+          "id": "estructuras-que-fusionan-sin-coordinación",
           "level": 2,
-          "text": "Identificadores generados en el cliente"
+          "text": "Estructuras que fusionan sin coordinación"
         },
         {
-          "id": "detectar-conflictos",
+          "id": "interfaz-que-el-usuario-sepa-qué-ha-pasado",
           "level": 2,
-          "text": "Detectar conflictos"
+          "text": "Interfaz: que el usuario sepa qué ha pasado"
         },
         {
-          "id": "qué-datos-no-deben-editarse-offline",
+          "id": "versiones-de-la-app-y-esquema-local",
           "level": 2,
-          "text": "Qué datos no deben editarse offline"
+          "text": "Versiones de la app y esquema local"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -4831,7 +4881,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/es/docs/movil-offline-first-sincronizacion",
       "slug": "movil-offline-first-sincronizacion"
     },
@@ -5876,29 +5926,44 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "privacidad-por-diseño-datos-retención-y-borrado",
-          "level": 1,
-          "text": "Privacidad por diseño: datos, retención y borrado"
+          "id": "minimizar-y-justificar-cada-dato",
+          "level": 2,
+          "text": "Minimizar y justificar cada dato"
         },
         {
-          "id": "cuatro-decisiones-que-cambian-el-diseño",
+          "id": "retención-con-plazos-concretos",
           "level": 2,
-          "text": "Cuatro decisiones que cambian el diseño"
+          "text": "Retención con plazos concretos"
         },
         {
-          "id": "un-ejemplo-con-cifras",
+          "id": "borrado-que-llega-a-todas-las-copias",
           "level": 2,
-          "text": "Un ejemplo con cifras"
+          "text": "Borrado que llega a todas las copias"
+        },
+        {
+          "id": "derechos-del-interesado-y-plazos",
+          "level": 2,
+          "text": "Derechos del interesado y plazos"
+        },
+        {
+          "id": "un-caso-completo-una-petición-de-supresión",
+          "level": 3,
+          "text": "Un caso completo: una petición de supresión"
+        },
+        {
+          "id": "observabilidad-sin-datos-personales",
+          "level": 2,
+          "text": "Observabilidad sin datos personales"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -5912,7 +5977,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/privacidad-por-diseno-gdpr",
       "slug": "privacidad-por-diseno-gdpr"
     },
@@ -5933,44 +5998,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "incidentes-y-postmortems-sin-culpa",
-          "level": 1,
-          "text": "Incidentes y postmortems sin culpa"
+          "id": "severidad-decidir-antes-de-saber",
+          "level": 2,
+          "text": "Severidad: decidir antes de saber"
         },
         {
-          "id": "roles-durante-el-incidente",
+          "id": "roles-quién-hace-qué-durante-el-incidente",
           "level": 2,
-          "text": "Roles durante el incidente"
+          "text": "Roles: quién hace qué durante el incidente"
         },
         {
-          "id": "severidades-y-decisiones",
+          "id": "comunicación-canal-cadencia-y-actualizaciones",
           "level": 2,
-          "text": "Severidades y decisiones"
+          "text": "Comunicación: canal, cadencia y actualizaciones"
         },
         {
-          "id": "un-ejemplo-con-cifras",
+          "id": "mitigar-primero-explicar-después",
           "level": 2,
-          "text": "Un ejemplo con cifras"
+          "text": "Mitigar primero, explicar después"
         },
         {
-          "id": "el-postmortem-sin-culpa",
+          "id": "el-postmortem-qué-debe-contener",
           "level": 2,
-          "text": "El postmortem sin culpa"
+          "text": "El postmortem: qué debe contener"
         },
         {
-          "id": "acciones-con-dueño-y-fecha",
+          "id": "culpa-error-humano-y-cultura-sin-culpa",
           "level": 2,
-          "text": "Acciones con dueño y fecha"
+          "text": "Culpa, error humano y cultura sin culpa"
+        },
+        {
+          "id": "de-las-acciones-a-la-mejora-real",
+          "level": 2,
+          "text": "De las acciones a la mejora real"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -5984,7 +6054,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/es/docs/gestion-incidentes-postmortems",
       "slug": "gestion-incidentes-postmortems"
     },
@@ -6005,49 +6075,44 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "secretos-y-claves-rotación-sin-sobresaltos",
-          "level": 1,
-          "text": "Secretos y claves: rotación sin sobresaltos"
+          "id": "por-qué-el-secreto-no-puede-vivir-en-el-repositorio",
+          "level": 2,
+          "text": "Por qué el secreto no puede vivir en el repositorio"
         },
         {
-          "id": "por-qué-los-secretos-no-van-en-el-repositorio",
+          "id": "identidad-de-carga-antes-que-secreto-estático",
           "level": 2,
-          "text": "Por qué los secretos no van en el repositorio"
+          "text": "Identidad de carga antes que secreto estático"
         },
         {
-          "id": "bóvedas-y-gestores",
+          "id": "secretos-dinámicos-y-leases",
           "level": 2,
-          "text": "Bóvedas y gestores"
+          "text": "Secretos dinámicos y leases"
         },
         {
-          "id": "identidad-de-carga-frente-a-secretos-estáticos",
+          "id": "cifrado-en-sobre-y-la-clave-maestra",
           "level": 2,
-          "text": "Identidad de carga frente a secretos estáticos"
+          "text": "Cifrado en sobre y la clave maestra"
         },
         {
-          "id": "rotación-con-dos-claves-activas",
+          "id": "rotación-sin-cortar-el-servicio",
           "level": 2,
-          "text": "Rotación con dos claves activas"
+          "text": "Rotación sin cortar el servicio"
         },
         {
-          "id": "claves-de-cifrado-jerarquía-y-envoltura",
+          "id": "detectar-fugas-antes-de-que-se-conviertan-en-incidentes",
           "level": 2,
-          "text": "Claves de cifrado: jerarquía y envoltura"
+          "text": "Detectar fugas antes de que se conviertan en incidentes"
         },
         {
-          "id": "auditoría-y-fuga-de-secretos",
+          "id": "herramientas",
           "level": 2,
-          "text": "Auditoría y fuga de secretos"
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -6061,7 +6126,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/gestion-secretos-claves",
       "slug": "gestion-secretos-claves"
     },
@@ -6598,9 +6663,9 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "mlops-llevar-un-modelo-a-producción",
-          "level": 1,
-          "text": "MLOps: llevar un modelo a producción"
+          "id": "un-modelo-es-código-datos-y-configuración",
+          "level": 2,
+          "text": "Un modelo es código, datos y configuración"
         },
         {
           "id": "versionar-datos-código-y-modelo-por-separado",
@@ -6608,34 +6673,34 @@
           "text": "Versionar datos, código y modelo por separado"
         },
         {
-          "id": "entrenamiento-reproducible-y-registro",
+          "id": "del-experimento-al-registro",
           "level": 2,
-          "text": "Entrenamiento reproducible y registro"
+          "text": "Del experimento al registro"
         },
         {
-          "id": "desplegar-sin-exponer-sombra-y-canary",
+          "id": "desplegar-con-sombra-y-canary",
           "level": 2,
-          "text": "Desplegar sin exponer: sombra y canary"
+          "text": "Desplegar con sombra y canary"
         },
         {
-          "id": "monitorizar-la-deriva",
+          "id": "vigilar-la-deriva",
           "level": 2,
-          "text": "Monitorizar la deriva"
+          "text": "Vigilar la deriva"
         },
         {
-          "id": "reentrenar-o-retirar",
+          "id": "reentrenar-o-retirar-decidirlo-con-datos",
           "level": 2,
-          "text": "Reentrenar o retirar"
+          "text": "Reentrenar o retirar: decidirlo con datos"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -6649,7 +6714,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/es/docs/mlops-modelo-a-produccion",
       "slug": "mlops-modelo-a-produccion"
     },
@@ -6670,49 +6735,59 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "edge-y-cdn-qué-ejecutar-en-el-borde",
-          "level": 1,
-          "text": "Edge y CDN: qué ejecutar en el borde"
+          "id": "qué-hace-una-cdn-de-verdad",
+          "level": 2,
+          "text": "Qué hace una CDN de verdad"
         },
         {
-          "id": "qué-sirve-una-cdn",
+          "id": "dónde-se-gasta-la-latencia",
           "level": 2,
-          "text": "Qué sirve una CDN"
+          "text": "Dónde se gasta la latencia"
         },
         {
-          "id": "latencia-frente-a-coste",
+          "id": "la-caché-quién-decide-cuánto-dura-una-copia",
           "level": 2,
-          "text": "Latencia frente a coste"
+          "text": "La caché: quién decide cuánto dura una copia"
         },
         {
-          "id": "qué-puede-ejecutarse-en-el-borde",
+          "id": "capas-borde-capa-superior-y-origen",
           "level": 2,
-          "text": "Qué puede ejecutarse en el borde"
+          "text": "Capas: borde, capa superior y origen"
         },
         {
-          "id": "invalidación-y-ttl",
+          "id": "qué-ejecutar-en-el-borde",
           "level": 2,
-          "text": "Invalidación y TTL"
+          "text": "Qué ejecutar en el borde"
         },
         {
-          "id": "coherencia-entre-nodos",
+          "id": "cuándo-acercar-la-lógica-no-compensa",
           "level": 2,
-          "text": "Coherencia entre nodos"
+          "text": "Cuándo acercar la lógica no compensa"
         },
         {
-          "id": "datos-que-deben-quedarse-en-el-origen",
+          "id": "un-caso-personalizar-la-portada-sin-perder-la-caché",
           "level": 2,
-          "text": "Datos que deben quedarse en el origen"
+          "text": "Un caso: personalizar la portada sin perder la caché"
         },
         {
-          "id": "cuándo-el-borde-no-compensa",
+          "id": "invalidación-la-parte-difícil-de-la-caché",
           "level": 2,
-          "text": "Cuándo el borde no compensa"
+          "text": "Invalidación: la parte difícil de la caché"
+        },
+        {
+          "id": "medir-lo-que-aporta",
+          "level": 2,
+          "text": "Medir lo que aporta"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "checklist",
@@ -6726,7 +6801,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/edge-computing-cdn",
       "slug": "edge-computing-cdn"
     },
@@ -8125,39 +8200,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "migrar-a-la-nube-las-6r-con-criterio",
-          "level": 1,
-          "text": "Migrar a la nube: las 6R con criterio"
+          "id": "las-seis-estrategias-en-una-frase-cada-una",
+          "level": 2,
+          "text": "Las seis estrategias en una frase cada una"
         },
         {
-          "id": "las-seis-opciones",
+          "id": "criterio-1-valor-para-el-negocio-y-ritmo-de-cambio",
           "level": 2,
-          "text": "Las seis opciones"
+          "text": "Criterio 1: valor para el negocio y ritmo de cambio"
         },
         {
-          "id": "criterios-para-asignar-cada-aplicación",
+          "id": "criterio-2-acoplamiento-y-datos",
           "level": 2,
-          "text": "Criterios para asignar cada aplicación"
+          "text": "Criterio 2: acoplamiento y datos"
         },
         {
-          "id": "un-ejemplo-con-cifras",
+          "id": "criterio-3-coste-de-operación-y-coste-de-salida",
           "level": 2,
-          "text": "Un ejemplo con cifras"
+          "text": "Criterio 3: coste de operación y coste de salida"
         },
         {
-          "id": "por-qué-el-orden-importa",
+          "id": "criterio-4-cumplimiento-residencia-y-riesgo",
           "level": 2,
-          "text": "Por qué el orden importa"
+          "text": "Criterio 4: cumplimiento, residencia y riesgo"
+        },
+        {
+          "id": "orden-de-olas-y-dependencias",
+          "level": 2,
+          "text": "Orden de olas y dependencias"
+        },
+        {
+          "id": "medir-antes-y-después",
+          "level": 2,
+          "text": "Medir antes y después"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
         },
         {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -8171,7 +8256,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/es/docs/migracion-nube-6r",
       "slug": "migracion-nube-6r"
     },
@@ -8192,29 +8277,34 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "sesiones-tokens-y-sso-qué-elegir-y-por-qué",
-          "level": 1,
-          "text": "Sesiones, tokens y SSO: qué elegir y por qué"
+          "id": "sesión-del-servidor-el-estado-se-queda-en-casa",
+          "level": 2,
+          "text": "Sesión del servidor: el estado se queda en casa"
         },
         {
-          "id": "sesión-en-el-servidor",
+          "id": "token-autocontenido-el-estado-viaja-con-el-cliente",
           "level": 2,
-          "text": "Sesión en el servidor"
+          "text": "Token autocontenido: el estado viaja con el cliente"
         },
         {
-          "id": "token-autocontenido",
+          "id": "expiración-rotación-y-revocación",
           "level": 2,
-          "text": "Token autocontenido"
+          "text": "Expiración, rotación y revocación"
         },
         {
-          "id": "expiración-y-rotación",
-          "level": 2,
-          "text": "Expiración y rotación"
+          "id": "un-caso-un-token-de-refresco-robado",
+          "level": 3,
+          "text": "Un caso: un token de refresco robado"
         },
         {
-          "id": "sso-y-openid-connect",
+          "id": "sso-sobre-oauth-20-y-openid-connect",
           "level": 2,
-          "text": "SSO y OpenID Connect"
+          "text": "SSO sobre OAuth 2.0 y OpenID Connect"
+        },
+        {
+          "id": "sesiones-en-aplicaciones-móviles",
+          "level": 3,
+          "text": "Sesiones en aplicaciones móviles"
         },
         {
           "id": "dónde-guardar-los-tokens-en-el-navegador",
@@ -8222,14 +8312,14 @@
           "text": "Dónde guardar los tokens en el navegador"
         },
         {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
+        },
+        {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
-        },
-        {
-          "id": "cuándo-no-aplica",
-          "level": 2,
-          "text": "Cuándo no aplica"
         },
         {
           "id": "checklist",
@@ -8243,7 +8333,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/sesiones-tokens-sso",
       "slug": "sesiones-tokens-sso"
     },
@@ -10046,29 +10136,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "catálogo-de-servicios-y-gobierno-de-apis",
-          "level": 1,
-          "text": "Catálogo de servicios y gobierno de APIs"
+          "id": "qué-resuelve-un-catálogo",
+          "level": 2,
+          "text": "Qué resuelve un catálogo"
         },
         {
-          "id": "qué-guarda-cada-entrada",
+          "id": "qué-datos-mínimos-tiene-cada-servicio",
           "level": 2,
-          "text": "Qué guarda cada entrada"
+          "text": "Qué datos mínimos tiene cada servicio"
         },
         {
-          "id": "descubrir-lo-que-existe",
+          "id": "dónde-vive-la-información",
           "level": 2,
-          "text": "Descubrir lo que existe"
+          "text": "Dónde vive la información"
         },
         {
-          "id": "gobierno-ligero-no-burocracia",
+          "id": "estados-y-lo-que-implican",
           "level": 2,
-          "text": "Gobierno ligero, no burocracia"
+          "text": "Estados y lo que implican"
         },
         {
-          "id": "ciclo-de-vida-y-deprecación-con-fechas",
+          "id": "gobierno-ligero-reglas-que-se-verifican",
           "level": 2,
-          "text": "Ciclo de vida y deprecación con fechas"
+          "text": "Gobierno ligero: reglas que se verifican"
+        },
+        {
+          "id": "ciclo-de-vida-de-una-api",
+          "level": 2,
+          "text": "Ciclo de vida de una API"
+        },
+        {
+          "id": "quién-decide-qué",
+          "level": 2,
+          "text": "Quién decide qué"
+        },
+        {
+          "id": "un-caso-retirar-la-api-de-facturación",
+          "level": 2,
+          "text": "Un caso: retirar la API de facturación"
+        },
+        {
+          "id": "cuándo-el-catálogo-sobra",
+          "level": 2,
+          "text": "Cuándo el catálogo sobra"
         },
         {
           "id": "errores-frecuentes",
@@ -10076,9 +10186,9 @@
           "text": "Errores frecuentes"
         },
         {
-          "id": "cuándo-no-aplica",
+          "id": "herramientas",
           "level": 2,
-          "text": "Cuándo no aplica"
+          "text": "Herramientas"
         },
         {
           "id": "checklist",
@@ -10092,7 +10202,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/catalogo-servicios-gobierno-apis",
       "slug": "catalogo-servicios-gobierno-apis"
     },
@@ -10113,39 +10223,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "documentar-la-arquitectura-para-que-alguien-la-use",
-          "level": 1,
-          "text": "Documentar la arquitectura para que alguien la use"
+          "id": "qué-preguntas-debe-responder",
+          "level": 2,
+          "text": "Qué preguntas debe responder"
         },
         {
-          "id": "empezar-por-las-preguntas",
+          "id": "niveles-de-detalle-de-lo-general-a-lo-particular",
           "level": 2,
-          "text": "Empezar por las preguntas"
+          "text": "Niveles de detalle: de lo general a lo particular"
         },
         {
-          "id": "niveles-de-detalle",
+          "id": "decisiones-el-registro-que-sobrevive-al-equipo",
           "level": 2,
-          "text": "Niveles de detalle"
+          "text": "Decisiones: el registro que sobrevive al equipo"
         },
         {
-          "id": "cerca-del-código-y-versionada",
+          "id": "junto-al-código-no-en-otro-lugar",
           "level": 2,
-          "text": "Cerca del código y versionada"
+          "text": "Junto al código, no en otro lugar"
         },
         {
-          "id": "qué-quitar",
+          "id": "qué-quitar-y-cómo-saber-que-caducó",
           "level": 2,
-          "text": "Qué quitar"
+          "text": "Qué quitar, y cómo saber que caducó"
         },
         {
-          "id": "caducidad-y-dueño",
+          "id": "documento-de-entrada-la-ruta-de-lectura",
           "level": 2,
-          "text": "Caducidad y dueño"
+          "text": "Documento de entrada: la ruta de lectura"
         },
         {
-          "id": "medir-si-sirve",
+          "id": "medir-si-alguien-la-usa",
           "level": 2,
-          "text": "Medir si sirve"
+          "text": "Medir si alguien la usa"
+        },
+        {
+          "id": "un-caso-el-primer-día-de-una-persona-nueva",
+          "level": 2,
+          "text": "Un caso: el primer día de una persona nueva"
+        },
+        {
+          "id": "qué-no-documentar",
+          "level": 2,
+          "text": "Qué no documentar"
         },
         {
           "id": "errores-frecuentes",
@@ -10153,9 +10273,9 @@
           "text": "Errores frecuentes"
         },
         {
-          "id": "cuándo-no-aplica",
+          "id": "herramientas",
           "level": 2,
-          "text": "Cuándo no aplica"
+          "text": "Herramientas"
         },
         {
           "id": "checklist",
@@ -10169,7 +10289,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/es/docs/documentar-arquitectura-util",
       "slug": "documentar-arquitectura-util"
     },
@@ -14597,44 +14717,54 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "payments-and-the-ledger-double-entry-without-errors",
-          "level": 1,
-          "text": "Payments and the ledger: double entry without errors"
+          "id": "why-a-balance-is-not-enough",
+          "level": 2,
+          "text": "Why a balance is not enough"
         },
         {
-          "id": "immutable-postings",
+          "id": "double-entry-on-one-page",
           "level": 2,
-          "text": "Immutable postings"
+          "text": "Double entry on one page"
         },
         {
-          "id": "idempotent-charges",
+          "id": "immutable-postings-and-corrections-by-reversal",
           "level": 2,
-          "text": "Idempotent charges"
+          "text": "Immutable postings and corrections by reversal"
         },
         {
-          "id": "reconciliation-the-ledger-against-the-provider",
+          "id": "a-minimal-model-accounts-postings-and-lines",
           "level": 2,
-          "text": "Reconciliation: the ledger against the provider"
+          "text": "A minimal model: accounts, postings and lines"
         },
         {
-          "id": "a-worked-example",
+          "id": "idempotency-of-the-charge",
           "level": 2,
-          "text": "A worked example"
+          "text": "Idempotency of the charge"
         },
         {
-          "id": "event-order",
+          "id": "reconciliation-with-the-provider",
           "level": 2,
-          "text": "Event order"
+          "text": "Reconciliation with the provider"
+        },
+        {
+          "id": "period-close-and-transitory-accounts",
+          "level": 3,
+          "text": "Period close and transitory accounts"
+        },
+        {
+          "id": "currency-rounding-and-dates",
+          "level": 3,
+          "text": "Currency, rounding and dates"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -14648,7 +14778,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/en/docs/pagos-libro-mayor-ledger",
       "slug": "pagos-libro-mayor-ledger"
     },
@@ -14668,44 +14798,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "choosing-a-database-access-patterns-first",
-          "level": 1,
-          "text": "Choosing a database: access patterns first"
+          "id": "start-with-the-list-of-queries",
+          "level": 2,
+          "text": "Start with the list of queries"
         },
         {
-          "id": "queries-first",
+          "id": "which-dimensions-matter",
           "level": 2,
-          "text": "Queries first"
+          "text": "Which dimensions matter"
         },
         {
-          "id": "store-types-and-their-natural-pattern",
+          "id": "store-families-and-what-they-are-for",
           "level": 2,
-          "text": "Store types and their natural pattern"
+          "text": "Store families and what they are for"
         },
         {
-          "id": "when-polyglot-persistence-pays-off",
+          "id": "polyglot-persistence-when-it-pays-off",
           "level": 2,
-          "text": "When polyglot persistence pays off"
+          "text": "Polyglot persistence: when it pays off"
         },
         {
-          "id": "a-worked-example",
+          "id": "what-it-costs-to-operate-each-store",
           "level": 2,
-          "text": "A worked example"
+          "text": "What it costs to operate each store"
         },
         {
-          "id": "operating-cost",
+          "id": "model-for-access-not-for-theory",
           "level": 2,
-          "text": "Operating cost"
+          "text": "Model for access, not for theory"
+        },
+        {
+          "id": "a-case-bookings-that-must-not-overlap",
+          "level": 3,
+          "text": "A case: bookings that must not overlap"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -14719,14 +14854,14 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/en/docs/persistencia-politica-elegir-bd",
       "slug": "persistencia-politica-elegir-bd"
     },
     {
       "category": "diseno",
       "description": "When a database index is enough, when a dedicated inverted index pays off, and how to keep it in sync with the source without losing changes.",
-      "figureCaption": "The index is derived data: fed from the source, rebuildable at any time",
+      "figureCaption": "The index is derived data: it is fed from the source and can be rebuilt",
       "order": 26,
       "publishedAt": "2026-10-14",
       "tags": [
@@ -14735,38 +14870,48 @@
         "synchronization",
         "relevance"
       ],
-      "title": "In-app search: when the database is enough",
+      "title": "Search inside the application: when the database is enough",
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "in-app-search-when-the-database-is-enough",
-          "level": 1,
-          "text": "In-app search: when the database is enough"
+          "id": "what-the-search-actually-needs",
+          "level": 2,
+          "text": "What the search actually needs"
         },
         {
-          "id": "when-the-database-is-enough",
+          "id": "the-text-index-inside-the-database",
           "level": 2,
-          "text": "When the database is enough"
+          "text": "The text index inside the database"
         },
         {
-          "id": "inverted-index-the-structure-behind-text-search",
+          "id": "when-a-dedicated-inverted-index-is-worth-it",
           "level": 2,
-          "text": "Inverted index: the structure behind text search"
+          "text": "When a dedicated inverted index is worth it"
         },
         {
-          "id": "keeping-it-in-sync-without-losing-changes",
+          "id": "modelling-the-search-document",
           "level": 2,
-          "text": "Keeping it in sync without losing changes"
+          "text": "Modelling the search document"
         },
         {
-          "id": "reindexing-and-relevance",
+          "id": "keeping-the-index-in-sync",
           "level": 2,
-          "text": "Reindexing and relevance"
+          "text": "Keeping the index in sync"
         },
         {
-          "id": "consistency-of-results",
+          "id": "a-case-a-catalogue-that-keeps-growing",
           "level": 2,
-          "text": "Consistency of results"
+          "text": "A case: a catalogue that keeps growing"
+        },
+        {
+          "id": "relevance-measure-before-you-tune",
+          "level": 2,
+          "text": "Relevance: measure before you tune"
+        },
+        {
+          "id": "operation-and-hidden-costs",
+          "level": 2,
+          "text": "Operation and hidden costs"
         },
         {
           "id": "common-mistakes",
@@ -14774,9 +14919,9 @@
           "text": "Common mistakes"
         },
         {
-          "id": "when-it-does-not-apply",
+          "id": "tools",
           "level": 2,
-          "text": "When it does not apply"
+          "text": "Tools"
         },
         {
           "id": "checklist",
@@ -14790,7 +14935,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/en/docs/busqueda-en-aplicacion",
       "slug": "busqueda-en-aplicacion"
     },
@@ -14810,44 +14955,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "notifications-push-email-and-sms-reliably",
-          "level": 1,
-          "text": "Notifications: push, email and SMS reliably"
+          "id": "why-calling-the-provider-from-business-code-is-not-enough",
+          "level": 2,
+          "text": "Why calling the provider from business code is not enough"
         },
         {
-          "id": "a-decoupled-service",
+          "id": "one-service-one-queue-per-channel",
           "level": 2,
-          "text": "A decoupled service"
+          "text": "One service, one queue per channel"
         },
         {
-          "id": "a-worked-example",
+          "id": "preferences-the-user-decides-not-the-team",
           "level": 2,
-          "text": "A worked example"
+          "text": "Preferences: the user decides, not the team"
         },
         {
-          "id": "preferences-and-consent",
+          "id": "at-least-once-delivery-and-deduplication",
           "level": 2,
-          "text": "Preferences and consent"
+          "text": "At-least-once delivery and deduplication"
         },
         {
-          "id": "deduplication-and-frequency-limits",
+          "id": "retries-expiry-and-fallback-channels",
           "level": 2,
-          "text": "Deduplication and frequency limits"
+          "text": "Retries, expiry and fallback channels"
         },
         {
-          "id": "retries-that-do-not-lose-messages",
+          "id": "templates-language-and-email-authentication",
+          "level": 3,
+          "text": "Templates, language and email authentication"
+        },
+        {
+          "id": "observability-of-deliveries",
+          "level": 3,
+          "text": "Observability of deliveries"
+        },
+        {
+          "id": "tools",
           "level": 2,
-          "text": "Retries that do not lose messages"
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -14861,13 +15011,13 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/en/docs/notificaciones-push-correo-sms",
       "slug": "notificaciones-push-correo-sms"
     },
     {
       "category": "diseno",
-      "description": "When to open a system to extensions, stable extension points with a permissioned sandbox, and versioning and deprecation of the plugin API.",
+      "description": "When to open a system to extensions, extension points with a stable contract, permissions and sandboxing, and versioning and deprecation of the plugin API.",
       "figureCaption": "Plugins talk to the core only through its ports",
       "order": 28,
       "publishedAt": "2026-10-14",
@@ -14881,34 +15031,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "extensible-architecture-plugins-and-extension-points",
-          "level": 1,
-          "text": "Extensible architecture: plugins and extension points"
+          "id": "when-to-open-the-system",
+          "level": 2,
+          "text": "When to open the system"
         },
         {
-          "id": "when-to-open-the-system-and-when-not-to",
+          "id": "extension-points-contracts-not-loose-hooks",
           "level": 2,
-          "text": "When to open the system and when not to"
+          "text": "Extension points: contracts, not loose hooks"
         },
         {
-          "id": "extension-points-with-a-stable-contract",
+          "id": "where-the-plugin-runs",
           "level": 2,
-          "text": "Extension points with a stable contract"
+          "text": "Where the plugin runs"
         },
         {
-          "id": "sandbox-and-permissions",
+          "id": "permissions-and-sandboxing",
           "level": 2,
-          "text": "Sandbox and permissions"
+          "text": "Permissions and sandboxing"
         },
         {
-          "id": "versioning-and-compatibility",
+          "id": "versioning-the-public-api",
           "level": 2,
-          "text": "Versioning and compatibility"
+          "text": "Versioning the public API"
         },
         {
-          "id": "deprecation-with-a-date",
+          "id": "deprecation-and-retirement",
           "level": 2,
-          "text": "Deprecation with a date"
+          "text": "Deprecation and retirement"
+        },
+        {
+          "id": "a-case-changing-the-export-format-without-breaking-anyone",
+          "level": 2,
+          "text": "A case: changing the export format without breaking anyone"
+        },
+        {
+          "id": "isolated-failures-and-lifecycle",
+          "level": 2,
+          "text": "Isolated failures and lifecycle"
+        },
+        {
+          "id": "contract-tests-with-plugins",
+          "level": 2,
+          "text": "Contract tests with plugins"
         },
         {
           "id": "common-mistakes",
@@ -14916,9 +15081,9 @@
           "text": "Common mistakes"
         },
         {
-          "id": "when-it-does-not-apply",
+          "id": "tools",
           "level": 2,
-          "text": "When it does not apply"
+          "text": "Tools"
         },
         {
           "id": "checklist",
@@ -14932,7 +15097,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/en/docs/arquitectura-extensible-plugins",
       "slug": "arquitectura-extensible-plugins"
     },
@@ -14953,44 +15118,44 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "offline-first-mobile-syncing-without-losing-data",
-          "level": 1,
-          "text": "Offline-first mobile: syncing without losing data"
+          "id": "what-offline-first-really-means",
+          "level": 2,
+          "text": "What offline-first really means"
         },
         {
-          "id": "write-to-the-local-store-first",
+          "id": "the-operation-queue-as-a-contract",
           "level": 2,
-          "text": "Write to the local store first"
+          "text": "The operation queue as a contract"
         },
         {
-          "id": "a-queue-of-pending-operations",
+          "id": "conflicts-when-there-is-a-real-conflict",
           "level": 2,
-          "text": "A queue of pending operations"
+          "text": "Conflicts: when there is a real conflict"
         },
         {
-          "id": "identifiers-generated-on-the-client",
+          "id": "structures-that-merge-without-coordination",
           "level": 2,
-          "text": "Identifiers generated on the client"
+          "text": "Structures that merge without coordination"
         },
         {
-          "id": "detecting-conflicts",
+          "id": "interface-the-user-must-know-what-happened",
           "level": 2,
-          "text": "Detecting conflicts"
+          "text": "Interface: the user must know what happened"
         },
         {
-          "id": "data-that-should-not-be-edited-offline",
+          "id": "app-versions-and-the-local-schema",
           "level": 2,
-          "text": "Data that should not be edited offline"
+          "text": "App versions and the local schema"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -15004,7 +15169,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 10,
       "route": "/en/docs/movil-offline-first-sincronizacion",
       "slug": "movil-offline-first-sincronizacion"
     },
@@ -16049,29 +16214,44 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "privacy-by-design-data-retention-and-deletion",
-          "level": 1,
-          "text": "Privacy by design: data, retention and deletion"
+          "id": "minimise-and-justify-every-field",
+          "level": 2,
+          "text": "Minimise and justify every field"
         },
         {
-          "id": "four-decisions-that-change-the-design",
+          "id": "retention-with-concrete-periods",
           "level": 2,
-          "text": "Four decisions that change the design"
+          "text": "Retention with concrete periods"
         },
         {
-          "id": "a-worked-example",
+          "id": "deletion-that-reaches-every-copy",
           "level": 2,
-          "text": "A worked example"
+          "text": "Deletion that reaches every copy"
+        },
+        {
+          "id": "a-complete-case-an-erasure-request",
+          "level": 3,
+          "text": "A complete case: an erasure request"
+        },
+        {
+          "id": "rights-of-the-data-subject-and-deadlines",
+          "level": 2,
+          "text": "Rights of the data subject and deadlines"
+        },
+        {
+          "id": "observability-without-personal-data",
+          "level": 2,
+          "text": "Observability without personal data"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -16085,7 +16265,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/en/docs/privacidad-por-diseno-gdpr",
       "slug": "privacidad-por-diseno-gdpr"
     },
@@ -16106,44 +16286,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "incidents-and-blameless-postmortems",
-          "level": 1,
-          "text": "Incidents and blameless postmortems"
+          "id": "severity-decide-before-you-know",
+          "level": 2,
+          "text": "Severity: decide before you know"
         },
         {
-          "id": "roles-during-the-incident",
+          "id": "roles-who-does-what-during-an-incident",
           "level": 2,
-          "text": "Roles during the incident"
+          "text": "Roles: who does what during an incident"
         },
         {
-          "id": "severities-and-decisions",
+          "id": "communication-channel-cadence-and-updates",
           "level": 2,
-          "text": "Severities and decisions"
+          "text": "Communication: channel, cadence and updates"
         },
         {
-          "id": "a-worked-example",
+          "id": "mitigate-first-explain-later",
           "level": 2,
-          "text": "A worked example"
+          "text": "Mitigate first, explain later"
         },
         {
-          "id": "the-blameless-postmortem",
+          "id": "the-postmortem-what-it-must-contain",
           "level": 2,
-          "text": "The blameless postmortem"
+          "text": "The postmortem: what it must contain"
         },
         {
-          "id": "actions-with-owners-and-dates",
+          "id": "blame-human-error-and-a-blameless-culture",
           "level": 2,
-          "text": "Actions with owners and dates"
+          "text": "Blame, human error and a blameless culture"
+        },
+        {
+          "id": "from-actions-to-real-improvement",
+          "level": 2,
+          "text": "From actions to real improvement"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -16157,7 +16342,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/en/docs/gestion-incidentes-postmortems",
       "slug": "gestion-incidentes-postmortems"
     },
@@ -16178,49 +16363,44 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "secrets-and-keys-rotation-without-surprises",
-          "level": 1,
-          "text": "Secrets and keys: rotation without surprises"
+          "id": "why-the-secret-cannot-live-in-the-repository",
+          "level": 2,
+          "text": "Why the secret cannot live in the repository"
         },
         {
-          "id": "why-secrets-do-not-belong-in-the-repository",
+          "id": "workload-identity-before-static-secrets",
           "level": 2,
-          "text": "Why secrets do not belong in the repository"
+          "text": "Workload identity before static secrets"
         },
         {
-          "id": "vaults-and-managers",
+          "id": "dynamic-secrets-and-leases",
           "level": 2,
-          "text": "Vaults and managers"
+          "text": "Dynamic secrets and leases"
         },
         {
-          "id": "workload-identity-versus-static-secrets",
+          "id": "envelope-encryption-and-the-master-key",
           "level": 2,
-          "text": "Workload identity versus static secrets"
+          "text": "Envelope encryption and the master key"
         },
         {
-          "id": "rotation-with-two-active-keys",
+          "id": "rotation-without-cutting-the-service",
           "level": 2,
-          "text": "Rotation with two active keys"
+          "text": "Rotation without cutting the service"
         },
         {
-          "id": "encryption-keys-hierarchy-and-envelopes",
+          "id": "catching-leaks-before-they-become-incidents",
           "level": 2,
-          "text": "Encryption keys: hierarchy and envelopes"
+          "text": "Catching leaks before they become incidents"
         },
         {
-          "id": "auditing-and-leaks",
+          "id": "tools",
           "level": 2,
-          "text": "Auditing and leaks"
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -16234,7 +16414,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 11,
       "route": "/en/docs/gestion-secretos-claves",
       "slug": "gestion-secretos-claves"
     },
@@ -16771,9 +16951,9 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "mlops-taking-a-model-to-production",
-          "level": 1,
-          "text": "MLOps: taking a model to production"
+          "id": "a-model-is-code-data-and-configuration",
+          "level": 2,
+          "text": "A model is code, data and configuration"
         },
         {
           "id": "version-data-code-and-model-separately",
@@ -16781,34 +16961,34 @@
           "text": "Version data, code and model separately"
         },
         {
-          "id": "reproducible-training-and-the-registry",
+          "id": "from-experiment-to-registry",
           "level": 2,
-          "text": "Reproducible training and the registry"
+          "text": "From experiment to registry"
         },
         {
-          "id": "deploy-without-exposing-users-shadow-and-canary",
+          "id": "deploy-with-shadow-traffic-and-canaries",
           "level": 2,
-          "text": "Deploy without exposing users: shadow and canary"
+          "text": "Deploy with shadow traffic and canaries"
         },
         {
-          "id": "watching-for-drift",
+          "id": "watch-for-drift",
           "level": 2,
-          "text": "Watching for drift"
+          "text": "Watch for drift"
         },
         {
-          "id": "retrain-or-retire",
+          "id": "retrain-or-retire-decide-with-data",
           "level": 2,
-          "text": "Retrain or retire"
+          "text": "Retrain or retire: decide with data"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -16822,14 +17002,14 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 11,
       "route": "/en/docs/mlops-modelo-a-produccion",
       "slug": "mlops-modelo-a-produccion"
     },
     {
       "category": "tendencias",
-      "description": "What a CDN serves, what can run at the edge, how latency and caching divide the work, and when moving logic closer to users does not pay off.",
-      "figureCaption": "Serve from the nearest edge; the origin only when the cache misses",
+      "description": "What a CDN is good at, what can run at the edge, how latency and caching are split, and when moving logic closer to users does not pay off.",
+      "figureCaption": "Serve from the nearest edge; reach the origin only when the cache misses",
       "order": 8,
       "publishedAt": "2026-10-14",
       "tags": [
@@ -16843,49 +17023,59 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "edge-and-cdn-what-to-run-at-the-edge",
-          "level": 1,
-          "text": "Edge and CDN: what to run at the edge"
+          "id": "what-a-cdn-really-does",
+          "level": 2,
+          "text": "What a CDN really does"
         },
         {
-          "id": "what-a-cdn-serves-well",
+          "id": "where-latency-goes",
           "level": 2,
-          "text": "What a CDN serves well"
+          "text": "Where latency goes"
         },
         {
-          "id": "latency-against-cost",
+          "id": "the-cache-who-decides-how-long-a-copy-lasts",
           "level": 2,
-          "text": "Latency against cost"
+          "text": "The cache: who decides how long a copy lasts"
         },
         {
-          "id": "what-can-run-at-the-edge",
+          "id": "layers-edge-upper-tier-and-origin",
           "level": 2,
-          "text": "What can run at the edge"
+          "text": "Layers: edge, upper tier and origin"
         },
         {
-          "id": "invalidation-and-ttl",
+          "id": "what-to-run-at-the-edge",
           "level": 2,
-          "text": "Invalidation and TTL"
+          "text": "What to run at the edge"
         },
         {
-          "id": "consistency-across-nodes",
+          "id": "when-moving-logic-closer-does-not-pay",
           "level": 2,
-          "text": "Consistency across nodes"
+          "text": "When moving logic closer does not pay"
         },
         {
-          "id": "data-that-must-stay-at-the-origin",
+          "id": "a-case-personalising-a-front-page-without-losing-the-cache",
           "level": 2,
-          "text": "Data that must stay at the origin"
+          "text": "A case: personalising a front page without losing the cache"
         },
         {
-          "id": "when-the-edge-does-not-pay-off",
+          "id": "invalidation-the-hard-part-of-caching",
           "level": 2,
-          "text": "When the edge does not pay off"
+          "text": "Invalidation: the hard part of caching"
+        },
+        {
+          "id": "measuring-what-it-contributes",
+          "level": 2,
+          "text": "Measuring what it contributes"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
         },
         {
           "id": "checklist",
@@ -16899,7 +17089,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/en/docs/edge-computing-cdn",
       "slug": "edge-computing-cdn"
     },
@@ -18298,39 +18488,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "cloud-migration-the-six-rs-with-judgement",
-          "level": 1,
-          "text": "Cloud migration: the six Rs with judgement"
+          "id": "the-six-strategies-in-one-sentence-each",
+          "level": 2,
+          "text": "The six strategies in one sentence each"
         },
         {
-          "id": "the-six-options",
+          "id": "criterion-1-business-value-and-rate-of-change",
           "level": 2,
-          "text": "The six options"
+          "text": "Criterion 1: business value and rate of change"
         },
         {
-          "id": "criteria-for-assigning-each-application",
+          "id": "criterion-2-coupling-and-data",
           "level": 2,
-          "text": "Criteria for assigning each application"
+          "text": "Criterion 2: coupling and data"
         },
         {
-          "id": "a-worked-example",
+          "id": "criterion-3-running-cost-and-exit-cost",
           "level": 2,
-          "text": "A worked example"
+          "text": "Criterion 3: running cost and exit cost"
         },
         {
-          "id": "why-the-order-matters",
+          "id": "criterion-4-compliance-residency-and-risk",
           "level": 2,
-          "text": "Why the order matters"
+          "text": "Criterion 4: compliance, residency and risk"
+        },
+        {
+          "id": "wave-order-and-dependencies",
+          "level": 2,
+          "text": "Wave order and dependencies"
+        },
+        {
+          "id": "measure-before-and-after",
+          "level": 2,
+          "text": "Measure before and after"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
         },
         {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -18344,7 +18544,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 11,
       "route": "/en/docs/migracion-nube-6r",
       "slug": "migracion-nube-6r"
     },
@@ -18365,29 +18565,29 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "sessions-tokens-and-sso-what-to-choose-and-why",
-          "level": 1,
-          "text": "Sessions, tokens and SSO: what to choose and why"
+          "id": "server-session-the-state-stays-at-home",
+          "level": 2,
+          "text": "Server session: the state stays at home"
         },
         {
-          "id": "server-side-session",
+          "id": "self-contained-token-the-state-travels-with-the-client",
           "level": 2,
-          "text": "Server-side session"
+          "text": "Self-contained token: the state travels with the client"
         },
         {
-          "id": "self-contained-token",
+          "id": "expiry-rotation-and-revocation",
           "level": 2,
-          "text": "Self-contained token"
+          "text": "Expiry, rotation and revocation"
         },
         {
-          "id": "expiry-and-rotation",
-          "level": 2,
-          "text": "Expiry and rotation"
+          "id": "a-case-a-stolen-refresh-token",
+          "level": 3,
+          "text": "A case: a stolen refresh token"
         },
         {
-          "id": "sso-and-openid-connect",
+          "id": "sso-on-top-of-oauth-20-and-openid-connect",
           "level": 2,
-          "text": "SSO and OpenID Connect"
+          "text": "SSO on top of OAuth 2.0 and OpenID Connect"
         },
         {
           "id": "where-to-keep-tokens-in-the-browser",
@@ -18395,14 +18595,19 @@
           "text": "Where to keep tokens in the browser"
         },
         {
+          "id": "sessions-in-mobile-applications",
+          "level": 3,
+          "text": "Sessions in mobile applications"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
+        },
+        {
           "id": "common-mistakes",
           "level": 2,
           "text": "Common mistakes"
-        },
-        {
-          "id": "when-it-does-not-apply",
-          "level": 2,
-          "text": "When it does not apply"
         },
         {
           "id": "checklist",
@@ -18416,7 +18621,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 13,
       "route": "/en/docs/sesiones-tokens-sso",
       "slug": "sesiones-tokens-sso"
     },
@@ -20205,43 +20410,63 @@
     },
     {
       "category": "decisiones",
-      "description": "A service catalog with an owner, a state and a contract for every service, light governance rules, and an API lifecycle with dated deprecation and retirement.",
-      "figureCaption": "Every service has an owner, a state and a contract; obsolete APIs have a retirement date",
+      "description": "A service catalogue with an owner, a status and a contract per service, light governance rules and an API lifecycle with deprecation and retirement dates.",
+      "figureCaption": "Every service has an owner, a status and a contract; obsolete APIs have a retirement date",
       "order": 18,
       "publishedAt": "2026-10-14",
       "tags": [
-        "catalog",
+        "catalogue",
         "governance",
         "apis",
         "ownership"
       ],
-      "title": "Service catalog and API governance",
+      "title": "Service catalogue and API governance",
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "service-catalog-and-api-governance",
-          "level": 1,
-          "text": "Service catalog and API governance"
+          "id": "what-a-catalogue-answers",
+          "level": 2,
+          "text": "What a catalogue answers"
         },
         {
-          "id": "what-each-entry-holds",
+          "id": "the-minimum-data-for-each-service",
           "level": 2,
-          "text": "What each entry holds"
+          "text": "The minimum data for each service"
         },
         {
-          "id": "discovering-what-already-exists",
+          "id": "where-the-information-lives",
           "level": 2,
-          "text": "Discovering what already exists"
+          "text": "Where the information lives"
         },
         {
-          "id": "light-governance-not-bureaucracy",
+          "id": "statuses-and-what-they-imply",
           "level": 2,
-          "text": "Light governance, not bureaucracy"
+          "text": "Statuses and what they imply"
         },
         {
-          "id": "lifecycle-and-deprecation-with-dates",
+          "id": "light-governance-rules-that-are-checked",
           "level": 2,
-          "text": "Lifecycle and deprecation with dates"
+          "text": "Light governance: rules that are checked"
+        },
+        {
+          "id": "the-api-lifecycle",
+          "level": 2,
+          "text": "The API lifecycle"
+        },
+        {
+          "id": "who-decides-what",
+          "level": 2,
+          "text": "Who decides what"
+        },
+        {
+          "id": "a-case-retiring-the-billing-api",
+          "level": 2,
+          "text": "A case: retiring the billing API"
+        },
+        {
+          "id": "when-the-catalogue-is-not-worth-it",
+          "level": 2,
+          "text": "When the catalogue is not worth it"
         },
         {
           "id": "common-mistakes",
@@ -20249,9 +20474,9 @@
           "text": "Common mistakes"
         },
         {
-          "id": "when-it-does-not-apply",
+          "id": "tools",
           "level": 2,
-          "text": "When it does not apply"
+          "text": "Tools"
         },
         {
           "id": "checklist",
@@ -20265,14 +20490,14 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/en/docs/catalogo-servicios-gobierno-apis",
       "slug": "catalogo-servicios-gobierno-apis"
     },
     {
       "category": "decisiones",
-      "description": "Which questions architecture documentation must answer, how to choose its level of detail, keep it close to the code and measure whether anyone uses it.",
-      "figureCaption": "Document in levels, from general to specific, and remove what is outdated",
+      "description": "What architecture documentation must answer, how to pick its level of detail, keep it next to the code and measure whether anyone uses it.",
+      "figureCaption": "Document by levels, from general to specific, and remove what is out of date",
       "order": 19,
       "publishedAt": "2026-10-14",
       "tags": [
@@ -20286,39 +20511,49 @@
       "updatedAt": "2026-10-14",
       "headings": [
         {
-          "id": "documenting-architecture-so-someone-uses-it",
-          "level": 1,
-          "text": "Documenting architecture so someone uses it"
+          "id": "which-questions-it-must-answer",
+          "level": 2,
+          "text": "Which questions it must answer"
         },
         {
-          "id": "start-from-the-questions",
+          "id": "levels-of-detail-from-general-to-specific",
           "level": 2,
-          "text": "Start from the questions"
+          "text": "Levels of detail: from general to specific"
         },
         {
-          "id": "levels-of-detail",
+          "id": "decisions-the-record-that-outlives-the-team",
           "level": 2,
-          "text": "Levels of detail"
+          "text": "Decisions: the record that outlives the team"
         },
         {
-          "id": "close-to-the-code-and-versioned",
+          "id": "next-to-the-code-not-somewhere-else",
           "level": 2,
-          "text": "Close to the code, and versioned"
+          "text": "Next to the code, not somewhere else"
         },
         {
-          "id": "what-to-remove",
+          "id": "what-to-remove-and-how-to-know-it-has-expired",
           "level": 2,
-          "text": "What to remove"
+          "text": "What to remove, and how to know it has expired"
         },
         {
-          "id": "expiry-and-ownership",
+          "id": "an-entry-document-the-reading-path",
           "level": 2,
-          "text": "Expiry and ownership"
+          "text": "An entry document: the reading path"
         },
         {
-          "id": "measure-whether-it-helps",
+          "id": "measuring-whether-anyone-uses-it",
           "level": 2,
-          "text": "Measure whether it helps"
+          "text": "Measuring whether anyone uses it"
+        },
+        {
+          "id": "a-case-a-newcomers-first-days",
+          "level": 2,
+          "text": "A case: a newcomer's first days"
+        },
+        {
+          "id": "what-not-to-document",
+          "level": 2,
+          "text": "What not to document"
         },
         {
           "id": "common-mistakes",
@@ -20326,9 +20561,9 @@
           "text": "Common mistakes"
         },
         {
-          "id": "when-it-does-not-apply",
+          "id": "tools",
           "level": 2,
-          "text": "When it does not apply"
+          "text": "Tools"
         },
         {
           "id": "checklist",
@@ -20342,7 +20577,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 4,
+      "readingMinutes": 12,
       "route": "/en/docs/documentar-arquitectura-util",
       "slug": "documentar-arquitectura-util"
     }

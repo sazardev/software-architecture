@@ -13,74 +13,202 @@ updatedAt: 2026-10-14
 figureCaption: 'Six strategies, one judgement per application'
 ---
 
-# Cloud migration: the six Rs with judgement
+Migrating to the cloud is not a single decision about the whole portfolio. It is a collection of small
+decisions, one per application, and each carries a different cost, risk and benefit. The thesis of this
+article is that the choice of strategy should come from four questions about each application (what it
+contributes to the business, how much it changes, how coupled it is and what it costs to keep running),
+not from a general preference for "rewriting everything" or for "moving it as it is".
 
-"We are moving to the cloud" is not a strategy. It is a direction. Each application in a portfolio needs a different answer:
-move it as it is, adapt it a little, rewrite it, replace it with a product, switch it off, or leave it where it is. The six Rs are
-a vocabulary for naming those options, popularized by a 2016 AWS article. The value is not in the list but in
-the judgement used to assign each application to one of them.
+The six-strategy model, known as the six Rs, is widely used in industry and in cloud providers'
+documentation. It works as a shared vocabulary: it lets the team, leadership and the provider talk about the
+same thing. It is not a recipe, and it is best used as a list of options that each need a justification, not
+as an automatic classification procedure.
 
-## The six options
+<Callout tone="info" title="Migrating is not the same as modernising">
+  A rehost can leave an application exactly as it was, with the same defects, on another machine.
+  That has value if the goal was to leave a data centre by a deadline. If the goal was lower cost or
+  faster delivery, rehosting does not solve that on its own.
+</Callout>
 
-- **Rehost.** Move the application to virtual machines in the cloud without changing its code. It is the fastest path and the one
-  that takes least advantage of the cloud: the system stays the same, only where it runs changes.
-- **Replatform.** Swap one part of the platform for a managed service, such as a managed database, without touching business logic.
-  It is the usual middle ground.
-- **Refactor.** Redesign the application to take advantage of the cloud, for example by splitting it into components that scale on their
-  own. It has the highest value and the highest risk.
-- **Repurchase.** Replace the application with a third-party product, such as a CRM instead of an in-house one.
-- **Retire.** Switch it off. It is the most underrated option: every retired application stops costing maintenance, security work and time.
-- **Retain.** Keep it where it is for now, because moving it does not pay off yet or because dependencies block it.
+## The six strategies in one sentence each
 
-## Criteria for assigning each application
+- **Rehost** (move as is, sometimes called _lift and shift_): the application moves to cloud infrastructure
+  without code changes. It is the fastest path and introduces the least functional risk, and it offers the
+  least improvement.
+- **Replatform** (move with adjustments): platform components change without touching the business logic, for
+  example moving from a database installed on a virtual machine to a managed database.
+- **Repurchase** (replace with a product): the in-house application is dropped and a third-party service covers
+  the same function, such as a hosted CRM instead of an internal one.
+- **Refactor** or **re-architect** (redesign): the architecture changes to take advantage of the cloud, for
+  example by splitting a monolith or adopting managed queues and storage. It is the most expensive option and
+  the one that can add the most value if the application changes often.
+- **Retire**: the application is switched off because nobody uses it or another system covers its function. It
+  is the cheapest strategy and the least used, because it requires deciding that something is no longer needed.
+- **Retain** (keep for now): it stays where it is. The reasons may be compliance constraints, a migration that
+  does not pay back, or dependence on hardware that cannot move.
 
-Four criteria, looked at together, drive the decision: the business value of the application, its current operating cost, the risk of
-changing it, and its dependencies. A high-value application that needs heavy change is a refactor candidate; a low-value one nobody uses
-should be retired; a medium-value one with an equivalent managed service calls for replatforming.
+The six are not exclusive over time. An application can start as a rehost to leave a data centre within a
+contract's term, and later move to replatform or refactor when the team has capacity. What matters is recording
+the decision and its next step.
 
-Dependencies often decide more than the rest. An application that reads data from a system in the data centre cannot move to the cloud without
-a strategy for that data; moving it first, without its neighbour, can create latency or transfer costs nobody planned for.
+## Criterion 1: business value and rate of change
 
-## A worked example
+The first thing to know about an application is not its technology but how much it matters and how often it
+changes. An application that carries revenue and changes every week justifies an investment in redesign. An
+internal lookup tool that has not changed in two years probably only needs to move, or someone should decide to
+retire it.
 
-A portfolio of 40 applications. A simple analysis gives this split: 12 rehost, 8 replatform, 4 refactor, 5 repurchase, 6 retire and 5 retain.
-The six retirements remove 15 percent of the applications, but their operating cost may be smaller, so the real saving depends on what each one
-costs, not on how many there are. A common mistake is to measure the migration by the number of applications moved; what matters is the total
-cost and the risk of those that move.
+A simple way to sort the portfolio is to place each application on two axes: business value on one, frequency of
+change on the other. Applications with high value and frequent change are candidates for refactor, because each
+architectural improvement pays off over many deliveries. Those with low value and no change are candidates for
+retirement or repurchase. The rest are split between rehost and replatform depending on coupling, which is the
+next question.
 
-The four refactors concentrate most of the work and the risk. It helps to do them after the fast migrations: by then the team has the platform,
-observability and deployment processes working, and design changes rest on firmer ground.
+A common mistake is deciding by age. An old application can be the most valuable one in the company, and a new
+one can be a prototype nobody uses. Age tells you about technical risk, not value.
 
-## Why the order matters
+## Criterion 2: coupling and data
 
-Moving the easy things first builds learning and confidence, but it must not leave the hard ones for ever. A reasonable order is: retire what is not
-needed, move what does not change, replatform what benefits from managed services, and refactor what justifies it. Starting with the most complex
-refactor often stalls the whole programme.
+Coupling determines how hard it is to move an application without breaking it. An application that depends on a
+specific network resource, on an internal directory or on a database shared with three other systems does not
+move alone. It moves with everything around it, and the migration plan has to include those neighbours.
+
+Data is the most delicate part. Moving a database means deciding when it is copied, how it stays in sync during
+the transition and how you verify the result is correct. The strategy for
+[database migrations without downtime](/docs/migraciones-bd-sin-downtime) describes the expand and contract
+patterns that make that move possible without stopping the service. If the application cannot tolerate that
+procedure, a rehost with a managed database may not be viable, and the decision leans towards retain or towards
+a phased plan.
+
+Mapping dependencies is a task that is often underestimated. A diagram of data flows and calls between systems,
+even an approximate one, prevents a Monday migration from leaving a monthly report that nobody had documented
+without its input data.
+
+## Criterion 3: running cost and exit cost
+
+Moving to the cloud changes the cost of operation, but not always downwards. Rehosting an underused machine can
+cost more than the hardware it replaces, because the cloud charges for what is reserved, not only for what is
+used. That is why each strategy should come with an estimate of monthly cost before and after, in the same units.
+
+Exit cost also deserves attention. An application that uses very specific managed services from one provider is
+cheaper to run, but more expensive to move later. That is not an argument against those services; it is an
+argument for deciding with open eyes. The analysis in [exit from the cloud](/docs/salida-de-la-nube) and the one
+on [cost as an attribute](/docs/finops-costo-como-atributo) help put that risk into numbers.
+
+## Criterion 4: compliance, residency and risk
+
+Some applications cannot move to any region or any provider for legal or contractual reasons. Personal data with
+residency requirements, systems regulated by financial or health sectors, and contracts that forbid subcontracting
+certain processing are constraints that decide the strategy before any technical criterion does.
+
+These constraints must be known at the start, not at the end. An application discovered to be non-migratable in
+the middle of a wave forces a rewrite of the plan. The way to avoid that is to include each application's compliance
+obligations in the inventory, with the owner who confirms them.
+
+## Wave order and dependencies
+
+Moving the whole portfolio at once is not realistic. It is grouped into waves, and the order of the waves is set by
+dependencies and risk, not by size. A good practice is to start with low-risk applications that let the team learn
+the procedure (how the network is built, how secrets are handled, how monitoring works), and leave for later the
+ones with many neighbours or critical data.
+
+The diagram below summarises how the strategy is chosen for one application. It is a simplification: real questions
+have nuances, but the order of decisions is what matters.
+
+```mermaid
+flowchart TD
+  A["Application in the inventory"] --> B{"Can it be retired?"}
+  B -- "Yes" --> R["Retire"]
+  B -- "No" --> C{"Do compliance constraints prevent moving it?"}
+  C -- "Yes" --> D["Retain, with periodic review"]
+  C -- "No" --> E{"Is there a product that covers the function?"}
+  E -- "Yes" --> P["Repurchase"]
+  E -- "No" --> F{"Does it change often and carry high value?"}
+  F -- "Yes" --> G["Refactor"]
+  F -- "No" --> H{"Can the platform be adjusted without touching code?"}
+  H -- "Yes" --> I["Replatform"]
+  H -- "No" --> J["Rehost"]
+```
+
+Branches that send an application to retain or rehost should carry a review date. An application that stays as a
+rehost with no improvement plan turns, after a few years, into debt shaped like a data centre in the cloud.
+
+## Measure before and after
+
+A migration without comparable metrics proves nothing. Before moving an application, take a baseline: availability,
+latency at the percentiles that matter, monthly cost, deployment time and number of incidents. After the move, the
+same metrics over the same observation window decide whether the migration was worth it.
+
+The usual trap is measuring only cost. A rehost can worsen latency or reliability while saving on the invoice, and
+the balance would look positive until the incident count corrects it. Service metrics belong in the same table as
+financial ones.
+
+A fictional case shows how the criteria combine. Suppose a company with three applications. The first is an
+invoice portal of high business value that changes rarely and depends on a shared file service used by four other
+systems: a reasonable strategy is replatform, with the database moved to a managed service and the file service
+migrated in the same wave as its neighbours, because moving the portal alone would break the reports. The second is
+an internal satisfaction survey tool that a vendor offers as a service: the criteria point to repurchase, and the
+decision depends on comparing the annual cost of the product with the cost of maintaining the in-house version,
+measured in the same units. The third is a legacy bank reconciliation system that processes regulated data, and
+whose contract requires the finance department to keep it in its own data centre. The decision here is retain, but
+with a review date two years out, when it is reassessed whether the contract still applies and whether keeping it
+outside the cloud still costs an acceptable amount.
+
+What these three cases share is that the decision does not come from the technology but from the combination of
+value, coupling, cost and constraints. Three applications on the same stack can have different strategies, and that
+is correct.
+
+Presenting the strategy to leadership means translating each decision into three quantities: annual cost before and
+after, risk reduced or accepted, and time to benefit. A table with one row per application, its strategy, its justification
+and its review date persuades more than a general speech about the cloud, because it allows concrete cases to be discussed.
+It is also worth acknowledging what migration does not solve. Moving an application does not make it faster to change if its
+code is still coupled, and it does not reduce cost if nobody reviews oversized instances after the move. Those two tasks,
+optimising after migrating and reviewing sizing, belong in the plan with an owner, not as promises that appear only in the
+final presentation.
+
+## Tools
+
+- **An application inventory** with owner, dependencies, data, compliance obligations and current cost. Without an
+  inventory there is no judgement.
+- **A dependency map** built from traces, network records or a survey with the teams, even if it is incomplete at
+  first.
+- **Cost estimators** from the provider, used with the same units as the current invoice.
+- **A rollback plan** per wave, describing how to return to the previous environment if the migration fails.
+
+Discovery tools help, but they do not replace the conversation with whoever knows the application. A complete
+inventory without identified owners is just a list.
 
 ## Common mistakes
 
-- **Rehosting everything out of haste.** You pay for the cloud with the data-centre bill and get no benefit.
-- **Forgetting to retire.** A portfolio migrated without retirements keeps applications nobody uses.
-- **Assigning without data.** Without a current cost per application, any strategy is an opinion.
-- **Treating migration as a project with an end date.** Migrated applications need operation, cost control and governance from day one.
-
-## When it does not apply
-
-For a single small application, a formal analysis of the six Rs is excessive: decide and measure.
+- **Migrating everything as a rehost by default.** It is quick and cheap to plan, and it leaves the portfolio as
+  expensive and as hard to change as before, now with a new provider.
+- **Deciding without a dependency inventory.** The first wave discovers neighbours nobody mentioned, and the plan is
+  rewritten on the fly.
+- **Ignoring exit cost.** Managed services save operations effort, but the cost of moving them later does not appear
+  in the migration budget.
+- **Treating retain as a failure.** Keeping an application where it is can be the right decision if moving it costs
+  more than it is worth. What matters is that the decision has a review date.
+- **Measuring only cost.** A migration that saves money and worsens reliability is not a success.
+- **Forgetting compliance until the last wave.** A constraint found late forces a rewrite of the earlier waves that
+  depended on the same region or provider.
 
 ## Checklist
 
-- [ ] Is each application's business value, current cost and change risk recorded?
-- [ ] Are data and network dependencies identified before anything moves?
-- [ ] Have retirement candidates been identified, and have they been retired?
-- [ ] Are refactors planned after observability and stable deployments exist?
-- [ ] Is there an exit plan, as described in the article on the cost of leaving the cloud?
-
-**Further reading:** [what it would cost to leave your cloud](/docs/salida-de-la-nube) covers exit cost, and
-[cloud deployment models](/docs/modelos-de-despliegue-nube) explains the service and deployment options that come up when choosing each strategy.
+- [ ] Each application has an owner, business value, rate of change and documented dependencies.
+- [ ] Each application has a chosen strategy with a written justification, not only a label.
+- [ ] Compliance and residency constraints are confirmed before the wave is planned.
+- [ ] There is a baseline of cost, availability, latency and deployment before anything moves.
+- [ ] Retain and rehost decisions carry a review date.
+- [ ] Each wave has a rollback plan that has been rehearsed, and a named person who decides whether to proceed.
+- [ ] The exit cost of managed services has been estimated and explicitly accepted.
 
 ## Sources
 
-- Peter Mell and Timothy Grance, _The NIST Definition of Cloud Computing_, NIST SP 800-145 (2011).
-- Mark Richards and Neal Ford, _Fundamentals of Software Architecture_ (2020).
-- Stephen Orban, "6 Strategies for Migrating Applications to the Cloud" (2016).
+Checked in October 2026. The names and definitions of the six strategies were checked against secondary sources from
+cloud providers and consultancies. We did not locate the original publication that introduced them or its date, so
+this article does not attribute the model to a specific author. The definition of cloud and its deployment models
+follows the NIST glossary.
+
+- NIST SP 800-145, _The NIST Definition of Cloud Computing_ (2011), for the cloud vocabulary.
+- Migration strategy documentation from the main cloud providers (consulted as secondary sources; check the current
+  version before citing it).

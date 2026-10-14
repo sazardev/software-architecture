@@ -13,80 +13,140 @@ updatedAt: 2026-10-14
 figureCaption: 'Primero los patrones de acceso; después el almacén'
 ---
 
-# Elegir base de datos: patrones de acceso primero
+La pregunta «¿PostgreSQL o MongoDB?» llega casi siempre demasiado pronto. Se formula antes de saber qué se va a leer, con qué frecuencia, con qué latencia y con qué garantías, y la respuesta acaba decidida por la familiaridad del equipo o por una lectura de moda. El resultado habitual es una base de datos que no encaja con las consultas reales y que hay que forzar durante años con índices, cachés y parches.
 
-La pregunta habitual, «¿qué base de datos usamos?», empieza por el final. Una base de datos es una respuesta a un
-conjunto de consultas y escrituras, y esas consultas casi nunca están escritas en el equipo cuando se decide. El
-resultado son sistemas con una base relacional forzada a hacer búsqueda de texto, o un almacén documental que
-necesita joins en cada pantalla. Antes de elegir, hay que escribir lo que el sistema va a hacer.
+La tesis de este artículo es que **el almacén se elige a partir de los patrones de acceso, no al revés**. Un patrón de acceso es una pregunta que el sistema hace repetidamente (buscar pedidos por cliente en orden cronológico, contar eventos por hora, encontrar productos por texto) junto con su frecuencia y su tolerancia a la latencia. Si esas preguntas están escritas, la mayoría de las decisiones de almacenamiento dejan de ser opiniones y se vuelven comprobables.
 
-## Primero las consultas
+## Empezar por la lista de consultas
 
-Para cada caso de uso importante, anota cuatro cosas: qué se lee, cómo se busca (por clave, por rango, por texto,
-por relación), con qué frecuencia y qué latencia se necesita. Anota también las escrituras: cuántas por segundo, si
-deben ser atómicas con otras, y si el dato cambia a menudo o solo se añade.
+El ejercicio previo es una tabla con cada operación que el sistema necesita. Para cada una se anota qué lee, qué escribe, con qué frecuencia (por segundo, por hora, por día), cuánto tiempo puede tardar y si debe ver los datos recién escritos. Esa tabla suele tener entre diez y treinta filas en un sistema de tamaño medio, y basta con eso para descartar la mayoría de opciones.
 
-Una lista de veinte patrones concretos suele revelar el perfil. Si la mayoría son lecturas por clave con latencia de
-milisegundos, el almacén es casi un caché persistente. Si son joins entre cinco entidades con transacciones, es una base
-relacional. Si son búsquedas por texto con relevancia, es un motor de búsqueda.
+Un ejemplo sencillo. Un servicio de reservas necesita tres operaciones: crear una reserva que no puede solaparse con otra en la misma sala, consultar las reservas de un usuario ordenadas por fecha, y calcular la ocupación de cada sala por semana. La primera exige una restricción de unicidad que garantice la ausencia de solapes. La segunda es una consulta por clave de usuario con orden. La tercera es una agregación que puede tolerar algo de retraso. Ya con esas tres filas se ven tres tipos de carga distintos, y no hay una sola base de datos ideal para todos.
 
-## Tipos de almacén y su patrón natural
+La tabla también revela lo que no hay que optimizar. Si el sistema escribe cien veces al día y lee una vez al mes, no compensa un almacén de escritura de alto rendimiento. Si el 90 % de las lecturas son por una misma clave, un índice simple resuelve el problema sin cambiar de tecnología.
 
-- **Relacional.** Esquema estable, relaciones y transacciones entre entidades. Edgar Codd propuso el modelo en 1970 y
-  sigue siendo el punto de partida razonable.
-- **Documental.** Un agregado completo se lee y escribe de una vez, sin joins. Encaja cuando el documento es la unidad
-  de acceso.
-- **Clave-valor.** Lecturas y escrituras por una clave conocida, a gran escala. Pierde todo lo que no sea búsqueda por clave.
-- **Columnar.** Escaneos analíticos sobre muchas filas y pocas columnas. Es el terreno de la analítica.
-- **Grafo.** Recorridos de relaciones de profundidad variable, como rutas de dependencia o detección de fraude en redes.
-- **Búsqueda.** Texto con ranking, sinónimos y facetas. Casi nunca es la fuente de verdad: se alimenta desde otra base.
+## Qué dimensiones importan
 
-## Cuándo compensa la persistencia políglota
+Hay cuatro dimensiones que cambian la elección de forma decisiva, y conviene anotarlas para cada operación.
 
-Usar varios almacenes significa que el dato vive en más de un sitio. Compensa cuando un
-patrón tiene requisitos que el almacén principal no cumple con un coste razonable, como búsqueda con ranking sobre
-millones de documentos. No compensa por moda ni porque «cada servicio debe tener su base».
+La primera es la **forma de la consulta**. Si las preguntas cruzan entidades, con filtros arbitrarios y uniones, un modelo relacional da flexibilidad. Si siempre se accede por una clave conocida, un almacén clave-valor es más simple y más rápido. Si la consulta es por texto con relevancia, aparece un índice de búsqueda como pieza propia, como se explica en [búsqueda en la aplicación](/docs/busqueda-en-aplicacion).
 
-## Un ejemplo con cifras
+La segunda es el **patrón de escritura**. Un flujo de eventos append-only, como lecturas de sensores o clics, se parece poco a una actualización de fila con bloqueos. Almacenes pensados para series temporales o para escritura masiva tienen ventaja real en ese caso, y una base relacional puede necesitar particionado antes de tiempo.
 
-Un catálogo con 5 millones de productos, 2.000 búsquedas por segundo en pico y actualizaciones de precio de 200 por
-segundo. Con una base relacional y un índice de texto completo, las búsquedas deben soportar la carga sin tocar las
-escrituras. Si la base responde a 150 búsquedas por segundo por nodo, hacen falta 14 nodos de lectura para 2.000. Un
-motor de búsqueda dedicado suele necesitar menos nodos para esa carga, pero añade un segundo almacén que
-sincronizar: si la sincronización va con 30 segundos de retraso, un precio cambiado puede verse durante ese tiempo. La
-decisión depende de si ese retraso es aceptable para el negocio, no de la tecnología.
+La tercera es la **consistencia requerida**. Un saldo o una plaza de aforo limitado necesitan garantías fuertes; una lista de recomendaciones puede ser eventualmente consistente. Este punto conecta con el teorema CAP y con el modelo PACELC, que describen qué se sacrifica cuando la red falla o cuando se busca latencia: se explica con detalle en [CAP y PACELC](/docs/cap-pacelc). Y la capacidad de transacciones multi-fila, con las propiedades ACID, se trata en [datos, ACID y aislamiento](/docs/datos-acid-y-aislamiento).
 
-## Costo operativo
+La cuarta es el **volumen y el crecimiento**. Un conjunto de datos que cabe en memoria de un nodo tiene opciones que uno de varios terabytes no tiene. Dimensionar con números reales (filas esperadas dentro de tres años, tamaño medio, tasa de crecimiento) evita elegir una arquitectura de escala para un problema que no existe.
 
-Cada almacén añade copias de seguridad, monitorización, actualizaciones, perfiles de rendimiento y personas que lo
-entienden. El costo de operar tres tipos de base de datos suele ser mayor que el de cualquier diferencia de rendimiento.
-Por eso la regla práctica es empezar con una base relacional bien usada y añadir un almacén cuando un patrón concreto
-lo exija con datos.
+## Familias de almacenes y para qué sirven
+
+No hace falta memorizar productos. Basta con conocer las familias y sus compromisos, porque cada familia resuelve bien un tipo de consulta y mal otros.
+
+| Familia            | Fuerte en                                                  | Débil en                                                  | Ejemplo típico                          |
+| ------------------ | ---------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------- |
+| Relacional         | Transacciones, joins, restricciones, consultas ad hoc      | Escalado horizontal de escrituras sin particionar         | Pedidos, cuentas, inventario            |
+| Documento          | Objetos con forma variable, lectura de agregados completos | Consultas que cruzan documentos, integridad entre ellos   | Catálogos, perfiles, configuraciones    |
+| Clave-valor        | Acceso por clave con latencia muy baja                     | Consultas por atributos distintos de la clave             | Sesiones, caché, contadores             |
+| Columnar analítico | Agregaciones sobre muchas filas y pocas columnas           | Escrituras pequeñas y frecuentes, actualizaciones de fila | Informes, métricas históricas           |
+| Búsqueda de texto  | Relevancia, coincidencias parciales, facetas               | Fuente de verdad transaccional                            | Buscador del sitio, registros de logs   |
+| Grafo              | Recorridos de relaciones de profundidad variable           | Agregaciones masivas sobre todo el conjunto               | Detección de fraude, redes de contactos |
+| Series temporales  | Escritura continua de muestras con tiempo                  | Relaciones entre entidades                                | Telemetría, sensores, bolsa             |
+
+La tabla es una orientación, no un veredicto. Muchas bases modernas cubren varias familias: un relacional con tipo documento, o una base con índices de texto integrados. La pregunta útil no es qué producto tiene más funciones, sino qué compromisos asume el equipo cuando lo opera a escala real.
+
+## Persistencia políglota: cuándo compensa
+
+La persistencia políglota consiste en usar más de un tipo de almacén en el mismo sistema, cada uno para lo que mejor hace. Es una buena idea cuando hay cargas con perfiles claramente distintos, y una mala idea cuando se adopta por reflejo.
+
+```mermaid
+flowchart LR
+  API["Servicio de pedidos"] --> R["Relacional: pedidos y pagos"]
+  API --> C["Caché clave-valor: sesiones"]
+  R -->|eventos de cambio| Q["Cola de eventos"]
+  Q --> S["Índice de búsqueda"]
+  Q --> A["Almacén analítico"]
+```
+
+El diagrama muestra el patrón habitual: el relacional es la fuente de verdad transaccional, y los demás almacenes son **derivados**, alimentados por eventos. Esta separación es la clave. Si cada almacén es fuente de verdad de algún dato, el sistema tiene dos verdades que tarde o temprano discrepan. Si todos son derivados de una fuente, un almacén puede reconstruirse desde la fuente.
+
+La persistencia políglota compensa cuando una carga concreta no cabe en el almacén principal y el coste de mantenerla separada es menor que el de forzarla. Un buscador de texto que el relacional resuelve con `LIKE` y que deja de responder en medio segundo es un buen candidato. Un contador de visitas que escribe miles de veces por segundo también.
+
+No compensa cuando el equipo tiene solo un caso de uso y lo mete en un segundo almacén por si acaso. Cada almacén añade copias de datos, pipelines de sincronización, monitorización, backups, pruebas de restauración y una persona que sepa operarlo. Ese coste aparece en la factura, en las guardias y en la velocidad de cambio.
+
+<Callout tone="warning" title="Derivado no es lo mismo que fuente">
+  Un índice o una caché pueden perderse y reconstruirse. Una base de datos que alguien tomó por
+  fuente de verdad no puede reconstruirse sin pérdida. Antes de añadir un almacén, pregunta cuál de
+  los dos será la verdad cuando discrepen.
+</Callout>
+
+## Lo que cuesta operar cada almacén
+
+Elegir un almacén es elegir cómo se opera durante años. Hay cinco costes que conviene estimar antes de decidir, porque suelen quedar fuera de las comparaciones de rendimiento.
+
+El primero son los **backups y la restauración**. Hacer copias es sencillo; comprobar que la restauración funciona en el tiempo objetivo es otra cosa. Cada almacén tiene su procedimiento, su tiempo de recuperación y su modo de fallo.
+
+El segundo son las **migraciones de esquema**. Un relacional exige migraciones planificadas, con sus riesgos de bloqueo. Un documento parece libre de esquema, pero el código sigue dependiendo de una forma que cambia, y eso también requiere migración, aunque sea en la aplicación. Los patrones para cambiar esquemas sin cortar el servicio se explican en [migraciones de base de datos sin downtime](/docs/migraciones-bd-sin-downtime).
+
+El tercero es el **escalado**. Escalar lectura con réplicas suele ser sencillo; escalar escritura exige particionar, y el particionado condiciona el modelo de datos desde el principio. Elegir una clave de partición mal hace que todas las escrituras caigan en un mismo nodo, y cambiarla después implica reescribir datos.
+
+El cuarto es el **conocimiento del equipo**. Un almacén que nadie sabe ajustar tiene un coste real aunque su licencia sea gratuita. Diagnosticar una consulta lenta, leer un plan de ejecución y entender las garantías de consistencia son habilidades que se acumulan, y que se pierden con la rotación.
+
+El quinto es la **portabilidad**. Algunos servicios gestionados ofrecen comodidad a cambio de atar el sistema a sus APIs y a sus límites. Eso no es malo por sí mismo, pero debe ser una decisión consciente, con el coste de salida anotado.
+
+## Modelar para el acceso, no para la teoría
+
+Cada almacén premia un modelo distinto, y forzar el modelo de un almacén en otro es la fuente de muchos problemas. En un relacional, la normalización protege la integridad y las consultas flexibles se pagan con joins. En un documento, desnormalizar para leer en una sola operación es lo habitual, y el precio es duplicar datos que deben mantenerse sincronizados. En clave-valor, la clave lo es todo: si la consulta no puede expresarse como una clave o un prefijo, el almacén no sirve.
+
+La práctica que funciona es escribir el modelo a partir de las consultas de la tabla inicial. Si la consulta «pedidos de un cliente en orden cronológico» es frecuente, la clave de ordenación y el índice se diseñan para ella. Si «pedidos de hoy por estado» es frecuente, hay que decidir si se resuelve con un índice compuesto o con una vista derivada. Cada decisión queda ligada a una consulta concreta, y cuando la consulta cambia, la decisión se revisa.
+
+Un error habitual es diseñar la base de datos antes que la API. Eso produce modelos que reflejan la estructura interna y no las preguntas reales. Empezar por las operaciones que el usuario realiza obliga a que el modelo responda a ellas.
+
+### Un caso: reservas que no pueden solaparse
+
+Volvamos al servicio de reservas. La operación más delicada es la de crear una reserva en una sala sin solapes. Un almacén que solo ofrece consistencia eventual permite que dos usuarios reserven la misma franja a la vez si las comprobaciones se hacen en réplicas distintas. La solución natural en un relacional es una restricción que impida el solape dentro de la misma transacción, o una exclusión de rangos temporales si el motor la soporta. En un almacén clave-valor, la alternativa es una clave compuesta por sala y franja horaria, con una escritura condicional que falle si la clave ya existe.
+
+Cada solución protege el invariante a costa de algo distinto. La restricción relacional es fácil de razonar y cuesta latencia de escritura en la sala más demandada. La clave compuesta es rapidísima, pero obliga a discretizar el tiempo (por ejemplo, en bloques de media hora) y a decidir qué ocurre con reservas que cruzan bloques. Ninguna opción es la correcta en abstracto: depende de si las franjas son fijas, de cuántas reservas simultáneas hay en la sala y de cuánto cuesta un overbooking frente a un rechazo.
+
+La ocupación semanal, en cambio, puede vivir en un almacén analítico o en una vista derivada que se actualiza con retraso. Aquí la latencia de unos minutos no tiene consecuencias para nadie, y hacerla síncrona encarecería la escritura sin ningún beneficio. Este caso ilustra por qué una sola base de datos rara vez es la respuesta para todo el servicio: cada operación tiene un invariante distinto, y el almacén debe proteger el invariante que importa en esa operación.
+
+## Herramientas
+
+La elección concreta depende del equipo, del proveedor y del volumen, y no hay una respuesta universal. Para la mayoría de aplicaciones de negocio, una base relacional con buen soporte de índices, transacciones y réplicas cubre la fuente de verdad y gran parte de las consultas. Un almacén clave-valor para caché y sesiones, un índice de búsqueda para texto y un almacén analítico para informes se añaden cuando la medición lo justifica, no antes.
+
+Antes de comparar productos, conviene medir. Una prueba de carga con las consultas de la tabla inicial, con datos de volumen realista, dice más que cualquier comparativa publicada. Y conviene comprobar los límites reales del servicio elegido: tamaño máximo de fila, número de conexiones, límites de tasa y comportamiento bajo fallo de un nodo.
+
+<Callout tone="tip" title="Mide con tus consultas">
+  Carga la base con datos de volumen esperado para dentro de dos años y ejecuta las diez consultas
+  más frecuentes. Si una de ellas supera el objetivo de latencia, ya sabes qué modelo o qué índice
+  falta, sin cambiar de tecnología.
+</Callout>
 
 ## Errores frecuentes
 
-- **Elegir por popularidad.** La base que todos usan no conoce tu patrón de acceso.
-- **Forzar joins en documentos.** Si cada lectura necesita tres colecciones, el modelo está al revés.
-- **Tratar la búsqueda como almacén principal.** Un índice se reconstruye; la fuente de verdad no debe depender de él.
+Elegir por moda o por familiaridad sin consultar la lista de operaciones es el error más común. El resultado es un almacén que funciona en la demo y se degrada con el uso real.
 
-## Cuándo no aplica
+Usar un almacén de escritura masiva para datos que se leen con joins complejos obliga a reconstruir relaciones en la aplicación, con código frágil y lento.
 
-Con pocas tablas y carga modesta, una sola base relacional resuelve casi todo. Un análisis profundo compensa
-cuando el volumen, la forma de los datos o la latencia cambian en un orden de magnitud.
+Añadir un segundo almacén sin definir cuál es la fuente de verdad produce datos que discrepan sin que nadie sepa cuál es el correcto.
+
+Diseñar la clave de partición sin mirar el patrón de escritura lleva a puntos calientes, con un nodo saturado mientras el resto está ocioso.
+
+Subestimar la operación (backups, restauración, migraciones, guardias) hace que la elección se tome por el rendimiento y se pague con incidentes.
 
 ## Checklist
 
-- [ ] ¿Tienes una lista de consultas y escrituras con frecuencia y latencia?
-- [ ] ¿Cada almacén nuevo responde a un patrón que el principal no cubre con coste razonable?
-- [ ] ¿Está claro cuál es la fuente de verdad y cuáles son las copias derivadas?
-- [ ] ¿Sabes cuánto retraso de sincronización es aceptable entre almacenes?
-- [ ] ¿El equipo puede operar cada almacén que propones?
-
-**Para profundizar:** [datos, ACID y aislamiento](/docs/datos-acid-y-aislamiento) explica qué garantías ofrece cada tipo de
-base de datos, y [caching, colas y streaming](/docs/caching-colas-streaming) trata las copias derivadas y su sincronización.
+- Existe una lista de operaciones con lectura, escritura, frecuencia, latencia tolerada y necesidad de consistencia.
+- El volumen esperado a dos o tres años está estimado con números, no con intuiciones.
+- Cada almacén nuevo tiene una justificación medida, no hipotética.
+- Hay una fuente de verdad clara por cada dato, y los almacenes derivados pueden reconstruirse desde ella.
+- La clave de partición se eligió mirando el patrón de escritura y se revisó con una prueba de carga.
+- El procedimiento de restauración se ha probado y tiene un tiempo medido.
+- Las migraciones de esquema tienen un plan sin bloqueo prolongado.
+- El equipo tiene personas que saben operar el almacén, o hay un plan para adquirirlas.
+- El coste de salida del proveedor está anotado si se usa un servicio gestionado.
 
 ## Fuentes
 
-- Edgar F. Codd, "A Relational Model of Data for Large Shared Data Banks", _Communications of the ACM_ (1970).
-- Pramod J. Sadalage y Martin Fowler, _NoSQL Distilled_ (2012).
-- Martin Kleppmann, _Designing Data-Intensive Applications_ (2017).
+- Martin Kleppmann, _Designing Data-Intensive Applications_ (O'Reilly, 2017), para los compromisos entre modelos de datos, replicación y particionado.
+- Edgar F. Codd, «A Relational Model of Data for Large Shared Data Banks» (1970), para el modelo relacional. La cita se usa por su contenido general; no se comprobó contra el texto original en este artículo.
+
+Consultadas en octubre de 2026. Las familias de almacenes se describen por sus compromisos típicos, no por productos concretos, que cambian con frecuencia; las capacidades de cada producto deben verificarse en su documentación vigente antes de decidir.

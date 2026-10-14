@@ -1,6 +1,6 @@
 ---
 title: 'Edge and CDN: what to run at the edge'
-description: 'What a CDN serves, what can run at the edge, how latency and caching divide the work, and when moving logic closer to users does not pay off.'
+description: 'What a CDN is good at, what can run at the edge, how latency and caching are split, and when moving logic closer to users does not pay off.'
 category: tendencias
 tags:
   - edge
@@ -11,81 +11,187 @@ tags:
 order: 8
 publishedAt: 2026-10-14
 updatedAt: 2026-10-14
-figureCaption: 'Serve from the nearest edge; the origin only when the cache misses'
+figureCaption: 'Serve from the nearest edge; reach the origin only when the cache misses'
 ---
 
-# Edge and CDN: what to run at the edge
+"Moving the application to the edge" sounds like an improvement with no cost: the code runs near the user and the wait
+disappears. In practice, most of what a CDN does well is serve content that does not change, and most of what teams try
+to move to the edge does not improve the experience, because the slowness was somewhere else: in the database, in a chain
+of service calls or in the sheer size of the page.
 
-A content delivery network (CDN) keeps copies of resources on nodes close to users, and those nodes can now also run small
-functions before answering. The architectural question is no longer whether to use the edge, but what should run there and what
-must stay at the origin.
+The thesis of this article is that **the edge pays off when what moves closer is content or stateless decisions, and does
+not pay off when what moves closer is state**. Before moving code, measure where a request spends its time and how much of
+that time physical proximity can remove. The rest is moving complexity around: more places to deploy, more places to debug
+and more copies of data that can diverge.
 
-## What a CDN serves well
+## What a CDN really does
 
-A CDN works well for responses that are identical for many users for a while: images, scripts, stylesheets, public pages or
-read-only responses. Anything that depends on each user, such as an account balance, must go to the origin or be personalised
-explicitly. A practical rule: cache what is the same for many and changes rarely, and leave at the origin what is unique per user
-or changes on every write.
+A content delivery network has three main functions. The first is **storing copies of responses** on geographically spread
+nodes, so that an image or a script is served from the nearest node rather than from the origin. The second is **terminating
+secure connections** close to the user, so the initial TLS handshake is negotiated with a nearby node rather than a distant
+server. The third is **absorbing load**: traffic spikes on popular content hit the edge and not the origin, which stays sized
+for whatever is not cached.
 
-## Latency against cost
+Those three functions are very effective for static assets, pages that change rarely and public responses that repeat. They
+are less useful for responses personalised per user, which cannot be shared between requests, and for writes, which must always
+reach the system that holds the truth.
 
-Moving the answer closer cuts network latency, but not computation or data access. With a user 20 ms from the edge and 200 ms from
-the origin, a 90 % hit rate gives an average latency of 0.9 × 20 + 0.1 × (20 + 200) = 40 ms. At 60 % it rises to 0.6 × 20 + 0.4 ×
-220 = 100 ms. The hit rate, not proximity alone, decides the experience.
+## Where latency goes
 
-Cost changes too: each node that runs code is billed per invocation and per time, and traffic leaving the edge has its own rate. A
-calculation that looks only at latency can reject an option that turns out more expensive than it seems.
+Light travels through optical fibre at roughly 200,000 km per second, two thirds of its speed in a vacuum. That means a round
+trip over 1,000 km in a straight line costs at least 10 milliseconds of propagation alone, and real cables are longer than the
+straight line. Bringing the server closer to the user reduces that term, and it is what a CDN achieves for static resources.
 
-## What can run at the edge
+But in a dynamic request, time is spread across several places: DNS resolution, the TCP and TLS handshake, waiting on the server,
+database queries and calls to other services. If propagation is 20 milliseconds and the database query takes 300, moving the
+application to the user's city saves 20 and leaves the 300 untouched. Before deciding, break the response time down by component.
+The figure that almost always surprises people is how little the distance accounts for when the rest of the system is slow.
 
-Edge functions suit small decisions that need no full data: rewriting a URL, choosing a page variant by language, validating a header
-or checking a signed token. They are a poor fit for logic that needs a lot of data or shared state, such as a price calculation that
-reads inventory. Providers limit time, memory and data access; if a function needs three queries to a central database, it probably
-belongs at the origin.
+## The cache: who decides how long a copy lasts
 
-## Invalidation and TTL
+An edge cache answers with a stored copy, and the quality of the system depends on how long it considers that copy valid. The
+origin expresses that decision with HTTP headers such as `Cache-Control`, which say whether a response can be stored, for how long,
+and whether it can be shared.
 
-The TTL sets how out of date a copy may be. A long TTL reduces origin load but is slow to reflect a change; a short one lowers the risk
-but increases origin requests. A common strategy combines moderate TTLs with explicit invalidation when content is published, and serves
-the stale copy while refreshing it in the background when a few seconds of delay are acceptable. Invalidation takes time to reach every
-node, so versions coexist for a while.
+Two extensions defined in RFC 5861 cover frequent cases. The `stale-while-revalidate` directive lets the cache serve an expired
+copy immediately while it refreshes it in the background, so the user does not wait for validation. The `stale-if-error` directive
+lets it serve an expired copy when the origin fails, instead of returning an error. The RFC, published in May 2010, defines both as
+independent extensions to cache control. Both have a cost: during the stale window the user may see old data. So use them for
+content where freshness is not critical, and never for balances, permissions or order states.
 
-## Consistency across nodes
+<Callout tone="warning" title="A cache does not know who is asking">
+  If a response depends on a cookie or an authorisation header and the edge stores it without
+  separating those variants, one user can receive another user's data. Before caching a personalised
+  response, check which headers form part of the cache key, and mark anything that depends on
+  identity as not shareable.
+</Callout>
 
-Each node has its own cache, so two users in different regions can see different versions for a while. For resources that vary per user,
-the cache key must include the headers or cookies that change the response; otherwise one user may receive another's page. Consistent
-hashing spreads keys across nodes so that every node does not store the same things.
+## Layers: edge, upper tier and origin
 
-## Data that must stay at the origin
+A modern CDN does not have a single cache level. Cloudflare, for example, documents a tiered cache: edge nodes ask an upper tier, which
+concentrates connections to the origin from a small number of data centres. Its Smart Tiered Cache feature selects the closest upper tier
+to each origin using latency data. In practice, that means a cache miss at the edge does not go straight to the origin; it is resolved at
+an intermediate layer whenever possible.
 
-Writes, transactions and sensitive personal data should stay at the origin or in a controlled region. Moving them to the edge multiplies
-copies and complicates compliance with data-protection rules.
+```mermaid
+flowchart LR
+  U["User"] --> E["Edge node"]
+  E -->|hit| U
+  E -->|miss| T["Upper-tier cache"]
+  T -->|hit| E
+  T -->|miss| O["Origin"]
+  O --> T
+```
 
-## When the edge does not pay off
+This structure has an important consequence for design. The origin receives fewer requests, but it is also the fallback when the upper
+tiers fail, and its sizing must still account for the worst case: a mass purge or a deployment that invalidates all content at once can
+produce a traffic spike on the origin that nobody planned for.
 
-It does not pay off when requests rarely repeat, when users are already close to the origin, when the logic needs central data, or when the
-team cannot observe code spread over many points. A well-configured cache at the origin is then usually cheaper and easier to run.
+## What to run at the edge
+
+Functions that run at the edge are good for small, fast, stateless decisions: rewriting a path, redirecting by language or country,
+adding or removing headers, running an A/B test, validating a signed token without calling a service, or returning a default response when
+the origin is unavailable. These are cases where the input fits in the request and the output does not need data from a central system.
+
+Logic that needs a transaction, strong state or a query against a single database should not run at the edge. Each node would hold a copy
+of the state, and keeping the copies coherent requires protocols that cancel out the latency advantage. Computation-heavy code is not a good
+fit either: edge runtimes have CPU and memory time limits, and a function that takes hundreds of milliseconds on a node far from the origin
+improves nothing.
+
+There is a middle ground that works well: the edge reads a copy of data that changes rarely, such as configuration, published prices or lists
+of regions, while the origin remains the source of truth for writes. The copy is refreshed on a known interval and the application accepts that
+it may be slightly out of date. That decision must be written into the service contract, because it defines what the system can promise.
+
+Edge functions also carry a cost that does not show up in demonstrations: the cold start. When a node receives a function for the first time, or after a period without
+use, there is an extra delay to load the code. For a redirect that is irrelevant; for a validation that runs on the critical path of every request, it can dominate latency
+during quiet hours. Measuring the distribution of times, not only the median, reveals that problem before users do.
+
+It is also worth remembering the platform's limits: CPU time per request, code size, memory and the number of subrequests to other services. Logic that fits on a traditional
+server may not fit an edge runtime without redesign, and discovering that after moving the code costs more than checking it first with a prototype of the heaviest function.
+
+## When moving logic closer does not pay
+
+There are three signs that moving code to the edge will not help. The first is that **the dominant time is not the network**: if most of the
+latency sits in the database or in chained calls, the edge only moves the wait. The second is that **the data needed cannot be replicated** without
+breaking business or privacy rules, because then every request goes back to the origin anyway. The third is that **the team cannot debug the edge**:
+a bug that appears only on one node, without traces or local reproduction, costs more diagnosis hours than the latency it saved.
+
+The last point is underestimated. Edge deployment multiplies environments, and observability tools built for a single server do not always cover
+dozens of nodes running different runtime versions.
+
+## A case: personalising a front page without losing the cache
+
+Think of the front page of a digital newspaper. Most of the page is the same for everyone: the header, the menu, the featured headlines. One part
+depends on the user: the greeting, the "for you" articles and whether they have an active subscription. The first version treats the whole page as
+personalised, because the session cookie travels with every request. The outcome is predictable: no response is shared, everything reaches the origin,
+and the page is as slow as the origin is at its worst moment of the day.
+
+The fix separates the two parts into three layers. The page structure is cached as a shared response, with a short TTL and `stale-while-revalidate`.
+A minute of staleness in headlines is acceptable, and users get the page from the edge while the node refreshes it in the background. The personal part
+loads afterwards, with a small request to an endpoint the edge does not cache. The user sees the page at once and their personal articles appear a moment later.
+
+The third layer is the cache key. If the key included the full cookie, every user would have their own copy and the cache would be useless. The key should
+include only what changes the structure of the page, such as language and region. That way, thousands of users in the same region share one copy, and
+personalisation never mixes into it.
+
+The solution has two costs. The first is that the structure can be a minute out of date, and that must appear in the contract with the content team. The
+second is that there are two requests instead of one, with more complexity on the client. In return, origin load drops noticeably in peak hours, which is
+exactly when it matters most.
+
+Verification is what teams most often skip. Add a test that requests the front page with two different cookies and checks that no response containing personal
+data carries shared cache headers. The test is cheap and prevents the most expensive security failure in this kind of architecture.
+
+## Invalidation: the hard part of caching
+
+There is a well-known saying about caching: the hard part is invalidation. At the edge it gets harder because copies live in many places at once.
+There are three practical strategies. The first is **versioning the URL**: a resource with a content hash in its name can have a very long TTL,
+because a change produces a new URL and the old copy is no longer requested. It is the most robust option for static assets. The second is
+**purging by key** when content changes and the URL cannot; it needs a tagging or key mechanism so that you do not purge everything. The third is
+**a short TTL with revalidation**, which accepts some staleness in exchange for simplicity.
+
+What to avoid is depending on a manual purge to correct data. When the purge process is part of day-to-day operation, sooner or later it fails, and
+users see old data without anyone knowing.
+
+## Measuring what it contributes
+
+Caching and edge deployment should be justified with figures, not intuitions. Three measures are enough to start. The **cache hit ratio**, by content
+type, shows what share of traffic is resolved at the edge. The **latency by region**, measured from the user and not from the server, shows whether
+proximity translates into a noticeable improvement. And the **load reaching the origin** shows whether the cache is absorbing traffic as intended. If the
+hit ratio is low for the most requested content, the headers or cache keys are probably misconfigured, and that is the first place to look.
+
+Measure cost too. Edge requests, function executions and egress traffic have a price, and in some cases they exceed the saving at the origin. A unit
+cost analysis per request avoids surprises.
 
 ## Common mistakes
 
-- Caching personalised responses without including the headers that make them different.
-- Moving to the edge logic that queries a central database on every request.
-- Measuring only average latency, not the hit rate or the 95th percentile.
-- Assuming invalidation is immediate in every region.
+The first mistake is **moving logic to the edge without measuring**. A service is relocated to a nearby node and total latency barely changes, because
+the bottleneck was still the database.
+
+The second is **caching personalised responses without separating variants**. It is a security bug disguised as an optimisation, and it is found late.
+
+The third is **long TTLs without an invalidation strategy**. Content that was correct yesterday is wrong today, and nobody knows why a user sees old data.
+
+The fourth is **treating the edge as a second origin**. Replicating writes across many nodes without a consistency protocol produces data that diverges and is
+hard to reconcile.
+
+## Tools
+
+A CDN with cache behaviour configurable through headers and rules, edge functions for small decisions, and an upper cache tier when traffic justifies it cover
+most cases. The tool matters less than the decisions that configure it: what is cached, for how long, how it is invalidated and which data may be read from a
+copy. Those decisions should be written next to the service, because they are what changes how the system behaves.
 
 ## Checklist
 
-- [ ] Which responses are identical for many users, and for how long?
-- [ ] Does the cache key include everything that changes the response?
-- [ ] Is there an invalidation plan, and is mixed versions during propagation acceptable?
-- [ ] Is the edge logic small and free of central data needs?
-- [ ] Do personal data and writes stay in a controlled region?
-
-**Further reading:** [caching, queues and streaming](/docs/caching-colas-streaming) covers caching and invalidation patterns;
-[cloud deployment models](/docs/modelos-de-despliegue-nube) places the edge among the deployment options.
+- [ ] The response time has been broken down by component before deciding what moves to the edge.
+- [ ] Every cached response has an explicit `Cache-Control` policy, with the variants that form its cache key.
+- [ ] Responses that depend on identity are not shared between users.
+- [ ] `stale-while-revalidate` and `stale-if-error` are only used where freshness is not critical.
+- [ ] Versioned resources use hashed URLs and a long TTL; everything else has a defined invalidation strategy.
+- [ ] Edge logic is small, with no strong state and no queries against a central database.
+- [ ] Hit ratio, latency by region, origin load and cost per request are measured.
+- [ ] The contingency plan sizes the origin for a mass purge.
 
 ## Sources
 
-- Roy Fielding et al., RFC 9111, _HTTP Caching_ (2022).
-- David Karger et al., "Consistent Hashing and Random Trees", _ACM STOC_ (1997).
-- David Gourley and Brian Totty, _HTTP: The Definitive Guide_ (2002).
+- [RFC 5861: HTTP Cache-Control Extensions for Stale Content](https://www.rfc-editor.org/rfc/rfc5861), M. Nottingham, May 2010, informational.
+- [Cloudflare Docs: Tiered Cache](https://developers.cloudflare.com/cache/how-to/tiered-cache/), documentation of the tiered cache.
