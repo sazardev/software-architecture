@@ -47,8 +47,8 @@ descartar los eventos repetidos usando un identificador.
 ## Un ejemplo con cifras
 
 Imagina 50.000 clientes conectados que reciben una actualización cada diez segundos. La tasa de envío
-es de 50.000 / 10 = 5.000 mensajes por segundo que cada instancia debe sostener. Si cada instancia mantiene 10.000 conexiones,
-necesitas al menos cinco, y cada una debe recibir los eventos desde el broker, no del productor directo. Esa cuenta decide
+es de 50.000 / 10 = 5.000 mensajes por segundo en total. Si cada instancia mantiene 10.000 conexiones,
+necesitas al menos cinco. Cada una envía unos 1.000 mensajes por segundo a sus clientes y debe recibir los eventos desde el broker, no del productor directo. Esa cuenta decide
 si el problema es de conexiones (muchos sockets abiertos) o de reparto (muchos eventos por segundo). Las dos cosas exigen
 soluciones distintas.
 
@@ -85,5 +85,4 @@ colas, y [resiliencia en sistemas distribuidos](/docs/resiliencia-sistemas-distr
 ## Fuentes
 
 - Fette y Melnikov, _The WebSocket Protocol_, RFC 6455 (2011).
-- WHATWG, _HTML Living Standard_, sección «Server-sent events».
 - Martin Kleppmann, _Designing Data-Intensive Applications_ (2017), capítulos sobre colas y registros de eventos.

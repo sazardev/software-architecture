@@ -13,7 +13,7 @@ const COPY = {
   },
   es: {
     client: 'CLIENTE',
-    note: 'la cola absorbe picos y reparte clientes',
+    note: 'la cola absorbe picos y reparte eventos',
     oneWay: 'SSE · una vía',
     queue: 'COLA',
     server: 'SERVIDOR',

@@ -45,7 +45,7 @@ There are four levers, roughly in order of typical effect. **Reduce the work**: 
 **Retire what nobody uses**: environments, copies and logs without consumers. **Adjust usage**: scale idle components to zero and batch
 work that is not urgent. **Choose region and time**: shift flexible load to regions or hours with a cleaner grid.
 
-The first two carry no technical trade-off. The last one does: a cleaner region may be further from users, which raises latency, and it
+The first two carry little technical trade-off; the last one carries more: a cleaner region may be further from users, which raises latency, and it
 can clash with data residency rules.
 
 ## A worked example in numbers
@@ -63,8 +63,7 @@ method cannot support a decision.
 
 ## Common mistakes
 
-- **Trusting a declared neutrality.** Buying certificates says nothing about the grid the system draws from in each hour. Look at the real
-  intensity at the time.
+- **Trusting a declared neutrality.** Buying certificates says nothing about the grid the system draws from in each hour.
 - **Measuring only compute.** Storage, copies and network traffic also use energy.
 - **Optimising one metric at the cost of another.** Moving everything to the cleanest region can worsen latency and transfer costs.
 - **Treating it as a marketing initiative.** If it does not appear in design reviews, nothing changes.

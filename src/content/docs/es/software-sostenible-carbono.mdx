@@ -16,7 +16,7 @@ figureCaption: Misma carga, menos energía y una red más limpia
 
 # Software sostenible: la huella como atributo
 
-Todo software consume electricidad, y la electricidad tiene un costo de carbono que cambia según el lugar y la hora. Por eso la
+Todo software consume electricidad, con un costo de carbono que cambia según el lugar y la hora. Por eso la
 huella de un sistema no es una propiedad fija: depende de cuánta energía usa cada operación y de qué red la alimenta en ese
 momento. Tratarla como atributo de calidad significa medirla, asignarla a decisiones concretas y poder compararla entre
 alternativas, igual que la latencia o el costo.
@@ -31,8 +31,8 @@ La especificación _Software Carbon Intensity_ (SCI), publicada como ISO/IEC 210
 funcional**: por petición, por usuario activo o por transacción. Esa elección importa, porque una métrica total puede bajar solo
 porque el servicio tiene menos usuarios.
 
-La intensidad de la red depende del país, del mix de generación y de la hora, y
-cambia según la fuente que uses.
+No hay un factor universal que copiar. La intensidad de la red depende del país, del mix de generación y de la hora, y
+cambia según la fuente que uses; documenta cuál y cuándo la consultaste.
 
 ## Dónde se genera
 
@@ -46,7 +46,7 @@ Hay cuatro palancas, en orden de efecto habitual. **Reducir el trabajo**: menos 
 que nadie usa**: entornos, copias y registros sin consumidores. **Ajustar el uso**: escalar a cero lo que está ocioso y procesar en lotes
 lo que no es urgente. **Elegir región y hora**: desplazar la carga flexible a regiones o franjas con red más limpia.
 
-La última sí tiene compromiso técnico, porque una región más limpia puede estar más lejos del usuario, y eso sube la
+Las dos primeras casi no tienen compromiso técnico; la última sí, porque una región más limpia puede estar más lejos del usuario, y eso sube la
 latencia; además puede chocar con reglas de residencia de datos.
 
 ## Un ejemplo con cifras
@@ -65,14 +65,13 @@ sin método no sirve para decidir.
 ## Errores frecuentes
 
 - **Confiar en la neutralidad declarada.** Una compra de certificados no dice nada sobre la red en la que el sistema consume en cada hora.
-  Conviene mirar la intensidad real del momento.
 - **Medir solo el cómputo.** El almacenamiento, las copias y el tráfico de red también consumen energía.
 - **Optimizar una métrica a costa de otra.** Mover todo a la región más limpia puede empeorar la latencia y el costo de transferencia.
 - **Tratarlo como iniciativa de marketing.** Si no entra en las revisiones de diseño, no cambia nada.
 
 ## Cuándo no aplica
 
-El principio siempre aplica, pero la profundidad de la medición debe ser proporcional. Una herramienta interna que corre una vez al mes no
+El principio aplica siempre; la profundidad de la medición debe ser proporcional. Una herramienta interna que corre una vez al mes no
 justifica un sistema de medición detallado; sí justifica no dejarla encendida sin necesidad.
 
 ## Checklist

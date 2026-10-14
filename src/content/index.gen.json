@@ -4212,7 +4212,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 3,
       "route": "/es/docs/migraciones-bd-sin-downtime",
       "slug": "migraciones-bd-sin-downtime"
     },
@@ -5763,6 +5763,11 @@
           "text": "Un ejemplo con cifras"
         },
         {
+          "id": "operaciones",
+          "level": 2,
+          "text": "Operaciones"
+        },
+        {
           "id": "errores-frecuentes",
           "level": 2,
           "text": "Errores frecuentes"
@@ -5784,13 +5789,13 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 5,
       "route": "/es/docs/rag-y-evaluacion-continua",
       "slug": "rag-y-evaluacion-continua"
     },
     {
       "category": "tendencias",
-      "description": "CÃ³mo reducir el costo por peticiÃ³n de un LLM: elegir el modelo mÃ¡s pequeÃ±o que sirve, usar cachÃ© con criterio y decidir dÃ³nde ejecutar la inferencia.",
+      "description": "Cómo reducir el costo por petición de un LLM: elegir el modelo más pequeño que sirve, usar caché con criterio y decidir dónde ejecutar la inferencia.",
       "figureCaption": "El costo por petición depende del modelo, la caché y el lugar",
       "order": 5,
       "publishedAt": "2026-10-14",
@@ -5866,7 +5871,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 5,
       "route": "/es/docs/costo-de-inferencia",
       "slug": "costo-de-inferencia"
     },
@@ -5938,7 +5943,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 4,
+      "readingMinutes": 5,
       "route": "/es/docs/software-sostenible-carbono",
       "slug": "software-sostenible-carbono"
     },
@@ -7317,7 +7322,7 @@
         }
       ],
       "locale": "es",
-      "readingMinutes": 5,
+      "readingMinutes": 4,
       "route": "/es/docs/autorizacion-rbac-abac-rebac",
       "slug": "autorizacion-rbac-abac-rebac"
     },
@@ -16426,7 +16431,7 @@
         }
       ],
       "locale": "en",
-      "readingMinutes": 5,
+      "readingMinutes": 4,
       "route": "/en/docs/autorizacion-rbac-abac-rebac",
       "slug": "autorizacion-rbac-abac-rebac"
     },

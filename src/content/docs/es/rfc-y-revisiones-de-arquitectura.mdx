@@ -58,7 +58,7 @@ condiciones: afecta a más de un equipo, es difícil de revertir, toca un contra
 presupuesto relevante. Si no cumple ninguna, basta una nota en el pull request.
 
 Un ejemplo trabajado: un equipo quiere cambiar la biblioteca de colas de mensajes. Afecta a tres servicios,
-cambia el formato de los mensajes y migrar lleva dos meses. Cumple tres criterios, así que merece un RFC.
+cambia el formato de los mensajes y migrar lleva dos meses. Cumple al menos dos criterios (cambia un contrato entre servicios y es difícil de revertir), así que merece un RFC.
 En cambio, subir una biblioteca de formato de fechas que es compatible hacia atrás no lo necesita.
 
 ## Errores frecuentes
@@ -72,7 +72,7 @@ En cambio, subir una biblioteca de formato de fechas que es compatible hacia atr
 
 ## Cuándo no aplica
 
-Un RFC tiene coste. En un equipo pequeño que trabaja junto, una conversación de quince minutos y una nota en
+Un RFC tiene costo. En un equipo pequeño que trabaja junto, una conversación de quince minutos y una nota en
 el ADR bastan. Tampoco conviene para decisiones reversibles en una semana, porque el proceso tardaría más que
 el error. La burocracia aparece cuando el mismo formato se aplica por igual a todo.
 

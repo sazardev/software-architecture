@@ -15,8 +15,7 @@ figureCaption: 'Three models answer the same question from different sources of 
 
 # Authorization at scale: RBAC, ABAC and ReBAC
 
-Authentication answers "who are you?". Authorization answers "may you do this?", and it is the question asked most often
-in any system: every read, every write, every button. In a small application, one check in the code is enough. At scale,
+Authentication answers "who are you?". Authorization answers "may you do this?", and it is asked on every read, write and button. In a small application, one check in the code is enough. At scale,
 the same rule appears in twenty services, each with its own copy, and a policy change takes weeks to reach all of them.
 
 Three classic models organize the problem: role-based access control (RBAC), attribute-based access control (ABAC) and
@@ -28,13 +27,13 @@ In RBAC, each person is assigned roles (administrator, editor, reader) and each 
 model to understand and to audit: the question "who may delete invoices?" is answered by looking at which roles hold that permission.
 
 Its limit appears with exceptions. "Editor, but only in their region" or "editor, except for confidential documents" forces
-a new role for every combination, and the number of roles grows out of control. This is known as _role explosion_.
+a new role for every combination. This is known as _role explosion_.
 
 ## ABAC: attributes as the source of truth
 
 In ABAC, the decision depends on attributes of the user, the resource, the action and the context: region, department,
-document classification, time of day. A policy might say that a user may read a report if their department matches the
-report's and the report is not classified as confidential.
+document classification, time of day. A policy might let a user read a report if their department matches the
+report's and it is not classified as confidential.
 
 ABAC expresses fine-grained rules well, but it requires attributes to be reliable and available at the moment of deciding.
 If the department attribute is stale in one service, the decision is wrong and nobody notices. NIST published a reference
@@ -46,8 +45,8 @@ In ReBAC, the decision follows the graph of relationships between people and res
 belongs to a folder, Y is a member of a team that has access to that folder. Permissions are derived by walking those relationships.
 
 It is the natural model for sharing: documents, projects or resources with hierarchies. In 2019 Google described Zanzibar, its
-system that applies this approach at large scale with global consistency. Its cost is the graph itself: it needs storage,
-indexes and a way to answer with enough consistency.
+system that applies this approach at large scale with global consistency. Its cost is the graph itself: storage,
+indexes and enough consistency to answer.
 
 ## A worked example
 
@@ -67,13 +66,13 @@ stops being the only source of truth.
 ## Common mistakes
 
 - Creating a role for every exception instead of modelling the attribute or relationship that explains it.
-- Trusting attributes nobody updates, such as the department of an employee who changed area six months ago.
+- Trusting attributes nobody updates, such as the department of someone who changed area.
 - Deciding authorization in the client without rechecking it on the server.
 
 ## When it does not apply
 
-If the application has three roles and no exceptions, RBAC is enough and nothing more is needed. The complexity of ABAC or
-ReBAC is justified when rules depend on context or on hierarchies that change.
+If the application has three roles and no exceptions, RBAC is enough. ABAC or
+ReBAC are justified when rules depend on context or on hierarchies that change.
 
 ## Checklist
 
@@ -89,6 +88,6 @@ authorization is enforced.
 ## Sources
 
 - David F. Ferraiolo and D. Richard Kuhn, "Role-Based Access Controls", NIST (1992), the origin of RBAC.
-- NIST, _INCITS 359-2004_, the RBAC standard.
+- INCITS (ANSI), _Role Based Access Control_, INCITS 359-2004 (2004).
 - Vincent C. Hu and others, _Guide to Attribute Based Access Control (ABAC) Definition and Considerations_, NIST SP 800-162 (2014).
 - Ruoming Pang and others, "Zanzibar: Google's Consistent, Global Authorization System", USENIX ATC (2019).

@@ -15,8 +15,8 @@ figureCaption: 'Tres modelos responden a la misma pregunta con fuentes de verdad
 
 # Autorización a escala: RBAC, ABAC y ReBAC
 
-La autenticación responde «¿quién eres?». La autorización responde «¿puedes hacer esto?», y es la pregunta que
-más veces se hace en un sistema: cada lectura, cada escritura y cada botón. En una aplicación pequeña, una
+La autenticación responde «¿quién eres?». La autorización responde «¿puedes hacer esto?», y se hace en cada
+lectura, escritura y botón. En una aplicación pequeña, una
 comprobación en el código basta. A escala, la misma regla aparece en veinte servicios, cada uno con su
 copia, y un cambio de política tarda semanas en llegar a todos.
 
@@ -26,19 +26,18 @@ relaciones (ReBAC). Cada uno toma como fuente de verdad una cosa distinta.
 ## RBAC: el rol como fuente de verdad
 
 En RBAC, a cada persona se le asignan roles (administrador, editor, lector) y cada rol agrupa permisos.
-Es el modelo más fácil de entender y de auditar: la pregunta «¿quién puede borrar facturas?» se responde
+Es fácil de entender y de auditar: la pregunta «¿quién puede borrar facturas?» se responde
 mirando qué roles tienen ese permiso.
 
 Su límite aparece con las excepciones. «Editor, pero solo de su región» o «editor, salvo de documentos
-confidenciales» obligan a crear roles nuevos por cada combinación, y el número de roles crece sin control.
+confidenciales» obligan a crear un rol nuevo por cada combinación.
 Ese fenómeno se conoce como _role explosion_.
 
 ## ABAC: los atributos como fuente de verdad
 
 En ABAC, la decisión depende de atributos del usuario, del recurso, de la acción y del contexto: región,
-departamento, clasificación del documento, hora del día. Una política dice, por ejemplo, que un usuario
-puede leer un informe si su departamento coincide con el del informe y el informe no está clasificado como
-confidencial.
+departamento, clasificación del documento, hora del día. Por ejemplo, un usuario
+puede leer un informe si su departamento coincide con el del informe y no está clasificado como confidencial.
 
 ABAC expresa bien las reglas finas, pero exige que los atributos sean fiables y estén disponibles en el
 momento de decidir. Si el atributo del departamento está desactualizado en un servicio, la decisión es
@@ -52,7 +51,7 @@ permisos se derivan recorriendo esas relaciones.
 
 Es el modelo natural para compartir: documentos, proyectos o recursos con jerarquías. Google describió en 2019
 su sistema Zanzibar, que aplica este enfoque a gran escala con consistencia global. Su coste es el grafo
-mismo: necesita almacenamiento, índices y una forma de responder con consistencia suficiente.
+mismo: almacenamiento, índices y consistencia suficiente para responder.
 
 ## Un ejemplo trabajado
 
@@ -73,13 +72,12 @@ ambos: si un servicio decide por su cuenta, la política central deja de ser la 
 ## Errores frecuentes
 
 - Crear roles para cada excepción en lugar de modelar el atributo o la relación que la explica.
-- Confiar en atributos que nadie actualiza, como el departamento de un empleado que cambió de área hace seis meses.
+- Confiar en atributos que nadie actualiza, como el departamento de quien cambió de área hace seis meses.
 - Decidir la autorización en el cliente, sin revalidarla en el servidor.
 
 ## Cuándo no aplica
 
-Si la aplicación tiene tres roles y ninguna excepción, RBAC es suficiente y no hace falta nada más. La
-complejidad de ABAC o de ReBAC se justifica cuando las reglas dependen de contexto o de jerarquías que cambian.
+Si la aplicación tiene tres roles y ninguna excepción, RBAC basta. ABAC o ReBAC se justifican cuando las reglas dependen de contexto o de jerarquías que cambian.
 
 ## Checklist
 
@@ -95,6 +93,6 @@ explica los límites de confianza donde se aplica la autorización.
 ## Fuentes
 
 - David F. Ferraiolo y D. Richard Kuhn, "Role-Based Access Controls", NIST (1992), origen de RBAC.
-- NIST, _INCITS 359-2004_, estándar de RBAC.
+- INCITS (ANSI), _Role Based Access Control_, INCITS 359-2004 (2004).
 - Vincent C. Hu y otros, _Guide to Attribute Based Access Control (ABAC) Definition and Considerations_, NIST SP 800-162 (2014).
 - Ruoming Pang y otros, "Zanzibar: Google's Consistent, Global Authorization System", USENIX ATC (2019).

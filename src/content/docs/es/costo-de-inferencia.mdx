@@ -1,6 +1,6 @@
 ---
 title: 'Costo de inferencia: modelo, caché y despliegue'
-description: 'CÃ³mo reducir el costo por peticiÃ³n de un LLM: elegir el modelo mÃ¡s pequeÃ±o que sirve, usar cachÃ© con criterio y decidir dÃ³nde ejecutar la inferencia.'
+description: 'Cómo reducir el costo por petición de un LLM: elegir el modelo más pequeño que sirve, usar caché con criterio y decidir dónde ejecutar la inferencia.'
 category: tendencias
 tags:
   - inferencia
@@ -23,7 +23,7 @@ ejecuta la inferencia. Optimizar el precio por token sin mirar las otras dos sue
 ## Qué compone el costo
 
 Una petición cuesta lo que consumen sus tokens de entrada (instrucciones, historial y contexto recuperado), sus tokens de salida,
-los reintentos y las llamadas auxiliares, como clasificaciones o evaluaciones.
+los reintentos y las llamadas auxiliares, como clasificaciones o evaluaciones. En un modelo propio, el tiempo de GPU reservado se suma y se paga aunque esté ocioso.
 
 ## Elegir el modelo más pequeño que sirve
 
@@ -51,7 +51,7 @@ Una API gestionada cobra por token y no requiere operar nada. Un modelo propio t
 marginal casi nulo por petición. La decisión depende de la utilización: con poco volumen, la API gana; con volumen sostenido y
 predecible, la infraestructura propia puede ganar.
 
-La cuenta del punto de equilibrio es sencilla: el costo fijo mensual dividido por el costo por token da los tokens que hay que
+La cuenta del punto de equilibrio es sencilla: el costo fijo mensual dividido por el ahorro por token (precio de la API menos costo marginal propio) da los tokens que hay que
 consumir para que compense. Hay que sumar el costo de operar la infraestructura, que suele ser lo que más se subestima.
 
 ## Un ejemplo con cifras
@@ -59,12 +59,12 @@ consumir para que compense. Hay que sumar el costo de operar la infraestructura,
 Un asistente recibe 300.000 peticiones al mes con 1.200 tokens de promedio: 360 millones de tokens mensuales. Con un modelo grande a
 10 unidades por millón de tokens, el costo es de 3.600 unidades al mes. Con un modelo pequeño a 1 unidad por millón, sería 360.
 Si la caché exacta acierta en el 40 % de las peticiones, el modelo grande solo se llama en el 60 % restante: 2.160 unidades. Enrutando
-el 70 % de las peticiones al modelo pequeño, el total baja a unas 800 unidades. Las unidades y los precios son ilustrativos; lo que
+el 70 % de las peticiones que quedan al modelo pequeño, el total baja a unas 800 unidades. Las unidades y los precios son ilustrativos; lo que
 importa es el orden de las decisiones y que cada una se mide por separado.
 
 ## Métricas que importan
 
-No optimices el costo por petición. Optimiza el **costo por resolución** (el coste de contestar bien una pregunta), que incluye los
+No optimices el costo por petición. Optimiza el **costo por resolución** (el costo de contestar bien una pregunta), que incluye los
 reintentos y las escalaciones humanas. Acompáñalo de la latencia p95 y de la tasa de aciertos de caché, que indica si la caché está
 bien diseñada.
 

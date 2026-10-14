@@ -85,8 +85,15 @@ export function legadoStranglerAnticorrupcion(locale: FigureLocale = 'es'): Figu
         ),
         arrow(
           [
-            [320, 128],
-            [320, 188],
+            [280, 128],
+            [125, 168],
+          ],
+          { tone: 'muted' },
+        ),
+        arrow(
+          [
+            [360, 128],
+            [515, 168],
           ],
           { tone: 'muted' },
         ),

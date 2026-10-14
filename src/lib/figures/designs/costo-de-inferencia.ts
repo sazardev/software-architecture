@@ -6,8 +6,8 @@ const BAR_H = 34;
 
 const bars = [
   { fill: 'accent', width: 300, y: 150 },
-  { fill: 'brandSoft', width: 120, y: 220 },
-  { fill: 'paper', width: 30, y: 290 },
+  { fill: 'brandSoft', width: 30, y: 220 },
+  { fill: 'paper', width: 3, y: 290 },
 ] as const;
 
 const COPY = {

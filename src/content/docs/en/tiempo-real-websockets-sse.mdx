@@ -46,7 +46,7 @@ using an identifier.
 ## A worked example in numbers
 
 Imagine 50,000 connected clients receiving an update every ten seconds. The send rate is 50,000 / 10 = 5,000 messages per second
-in total. If each instance holds 10,000 connections, you need at least five, and each must receive events from the broker rather
+in total. If each instance holds 10,000 connections, you need at least five, each sending about 1,000 messages per second and receiving events from the broker rather
 than from the producer directly. That calculation tells you whether the problem is connections (many open sockets) or fan-out
 (many events per second). Each needs a different solution.
 
@@ -83,5 +83,4 @@ only justified when the delay has a value for the user or the business.
 ## Sources
 
 - Fette and Melnikov, _The WebSocket Protocol_, RFC 6455 (2011).
-- WHATWG, _HTML Living Standard_, section "Server-sent events".
 - Martin Kleppmann, _Designing Data-Intensive Applications_ (2017), chapters on queues and event logs.

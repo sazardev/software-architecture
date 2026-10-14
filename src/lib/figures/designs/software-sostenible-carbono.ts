@@ -39,9 +39,9 @@ export function softwareSostenibleCarbono(locale: FigureLocale = 'es'): Figure {
     ),
     group(
       [
-        rect(380, 240, 110, 80, { fill: 'brandSoft', r: 6, stroke: 'ink', width: 1.4 }),
+        rect(380, 272, 110, 48, { fill: 'brandSoft', r: 6, stroke: 'ink', width: 1.4 }),
         label(435, 344, copy.after, { size: 11, tracking: 1.4 }),
-        label(435, 226, copy.less, { size: 10, tone: 'muted' }),
+        label(435, 258, copy.less, { size: 10, tone: 'muted' }),
       ],
       motion('rise', 400),
     ),
@@ -50,7 +50,7 @@ export function softwareSostenibleCarbono(locale: FigureLocale = 'es'): Figure {
         arrow(
           [
             [305, 170],
-            [372, 250],
+            [372, 264],
           ],
           { tone: 'muted' },
         ),

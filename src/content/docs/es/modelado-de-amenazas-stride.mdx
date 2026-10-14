@@ -49,7 +49,7 @@ serán «no aplica»; el valor está en las que sí aplican.
 ## Un ejemplo trabajado
 
 Un sistema de pedidos tiene un usuario en internet, una API pública, un servicio de pagos interno y una base
-de datos. Hay un límite de confianza entre internet y la red interna. Son cinco flujos. Al revisarlos, el
+de datos. Hay un límite de confianza entre internet y la red interna. Son cinco flujos: usuario → API, API → usuario, API → servicio de pagos, servicio de pagos → base de datos y API → base de datos. Al revisarlos, el
 equipo identifica:
 
 - Usuario → API: suplantación con credenciales robadas. Mitigación: autenticación fuerte y límite de intentos.
@@ -57,8 +57,8 @@ equipo identifica:
   verificación del importe contra el pedido en el servicio de pagos.
 - Servicio de pagos → base de datos: repudio si las operaciones no se registran de forma inmutable. Mitigación:
   registro de auditoría con la identidad del llamante.
-- Usuario → API: divulgación si los mensajes de error revelan detalles internos. Mitigación: errores genéricos.
-- API: denegación de servicio por volumen. Mitigación: límites de tasa por cliente.
+- API → usuario: divulgación si los mensajes de error revelan detalles internos. Mitigación: errores genéricos.
+- Usuario → API: denegación de servicio por volumen. Mitigación: límites de tasa por cliente.
 
 De 30 combinaciones posibles (cinco flujos por seis categorías), el equipo analiza las que aplican y deja
 registradas las que no, con su motivo. Ese registro es el resultado útil del ejercicio.
@@ -96,4 +96,3 @@ las mitigaciones más habituales en un entorno de nube.
 
 - Loren Kohnfelder y Praerit Garg, "The Threats to Our Products", Microsoft (1999), origen de STRIDE.
 - Adam Shostack, _Threat Modeling: Designing for Security_ (2014).
-- Microsoft Security Development Lifecycle, documentación pública sobre modelado de amenazas.

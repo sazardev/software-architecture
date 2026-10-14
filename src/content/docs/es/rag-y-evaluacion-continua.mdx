@@ -18,12 +18,12 @@ figureCaption: Sin evaluación en el bucle, no sabes qué cambió
 
 Un sistema RAG (_retrieval-augmented generation_) busca fragmentos de documentos relevantes y se los entrega a un modelo
 generativo para que responda con ellos. Su calidad depende sobre todo de la recuperación: si el fragmento correcto no llega al
-modelo, ningún prompt lo compensa. Por eso un RAG se debe medir como una cadena de cuatro etapas, no como una caja negra que
+modelo, ningún prompt lo compensa. Por eso conviene medir un RAG como cadena de cuatro etapas, no como caja negra que
 produce respuestas.
 
 ## Tres fallos distintos, tres métricas
 
-Un fallo de respuesta puede venir de tres lugares, y cada uno exige una corrección diferente:
+Un fallo puede venir de tres lugares, y cada uno exige una corrección distinta:
 
 - **Recuperación insuficiente.** El fragmento correcto no aparece entre los primeros resultados. Se mide con _recall@k_.
 - **Generación no fiel.** Los fragmentos llegaron, pero el modelo afirma algo que no dicen o los ignora. Se mide con _fidelidad_: cada afirmación debe poder rastrearse a un fragmento.
@@ -34,11 +34,11 @@ ocultó un problema de recuperación.
 
 ## Indexación: decisiones que cuestan después
 
-El tamaño del fragmento, los metadatos y la versión del modelo de embeddings son decisiones que se pagan cada vez que se reindexa.
+El tamaño del fragmento, los metadatos y el modelo de embeddings se pagan cada vez que se reindexa.
 Cambiar el modelo de embeddings invalida el índice entero, porque los vectores de dos modelos no son comparables. Por eso conviene
-versionar el índice y guardar qué modelo y qué configuración lo generaron.
+versionar el índice y guardar el modelo y la configuración que lo generaron.
 
-El tamaño de fragmento no tiene un valor universal. Es un parámetro que se prueba contra el conjunto de evaluación, junto con el
+El tamaño de fragmento no tiene un valor universal. Se prueba contra el conjunto de evaluación, junto con el
 solapamiento entre fragmentos.
 
 ## Recuperación: léxica, vectorial o híbrida
@@ -55,7 +55,7 @@ no use conocimiento externo para completar huecos. Son instrucciones que se veri
 ## Evaluación continua: un conjunto dorado
 
 Se necesita un conjunto de preguntas con su respuesta de referencia y el fragmento que debería recuperarse. Doscientas preguntas
-bien elegidas bastan para empezar. Cada cambio en fragmentos, prompt, modelo o reranker se evalúa contra ese conjunto antes de
+bien elegidas suelen bastar como punto de partida. Cada cambio en fragmentos, prompt, modelo o reranker se evalúa contra ese conjunto antes de
 desplegarse.
 
 Si usas otro modelo como juez de las respuestas, calíbralo: compara sus veredictos con una muestra revisada por personas y mide
@@ -68,6 +68,10 @@ sube a 0,84 y la fidelidad se mantiene en 0,88. Pero el 14 % de las consultas, l
 así que la latencia p95 general sube. La decisión depende del presupuesto de latencia, no de la métrica de calidad sola. Las cifras son
 ilustrativas.
 
+## Operaciones
+
+Registra cada consulta, sus fragmentos, su respuesta y la versión de configuración. Las consultas que los usuarios marcan como malas nutren el conjunto dorado, y cada cambio en los documentos debe disparar una evaluación.
+
 ## Errores frecuentes
 
 - **Evaluar con impresiones.** Leer tres respuestas y decidir que «funciona» no detecta regresiones.
@@ -77,8 +81,8 @@ ilustrativas.
 
 ## Cuándo no aplica
 
-Si la respuesta cabe entera en el prompt, o si el dato está en una base de datos estructurada, una consulta directa es más exacta y
-más barata que un RAG. Un RAG resuelve el problema de encontrar información en un corpus grande y cambiante.
+Si la respuesta cabe en el prompt o el dato vive en una base estructurada, una consulta directa es más exacta y
+más barata que un RAG. Un RAG sirve para corpus grandes y cambiantes.
 
 ## Checklist
 

@@ -54,7 +54,7 @@ and it should not fill gaps with outside knowledge. These are instructions you v
 ## Continuous evaluation: a golden set
 
 You need questions with reference answers and the fragment that should be retrieved for each. Two hundred well-chosen questions
-are enough to start. Every change to fragments, prompt, model or reranker is evaluated against that set before it ships.
+usually suffice as a starting point. Every change to fragments, prompt, model or reranker is evaluated against that set before it ships.
 
 If you use another model as the judge of answers, calibrate it: compare its verdicts with a sample reviewed by people and measure
 the agreement. A judge that disagrees with people is measuring something else.
@@ -80,8 +80,8 @@ material for growing the golden set. And any change to the source documents shou
 
 ## When it does not apply
 
-If the answer fits entirely in the prompt, or if the fact lives in a structured database, a direct query is more exact and cheaper
-than a RAG system. RAG solves finding information in a large, changing corpus.
+If the answer fits in the prompt, or the fact lives in a structured database, a direct query is more exact and cheaper
+than a RAG system. RAG suits large, changing corpora.
 
 ## Checklist
 

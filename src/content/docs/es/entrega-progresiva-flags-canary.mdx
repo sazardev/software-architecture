@@ -61,8 +61,8 @@ volviendo a apuntar el router.
   despliegue normal con más pasos.
 - **Banderas sin dueño ni fecha de retirada.** Acumularlas hace imposible razonar sobre el comportamiento.
 - **Cambios de esquema incompatibles.** Revertir la aplicación no revierte la base de datos.
-- **Confiar en la bandera para ocultar código roto.** Una bandera apagada sigue ejecutando el código al desplegarse si
-  se evalúa antes; hay que probar ambos caminos.
+- **Confiar en la bandera para ocultar código roto.** Una bandera apagada sigue desplegando su código; si ese código
+  está roto, el fallo sigue en producción. Hay que probar ambos caminos.
 
 ## Cuándo no aplica
 
