@@ -41,7 +41,7 @@ export async function docCard(entry: ContentEntry): Promise<OgCardInput> {
   const messages = getMessages(locale);
   const docs = getDocsByLocale(locale);
   const sheet = docs.findIndex((doc) => doc.slug === entry.slug) + 1;
-  const figure = getFigure(entry.slug);
+  const figure = getFigure(entry.slug, locale);
 
   return {
     description: entry.description,

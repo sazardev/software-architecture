@@ -144,3 +144,28 @@ describe('miniaturas', () => {
     expect(getThumbnail('no-existe')).toBeUndefined();
   });
 });
+
+describe('figuras en el idioma del artículo', () => {
+  const localized = [
+    'capas-no-son-arquitectura',
+    'fitness-en-el-ci',
+    'monolito-modular-primero',
+    'organigrama-y-sistema',
+    'coordinar-servicios-sin-2pc',
+    'cap-por-operacion',
+    'salida-de-la-nube',
+    'reintentos-con-jitter',
+    'adr-ciclo-de-vida',
+    'autonomia-de-la-ia',
+    'antes-de-escalar-la-cuenta',
+    'complejidad-accidental-de-herramientas',
+  ];
+
+  it.each(localized)('%s: los textos cambian con el idioma y no se mezclan', (slug) => {
+    const en = figureToSvg(getFigure(slug, 'en') ?? []);
+    const es = figureToSvg(getFigure(slug, 'es') ?? []);
+
+    expect(en).not.toEqual(es);
+    expect(en).not.toMatch(/[áéíóúñ¿¡]/);
+  });
+});

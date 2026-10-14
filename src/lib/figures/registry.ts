@@ -65,7 +65,7 @@ import { serverlessYComputacionGestionada } from './designs/serverless-y-computa
 import { serviciosNubeParaArquitectos } from './designs/servicios-nube-para-arquitectos';
 import { solid } from './designs/solid';
 import { tradeOffsYDecisiones } from './designs/trade-offs-y-decisiones';
-import type { Figure, FigureBuilder } from './figure-types';
+import type { Figure, FigureBuilder, FigureLocale } from './figure-types';
 
 /**
 Una figura por artículo, indexada por slug. Un artículo sin entrada aquí falla la auditoría
@@ -149,6 +149,6 @@ export function hasFigure(slug: string): boolean {
   return builders.has(slug);
 }
 
-export function getFigure(slug: string): Figure | undefined {
-  return builders.get(slug)?.();
+export function getFigure(slug: string, locale: FigureLocale = 'es'): Figure | undefined {
+  return builders.get(slug)?.(locale);
 }

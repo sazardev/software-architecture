@@ -147,8 +147,9 @@ nodos, pulsos) y `figure-shapes.ts` (losas/cubos isométricos, polígonos, curva
 tonos semánticos (`ink`, `muted`, `brandSoft`, `accent`…), nunca valores literales: en pantalla
 se traducen a tokens con `dark:` (`components/molecules/ArticleFigure`) y en la tarjeta social a
 la paleta de papel y tinta (`figure-palette.ts`). Mismo lenguaje que la portada: trazo de tinta,
-rellenos suaves, **un solo acento brasa** para la idea clave, etiquetas mono cortas y
-neutrales respecto al idioma, movimiento sutil (`flow`, `pulse`, `rise`; los periodos de guiones
+rellenos suaves, **un solo acento brasa** para la idea clave, etiquetas mono cortas. Cada figura recibe el
+idioma del artículo (`locale`) y dibuja sus textos en ese idioma; un diseño sin texto lo ignora.
+Movimiento sutil (`flow`, `pulse`, `rise`; los periodos de guiones
 animados deben dividir 24, p. ej. `'5 7'` o `'0.1 11.9'`). La auditoría falla si falta la figura
 (`E-FIGURE-MISSING`) o su pie (`E-FIGURE-CAPTION`) y un test comprueba que cada figura es única y
 cabe en el lienzo.

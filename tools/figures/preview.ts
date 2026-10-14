@@ -14,8 +14,9 @@ import { docCard } from '../seo/og-inputs';
 
 /**
 Vista previa de figuras: `bun tools/figures/preview.ts [--og] [slug…]`.
-Escribe PNG en `reports/figures/` (con texto en tipografía del sistema). Con `--og` renderiza
-además la tarjeta social completa de cada idioma, tal como saldrá en el postbuild.
+Escribe PNG en `reports/figures/`, uno por idioma (`<slug>.<locale>.png`), con el texto en la
+tipografía del sistema. Con `--og` renderiza además la tarjeta social completa de cada idioma,
+tal como saldrá en el postbuild.
 */
 const outputDir = join(import.meta.dir, '..', '..', 'reports', 'figures');
 const args = process.argv.slice(2);
@@ -26,30 +27,30 @@ const slugs = requested.length > 0 ? requested : figureSlugs;
 await mkdir(outputDir, { recursive: true });
 
 for (const slug of slugs) {
-  const figure = getFigure(slug);
-
-  if (figure === undefined) {
-    console.error(`✖ ${slug}: no hay figura registrada`);
-    process.exitCode = 1;
-    continue;
-  }
-
-  const png = new Resvg(figureToSvg(figure), {
-    background: paperPalette.paper,
-    fitTo: { mode: 'width', value: 1280 },
-    font: { loadSystemFonts: true },
-  })
-    .render()
-    .asPng();
-
-  await Bun.write(join(outputDir, `${slug}.png`), png);
-  console.log(`✔ reports/figures/${slug}.png`);
-
-  if (!isWithOg) {
-    continue;
-  }
-
   for (const locale of locales) {
+    const figure = getFigure(slug, locale);
+
+    if (figure === undefined) {
+      console.error(`✖ ${slug}: no hay figura registrada`);
+      process.exitCode = 1;
+      continue;
+    }
+
+    const png = new Resvg(figureToSvg(figure), {
+      background: paperPalette.paper,
+      fitTo: { mode: 'width', value: 1280 },
+      font: { loadSystemFonts: true },
+    })
+      .render()
+      .asPng();
+
+    await Bun.write(join(outputDir, `${slug}.${locale}.png`), png);
+    console.log(`✔ reports/figures/${slug}.${locale}.png`);
+
+    if (!isWithOg) {
+      continue;
+    }
+
     const entry = getDocBySlug(locale, slug);
 
     if (entry === undefined) {

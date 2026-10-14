@@ -12,7 +12,7 @@ type DocHeaderProps = Readonly<{
 export function DocHeader({ entry }: DocHeaderProps) {
   const sheet = getDocSheet(entry.locale, entry.slug);
   const sectionLabel = getSectionLabel(entry.category, entry.locale);
-  const figure = getFigure(entry.slug);
+  const figure = getFigure(entry.slug, entry.locale);
 
   return (
     <header className="bp-grid border-b border-neutral-200 dark:border-neutral-800">

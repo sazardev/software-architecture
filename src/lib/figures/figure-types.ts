@@ -84,4 +84,9 @@ Una figura es una lista de primitivas ordenadas de atrás hacia delante.
 */
 export type Figure = readonly Prim[];
 
-export type FigureBuilder = () => Figure;
+export type FigureLocale = 'en' | 'es';
+
+/**
+Constructor de una figura. Recibe el idioma del artículo; las figuras sin texto lo ignoran.
+*/
+export type FigureBuilder = (locale?: FigureLocale) => Figure;
