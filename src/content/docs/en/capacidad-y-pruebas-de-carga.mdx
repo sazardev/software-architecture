@@ -1,0 +1,222 @@
+---
+title: 'Capacity and load testing: measure with real loads'
+description: 'How much capacity a system needs and how to check it with loads that resemble real traffic: load model, test types, measurement errors and headroom.'
+category: practicas
+tags:
+  - pruebas-de-carga
+  - capacidad
+  - latencia-de-cola
+  - dimensionamiento
+  - escalado-automatico
+order: 18
+roadmap:
+  id: sistemas
+  stage: escala
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'p99 latency against load: the target sits with margin before the saturation knee'
+---
+
+# Capacity and load testing: measure with real loads
+
+Illustrative case: three weeks before the Christmas campaign, the store team says the system "can take it". Their test is a script that fires fifty virtual users at staging for five minutes, with toy data. It passes. On campaign day, payment latency climbs to several seconds at half the forecast peak and the order queue jams. Nobody lied: the test answered a different question. It did not ask how much load the system sustains at an acceptable latency, with which mix of operations, or what happens when the cache is cold.
+
+Planning capacity means answering that question before real traffic does: how much capacity you need, with what headroom, and how you check it. This article covers the load model, the test types and when to use each, the measurement errors that invalidate results, and how to turn the numbers into decisions about instances, scaling and budget. The laws that explain why latency explodes live in [numbers and performance laws](/docs/numeros-y-leyes-de-rendimiento); here we use them without repeating them. The estimation method applied to concrete cases is in [scalability and classic design cases](/docs/escalabilidad-casos-clasicos).
+
+<Callout tone="info" title="Verified and opinion">
+  What I state about load generator behavior and AWS comes from the sources cited at the end. The
+  traffic, mix and cost figures are **assumptions** for practicing the calculation; they do not
+  describe any real system. The headroom rules are the author's judgment.
+</Callout>
+
+## What each measurement answers
+
+Before choosing a test, know which decision depends on it. The same tool can answer different questions, and each one needs a different load profile.
+
+| Question                                       | What to measure                                 | Test that answers it |
+| ---------------------------------------------- | ----------------------------------------------- | -------------------- |
+| Does the release hold under normal traffic?    | Latency and errors at the average profile       | Average load         |
+| How much can one instance take within the SLO? | Maximum throughput that keeps p99 within target | Breakpoint           |
+| What if the peak arrives all at once?          | Latency and recovery after a sudden jump        | Spike                |
+| Does it degrade when the load lasts for hours? | Memory, connections and latency over time       | Soak                 |
+| What happens above what we expect?             | Behavior and degradation under overload         | Stress               |
+
+## The load model: what really arrives
+
+A test is only as good as its load model. "A thousand requests per second" says little unless you know which requests they are, when they arrive and what happens between them. A reasonable model has four parts.
+
+**Measured traffic, not imagined traffic.** Take the average throughput, the peak per minute and the read-to-write ratio from production metrics for the last few weeks. If the system is new, use a comparable launch as reference and write the assumption in the report.
+
+**Operation mix.** Not all requests cost the same. A search that hits the index can cost ten times more than reading a cached product page. Spreading load evenly across endpoints underestimates the peak, because real peaks are rarely even. With assumed weights and costs, the mix changes the result:
+
+| Operation    | Share of traffic (assumed) | Relative cost (assumed) | Share of total cost |
+| ------------ | -------------------------- | ----------------------- | ------------------- |
+| Search       | 55%                        | 10                      | 78%                 |
+| Product page | 35%                        | 2                       | 10%                 |
+| Add to cart  | 8%                         | 4                       | 4.6%                |
+| Payment      | 2%                         | 25                      | 7.1%                |
+
+Search takes 78% of the cost with 55% of the traffic, and payment, at 2% of requests, weighs more than add-to-cart. A test that only hits product pages gives an optimistic throughput.
+
+**Time profile.** There is a daily peak hour, a campaign peak and a peak within the peak, which is the first minute of an offer. Each needs its own check; a 24-hour average is no basis for sizing.
+
+**Sessions, not isolated requests.** A user logs in, browses, adds to cart and pays, with pauses between steps. Modeling load as sessions captures the pressure on state (sessions, carts, row locks) that a list of URLs does not.
+
+One point is often missed: the arrival model. In a **closed** model, each virtual user waits for its iteration to finish before starting the next, so a slow system receives less load and the test slows itself down. In an **open** model, requests arrive at their own rate, however the system responds. The k6 documentation describes it this way: in the closed model the next iteration does not start until the previous one ends, and the open model is implemented by the arrival-rate executors (`constant-arrival-rate` and `ramping-arrival-rate`). For traffic from independent clients, such as a public API, the open model resembles reality. For a fixed number of employees using a dashboard, the closed model fits.
+
+```yaml
+# Conceptual shape of the model; not the syntax of any particular tool.
+scenario: peak-hour
+arrivals: 1800/s # open model: fixed rate, independent of latency
+mix:
+  search: 55%
+  product-page: 35%
+  cart: 8%
+  payment: 2%
+pauses: 1-4 s # reading time between steps of each session
+```
+
+## Test types and when to use each
+
+The k6 documentation describes six test types with their purposes and indicative durations. The durations are those of that guide, not universal rules.
+
+| Type         | Question                                  | Load profile                | Indicative duration |
+| ------------ | ----------------------------------------- | --------------------------- | ------------------- |
+| Smoke        | Do the script and the system work at all? | Very light                  | Seconds to minutes  |
+| Average load | How does it behave under normal traffic?  | Average production load     | 5 to 60 minutes     |
+| Stress       | What happens above what we expect?        | Above average               | 5 to 60 minutes     |
+| Spike        | Does it survive a sudden jump?            | Very high for a few minutes | Minutes             |
+| Soak         | Does it degrade over hours of load?       | Sustained average load      | Hours               |
+| Breakpoint   | Where is the limit?                       | Rising ramp until failure   | Until it breaks     |
+
+Always start with a smoke test: if the script does not work, the other tests are noise. The soak test finds what a five-minute run cannot see: memory leaks, connections never returned to the pool, logs filling the disk, caches expiring in bulk. The breakpoint test answers "how much can one instance take", and it works best in steps: raise the load by levels and hold each long enough for p99 to stabilize. For any of them, the recommended load shape is simple: ramp up, plateau, ramp down, without oscillations.
+
+## Measurement errors that invalidate the result
+
+### The load generator is the bottleneck
+
+If the machine generating the load runs out of CPU, memory or sockets, the test measures the generator. The typical symptom is throughput stalling at a value that matches the client's limit while the system's latency does not change. Monitor the generator's resources during the run and spread the load across several machines if needed. A generator on the same host as the system under test is no good either: it competes for the same resources.
+
+### Test data that does not look like production
+
+A hundred thousand products with identical names, or a single test customer, change the query plan, the cache hit rate and row contention. What matters is the **distribution** more than the volume: how many keys are hot, how many rows each customer has, how large the responses are. If you can, sample anonymized production data. If not, generate data with the same shape (cardinality, skew, sizes).
+
+### Warm or cold caches
+
+A test that starts with an empty cache measures startup; an hour-long run with a full cache measures a steady state you will not see in the first minute of a deployment. Neither is "the" answer. Separate the phases (warm-up, steady state and cold start, with freshly restarted instances) and report each one. The mechanics of caches are in [caching, queues and streaming](/docs/caching-colas-streaming).
+
+### Averages that hide the tail
+
+The average latency can look excellent while 1% of requests take ten times longer. Report p50, p95, p99 and the maximum per operation, never only the global average.
+
+Add to this **coordinated omission**. If the generator waits for each response before sending the next request, a system that jams receives fewer requests exactly when it is slowest, and the high percentiles end up under-sampled. The README of wrk2, Gil Tene's load tool, describes this effect and corrects it by measuring latency from the instant the request was due to be sent, not from when it was actually sent. The k6 documentation presents the same problem as a property of the closed model.
+
+An example with assumed figures: 100 requests per second for one minute (6,000 requests) and a ten-second stall. With open arrivals, 1,000 requests are scheduled during the stall, and each waits up to ten seconds: roughly 17% of the sample, and p99 shows it. With a closed loop of 10 users, only 10 requests are in flight during the stall: 10 out of 6,000, or 0.17%. The p99 of the second report barely notices, although real users suffered the same stall.
+
+## Capacity: how much there is and how much there should be
+
+### Capacity per instance and the saturation point
+
+Define an instance's capacity as **the maximum throughput that keeps p99 and the error rate within the SLO**, not the maximum it survives before falling over. A service answering with an eight-second p99 is saturated even if it returns no errors. To measure it, raise the load in a staircase (for example, 10% more every five minutes) until you cross the target; the capacity is the last level that meets it with stable latency.
+
+The saturation point is the knee of the latency-load curve. Before the knee, the system absorbs increases with little change; after it, each step costs more. Queueing laws explain that shape (in M/M/1, response grows as 1/(1−ρ)) and are developed in [numbers and performance laws](/docs/numeros-y-leyes-de-rendimiento). For planning, the practical rule is to set the load target below the knee, not at it. Little's law also gives a useful shortcut: if you measure latency W at a known throughput λ, the number of busy connections L (λW) is the minimum pool size you need at that throughput.
+
+### Headroom sizing rule
+
+The criterion is the author's, but the variables come from the test. A starting point:
+
+- **Design load** P' = forecast peak × (1 + growth until the next review).
+- **Capacity per instance at the SLO** c, measured in the breakpoint test.
+- **Target utilization** u: the fraction of c you want to use in steady state, for example 60%.
+- **Zones** Z: the headroom must survive losing one.
+
+The number of instances N satisfies `N × (1 − 1/Z) × c × u ≥ P'`. With assumed numbers:
+
+| Step                                   | Value (assumed)                   |
+| -------------------------------------- | --------------------------------- |
+| Forecast peak                          | 3,000 requests/s                  |
+| With 30% growth (P')                   | 3,900 requests/s                  |
+| Capacity per instance at the SLO (c)   | 400 requests/s                    |
+| Target utilization (u)                 | 60%, that is 240 requests/s       |
+| No zones: 3,900 / 240 = 16.25          | 17 instances                      |
+| Three zones, surviving the loss of one | 25, rounded up to 27 (9 per zone) |
+
+The last row is the lesson. With 27 instances, losing one zone leaves 18, which serve 4,320 requests/s at the 60% target. With 17, losing a zone would leave less capacity than the design load. The failure headroom costs more than the growth headroom, and in normal operation the cluster runs at 36% of its capacity at the SLO. That is the price of the margin, and it should be said out loud. During a failure you may accept a different utilization target (for example 80%), but decide it beforehand and test it; do not discover it during the outage.
+
+### Autoscaling with limits
+
+Reactive scaling adjusts N to hold a target metric. There are two warnings. The first comes from AWS documentation: instances that are warming up do not count toward aggregated metrics until their warm-up time expires, and that setting is not enabled by default; AWS recommends configuring it and, if you do not know how much you need, starting at 300 seconds and tuning from there. The second is judgment: CPU is not always the right signal. If p99 rises while CPU sits at 40%, the bottleneck is a connection pool or a lock, and adding instances only spreads the problem.
+
+Scaling limits are budget and dependency decisions. With assumed figures, a maximum of 27 instances with 20 connections each means 540 connections against the database: if the database handles 200, scaling has moved the saturation somewhere else. Every maximum must fit within what the components behind it can handle.
+
+### Budget: the cost of a request
+
+Convert capacity into money so options can be compared. With an instance at €0.30 per hour (assumed):
+
+- If its useful throughput is 240 requests/s, each million requests costs €0.35.
+- If the test shows it sustains 400 requests/s at the SLO, it costs €0.21.
+
+That difference is what the headroom really costs, and it is the number to discuss with the business. The approach to cost as an architecture attribute is in [FinOps: cost as an attribute](/docs/finops-costo-como-atributo).
+
+## Test environments and getting close to production safely
+
+You cannot always test in an environment identical to production, and you rarely need to. The options trade off what you learn, the risk and the cost:
+
+| Option                                 | What you learn                               | Risk                                          | Cost   |
+| -------------------------------------- | -------------------------------------------- | --------------------------------------------- | ------ |
+| Identical production replica           | Everything, including real limits            | Low                                           | High   |
+| Proportionally scaled-down environment | Ratios, per-instance limits and curve shapes | Low                                           | Medium |
+| Shadow traffic or replay               | Real load with real data                     | Writes and external effects (charges, emails) | Medium |
+| Canary behind flags in production      | Real behavior by traffic percentage          | Medium, but controllable and reversible       | Low    |
+
+What scales proportionally are ratios: connections per instance, cache size relative to data, replicas per partition. What does not scale linearly are the database, locks and third-party dependencies. Test those separately, with doubles or their own rate limits. With shadow traffic, disable side effects (charges, emails, events to third parties) before replaying anything. Breakpoint tests against production should only run in a window, with ramps and a stop button; a gradual rollout with [progressive delivery](/docs/entrega-progresiva-flags-canary) is the safest way to approach the real limit.
+
+## From results to decisions
+
+A test that changes no decision is an expensive ritual. These patterns usually indicate what to do:
+
+| What you see                                     | What it usually means                      | Decision                                                                                    |
+| ------------------------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| p99 rises before CPU, with queues at a pool      | Waiting or contention, not lack of compute | Review the pool and locks before adding instances                                           |
+| CPU at 90% and latency climbing with load        | Compute is the limit                       | Add capacity or reduce the cost per request                                                 |
+| Latency fine, but timeouts or 503s above a level | Connection limit, queue or rate limit      | Adjust limits and backpressure, as in [resilience](/docs/resiliencia-sistemas-distribuidos) |
+| Stable for an hour, degrades by hour six         | Leak or accumulation                       | Investigate with a soak test and profiling                                                  |
+| Collapses at one level, with the app untouched   | Saturation of a dependency                 | Measure each dependency separately                                                          |
+
+Each exercise should leave three numbers written down: the maximum capacity per instance at the SLO, with software version and date; the target headroom, with its justification; and the scaling limits, with the dependency that sets each one. Those numbers go into an [ADR](/docs/adr), and the ratio between forecast peak and available capacity is watched with a [fitness function](/docs/fitness-functions), so the warning arrives before the peak does.
+
+## When yes and when not
+
+A load test with a model and clear criteria is needed before a launch or campaign, before touching the critical path (payments, database, authentication), before a migration that changes the query profile, and whenever there is an SLO to meet.
+
+A full campaign is not worth it for an internal system with twenty users, nor is optimizing without measuring which fraction of the time dominates (that is the question of [Amdahl's law](/docs/numeros-y-leyes-de-rendimiento)). And a test without an SLO has no acceptance criterion: any number looks good.
+
+## Common mistakes
+
+- **Testing one endpoint** and reporting its throughput as the system's.
+- **Using average latency** as the acceptance criterion.
+- **Sizing with the 24-hour average CPU**, which hides the peak.
+- **Scaling the application and forgetting the database**, which remains the same single point.
+- **Ignoring cold starts**: a new instance takes time to contribute, and if that is not measured, scaling oscillates.
+- **Scaling on CPU when the bottleneck is a pool or a lock.**
+
+## Checklist
+
+- [ ] The load model comes from production metrics and declares its assumptions.
+- [ ] There is an operation mix with weights and costs, not a single endpoint.
+- [ ] Arrivals are open for independent clients and closed only for fixed users.
+- [ ] Smoke, average load, spike, soak and breakpoint tests have been run.
+- [ ] p50, p95, p99 and errors are reported per operation, with coordinated omission controlled.
+- [ ] The generator has spare resources and is not the limit of the result.
+- [ ] There is a maximum capacity per instance at the SLO, with version and date.
+- [ ] The headroom covers forecast growth and the loss of one zone.
+- [ ] Scaling limits respect what the dependencies can handle.
+- [ ] The decision is recorded in an ADR with the cost per million requests.
+
+## Sources
+
+- Grafana Labs, "Test types" (k6 documentation): https://grafana.com/docs/k6/latest/testing-guides/test-types/
+- Grafana Labs, "Open and closed models" (k6 documentation): https://grafana.com/docs/k6/latest/using-k6/scenarios/concepts/open-vs-closed/
+- Amazon Web Services, "Set the default instance warmup for an Auto Scaling group": https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html
+- Gil Tene, wrk2 README (correction of coordinated omission): https://github.com/giltene/wrk2

@@ -1,0 +1,247 @@
+---
+title: 'Ramas y entrega continua: trunk-based frente a ramas largas'
+description: 'Cómo la distancia entre el código y el tronco decide el coste de integrar: trunk-based frente a ramas largas, flags que caducan, tronco sano y qué medir.'
+category: practicas
+tags:
+  - ramas
+  - trunk-based-development
+  - integracion-continua
+  - feature-flags
+  - dora
+order: 16
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un tronco con integraciones diarias frente a una rama que vuelve con conflicto'
+---
+
+# Ramas y entrega continua: trunk-based frente a ramas largas
+
+Cada rama es una decisión sobre cuánto tiempo puede vivir el código separado del resto. Esa
+distancia no es un detalle de Git: determina cuánto cuesta integrar, cuántos conflictos aparecen
+y, al final, cuánto tarda un cambio en llegar a producción. Un equipo que trabaja tres semanas en
+una rama privada no está haciendo más cuidadosamente su trabajo; está aplazando la integración
+hasta el momento en que más cuesta.
+
+Este artículo compara los dos extremos, el desarrollo basado en tronco (trunk-based development)
+y las ramas de vida larga, y explica cómo los flags de funcionalidad permiten vivir en el tronco
+sin liberar nada antes de tiempo. Al final hay criterios para cuando una rama larga sigue teniendo
+sentido, qué requiere un tronco sano y qué medir.
+
+<Callout tone="info" title="Fecha de corte">
+  Las referencias son de octubre de 2026. Las fuentes primarias citadas al final se leyeron
+  directamente; las cifras que no aparecen allí se marcan como no verificadas.
+</Callout>
+
+## Qué significa cada modelo
+
+El **trunk-based development** es un modelo de control de versiones en el que los
+desarrolladores colaboran sobre una única rama, el tronco, y evitan mantener ramas de desarrollo
+de vida larga. La definición de referencia, mantenida en trunkbaseddevelopment.com, habla de
+ramas de corta vida que sirven para revisión y para comprobar el build en CI, no para publicar.
+Las versiones pueden salir del tronco o de una rama de liberación cortada justo a tiempo y
+borrada después.
+
+Las **ramas largas** (o ramas de funcionalidad) son el modelo contrario: cada trabajo grande vive
+en su propia rama durante días o semanas y se integra al final. No es un error de principiantes:
+es lo que hacen muchos equipos porque el flujo les parece más seguro. El problema es que la
+seguridad es aparente. Lo que se aplaza es la prueba de integración, no el riesgo.
+
+La distinción útil no es «rama sí o no», sino **cuánto código sin integrar existe en un momento
+dado**. Fowler lo expresa en su artículo sobre integración continua con una regla práctica: cada
+desarrollador debería integrar en la línea principal cada día, y el código no debería quedarse
+sin integrar más de unas pocas horas. Esa es la métrica que de verdad importa.
+
+## El coste de integrar tarde
+
+Integrar es caro en proporción no lineal. Fowler lo recoge de forma directa: es muy difícil
+estimar cuánto tarda una integración compleja. Si hay el doble de código que integrar, es probable
+que tarde cuatro veces más. La razón es que cada día de separación añade
+cambios en el tronco que la rama no conoce, y la rama acumula suposiciones sobre un código que ya
+no existe.
+
+Tres costes se acumulan con el tiempo de vida de la rama:
+
+- **Conflictos de texto y de semántica.** Un conflicto de líneas es lo menos grave. Peor es el que
+  no aparece en Git: dos cambios que se fusionan limpios pero rompen una suposición del otro.
+- **Revisión tardía y grande.** Una rama de tres semanas se revisa como un bloque. El revisor
+  encuentra cientos de líneas, más comentarios de los que puede procesar y, a menudo, aprueba por
+  cansancio.
+- **Tiempo muerto de la información.** Mientras la rama no vuelve, nadie más ve el trabajo. Eso
+  retrasa decisiones de diseño y deja a otros equipos reinventando piezas que ya existen.
+
+La relación entre tamaño y riesgo se ve también en la práctica de revisión de Google. Su guía de
+eng-practices sobre CL pequeños (la unidad de cambio en su sistema de revisión) considera que
+unas 100 líneas es un tamaño razonable y que 1000 suele ser demasiado. Sus razones son tres: un
+revisor encuentra antes cinco minutos varias veces que un bloque de media hora; los cambios
+pequeños se revisan con más profundidad y se entienden mejor; y se fusionan con menos conflictos.
+
+<Callout tone="tip" title="Tamaño y riesgo no son lo mismo">
+  Un cambio pequeño no es automáticamente seguro. Un cambio de una línea en un sistema de pagos
+  puede ser más peligroso que una refactorización de cien. Lo que el tamaño sí controla es la
+  capacidad de revisar, entender y revertir. Por eso conviene dividir por intención, no solo por
+  líneas.
+</Callout>
+
+## Ramas de corta vida y revisión rápida
+
+Trunk-based no significa «todo directamente en el tronco». Muchos equipos mantienen ramas
+temporales para revisión, pero con una vida medida en horas. Lo que las hace compatibles con el
+modelo es que cumplen tres condiciones: parten del tronco, se fusionan pronto y se revisan en
+minutos, no en días.
+
+Eso exige tratar la revisión como parte de la integración. Si una petición de cambio espera dos
+días para que alguien la mire, la rama vive dos días aunque el código sea pequeño. Son prácticas
+razonables: revisar antes que empezar otro trabajo, dividir el cambio en pasos que cada uno deje el
+tronco funcionando y, cuando el trabajo es grande, usar **branch by abstraction**: introducir la
+nueva implementación detrás de una interfaz que ya existe, migrar en pasos pequeños y retirar la
+antigua al final. Así el tronco siempre compila y se despliega, y la rama, si existe, dura horas.
+
+## Flags de funcionalidad: desacoplar despliegue de liberación
+
+La razón más común para tener una rama larga es que una funcionalidad no está terminada y no
+debe verla nadie todavía. Un flag de funcionalidad resuelve eso sin rama: el código llega al
+tronco y se despliega, pero el comportamiento nuevo queda apagado. Desplegar deja de ser lo
+mismo que liberar.
+
+Fowler distingue cuatro tipos de toggles, con vidas muy distintas: los de **release** (lanzar una
+funcionalidad), los de **experimento**, los de **ops** (interruptores operativos, algunos de vida
+larga como un kill switch) y los de **permisos** (acceso por segmento, que pueden durar años).
+Para los de release, su guía es clara: no deberían quedarse mucho más de una o dos semanas. Un
+flag que ya no decide nada sigue siendo código condicional, pruebas dobles y una rama que nadie
+entiende.
+
+El riesgo de los flags es el opuesto al de las ramas: en lugar de código sin integrar, código
+integrado con caminos muertos. Fowler los llama inventario con coste de mantenimiento: cada flag
+añade abstracciones, condiciones y carga de pruebas. Por eso cada flag de release debería nacer con
+su tarea de retirada en el backlog. El detalle de cómo caducarlos y de cómo retirar código sin
+miedo está en [Diseñar para borrar](/docs/disenar-para-borrar#flags-que-caducan), y las estrategias
+de despliegue por escalones están en
+[Entrega progresiva](/docs/entrega-progresiva-flags-canary#feature-flags-liberar-sin-desplegar).
+
+Un ejemplo de forma, no de implementación: lo mínimo que conviene registrar de un flag es quién
+lo posee y cuándo debe desaparecer.
+
+```yaml
+flag: pagos-nuevo-checkout
+tipo: release
+propietario: equipo-pagos
+creado: 2026-10-15
+retirada_prevista: 2026-11-05
+tarea_retirada: PAY-412
+```
+
+## Requisitos de un tronco sano
+
+Integrar a diario solo funciona si el tronco aguanta. Ningún modelo compensa un tronco roto cada
+tarde. Estos son los requisitos que, en la práctica, separan un tronco sano de uno que se
+convierte en cuello de botella:
+
+- **Pruebas rápidas y fiables.** Si la suite tarda una hora, nadie integra varias veces al día. Lo
+  que bloquea la fusión tiene que terminar en minutos, y las pruebas lentas se mueven fuera del
+  camino crítico. El [fitness en el CI](/docs/fitness-en-el-ci) es el lugar natural para las
+  reglas de arquitectura que deben fallar pronto.
+- **Revisión ágil.** La revisión debe tener un tiempo de respuesta acotado, no una cola. Si
+  responder tarda días, la rama vive días.
+- **Despliegue automatizado.** El tronco debe poder llegar a producción sin una ceremonia manual.
+  Si cada despliegue es un evento, el equipo lo espacia y el tronco envejece entre uno y otro.
+- **Reversión barata.** Cuando algo sale mal, la opción de volver atrás tiene que ser rápida y
+  conocida. Con reversión barata, integrar con frecuencia deja de parecer una apuesta.
+- **Cultura de tronco verde.** Un tronco roto es prioridad de todo el equipo, no de quien lo
+  rompió. Sin esa norma, la gente deja de integrar para no ser quien bloquea a los demás.
+
+La cultura que sostiene estas prácticas es la misma que describe [DevOps y su cultura](/docs/devops-cultura).
+Las herramientas no compensan una organización que castiga la integración frecuente.
+
+## Qué medir
+
+DORA mide el rendimiento de la entrega con cinco métricas. Según su guía de métricas en dora.dev,
+se agrupan en dos familias. La de **rendimiento** (_throughput_) incluye el _change lead time_, la
+_deployment frequency_ y el _failed deployment recovery time_. La de **inestabilidad** incluye el
+_change fail rate_ y el _deployment rework rate_, que mide la proporción de despliegues no
+planificados provocados por un incidente en producción.
+
+Para este tema, tres señales bastan para diagnosticar el tronco:
+
+| Señal                       | Qué indica                                                | Dónde mirar                            |
+| --------------------------- | --------------------------------------------------------- | -------------------------------------- |
+| Frecuencia de integración   | Cuántas veces al día llega código al tronco               | Commits a la rama principal por día    |
+| Tiempo de vida de las ramas | Cuánto tarda una rama desde que nace hasta que se fusiona | Antigüedad media de las ramas abiertas |
+| Tiempo hasta producción     | Cuánto tarda un cambio aprobado en llegar a producción    | Lead time de cambio en la métrica DORA |
+
+La regla que se deduce del modelo es simple: si el tiempo de vida de las ramas sube, el tiempo
+hasta producción también sube, y, según el criterio del autor, suele aparecer después más retrabajo. Los datos de
+rendimiento de cada equipo son propios: no conviene compararlos con cifras de otros sin entender
+su contexto. Este artículo no usa ninguna cifra de referencia sectorial que no haya podido
+verificar.
+
+## Cuándo las ramas largas siguen teniendo sentido
+
+Hay casos reales en los que una rama de vida más larga es razonable, y negarlo lleva a forzar un
+modelo que no encaja:
+
+- **Equipos o proveedores externos** que trabajan con un repositorio separado y no pueden integrar
+  a diario en tu tronco. Lo que sí puedes exigir es que integren en un tronco propio con la misma
+  frecuencia y que la integración con el tuyo ocurra en tramos cortos y acordados.
+- **Versiones publicadas con soporte.** Una librería o una aplicación instalable necesita ramas de
+  mantenimiento para corregir la versión 2.3 mientras la 3.0 avanza. Esa rama es una rama de
+  liberación, no de funcionalidad, y debe vivir lo que dure el soporte.
+- **Trabajo que cambia contratos de forma incompatible**, como una migración de base de datos o
+  un cambio de API pública. Aquí el riesgo está en el contrato, no en la rama, y conviene tratarlo
+  con [expansión y contracción](/docs/migraciones-bd-sin-downtime) en lugar de con una rama
+  aislada.
+
+Cuando la rama larga es inevitable, practica la integración frecuente igualmente: integra al
+tronco de forma parcial (con flags apagados o detrás de una interfaz), trae los cambios del
+tronco a la rama cada día y mide el tiempo de vida para que la excepción no se convierta en norma.
+
+## Cuándo sí y cuándo no
+
+**Sí conviene el tronco frecuente cuando:**
+
+- El equipo puede revisar en horas y tiene pruebas que terminan en minutos.
+- Se despliega con frecuencia y la reversión está probada.
+- Hay flags de release con dueño y fecha de retirada.
+
+**No conviene forzarlo cuando:**
+
+- El producto es una versión publicada con soporte y la rama de mantenimiento es el producto.
+- Un proveedor externo no puede integrar en tu repositorio y no hay forma de acordar tramos.
+- El equipo no tiene todavía pruebas automatizadas: la integración frecuente sin red de seguridad
+  solo adelanta los incidentes.
+
+## Errores frecuentes
+
+- **Tratar la rama como garantía.** La rama no evita el riesgo; lo aplaza hasta la fusión, cuando
+  es más caro y tiene menos tiempo para resolverse.
+- **Flags sin caducidad.** Un flag de release que lleva un año en el código es deuda con nombre
+  propio. Sin tarea de retirada, el inventario solo crece.
+- **Revisar por días.** Una cola de revisión de dos días convierte un cambio pequeño en una rama
+  de dos días, aunque el código sea de cinco líneas.
+- **Integrar sin tronco verde.** Si el tronco se rompe cada semana, el equipo deja de confiar en
+  él y vuelve a las ramas largas por defensa.
+- **Medir solo el número de ramas.** Lo que importa es el tiempo que viven y cuánto código espera
+  sin integrar.
+
+## Checklist
+
+- [ ] ¿Cuántas horas pasan, de media, entre que una rama nace y se fusiona?
+- [ ] ¿Cada desarrollador integra al tronco al menos una vez al día?
+- [ ] ¿Cada flag de release tiene dueño, fecha de retirada y tarea asociada?
+- [ ] ¿Las pruebas que bloquean la fusión terminan en minutos?
+- [ ] ¿Hay un tiempo de respuesta acordado para la revisión?
+- [ ] ¿El tronco puede desplegarse de forma automatizada y revertirse sin ceremonia?
+- [ ] ¿Las excepciones (proveedores, versiones con soporte) están documentadas y tienen fecha de revisión?
+
+## Fuentes
+
+Fuentes primarias, leídas directamente:
+
+- Martin Fowler, [Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html): integrar al mainline cada día y el coste de las integraciones tardías.
+- Martin Fowler, [Feature Toggles](https://martinfowler.com/articles/feature-toggles.html): tipos de toggles, vida útil y coste de mantenerlos.
+- [Trunk-based development](https://trunkbaseddevelopment.com/): definición, ramas de corta vida e integración al menos cada 24 horas.
+- Google, [eng-practices: Small CLs](https://google.github.io/eng-practices/review/developer/small-cls.html): tamaño de los cambios y motivos para mantenerlos pequeños.
+- DORA, [Software delivery metrics](https://dora.dev/guides/dora-metrics/): las cinco métricas y sus familias.

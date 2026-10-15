@@ -1,0 +1,214 @@
+---
+title: 'Chaos engineering and game days: failing on purpose'
+description: 'How to test resilience by injecting controlled faults: hypotheses, blast radius, stop conditions and game days with the teams that run the system.'
+category: practicas
+tags:
+  - chaos-engineering
+  - game-days
+  - resiliencia
+  - slo
+  - sre
+order: 17
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'One fault injected into a single component, inside a limited radius, with a stop rule'
+---
+
+# Chaos engineering and game days: failing on purpose
+
+A resilience mechanism is not proven until something really fails. A timeout that was written but
+never measured, a retry nobody has seen in action, or a failover to another zone that only exists
+in a diagram are hypotheses. The most expensive way to check them is to wait for a real incident.
+**Chaos engineering** brings that moment forward: it causes small, controlled and observed faults,
+so the team learns how the system reacts before production does it for them.
+
+This article focuses on practice: how to design an experiment, which faults are worth injecting,
+how it relates to SLOs, and what **game days** are, the planned exercises run with the teams. The
+design patterns being tested (timeouts, retries, isolation) are covered in
+[resilience in distributed systems](/docs/resiliencia-sistemas-distribuidos).
+
+<Callout tone="info" title="Cut-off date">
+  The data is from October 2026. Tools change maturity and name often: check their official
+  documentation before adopting them.
+</Callout>
+
+## What it is and what it is not
+
+Chaos engineering is not breaking things at random in production. It is experimenting on a system
+to build confidence in its ability to withstand turbulent conditions. An engineer states what
+should happen, introduces a realistic disturbance and compares what happens with the prediction.
+If they match, confidence goes up. If they do not, the team has found a defect at a moment it
+chose.
+
+Netflix popularized the term. The article "Chaos Engineering" by Basiri and colleagues, published
+in _IEEE Software_ in 2016, describes its principles.
+
+## The principles, in practice
+
+The _Principles of Chaos Engineering_ site lists five advanced principles. They make a good
+checklist for deciding whether an experiment is well designed:
+
+| Principle                      | What it demands in practice                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------- |
+| Hypothesis around steady state | Define a measurable output of the system (error rate, latency, completed orders).  |
+| Vary real-world events         | Inject what actually happens: a node dies, a dependency is slow, a zone goes down. |
+| Run experiments in production  | Ideally in production, or in something as close to it as possible.                 |
+| Automate experiments           | Run them continuously, not as an isolated event.                                   |
+| Minimize blast radius          | Limit who is affected and be able to stop the experiment at once.                  |
+
+The order matters. Without a hypothesis about steady state there is no experiment, only damage.
+And the blast radius is not optional: starting small, with a stop button at hand, is what earns
+permission to do more.
+
+## Steady state, SLI, SLO and error budget
+
+Steady state is not a feeling that "everything looks fine". It is expressed with the same
+indicators operations uses: an SLI, such as the share of orders completed in under two seconds.
+The [SLO and error budget](/docs/observabilidad-slo-presupuesto-error#slos-and-the-error-budget)
+turn that indicator into a threshold and an amount of tolerable failure over a period.
+
+That amount is what gives experiments their meaning. If the service has budget to spare, there is
+room to inject a fault in production at low risk. If the budget is spent, the experiment moves to
+a test environment or waits. This rule is the author's criterion, not a standard from any vendor:
+what matters is agreeing on it beforehand, not arguing about it during an incident.
+
+Without observability there is no possible experiment. If you cannot see the service's error rate
+during the injection, you will not know whether the hypothesis held or when to stop.
+
+## Fault types worth injecting
+
+The most useful faults are the ones the system meets in real life. Each one answers a different
+question:
+
+- **Latency.** A dependency answers, but slowly. It is the most revealing fault: the system stays
+  "up" while threads, queues and retries pile up. See
+  [slow is worse than down](/docs/reintentos-con-jitter#slow-is-worse-than-down).
+- **Dependency outage.** Does the service degrade gracefully when the payment, email or search
+  provider stops responding, or do errors cascade?
+- **Packet loss or network partition.** Lost packets or a cut between two services. It tests
+  timeouts and reconnection logic.
+- **Resource exhaustion.** Memory, CPU, file descriptors, database connections or disk. It often
+  reveals limits that nobody configured.
+- **Zone failure.** An entire availability zone is lost. It is the closest experiment to a serious
+  incident and therefore the one that needs the most preparation.
+
+Start with the first two. They look most like daily events and carry the least risk when the blast
+radius is well bounded.
+
+## Designing an experiment
+
+A well-written experiment fits in a table. If you cannot fill in every row, it is not yet an
+experiment:
+
+| Field                   | Question it answers                                                    |
+| ----------------------- | ---------------------------------------------------------------------- |
+| Hypothesis              | What must remain true during the fault, and on which metric?           |
+| Metric                  | Which indicator checks it, and with what threshold?                    |
+| Blast radius            | What share of traffic, which services and which customers are exposed? |
+| Stop condition          | Which metric value stops the experiment automatically?                 |
+| Rollback plan           | How is the fault removed, and what if the removal fails?               |
+| Who is told and decides | Which owners are informed, who can stop it, and where is it announced? |
+| Window and timing       | When does it run, who is on call, and with what expected load?         |
+
+An illustrative example: "If the payment provider answers with 800 ms of extra latency on 5% of
+requests, orders still complete in under two seconds for 99% of users. Stop if the checkout error
+rate exceeds 0.5% for two minutes." The hypothesis is concrete, the metric exists, the stop is
+automatic and the radius is a fraction of traffic.
+
+Stop conditions must be real alarms, not a recommendation in a document. AWS Fault Injection
+Service, for example, uses CloudWatch alarms as stop conditions and halts the experiment when they
+fire; once stopped, it cannot be resumed. That property is a good
+design test: stopping should be cheap and safe.
+
+## Game days: rehearsing the people
+
+A game day is a planned exercise in which real teams practise how they respond to a scenario. Chaos
+engineering checks the system with small, continuous experiments. A game day checks **the people
+and the procedures**: detection, communication, roles, runbooks and the decision to mitigate.
+
+AWS best practices for game days (REL12-BP05, _Conduct game days regularly_) work well as a
+checklist:
+
+- Involve the teams that would respond in production, and business stakeholders too.
+- Announce the date, time and scenario in advance to all participants and stakeholders, especially
+  for the first one.
+- Rehearse in replicas of the production environment, defined as infrastructure as code, when
+  possible.
+- If a negative impact appears, roll the exercise back and document the fix.
+- Hold a post-exercise review and turn the findings into actions with an owner and a date.
+
+Split the roles: someone controls the injection and can stop it, someone watches the metrics, the
+response team works as if it were real, and an observer notes what is done and in what order. The
+roles in a real incident are the same; their detailed treatment is in
+[incident management and postmortems](/docs/gestion-incidentes-postmortems#roles-who-does-what-during-an-incident).
+
+### Game day versus recovery drill
+
+They are similar exercises with different goals. A **disaster recovery drill** measures whether a
+service or a region can be recovered within an RTO and an RPO, and it is usually less frequent and
+broader in scope (see [recovery testing](/docs/regiones-zonas-y-recuperacion#recovery-testing)). A
+game day rehearses the organizational response to a scenario, is short, and has communication and
+decision goals. Continuous chaos engineering is neither: it is a set of small experiments running
+alongside normal work, not an event.
+
+## Tools
+
+Choose the tool by where the workload runs, not by popularity:
+
+- **AWS Fault Injection Service** is a managed service for workloads on AWS, with CloudWatch-based
+  stop conditions as described above.
+- **LitmusChaos** and **Chaos Mesh** are open-source projects for Kubernetes. LitmusChaos moved to
+  _incubating_ in the CNCF in January 2022. The current status of both projects changes: check
+  cncf.io/projects before adopting either.
+
+No tool replaces the discipline of hypothesis, blast radius and stop. A tool without those three
+things only produces incidents with more steps.
+
+## When it makes sense and when it does not
+
+**It makes sense** when steady state can be measured, observability shows the impact almost in real
+time, rollback procedures exist and the owners of the affected services have agreed with informed
+consent.
+
+**It does not** when the system has no reasonable timeouts or retries. Injecting a fault to discover
+that there is no timeout is a design review in disguise: the fix should come first. Nor does it
+replace load testing, contract tests or architecture review. And it is not done without
+observability: an experiment run blind teaches nothing.
+
+## Common mistakes
+
+- **Experimenting without a hypothesis.** "Let's see what happens" produces noise, not conclusions.
+- **Starting with all the traffic.** The first experiment should limit impact to a small fraction
+  and one service, not the whole platform.
+- **Untested stop button.** If nobody has checked that the stop works in a rehearsed scenario, it
+  does not exist.
+- **Game days without the owners.** Running them behind the teams' backs breeds distrust and,
+  rightly, rejection.
+- **Looking for culprits.** A finding that is punished stops being reported. The target is the
+  system and the process, in line with the blameless culture of the
+  [postmortem](/docs/gestion-incidentes-postmortems#blame-human-error-and-a-blameless-culture).
+- **Not closing the loop.** A finding without an action, owner and date repeats in the next
+  incident. See [from actions to real improvement](/docs/gestion-incidentes-postmortems#from-actions-to-real-improvement).
+
+## Checklist
+
+- [ ] Each experiment has a hypothesis about a steady-state metric and a threshold.
+- [ ] The metric and its associated SLI are instrumented before anything is injected.
+- [ ] The blast radius is bounded and documented, starting with a small fraction.
+- [ ] An automatic stop condition exists and someone can stop the experiment by hand.
+- [ ] The rollback plan has been rehearsed and the owners of the affected services are informed.
+- [ ] The error budget allows the experiment; if not, it moves to a test environment.
+- [ ] Game days have a scenario, roles, an observer and a post-exercise review with actions.
+- [ ] Findings are recorded and turned into design improvements, not only into alerts.
+
+## Sources
+
+- [Principles of Chaos Engineering](https://principlesofchaos.org/): advanced principles of the experiment.
+- [AWS Well-Architected, Reliability Pillar: REL12-BP05 Conduct game days regularly](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_testing_resiliency_game_days_resiliency.html).
+- [AWS Fault Injection Service: stop conditions](https://docs.aws.amazon.com/fis/latest/userguide/stop-conditions.html).
+- [CNCF: LitmusChaos moves to incubating (CNCF, 2022)](https://www.cncf.io/blog/2022/01/11/litmuschaos-becomes-a-cncf-incubating-project/).
+- Basiri, A. et al., "Chaos Engineering", _IEEE Software_, 33(3), 2016: [IEEE Xplore](https://ieeexplore.ieee.org/document/7436642).

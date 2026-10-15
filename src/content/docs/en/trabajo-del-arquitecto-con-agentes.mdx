@@ -1,0 +1,226 @@
+---
+title: "The architect's work with agents: roles and productivity"
+description: 'What changes in the architect role when teams work with AI agents: specifying, delegating with judgment, reviewing, and measuring flow honestly.'
+category: decisiones
+tags:
+  - agentes
+  - rol-arquitecto
+  - productividad
+  - metricas-de-flujo
+  - equipos
+order: 10
+roadmap:
+  id: liderazgo
+  stage: equipos
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Specify, delegate, verify: the architect at the control point'
+---
+
+# The architect's work with agents: roles and productivity
+
+When a team starts working with coding agents, the first change people notice is that less code
+gets written by hand. The bigger change comes afterwards: the architect's work moves from
+**producing** to **specifying, delegating, verifying, and deciding what gets automated**. If the
+role is not redefined, the architect ends up reviewing diffs they do not understand, at the speed
+a machine generates them, and the apparent productivity turns into debt.
+
+This article covers what changes in the role, which skills gain and lose value, how to measure
+whether the team really improves without falling into vanity metrics, and which organizational
+risks appear. It separates what is verified from what is the author's judgment. For the technical
+design of the environment the agent works in, see
+[harness engineering with Claude Code](/docs/harness-engineering-claude-code).
+
+<Callout tone="info" title="What is verified and what is not">
+  The productivity figures come from specific studies, with limited tasks and contexts. They are
+  cited with their scope in the sources section. Everything else (how roles get divided, which
+  skills matter most) is the author's judgment and is presented as such.
+</Callout>
+
+## What changes in the role
+
+The architect's work was never only writing code, but code used to be the most visible way to
+influence a system. With agents, that influence goes through other channels. The table summarizes
+the shift, according to the author's judgment:
+
+| Activity              | Before (mostly human)             | With agents                                                         |
+| --------------------- | --------------------------------- | ------------------------------------------------------------------- |
+| Implementing a change | Writing and testing your own code | Writing the specification and reviewing the result                  |
+| Deciding a design     | Prototyping to understand         | Asking for alternatives and checking them against explicit criteria |
+| Keeping conventions   | Remembering them in reviews       | Encoding them in rules, hooks, and tests the agent respects         |
+| Detecting risks       | Experience reading the code       | Designing sensors (tests, types, review) that detect them           |
+| Communicating         | Documents and meetings            | The same, plus a specification the agent also consumes              |
+
+The pattern repeats: the architect stops being the bottleneck for writing and becomes the **control
+point** between intent (what is wanted and why) and execution (what the agents do). That point has
+three responsibilities that are not delegated: defining what "correct" means, checking that the
+result meets it, and deciding which work deserves to be automated.
+
+This does not replace systems architecture; it makes it more explicit. An agent cannot infer a
+module boundary that nobody wrote down. That is why working with agents pushes toward clear
+boundaries, contracts, and recorded decisions, the same material covered by
+[architecture decision records](/docs/adr) and [facilitation](/docs/arquitecto-como-facilitador).
+
+## Skills that gain value
+
+If execution gets cheaper, value shifts toward what the machine does not do well on its own.
+According to the author's judgment, four skills gain weight:
+
+- **Specification.** Describing a change precisely enough that someone else can verify it: inputs,
+  outputs, edge cases, what must not be touched. A vague specification produces a plausible but
+  wrong change, and the ambiguity is paid for in review.
+- **Verification criteria.** Knowing which test, sensor, or inspection proves the result is correct
+  before asking for it. Someone who cannot check a result cannot delegate it safely.
+- **Reading systems.** Understanding coupling, the data that crosses a boundary, and side effects.
+  This is what lets you review a fifty-file change without reading every line.
+- **Communicating decisions.** Explaining why something is automated, which risks are accepted, and
+  what stays in human hands. See [presenting ideas and proposals](/docs/presentar-ideas-y-propuestas).
+
+### Skills that lose value
+
+They lose relative value without disappearing: the ability to produce correct code quickly in one
+specific language, knowledge of syntax and APIs the model already knows, and the habit of solving
+everything inside the editor. "Losing value" should not be confused with "not needed": someone who
+cannot read code cannot judge what the agent produces.
+
+## Productivity: what the data says
+
+Three studies are often cited. They are worth reading with their real scope.
+
+**METR (July 2025).** A randomized controlled trial with 16 experienced open-source developers, 246
+issues in mature repositories, and early-2025 AI tools. When AI use was allowed, issues took 19%
+longer to complete. Developers expected AI to speed them up by 24% before the study, and after
+experiencing the slowdown they still believed it had sped them up by 20%. The gap between perception
+and measurement is the most useful finding for an architect: **a feeling of speed is not a metric**.
+METR warns that the result is historical and published an update in February 2026 with newer data,
+which should be read before using the 2025 figure as a reference.
+
+**Peng et al. (arXiv, February 2023).** A controlled experiment in which developers had to implement
+an HTTP server in JavaScript as fast as they could. The group with GitHub Copilot finished 55.8%
+faster than the control group. It is a bounded, well-defined task, far from a change in a legacy
+system with real dependencies. It is an arXiv preprint, and its record shows no journal or peer review;
+the context matters as much as the number.
+
+**DORA, State of AI-assisted Software Development 2025.** At the organization level, DORA found that
+higher AI adoption is associated with both higher software delivery throughput and higher
+instability. This is an **association**, not a demonstrated causal relationship, and the report
+suggests that code is generated faster than review, testing, and release processes can absorb. For
+the architect the reading is direct: speeding up writing without speeding up verification moves the
+bottleneck instead of removing it.
+
+What the three studies share: the speed gain in writing is real for bounded tasks, but it does not
+translate frictionlessly into stable delivery in complex systems. That is why the whole flow has to
+be measured.
+
+## Metrics: which help and which mislead
+
+The reference framework is still the one from _Accelerate_ (Forsgren, Humble, and Kim, 2018), which
+popularized DORA's software delivery metrics: deployment frequency, lead time for changes, time to
+restore service, and change failure rate. DORA has updated them since; its current page describes
+five metrics, including failed deployment recovery time and deployment rework rate. Check the current
+definitions in its guide before setting targets, because the names have changed.
+
+| Metric                           | What it measures                            | Where it misleads                                                                                    |
+| -------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Change lead time                 | From commit (or idea) to production         | Measured from commit, the specification step is left out                                             |
+| Deployment frequency             | How often code reaches production           | Can be inflated by splitting changes without value                                                   |
+| Change failure rate              | Share of deployments that cause incidents   | Rises if incidents are not recorded consistently                                                     |
+| Recovery time                    | How long restoring the service takes        | Improves with good runbooks, not only with agents                                                    |
+| Deployment rework rate           | How many deployments are urgent corrections | Reveals the hidden cost of changes accepted without verification                                     |
+| Lines or share of generated code | Volume of code produced                     | **Vanity metric**: more code is not more value                                                       |
+| Tokens consumed                  | Inference spend                             | Measures cost, not outcome; useful for [inference cost](/docs/costo-de-inferencia), not productivity |
+| Open pull requests               | Activity                                    | Inflated by small or discarded changes                                                               |
+
+The practical rule: **a volume metric is only useful if an outcome metric accompanies it**. If the
+team generates twice as much code and real lead time does not fall, or rework rises, productivity has
+not improved. This is Goodhart's law in its everyday form, developed in
+[measuring decisions with OKRs and KPIs](/docs/medir-decisiones-okr-kpi#goodharts-law).
+
+## Organizational risks
+
+The most serious risks are not in the code but in how work and knowledge get distributed.
+
+- **Review overload.** If the agent produces ten changes a day and each one needs a deep human
+  review, review becomes the new bottleneck and starts being done superficially. The remedy is to
+  reduce change size, add automated sensors, and reserve human review for decisions and risks rather
+  than style.
+- **Junior de-skilling.** If junior profiles only supervise agents, they do not build the intuition
+  that later lets them review. Deliberate learning tasks are needed: implementing some changes by
+  hand, explaining decisions, and reviewing others' code with judgment.
+- **Vendor dependence.** The workflow, rules, and team skills can become tied to one tool. Keep
+  specifications, rules, and verification criteria in portable formats. See
+  [tied to a vendor](/docs/casado-a-un-proveedor).
+- **Metrics that reward volume.** If the team is judged by generated code, it will optimize for that,
+  even if the system gets worse.
+
+## When it does and does not apply
+
+**Redefining the role makes sense** when the team already uses agents routinely, code changes are
+generated in volume, and review has become the bottleneck.
+
+**Treating the transition as a tool swap does not work.** Without automated tests, types, and clear
+boundaries, an agent creates more verification work than it saves; sensors and boundaries come first.
+It also does not apply to decisions where human judgment is the product, such as choosing which
+problem to solve. Those are not delegated.
+
+For the autonomy and control side of an AI system, see
+[how much autonomy to give an agent](/docs/autonomia-de-la-ia) and
+[controlling AI: governance, autonomy and evaluation](/docs/controlar-la-ia-gobierno-y-autonomia).
+
+## Common mistakes
+
+- **Measuring productivity by how the team feels.** The METR study shows perception can point the
+  opposite way from measurement.
+- **Celebrating code volume.** More generated lines with no drop in rework or lead time is not
+  progress.
+- **Delegating without specifying.** A vague assignment produces a plausible result that review will
+  have to undo.
+- **Reviewing everything at the same level.** A formatting change and a contract change between
+  services do not deserve the same attention.
+- **Stopping the training of reviewers.** Supervision needs judgment, and judgment is built by
+  practicing.
+- **Confusing association with cause.** DORA's aggregate data describes organizational trends; it
+  does not prove that a given tool causes a result in your team.
+
+## Illustrative example: a six-person team
+
+A six-person backend team adopts agents for changes to its internal API. After two months, the number
+of pull requests has doubled, but median lead time has not moved and the rework rate has risen. The
+architect makes three changes to the role and the process, without touching the tool:
+
+1. Requires a one-page specification for any change that touches a contract, with edge cases and
+   acceptance criteria.
+2. Turns the rules they used to check by hand (API contracts, module boundaries, compatibility tests)
+   into automated sensors, so human review focuses on design.
+3. Changes the dashboard: it stops showing open pull requests and shows lead time, failure rate, and
+   rework per week.
+
+After a quarter, the number of pull requests drops, lead time shrinks, and rework falls. This is an
+illustrative case built for this article, not measured data; it shows the order of decisions: specify
+and verify first, then measure the flow.
+
+## Checklist
+
+- [ ] Every change you delegate to an agent has a written specification with edge cases and acceptance
+      criteria.
+- [ ] You know which sensor (test, type, rule, review) proves the change is correct.
+- [ ] The dashboard tracks lead time, deployment frequency, failure rate, and rework, not only generated
+      code or tokens.
+- [ ] Volume metrics always appear next to an outcome metric.
+- [ ] Human review is reserved for design and risk decisions; tools verify style.
+- [ ] Junior profiles have deliberate implementation and review tasks.
+- [ ] Specifications, rules, and criteria live in formats that do not depend on a single vendor.
+- [ ] You revisit external study figures from time to time, because they age quickly.
+
+## Sources
+
+- METR, [Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/), July 10, 2025 (includes the reference to the February 2026 update).
+- Sida Peng, Eirini Kalliamvakou, Peter Cihon, and Mert Demirer, [The Impact of AI on Developer Productivity: Evidence from GitHub Copilot](https://arxiv.org/abs/2302.06590), arXiv:2302.06590, February 2023.
+- DORA, [Balancing AI tensions](https://dora.dev/insights/balancing-ai-tensions/) (findings of the _State of AI-assisted Software Development 2025_ report).
+- DORA, [DORA metrics guide](https://dora.dev/guides/dora-metrics/) (current definitions).
+- Nicole Forsgren, Jez Humble, and Gene Kim, [_Accelerate_](https://itrevolution.com/product/accelerate/), IT Revolution, 2018.
+- Internal reading: [Measuring decisions: OKRs, KPIs and guiding metrics](/docs/medir-decisiones-okr-kpi),
+  [The architect as facilitator](/docs/arquitecto-como-facilitador),
+  [Using AI to decide: research, scenarios and pre-mortem](/docs/ia-para-decidir-negocio) and
+  [Presenting ideas and proposals that get approved](/docs/presentar-ideas-y-propuestas).

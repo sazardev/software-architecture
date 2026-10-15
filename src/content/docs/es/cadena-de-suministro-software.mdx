@@ -1,0 +1,244 @@
+---
+title: 'Cadena de suministro: SBOM, firmas y SLSA'
+description: 'Guía para arquitectos: qué inventario, firmas y procedencia exigir a tu software, cómo fijar dependencias y qué nivel SLSA apuntar, a octubre de 2026.'
+category: practicas
+tags:
+  - sbom
+  - cadena-de-suministro
+  - slsa
+  - dependencias
+  - firmas
+order: 15
+roadmap:
+  id: entrega
+  stage: seguridad
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Cada eslabón firma lo que produce; se comprueba todo antes de desplegar'
+---
+
+# Cadena de suministro: SBOM, firmas y SLSA
+
+El software que despliegas no lo escribió solo tu equipo. Está hecho de código propio, de
+dependencias directas y transitivas, de herramientas de construcción (el CI, las acciones, los
+plugins del compilador) y de artefactos que publican otros. Cada uno de esos eslabones puede ser
+la puerta de entrada de un atacante, y revisar tu código propio no cubre ninguno de ellos.
+
+La categoría A03 de OWASP Top 10 2025, «Software Supply Chain Failures», ocupa el tercer puesto. OWASP
+la describe como un riesgo que, desde 2013, ha crecido hasta cubrir todos los fallos de la cadena, no solo
+los componentes con vulnerabilidades conocidas. En
+[seguridad por diseño](/docs/seguridad-por-diseno#cadena-de-suministro) ya está el mapa general.
+Aquí bajamos a la operación: qué inventario llevar, cómo fijar y revisar dependencias, qué prueba
+cada firma, qué nivel SLSA apuntar y qué hacer cuando llega un aviso de vulnerabilidad.
+
+## Cinco eslabones, cinco superficies
+
+| Eslabón       | Qué puede fallar                                               | Control principal                      |
+| ------------- | -------------------------------------------------------------- | -------------------------------------- |
+| Código propio | Cambio malicioso o sin revisar, secretos filtrados             | Revisión obligatoria, ramas protegidas |
+| Dependencias  | Versión comprometida, paquete abandonado, nombre parecido      | Lockfile, revisión de actualizaciones  |
+| Build         | Herramientas alteradas, entorno contaminado por otra ejecución | Build efímero y reproducible           |
+| Artefacto     | Binario o imagen cambiados entre el build y el despliegue      | Firma y procedencia                    |
+| Despliegue    | Se despliega algo que nadie verificó                           | Comprobación previa al despliegue      |
+
+## SBOM: un inventario, no una garantía
+
+Un SBOM (_Software Bill of Materials_) es una lista estructurada de los componentes que forman un
+artefacto, con sus versiones y sus relaciones. Responde a una pregunta operativa: cuando aparece
+una vulnerabilidad en una librería, ¿qué productos la llevan, en qué versión y desde cuándo?
+
+Hay dos formatos con respaldo de estándar. SPDX es, según su sitio oficial, una especificación
+abierta que corresponde a la norma ISO/IEC 5962:2021. CycloneDX 1.7 se publicó el 21 de octubre de
+2025, y su versión 1.6 fue ratificada como ECMA-424 en junio de 2024. Cualquiera de los dos sirve. Lo
+que importa es que tu herramienta lo genere y tu escáner lo consuma.
+
+En EE. UU., CISA publicó el 22 de agosto de 2025 un borrador de los elementos mínimos de un SBOM, con
+comentarios abiertos hasta el 3 de octubre de 2025. Antes de convertirlo en requisito, consulta el
+documento vigente: no hemos confirmado su estado final ni sus campos.
+
+Un SBOM no garantiza que sus componentes sean de fiar. Un inventario perfecto de un paquete
+malicioso sigue siendo un inventario de código malicioso. Tampoco dice si ese código se ejecuta:
+eso lo responde el análisis de alcanzabilidad de la sección sobre vulnerabilidades.
+
+**Criterio del autor:** genera el SBOM en el CI a partir del artefacto que se despliega, no a
+mano ni desde el manifiesto. El manifiesto declara intenciones; el artefacto muestra lo que
+realmente entró.
+
+## Dependencias: fijar, revisar, desconfiar
+
+**Fijación.** El manifiesto declara rangos (`^2.3.0`); el lockfile fija la versión que se
+instaló. Versiona el lockfile e instala en CI con él, sin resolver de nuevo. El lockfile no te
+protege de una versión comprometida que ya fijaste, pero impide que cambie algo sin que nadie lo
+decida.
+
+**Ventana de enfriamiento.** Una versión recién publicada puede estar comprometida y retirarse después,
+así que esperar antes de adoptarla reduce la exposición. pnpm tiene la opción
+`minimumReleaseAge`, en minutos, que se aplica también a dependencias transitivas. Su valor por
+defecto es 1440 minutos desde pnpm 11 y era 0 antes; conviene fijarlo de forma explícita:
+
+```yaml
+# pnpm-workspace.yaml
+minimumReleaseAge: 1440 # minutos: ignora versiones publicadas en las últimas 24 h
+```
+
+**Lección operativa.** Un script de instalación es código que corre con tus permisos, y un paquete
+legítimo puede volverse malicioso con una sola cuenta comprometida. Por eso conviene revisar qué
+ejecuta cada dependencia nueva y desactivar los scripts de instalación cuando el gestor lo permita.
+
+Hay otras dos amenazas habituales: el _typosquatting_ (un nombre casi idéntico a uno popular) y
+los paquetes abandonados, sin nadie que los parchee. OWASP recomienda vigilar los componentes sin
+mantenimiento y, si no se pueden parchear, migrarlos.
+
+**Criterio del autor:** cada dependencia nueva es una decisión. Revisa quién la mantiene, qué
+scripts ejecuta al instalarse (y desactívalos en tu gestor cuando sea posible) y que el nombre sea
+exactamente el que buscabas.
+
+**Actualizaciones.** Los bots que abren pull requests de actualización son útiles, pero una PR no
+es una revisión. Agrupa las actualizaciones por tipo, lee el changelog de las versiones mayores y
+despliega de forma escalonada (OWASP recomienda _staged rollouts_ o canary en lugar de actualizar
+todo a la vez).
+
+## Construcción reproducible y efímera
+
+Según reproducible-builds.org, un build es reproducible si, con el mismo código fuente, el mismo
+entorno y las mismas instrucciones, cualquiera puede recrear copias idénticas bit a bit de los
+artefactos. Si puedes reconstruir el binario, puedes comprobar que el publicado corresponde al
+código revisado.
+
+La reproducibilidad completa es costosa, pero hay dos propiedades que sí conviene exigir pronto:
+
+- **Efímero.** Cada ejecución arranca en un entorno nuevo, sin estado de ejecuciones anteriores.
+  Un runner compartido que conserva cachés o herramientas de otros trabajos es un vector.
+- **Mínimo privilegio.** Los permisos se declaran por job, y el token de publicación solo existe
+  donde se publica:
+
+```yaml
+jobs:
+  publish:
+    permissions:
+      contents: read
+      id-token: write # solo este job pide identidad OIDC para publicar
+```
+
+Además, **promueve, no reconstruyas**. OWASP recomienda promover los artefactos en lugar de
+recompilarlos por entorno. Un único build, firmado, viaja de pruebas a producción: el binario de
+staging debe ser el mismo que el de producción.
+
+## Firmas y procedencia: qué prueba cada una
+
+Una firma responde a quién firmó y a si el artefacto cambió después. No dice si quien firmó era de
+fiar. Sigstore permite firmar con certificados de corta duración ligados a una identidad, sin gestionar
+claves de larga duración: Cosign firma, Fulcio emite ese certificado y Rekor registra cada firma en
+un registro de transparencia público.
+
+La procedencia (_attestation_) es una afirmación firmada sobre cómo se construyó un artefacto:
+desde qué repositorio, con qué workflow, en qué commit. El formato habitual es in-toto, que envuelve
+un «Statement» con un «predicate» tipado; el predicado de procedencia de SLSA describe el build.
+
+En npm, la publicación con _trusted publishing_ (OIDC) está disponible con carácter general desde
+el 31 de julio de 2025 y requiere npm CLI 11.5.1 o superior. Con GitHub Actions o GitLab CI/CD
+genera la procedencia automáticamente cuando el repositorio y el paquete son públicos. No admite
+runners self-hosted de momento, y cada paquete puede tener hasta 10 publicadores de confianza.
+
+| Prueba      | Responde a                                    | No responde a                                 |
+| ----------- | --------------------------------------------- | --------------------------------------------- |
+| Firma       | ¿Quién lo firmó? ¿Cambió después?             | ¿Es fiable quien firmó? ¿El código era bueno? |
+| Procedencia | ¿Dónde, cómo y desde qué commit se construyó? | ¿Las dependencias eran seguras?               |
+| SBOM        | ¿Qué componentes contiene?                    | ¿Alguno es malicioso?                         |
+
+La trampa habitual es la primera fila: una firma válida no basta si la verificación acepta
+cualquier identidad. En el despliegue hay que exigir un repositorio, un workflow y un emisor
+concretos. Aquí la identidad del build sustituye a una clave estática, la misma idea que en
+[gestión de secretos y claves](/docs/gestion-secretos-claves). Y como cualquier regla de arquitectura, debe hacer fallar el CI cuando no se cumple, como en [fitness functions en el CI](/docs/fitness-en-el-ci).
+
+## SLSA: niveles y cómo elegir uno
+
+SLSA (_Supply-chain Levels for Software Artifacts_) es un marco de niveles de madurez. Su track de
+build, en la versión 1.2 de la especificación, define:
+
+- **L0**: sin garantías.
+- **L1**: existe procedencia. Ayuda a evitar errores de publicación, pero es trivial de saltar o
+  falsificar.
+- **L2**: el build corre en una plataforma alojada que genera y firma la procedencia. Protege
+  frente a manipulaciones posteriores al build.
+- **L3**: builds endurecidos. Las ejecuciones no se influyen entre sí, ni siquiera dentro del
+  mismo proyecto, y el secreto de firma queda fuera del alcance de los pasos definidos por el
+  usuario. Protege frente a manipulaciones durante el build.
+
+La v1.2 también describe un track de fuente, sobre el control de cambios en el código; no lo
+hemos desarrollado aquí.
+
+**Criterio del autor, sin burocracia:** fija un objetivo por tipo de artefacto, no un nivel para
+toda la organización. Para la mayoría de servicios, L2 con verificación en el despliegue es una
+meta razonable. Para artefactos que distribuyes a terceros (librerías, imágenes base, binarios
+para clientes) o que tocan credenciales, apunta a L3. Y empieza por medir: ¿se genera procedencia?
+¿se verifica antes de desplegar? ¿la plataforma de build está aislada? Cada «sí» sube un escalón.
+Lo que no conviene es montar un L3 de papel que nadie verifica.
+
+## Cuando una dependencia tiene una vulnerabilidad
+
+Un aviso no es una orden de parche. Antes de actuar, responde cuatro preguntas:
+
+1. **¿Estamos en la versión afectada y en producción?** Con el SBOM y el lockfile, la respuesta
+   llega en minutos.
+2. **¿El código vulnerable es alcanzable?** govulncheck, para Go, analiza el grafo de llamadas y
+   solo reporta las funciones vulnerables que tu código invoca, directa o transitivamente. Es mucho
+   menos ruidoso que marcar cualquier versión afectada. Otros ecosistemas ofrecen análisis más
+   limitados: antes de fiarte de un «no afectado», comprueba qué hace tu herramienta.
+3. **¿Qué dice el VEX?** Un documento VEX declara el estado de una vulnerabilidad para un producto:
+   `not_affected`, `affected`, `fixed` o `under_investigation`. Un `not_affected` necesita una
+   justificación (por ejemplo, `vulnerable_code_not_in_execute_path`), según la especificación OpenVEX
+   v0.2.0. Sin esa justificación, el escáner acaba siendo
+   una lista de falsos positivos sin dueño.
+4. **¿Parcheamos o excepcionamos?** Una excepción sin fecha de caducidad y sin responsable se
+   convierte en deuda permanente.
+
+## Cuándo sí y cuándo no
+
+Sí conviene el paquete completo si publicas artefactos que otros consumen, si tienes despliegue
+automático a producción o si el compromiso de una dependencia tendría impacto en clientes.
+
+No hace falta de inicio en un prototipo interno sin datos ni en un proyecto de un solo
+desarrollador sin despliegue: ahí bastan un lockfile versionado y un SBOM generado. Y no empieces
+por L3. Lockfile, build efímero y permisos mínimos cubren la mayoría de los incidentes reales antes
+de que la procedencia firmada aporte algo.
+
+## Errores frecuentes
+
+- Confundir firma con confianza: verificar sin restringir repositorio, workflow ni emisor.
+- Generar el SBOM desde el manifiesto y no desde el artefacto desplegado.
+- Actualizar en bloque sin revisar qué cambia.
+- Excepciones de vulnerabilidad sin caducidad.
+- Tokens de publicación de larga duración en el CI, cuando hay OIDC disponible.
+- Reconstruir el artefacto en cada entorno: lo que se prueba no es lo que se despliega.
+
+## Checklist
+
+- [ ] Lockfile versionado; el CI instala con él.
+- [ ] SBOM generado en el CI, desde el artefacto desplegado, en un formato estándar.
+- [ ] Ventana de enfriamiento para versiones nuevas de dependencias.
+- [ ] Dependencias nuevas revisadas: mantenimiento, scripts de instalación, nombre exacto.
+- [ ] Build efímero, permisos mínimos por job y OIDC en lugar de tokens estáticos.
+- [ ] Artefacto firmado con procedencia, promovido sin reconstruir.
+- [ ] Verificación previa al despliegue que restringe repositorio, workflow y emisor.
+- [ ] Objetivo SLSA por tipo de artefacto, con su medición.
+- [ ] Vulnerabilidades tratadas con alcanzabilidad, VEX y excepciones con caducidad.
+
+## Fuentes
+
+- OWASP, [Top 10 2025](https://top10.owasp.org/2025)
+- OWASP, [A03:2025 Software Supply Chain Failures](https://top10.owasp.org/2025/A03_2025-Software_Supply_Chain_Failures)
+- CISA, [2025 Minimum Elements for a Software Bill of Materials (borrador)](https://www.cisa.gov/resources-tools/resources/2025-minimum-elements-software-bill-materials-sbom)
+- SLSA, [Build track basics (v1.2)](https://slsa.dev/spec/v1.2/build-track-basics)
+- npm, [Trusted publishers](https://docs.npmjs.com/trusted-publishers)
+- GitHub Changelog, [npm trusted publishing con OIDC, disponible en general (31 de julio de 2025)](https://github.blog/changelog/2025-07-31-npm-trusted-publishing-with-oidc-is-generally-available/)
+- pnpm, [Dependency resolution (minimumReleaseAge)](https://pnpm.io/settings/dependency-resolution)
+- Go, [Managing Go vulnerabilities (govulncheck)](https://go.dev/doc/security/vuln/)
+- Reproducible Builds, [Definición de build reproducible](https://reproducible-builds.org/docs/definition/)
+- CycloneDX, [Anuncio de CycloneDX 1.7](https://cyclonedx.org/news/cyclonedx-v1.7-released/)
+- OpenVEX, [Especificación v0.2.0](https://github.com/openvex/spec/blob/main/OPENVEX-SPEC.md)
+- SLSA, [Build requirements (v1.2)](https://slsa.dev/spec/v1.2/build-requirements)
+- SLSA, [in-toto y SLSA](https://slsa.dev/blog/2023/05/in-toto-and-slsa)
+- Sigstore, [Documentación](https://docs.sigstore.dev/)
+- SPDX, [Sitio oficial](https://spdx.dev/)

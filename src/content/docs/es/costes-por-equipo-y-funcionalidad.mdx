@@ -1,0 +1,248 @@
+---
+title: 'Costes por equipo y funcionalidad: etiquetar y alertar'
+description: 'Cómo atribuir el gasto de nube a equipos y funcionalidades: etiquetas obligatorias, reparto de costes compartidos y alertas de presupuesto antes del límite.'
+category: nube
+tags:
+  - finops
+  - etiquetas
+  - presupuestos
+  - atribucion-de-costes
+  - costes-compartidos
+order: 14
+roadmap:
+  id: nube
+  stage: operacion
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un gasto repartido en bloques por equipo, con una alerta que se enciende antes del límite'
+---
+
+# Costes por equipo y funcionalidad: etiquetar y alertar
+
+La factura de la nube es un número sobre un sistema con muchos dueños. Mientras el gasto se vea
+como una sola línea, ninguna decisión de arquitectura tiene precio visible: el equipo que añade
+una cola, una réplica o una caché no paga por ella y, en la práctica, no lo sabe. La tesis de este
+artículo es simple: **un coste sin dueño no puede ser una decisión de arquitectura**. Atribuir el
+gasto a equipos y funcionalidades no es contabilidad por contabilidad; es darle al diseño la
+información que necesita.
+
+El marco general (qué es FinOps, el costo por unidad, los modelos de precio) está en
+[FinOps: el costo como atributo de arquitectura](/docs/finops-costo-como-atributo). Aquí bajamos al
+mecanismo: cómo se etiqueta, cómo se reparte lo que no es de nadie y cómo se avisa a tiempo.
+
+<Callout tone="info" title="Fecha de corte">
+  Las capacidades de etiquetado, reparto y presupuestos de los proveedores cambian con frecuencia.
+  Lo citado en este artículo se comprobó en la documentación oficial en octubre de 2026; antes de
+  implantar algo, contrástalo con la documentación vigente de tu proveedor.
+</Callout>
+
+## Qué se atribuye y a quién
+
+Hay dos dimensiones que conviene separar. El **equipo** responde por el recurso: es quien lo opera y
+quien decide si sigue existiendo. La **funcionalidad** responde por el valor: es el trozo de producto
+que sostiene el gasto. Un mismo clúster puede servir a tres funcionalidades de dos equipos, y las
+dos preguntas tienen respuestas distintas.
+
+| Dimensión       | Pregunta que responde                    | Ejemplo de valor   |
+| --------------- | ---------------------------------------- | ------------------ |
+| Equipo          | ¿quién decide sobre este recurso?        | `equipo=pagos`     |
+| Funcionalidad   | ¿qué capacidad de producto lo justifica? | `funcion=checkout` |
+| Entorno         | ¿es producción, pruebas o desarrollo?    | `entorno=prod`     |
+| Centro de coste | ¿a qué partida financiera se imputa?     | `centro=ops-2041`  |
+
+Los valores son ilustrativos. Lo que importa es que cada dimensión tenga una única respuesta
+posible: si dos claves dicen lo mismo con nombres distintos, el gasto se parte en dos mitades que
+nadie suma.
+
+## Etiquetas: un contrato, no una convención
+
+La etiqueta funciona como un contrato entre quien crea el recurso y quien paga por él. Por eso el
+esquema debe ser corto, con valores cerrados y escrito en un sitio que se versiona. Una forma
+razonable es esta:
+
+```yaml
+# Esquema de etiquetas obligatorias (forma, no implementación)
+claves_obligatorias:
+  equipo: <identificador del equipo propietario>
+  funcion: <funcionalidad de producto>
+  entorno: [prod, staging, dev]
+  centro_coste: <código financiero>
+claves_opcionales:
+  - ciclo_vida # efímero o permanente
+```
+
+Tres o cinco claves bastan. Más claves significan más recursos sin etiquetar, porque nadie rellena
+un formulario de doce campos para crear una cola de prueba.
+
+### Validar en el aprovisionamiento
+
+Una etiqueta que se corrige a fin de mes llega tarde: el recurso ya existió, ya gastó y ya se
+decidió sin ver el coste. El punto barato de control es la puerta de creación, no la factura.
+
+- **Azure.** Azure Policy incluye definiciones integradas como «Require a tag on resources», con
+  efecto `deny`, que impide crear recursos sin la etiqueta indicada, y «Inherit a tag from the
+  resource group if missing», con efecto `modify`, que copia la etiqueta del grupo de recursos
+  cuando falta. La primera no aplica a los grupos de recursos, que tienen su propia definición.
+- **AWS.** Las _tag policies_ de AWS Organizations estandarizan las claves y los valores de las
+  etiquetas, con su capitalización preferida, y pueden hacer que las operaciones de etiquetado no
+  conformes sobre los tipos de recurso indicados no se completen. Además, las etiquetas de coste
+  deben activarse por separado en la consola de facturación: solo la cuenta de gestión (o una cuenta
+  independiente) tiene acceso al gestor de etiquetas de coste, y el cambio puede tardar hasta 24 horas
+  en aparecer.
+- **Google Cloud.** Los presupuestos solo pueden filtrarse por etiquetas (labels) a nivel de cuenta de
+  facturación, y admiten una sola etiqueta por presupuesto. La documentación de presupuestos no describe
+  ningún mecanismo para hacer obligatorias las labels, así que aquí no se afirma ninguno.
+
+La regla de fondo es la misma en los tres: el cumplimiento se valida en la puerta (infraestructura
+como código, pipeline, política de la organización) y se audita después, nunca al revés.
+
+### Cuando falta una etiqueta
+
+Cuando un recurso llega sin etiquetas hay tres salidas, y conviene elegir una por política:
+
+1. **Bloquear.** Es la opción por defecto en producción. Si no tiene `equipo`, no se crea.
+2. **Heredar.** La etiqueta viene del grupo de recursos, de la cuenta o de la suscripción. Es razonable
+   para entornos de prueba; en producción hereda el error si el padre está mal etiquetado.
+3. **Aparcar con dueño y plazo.** El gasto sin asignar va a un cajón explícito con un responsable
+   temporal (normalmente plataforma) y una fecha. Un cajón sin fecha se convierte en el lugar donde
+   vive el gasto que nadie quiere explicar.
+
+El informe de costes de AWS incluye tanto los recursos etiquetados como los que no lo están, así que
+el hueco aparece como una línea que hay que vigilar. Si no se mira, el coste sin dueño crece en
+silencio.
+
+## Costes compartidos: redes, registros y bases comunes
+
+Lo compartido es el punto donde la atribución se vuelve política. Un cruce de red saliente, un
+registro de imágenes, un clúster, una base de datos común o la plataforma de observabilidad sirven a
+varios equipos y no son de ninguno. Hay que repartirlos, y cada criterio tiene un sesgo:
+
+| Criterio                 | Cómo reparte                        | Sesgo que introduce                                               |
+| ------------------------ | ----------------------------------- | ----------------------------------------------------------------- |
+| Partes iguales           | lo mismo para cada equipo           | Subsidia a quien más consume y penaliza a quien optimiza          |
+| Proporcional a un driver | según peticiones, GB, nodos u horas | Lo que se mide se optimiza: el driver empuja comportamientos      |
+| Cuota fija acordada      | cada equipo paga un importe pactado | Predecible, pero desconecta el gasto del uso real                 |
+| Central sin asignar      | plataforma lo presupuesta aparte    | Simple y honesto, pero oculta el coste real de cada funcionalidad |
+
+No hay un método correcto. Es criterio del autor que el error más común no es elegir mal, sino no
+elegir: el reparto se ajusta sin avisar y el presupuesto de un equipo cambia sin que nadie haya
+tocado nada. El marco FinOps trata la asignación como una capacidad propia: define estrategias para asignar y
+compartir costes y uso con cuentas, etiquetas y otros metadatos (ver [Allocation, FinOps Framework](https://www.finops.org/framework/capabilities/allocation/)).
+
+Un ejemplo de sesgo: repartir la salida de datos por GB penaliza al equipo que sirve vídeo, y está
+bien que pague por lo que usa. Pero si ese equipo ve el coste en su presupuesto, la conversación
+pasa de «qué valor da esto» a «cómo bajo los GB», y eso puede empujar a comprimir más o a retrasar una
+funcionalidad. El driver elegido ya es una decisión de arquitectura.
+
+## Presupuestos por equipo y alertas que avisan antes
+
+Un presupuesto por equipo (o por funcionalidad) con dos tipos de aviso: el **real**, que salta cuando
+ya se ha consumido el umbral, y el **previsto**, que salta cuando el proveedor calcula que se va a
+superar. El previsto es el que da tiempo a reaccionar. Lo que ofrecen los tres grandes proveedores,
+verificado en su documentación:
+
+- **AWS Budgets.** Cada notificación es de tipo `ACTUAL` o `FORECASTED`, con umbral `PERCENTAGE` o
+  `ABSOLUTE_VALUE`. Un presupuesto admite hasta diez notificaciones, y cada una necesita al menos un
+  suscriptor (un tema de SNS y hasta diez correos).
+- **Azure Cost Management.** Las alertas pueden configurarse sobre coste real o previsto, con hasta
+  cinco umbrales y cinco correos por presupuesto. Los datos de coste llegan en 8 a 24 horas, los
+  presupuestos se evalúan cada 24 horas y el correo suele llegar en menos de una hora tras la
+  evaluación. Los presupuestos no detienen recursos ni consumo.
+- **Google Cloud Budgets.** Los umbrales pueden comparar coste real o previsto (la previsión llega
+  hasta el fin del periodo; los presupuestos con rango personalizado no admiten previsión).
+  Por defecto son 50, 90 y 100 %. Un presupuesto de solo alertas no limita el gasto.
+
+De estos datos sale una lección: el aviso llega con retraso. Si el único umbral es el 100 %, la
+alerta llega cuando el dinero ya se ha gastado. Por eso conviene que el umbral de previsión vaya por delante,
+por ejemplo al 80 % (criterio del autor), dejando margen para reaccionar.
+
+Un presupuesto por equipo se puede describir como cualquier otro contrato, con su ámbito, su importe
+y sus umbrales. Esta forma no es una plantilla de ningún proveedor, solo muestra qué información
+necesita:
+
+```yaml
+# Forma de un presupuesto por equipo (no es una plantilla de proveedor)
+presupuesto: equipo-pagos-prod
+ambito: { equipo: pagos, entorno: prod }
+importe_mensual: <importe acordado con finanzas>
+alertas:
+  - { tipo: previsto, umbral: 0.8 }
+  - { tipo: real, umbral: 1.0 }
+destinatarios: [dueños-pagos@empresa.example]
+```
+
+El destinatario importa tanto como el umbral. Un aviso que llega a un buzón de grupo que nadie lee no
+es un control: es una evidencia de que se avisó.
+
+## Coste y métricas de producto, sin vanidad
+
+Con el gasto atribuido, aparece la tentación de dividirlo por algo y presentarlo como eficiencia:
+coste por petición, por usuario activo, por pedido. Es útil, pero es fácil convertirlo en una métrica
+de vanidad. El coste por usuario activo baja si se redefine «activo» o si se deja de contar trabajo
+valioso. El coste por petición baja con caché, pero la petición puede dejar de servir a alguien.
+
+Ejemplo ilustrativo de la aritmética: 1.200 € de gasto mensual de una funcionalidad entre 300.000
+pedidos dan 0,004 € por pedido. El número es correcto y no dice nada por sí solo si no se mira junto
+con tres cosas:
+
+1. **La unidad significa valor.** Un pedido, un minuto de vídeo servido o una conversación resuelta
+   son unidades de negocio. Una petición HTTP es tráfico, y dividir por tráfico solo mide cuánto
+   llega.
+2. **El volumen y el valor van al lado del coste.** Un coste unitario a la baja con el volumen
+   plano puede ser una mejora, o un síntoma de que se ha dejado de atender a clientes.
+3. **La definición no cambia en silencio.** Cambiar la unidad crea otra serie; anótalo y no compares
+   la nueva con la vieja como si fueran la misma.
+
+Para el caso de la inferencia, donde la unidad es el token o la conversación, el detalle de cómo se
+mide está en [Costo de inferencia: modelo, caché y despliegue](/docs/costo-de-inferencia). Aquí solo
+importa la regla de atribución: cada unidad se reparte con las mismas etiquetas que el gasto que
+la produce.
+
+Hay un paralelismo útil con [Observabilidad: SLI, SLO y presupuesto de error](/docs/observabilidad-slo-presupuesto-error):
+el presupuesto de error dice cuándo frenar por fiabilidad, y el presupuesto de coste dice cuándo
+frenar por gasto. Es el mismo patrón con otra moneda, y funciona igual de mal si nadie lo mira.
+
+## Cuándo sí y cuándo no
+
+**Sí conviene** cuando varios equipos comparten cuenta, suscripción o clúster; cuando el gasto crece
+con el uso y se decide por equipo; o cuando el negocio quiere una cifra unitaria con la que tomar
+decisiones de producto.
+
+**No compensa** cuando el gasto es pequeño y una sola persona decide sobre todo: etiquetar cuesta más
+que lo que se ahorra. Tampoco cuando no hay un dueño dispuesto a responder por su cifra. Una
+atribución sin consecuencia es un informe bonito y poco más.
+
+## Errores frecuentes
+
+- **Etiquetar después.** El cumplimiento se descubre en la factura de fin de mes, cuando el recurso
+  ya gastó durante semanas.
+- **Claves casi iguales.** `Team`, `team` y `equipo` dividen el gasto en tres cubos y ninguno cuadra.
+- **Reparto cambiado sin aviso.** El presupuesto de un equipo se mueve porque se cambió un driver,
+  sin que el equipo haya cambiado nada.
+- **Alertas a un buzón de grupo.** Nadie es dueño del aviso, así que nadie reacciona.
+- **Un único umbral del 100 %.** Avisa cuando ya no hay margen para decidir.
+- **Dividir por tráfico y llamarlo eficiencia.** La unidad no representa valor, y la métrica premia
+  lo equivocado.
+
+## Checklist
+
+- [ ] Un esquema de etiquetas de tres a cinco claves, con valores cerrados, versionado y publicado.
+- [ ] Las etiquetas obligatorias se exigen al crear el recurso; la excepción tiene dueño y fecha.
+- [ ] Las etiquetas de coste están activadas en el proveedor y se ha comprobado que aparecen.
+- [ ] Cada gasto compartido tiene regla, driver explícito y fecha de revisión.
+- [ ] Hay un presupuesto por equipo con alerta prevista y alerta real, dirigido a una persona o rol concreto.
+- [ ] Cada coste por unidad tiene una unidad de negocio definida, junto a su volumen y su valor.
+- [ ] Cada mes se revisa el gasto sin asignar y se compara con el umbral acordado.
+
+## Fuentes
+
+Consultadas en octubre de 2026. Oficiales primero.
+
+- [Organizing and tracking costs using AWS cost allocation tags (AWS Billing)](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html): activación, plazo de hasta 24 horas y acceso al gestor de etiquetas.
+- [Tag policies (AWS Organizations)](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html): claves, valores y enforcement.
+- [AWS::Budgets::Budget Notification (AWS CloudFormation)](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-budgets-budget-notification.html): tipos de notificación, umbrales y número de suscriptores.
+- [Tutorial: Create and manage budgets (Microsoft Learn)](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets): alertas reales y previstas, plazos y límite de umbrales.
+- [Policy definitions for tagging resources (Microsoft Learn)](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tag-policies): definiciones integradas de etiquetas con efectos `deny`, `modify` y `append`.
+- [Set budgets and budget alerts (Google Cloud)](https://docs.cloud.google.com/billing/docs/how-to/budgets): umbrales reales y previstos, presupuestos de solo alertas y ámbito por etiquetas.
+- [Allocation (FinOps Framework)](https://www.finops.org/framework/capabilities/allocation/): la asignación como capacidad del marco, definida con cuentas, etiquetas y otros metadatos.

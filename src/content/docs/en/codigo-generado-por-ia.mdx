@@ -1,0 +1,260 @@
+---
+title: 'AI-generated code: review, ownership and debt'
+description: 'When a model writes the code, review, ownership and debt change: what to measure, who answers for a change and how to leave criteria.'
+category: practicas
+tags:
+  - codigo-generado-ia
+  - revision-de-codigo
+  - deuda-tecnica
+  - propiedad-del-codigo
+  - pull-requests
+order: 12
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Generated changes pass review or pile up as debt'
+---
+
+# AI-generated code: review, ownership and debt
+
+Generating code is no longer the bottleneck. A model writes a function, a module or an entire
+pull request in minutes. What stays expensive is the same as always: **reviewing** that the
+change does what it should, **understanding** it well enough to maintain it, and **deciding**
+who answers when it fails. When the volume of changes grows and review capacity does not, code
+reaches production without anyone having read it carefully. That is debt, even if the pipeline
+is green.
+
+This article covers those three levers: review, ownership and debt. It does not propose a
+specific tool. It gathers what the available data says (with its limits), the criteria worth
+adopting and the signals that show whether a team is following them. For the readability of the
+code itself, see [clean code for architects](/docs/clean-code); for the harness that controls the
+agent, see [harness engineering with Claude Code](/docs/harness-engineering-claude-code).
+
+<Callout tone="info" title="Data cutoff">
+  The figures are from October 2026 and come from studies with different methodologies. None of them
+  measures your team. Use them to form hypotheses, not as targets.
+</Callout>
+
+## When volume outpaces review
+
+Review is human work with limited capacity. Google's code review guide (_eng-practices_) says it
+plainly: "100 lines is usually a reasonable size for a CL, and 1000 lines is usually too large."
+A CL is its unit of change, the equivalent of a PR. The same guide recommends writing changes
+"smaller than you think you need to write", because they are reviewed faster, more thoroughly and
+are easier to roll back.
+
+The 2006 Cisco study published by SmartBear found that defect density drops when more than about
+200 lines are reviewed at once, and its guide recommends not going beyond 200 to 400. It is an old
+reference, and the threshold is a recommendation rather than an exact measurement, but the intuition holds: **a 1,500-line PR generated in ten minutes is not reviewed
+in forty**. It gets approved out of fatigue or trust in the model, and both are process failures,
+not personal ones.
+
+## What the data says (and what it does not)
+
+These are the sources worth having at hand. Each measures something different, and none proves
+that AI "writes worse code" in general.
+
+| Source             | Verified finding                                                                                                                                                     | Limit                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| METR (July 2025)   | 16 experienced developers, 246 real tasks: with AI they took 19% longer. Before, they expected a 24% speedup; afterwards, they still believed they were 20% faster.  | Small sample, early-2025 tools and one kind of task.                                                 |
+| GitClear (2025)    | Across 211 million changed lines (2020-2024), copied or cloned code rose from 8.3% to 12.3%. Lines changed in refactoring fell from 25% (2021) to under 10% (2024).  | Developer analytics vendor; the page does not define _churn_, cloned code or refactoring.            |
+| Veracode (2025)    | According to its public summary, AI-generated code introduced risky security flaws in 45% of tests, across more than 100 models in Java, JavaScript, Python and C#.  | Vendor summary; the full report could not be opened and the summary does not define the denominator. |
+| Google DORA (2025) | 90% of respondents use AI (76% in 2024). AI no longer slows delivery throughput, but it still affects stability and amplifies each organization's existing problems. | Self-reported survey; the size of the effect depends on team maturity.                               |
+
+What can reasonably be said: generated code tends to be **duplicated** more often, it gets
+reviewed worse when it arrives in large batches, and without governance it accumulates security
+risk. What **cannot** be said is that every generated PR is worse than a hand-written one. That
+nuance separates data from opinion.
+
+_Author's view:_ most of the damage does not come from the model, but from a process that treats
+the volume of code as if it were progress.
+
+## Ownership: who answers for a generated change
+
+The ownership question is easy to state and hard to apply: **when a generated change fails in
+production, who answers for it?** The answer must be a specific person, and it is the human who
+opens or approves the PR, not the tool. An agent does not sign, does not own an incident and does
+not learn from a postmortem in any organizational sense.
+
+Three rules make that operational:
+
+- **The human author understands what goes up.** If they cannot explain what changes, why and how
+  it was verified, they should not open the PR. Asking the tool to explain it in the description
+  is a valid check: if the explanation does not match the diff, the problem is in the diff.
+- **The approver reviews the change, not the description.** Convincing prose does not replace
+  reading the code. Reviewers should be able to say which behavior they checked, not only that the
+  text looks right.
+- **Traceability points to people.** Co-authorship trailers that indicate a model helped are useful
+  for auditing, but they do not transfer responsibility. History should keep attributing each
+  decision to whoever made it.
+
+The underlying risk is **knowledge debt**: code that works, passes the tests, and that nobody on
+the team could change without generating it again. No linter reports it, and it gets paid at the
+worst moment, during an incident when nobody understands the module.
+
+## Tests and contracts as acceptance criteria
+
+If human review does not scale, the acceptance criterion has to be **automatic and explicit**. A
+generated change is accepted because it meets a verifiable contract, not because it looks
+reasonable.
+
+- **Tests written before or alongside the change.** If the model writes both the implementation
+  and its tests, the tests tend to repeat the implementation and protect nothing. The human author
+  should define the edge cases and the expected behaviors.
+- **API and data contracts.** Types, schemas and contract tests fix what other teams depend on
+  remaining true. They are the cheapest sensor against changes that break consumers. The
+  [contract testing strategy](/docs/estrategia-de-pruebas-contratos) article develops this idea.
+- **Checks that fail when a change violates an architecture rule.** A layering or dependency rule
+  that breaks the CI turns a convention into something that does not depend on anyone's memory.
+  That is what [fitness functions](/docs/fitness-functions) cover, and their pipeline version,
+  [your architecture should fail in CI](/docs/fitness-en-el-ci).
+
+## PR size: the unit of review
+
+Size is not a hygiene detail; it is the parameter that decides how much real review a change
+receives. With generated code, the temptation is the giant PR: the agent finished the task, so
+everything goes up together. The alternative is to split the work before generating it:
+
+1. Define the result in steps that can be reverted separately.
+2. Generate and review each step, with its tests, before asking for the next one.
+3. Keep behavior changes and structural changes (renames, file moves, formatting) in separate PRs.
+
+No universal number replaces judgment. As a starting point, a range between Google's 100 lines
+and SmartBear's 200 to 400 is a reasonable place to begin. If a PR exceeds it, the right question
+is not "shall we approve it?" but "why is it not split?".
+
+## Measurable signals
+
+Measuring generated code without falling into vanity metrics (lines written, PRs opened) means
+choosing a few signals and tracking their trend per team. These are the ones worth watching:
+
+| Signal                    | What it indicates                                           | How to get it                                         |
+| ------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
+| Revert or urgent-fix rate | Changes that had to be undone or corrected soon after       | Git history: reverts and fixes within two weeks       |
+| Defects per change        | Whether volume grows without quality following              | Incidents linked to the PRs that caused them          |
+| Median PR size            | Whether work is split or piles up                           | PR tooling or a script over the history               |
+| Review time per PR        | Whether the reviewer gives real attention or just signs off | Time between opening and the first substantive review |
+| Clones and duplication    | Whether the model rewrites instead of reusing               | Duplicate detector in CI, tracked over time           |
+
+_Author's view:_ the most useful signal is usually the combination of the first two. If the volume
+of changes rises and so does the revert rate, the review process is not working, whatever each
+PR says.
+
+The debt these metrics reveal is handled with the same discipline as any other. See
+[technical debt and architectural evolution](/docs/deuda-tecnica-evolucion) for measuring and
+prioritizing it.
+
+## Duplication and premature abstractions
+
+The model tends to solve each task in its immediate context. If a utility exists in another
+module, it often rewrites it instead of importing it. The result is the duplication that the
+GitClear data shows. The opposite error also appears: the model introduces a layer of interfaces
+and factories the problem did not ask for.
+
+Two habits help:
+
+- **Search before generating.** Asking the agent to locate existing implementations and reuse them
+  is cheaper than undoing a duplication later. A conventions document in the repository, read at
+  the start of every session, reduces this problem.
+- **Wait for the third occurrence.** An abstraction should come from repeated cases, not from the
+  model's forecast. Duplicating twice is acceptable; abstracting without evidence usually leaves
+  code that is harder to change. The
+  [code smell catalog](/docs/clean-code#duplication-and-premature-abstraction) in the clean code
+  article helps review both extremes.
+
+## Leaving criteria in writing: ADRs and conventions
+
+A human reviewer learns from the team; an agent only knows what is put in its context. If the
+criterion behind a change lives only in the head of whoever reviewed it, the next generated change
+will break it again. There are two places to write it down:
+
+- **Decisions with their why.** An [ADR](/docs/adr) records the context, the decision and its
+  consequences. A well-written ADR explains why something is done a given way and keeps an agent
+  from "improving" it without knowing. Michael Nygard's original 2011 format is still a valid
+  starting point: title, context, decision, status and consequences.
+- **Conventions the agent reads.** `AGENTS.md`, which its project describes as "a simple, open format for guiding coding agents" (with no published formal specification), and
+  `CLAUDE.md` in Claude Code serve that purpose. The
+  [Claude Code harness](/docs/harness-engineering-claude-code) article explains how they are loaded
+  and how a suggestion differs from something enforced deterministically.
+
+A minimal template for a decision that affects generated changes can be as short as this:
+
+```markdown
+# ADR-0051: Generated changes go through the same review as manual ones
+
+## Context
+
+...
+
+## Decision
+
+...
+
+## Consequences
+
+...
+```
+
+What matters is that the decision outlives the PR that motivated it. If every review repeats the
+same objection, an ADR or a rule in the conventions document is missing.
+
+## When to accept generated code, and when not to
+
+Generating code is reasonable in many cases. The criterion is risk and the ability to verify it,
+not where the text came from.
+
+**Yes, with normal review:**
+
+- Repetitive code that follows a pattern already in the repository (adapters, DTOs, regression
+  tests the author can explain).
+- Mechanical migrations (renames, API changes) covered by contract tests.
+- Disposable prototypes with a written expiry date, which never reach the main branch.
+
+**No, or only with an author who understands every line:**
+
+- Critical domain logic (payments, permissions, regulated calculations) that nobody on the team can
+  explain without rereading it.
+- Security and authentication: the Veracode data justifies a specific review.
+- Large cross-cutting changes without a splitting plan or tests protecting them.
+- Code without contracts or tests, where the only check is that it compiles.
+
+## Common mistakes
+
+- **Approving by size or fatigue.** A huge PR with green tests is not a quality signal; it is a
+  sign that review was not possible.
+- **Reviewing the prose instead of the diff.** The generated description may describe a different
+  change from the one being pushed.
+- **Treating the tool as the owner.** When "the AI did it" shows up as the cause in a postmortem,
+  the process failed: someone approved the change.
+- **Measuring productivity in lines.** More generated code is not more delivered value. Measure
+  reverts, incidents and review time.
+- **Abstracting too early.** A layer the model creates for a case with no repetition adds
+  maintenance cost without benefit.
+- **Leaving the criterion in a chat.** If the decision is not in an ADR or in the conventions, it
+  will be debated again in the next PR.
+
+## Checklist
+
+- [ ] The human author can explain what changes, why and how it was verified.
+- [ ] The PR has a reviewable size; if not, it is split into revertible steps.
+- [ ] Tests or contracts define the expected behavior, written or validated by a person.
+- [ ] The reviewer checked the diff, not only the description.
+- [ ] Existing code was searched before duplicating or creating a new abstraction.
+- [ ] The relevant architecture rules are checked in CI.
+- [ ] Decisions that carry a rationale live in an ADR or in the repository conventions.
+- [ ] Revert, defect and duplication signals are reviewed by trend.
+
+## Sources
+
+- Google, [code review guide: small CLs](https://google.github.io/eng-practices/review/developer/small-cls.html) (_eng-practices_).
+- SmartBear, [best practices for peer code review](https://smartbear.com/learn/code-review/best-practices-for-peer-code-review/), which summarizes the Cisco study, and [article on the 2006 study (republished at CM Crossroads)](https://cmcrossroads.com/article/largest-case-study-code-reviews-ever).
+- METR, [measuring the impact of early-2025 AI on experienced open-source developer productivity](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) (July 2025).
+- GitClear, [2025 research on AI code quality](https://www.gitclear.com/ai_assistant_code_quality_2025_research).
+- Veracode, [2025 GenAI code security report](https://www.veracode.com/press-release/ai-generated-code-poses-major-security-risks-in-nearly-half-of-all-development-tasks-veracode-research-reveals/) (2025).
+- AGENTS.md, [project and format description](https://github.com/agentsmd/agents.md).
+- Google Cloud, [2025 DORA report](https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report).
+- Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) (2011).
+- Anthropic, [Claude Code memory documentation (CLAUDE.md)](https://code.claude.com/docs/en/memory).

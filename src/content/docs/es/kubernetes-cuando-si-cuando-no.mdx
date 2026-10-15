@@ -1,0 +1,237 @@
+---
+title: 'Kubernetes: cuándo sí y cuándo no'
+description: 'Qué resuelve Kubernetes de verdad, qué coste operativo trae y cuándo un servicio gestionado, un PaaS o una VM bien gestionada son la decisión más barata.'
+category: nube
+tags:
+  - kubernetes
+  - contenedores
+  - plataforma
+  - operacion
+  - nube
+order: 15
+roadmap:
+  id: nube
+  stage: servicios
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Una carga sobre un plano de control, con una ruta corta para el caso simple'
+---
+
+# Kubernetes: cuándo sí y cuándo no
+
+Kubernetes resuelve problemas reales: planificar contenedores en muchas máquinas, reemplazar los
+que fallan, escalar y desplegar sin tiempo de caída. Pero no los resuelve gratis. Se paga en
+operación: actualizar el clúster, entender su red, vigilarlo y mantener seguras sus
+configuraciones. La tesis de este artículo es sencilla: Kubernetes se justifica cuando tus
+problemas coinciden con los suyos, y es complejidad pagada por adelantado cuando no.
+
+<Callout tone="info" title="Fecha de corte">
+  Los datos de versiones son de 15 de octubre de 2026, según la [página oficial de
+  releases](https://kubernetes.io/releases/). Las versiones y sus fechas cambian con el tiempo:
+  contrasta antes de planificar una actualización.
+</Callout>
+
+## Qué resuelve de verdad
+
+Kubernetes se define como una plataforma de código abierto para gestionar cargas en contenedores
+mediante configuración declarativa y automatización. Su idea central no es una lista de órdenes
+sino un bucle de **reconciliación**: procesos de control que comparan el estado actual con el
+estado deseado que tú declaras y lo empujan hacia él. Cuando un pod muere, no hay que escribir un
+script que lo detecte; el bucle lo detecta y crea otro.
+
+Las capacidades que trae la documentación oficial, traducidas a lo que te quitan de encima:
+
+| Capacidad                 | Qué te evita hacer a mano                                                  |
+| ------------------------- | -------------------------------------------------------------------------- |
+| Planificación de recursos | Decidir en qué máquina cabe cada contenedor según CPU y memoria declaradas |
+| Autocuración              | Reiniciar o sustituir contenedores que fallan o no responden a sus sondas  |
+| Escalado horizontal       | Subir o bajar réplicas a mano o con scripts propios                        |
+| Descubrimiento y balanceo | Gestionar IPs, nombres DNS y repartos de tráfico entre réplicas            |
+| Despliegues y rollbacks   | Sustituir versiones de forma controlada y volver atrás                     |
+| Secretos y configuración  | Inyectar configuración sin reconstruir la imagen                           |
+
+Si tu sistema tiene pocas piezas que cambian poco, casi ninguna de estas capacidades te duele.
+Si tienes decenas de servicios que escalan a ritmos distintos, desplegar varias veces al día y
+necesitas que un fallo de nodo no sea una incidencia, cada una de ellas te ahorra trabajo
+recurrente.
+
+## Lo que no hace
+
+La documentación oficial es explícita en lo que **no** incluye: Kubernetes no es una PaaS
+tradicional y todo incluido. No construye tu aplicación ni decide tu pipeline de CI/CD. No trae
+bases de datos, colas, cachés ni almacenamiento de clúster como servicios integrados. No
+impone una solución de logs, métricas o alertas. Y no gestiona el sistema operativo de los nodos
+ni su mantenimiento.
+
+Esto cambia la pregunta. No compras «un Kubernetes» que te resuelva la plataforma: compras un
+conjunto de piezas que tienes que elegir, integrar y operar. Por eso el coste real suele estar
+fuera del clúster, en las decisiones que lo rodean.
+
+## El coste operativo
+
+### Curva de aprendizaje
+
+El modelo tiene muchos conceptos interdependientes: pods, despliegues, servicios, ingress o
+Gateway, configuración, sondas, cuotas, políticas de red, controladores personalizados. El
+problema no es memorizarlos sino diagnosticar cuando algo no converge. Un equipo que no lo
+domina convierte cada incidencia en una investigación sobre la propia herramienta.
+
+### Actualizaciones del clúster
+
+Cada versión menor tiene fecha de fin de soporte. Según la página de releases, a 15 de octubre de
+2026 están soportadas las siguientes:
+
+| Versión menor | Fin de soporte (EOL)  |
+| ------------- | --------------------- |
+| 1.34          | 27 de octubre de 2026 |
+| 1.35          | 28 de febrero de 2027 |
+| 1.36          | 28 de junio de 2027   |
+| 1.37          | 28 de octubre de 2027 |
+
+La versión 1.34 termina su soporte dentro de doce días. Si tu clúster está ahí, la actualización
+ya no es una mejora pendiente sino una obligación con fecha.
+
+Actualizar exige respetar la **asimetría de versiones** que documenta Kubernetes: el `kubelet` de
+un nodo puede ir hasta tres versiones menores por detrás del servidor de API (dos si es anterior a
+la 1.25), pero nunca por delante; `kubectl` admite una versión de diferencia en cualquier
+dirección. La consecuencia práctica es que la actualización se hace por etapas, y un clúster con
+nodos que se quedan tres versiones atrás tiene que actualizarlos antes de poder subir el plano de
+control.
+
+Además, las APIs en beta dejan de servirse nueve meses o tres versiones menores después de
+deprecarse, lo que sea más largo. Los manifiestos antiguos se rompen sin aviso visible si nadie
+los revisa. Las APIs GA pueden marcarse como deprecadas, pero no se eliminan dentro de la misma
+versión mayor.
+
+### Redes y almacenamiento
+
+La red es donde más equipos se atascan: servicios, balanceadores, políticas de tráfico entre
+pods, resolución DNS interna y la integración con la red del proveedor. Cada capa puede fallar
+por separado y el diagnóstico exige entender varias a la vez. El almacenamiento persistente tiene
+su propia historia de clases, reclamaciones y copias de seguridad, que no se resuelve con la
+plataforma sino con tu diseño.
+
+### Observabilidad y seguridad
+
+Kubernetes expone métricas y permite integrar logs y trazas, pero no decide tu pila. Tendrás que
+elegir, desplegar y mantener esa pila además de la aplicación. En seguridad, el riesgo más
+común no está en el plano de control sino en la configuración: permisos RBAC demasiado amplios,
+secretos mal gestionados y contenedores que corren con más privilegios de los necesarios. Son
+errores de configuración que el clúster acepta sin quejarse.
+
+## Alternativas que resuelven el mismo problema
+
+Antes de elegir Kubernetes, compara con lo que ya conoces. Estas opciones cubren muchos casos
+con menos superficie operativa:
+
+| Opción                                        | Qué te da                                               | Qué sigue siendo tuyo                           |
+| --------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------- |
+| Contenedores sin servidor                     | Desplegar imágenes sin crear clúster ni gestionar nodos | Diseño sin estado y límites de la plataforma    |
+| Kubernetes gestionado (p. ej. EKS, AKS o GKE) | El plano de control lo opera el proveedor               | Nodos, red, actualizaciones y pila de runtime   |
+| PaaS                                          | Despliegue de la aplicación con configuración mínima    | Límites de lenguaje, runtime y personalización  |
+| VMs con grupos de autoescalado                | Modelo mental simple y control del sistema operativo    | Parcheo, imágenes y orquestación de despliegues |
+
+Google lo resume en su documentación para elegir entre sus dos servicios: GKE está pensado para
+cuando necesitas control sobre nodos y red, y Cloud Run para servicios sin estado dirigidos por
+peticiones o eventos, sin crear ni gestionar un clúster. Es una buena regla general: cuanto más
+control necesitas, más operación recibes a cambio.
+
+Si tu carga es una función que reacciona a eventos, el razonamiento de
+[serverless y computación gestionada](/docs/serverless-y-computacion-gestionada) es más
+directo. Si el problema es dónde vive cada carga, mira
+[modelos de despliegue en la nube](/docs/modelos-de-despliegue-nube).
+
+## Criterios de decisión
+
+Estos criterios son criterio del autor, no datos de una encuesta. Sirven para discutir con
+números propios:
+
+1. **Número de servicios y ritmo de cambio.** Con uno o dos servicios que cambian despacio, el
+   coste fijo del clúster no se amortiza. Con muchos equipos desplegando a la vez, sí.
+2. **Necesidad real de control.** ¿Necesitas políticas de red entre servicios, topologías
+   concretas, cargas con estado o hardware específico? Si la respuesta es «quizá», todavía no.
+3. **Capacidad del equipo.** Alguien tiene que estar de guardia para el clúster, conocer sus
+   actualizaciones y tener tiempo para ellas. Si nadie tiene ese tiempo, el clúster se degrada.
+4. **Portabilidad frente a dependencia.** Kubernetes ofrece una API común entre proveedores, pero
+   las piezas alrededor (balanceadores, almacenamiento, identidad) son de cada nube. Lee
+   [casado a un proveedor](/docs/casado-a-un-proveedor#portabilidad-por-capas) antes de asumir
+   que es portable.
+5. **Coste de la complejidad.** Mide el tiempo de ingeniería que dedicas al clúster frente al
+   que dedicarías a producto. Ese número, no la factura de máquinas, es el coste principal.
+
+## Señales de que es prematuro
+
+- Un solo equipo despliega una aplicación con dos o tres servicios.
+- Nadie puede explicar qué pasa cuando un pod no arranca.
+- La principal motivación es «porque es el estándar», sin un problema concreto de escalado,
+  aislamiento o despliegue.
+- Pasas más tiempo en la plataforma que en el producto durante un trimestre seguido.
+
+## Señales de que ya no basta
+
+- Varios equipos necesitan desplegar de forma independiente sobre la misma infraestructura.
+- Hay cargas que escalan a ritmos muy distintos y el escalado manual o por máquina ya no
+  alcanza.
+- Necesitas políticas de red o de identidad entre servicios que la plataforma actual no ofrece.
+- El coste de mantener procesos de despliegue a medida supera el de adoptar un estándar.
+
+Cuando aparecen varias de estas señales a la vez, el paso natural es una
+[plataforma interna](/docs/plataforma-interna-idp), no solo más YAML.
+
+## Un ejemplo trabajado
+
+Una tienda con tres servicios (catálogo, pedidos y pagos), un equipo de seis personas y picos
+en fechas concretas. Con contenedores sin servidor o una PaaS, cada servicio se despliega con su
+configuración y los picos escalan solos. El equipo dedica su tiempo a producto. Kubernetes
+añadiría un clúster que operar, actualizar y vigilar, sin un problema que resuelva mejor que
+esas opciones. La decisión cambia si la tienda crece a veinte servicios con equipos propios y
+necesita aislamiento de red entre dominios: entonces el clúster paga su coste.
+
+Un despliegue declarativo en Kubernetes describe el estado deseado, no los pasos para llegar a él:
+
+```yaml
+# Forma de un despliegue: declaras cuántas réplicas quieres y el bucle de control las mantiene
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pedidos
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: pedidos }
+  template: # …imagen, puertos, sondas de salud y recursos del contenedor
+```
+
+## Errores frecuentes
+
+- **Adoptarlo por moda.** El estándar no es un requisito. Empieza por el problema que quieres
+  resolver y comprueba si el clúster es la forma más barata de resolverlo.
+- **Subestimar las actualizaciones.** Sin un calendario de versiones y de pruebas, el clúster
+  acaba fuera de soporte.
+- **Montar una plataforma sin dueño.** Un clúster sin equipo responsable se degrada en silencio.
+- **Dejar la seguridad en los valores por defecto.** Permisos amplios y secretos mal gestionados
+  son los fallos que más se repiten.
+- **Confundir portabilidad con independencia.** La API es común; las piezas que la rodean no.
+
+## Checklist
+
+- [ ] Tienes un problema concreto de escalado, aislamiento o despliegue que el clúster resuelve.
+- [ ] Has comparado con contenedores sin servidor, PaaS y Kubernetes gestionado.
+- [ ] Hay un equipo con tiempo y responsabilidad para operar el clúster.
+- [ ] Conoces la fecha de fin de soporte de la versión que usas y tienes un plan de actualización.
+- [ ] Sabes qué pila de observabilidad y de secretos usarás antes de desplegar en producción.
+- [ ] Has medido el coste de ingeniería, no solo la factura de máquinas.
+- [ ] Revisas periódicamente las APIs deprecadas de tus manifiestos.
+
+## Fuentes
+
+Consultadas el 15 de octubre de 2026.
+
+- [Kubernetes: Releases (versiones soportadas y fechas de fin de soporte)](https://kubernetes.io/releases/)
+- [Kubernetes: Visión general (qué es y qué no es)](https://kubernetes.io/docs/concepts/overview/)
+- [Kubernetes: Version Skew Policy](https://kubernetes.io/releases/version-skew-policy/)
+- [Kubernetes: Política de deprecación de APIs](https://kubernetes.io/docs/reference/using-api/deprecation-policy/)
+- [AWS: Amazon EKS, qué es](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html)
+- [Microsoft Learn: Azure Kubernetes Service (AKS), qué es](https://learn.microsoft.com/en-us/azure/aks/what-is-aks)
+- [Google Cloud: GKE y Cloud Run, cómo elegir](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/gke-and-cloud-run)

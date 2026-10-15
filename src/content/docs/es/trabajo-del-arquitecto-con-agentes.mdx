@@ -1,0 +1,238 @@
+---
+title: 'El trabajo del arquitecto con agentes: roles y productividad'
+description: 'Qué cambia en el rol del arquitecto cuando el equipo trabaja con agentes de IA: especificar, delegar con criterio, revisar y medir el flujo sin engañarse.'
+category: decisiones
+tags:
+  - agentes
+  - rol-arquitecto
+  - productividad
+  - metricas-de-flujo
+  - equipos
+order: 10
+roadmap:
+  id: liderazgo
+  stage: equipos
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Especificar, delegar y verificar: el arquitecto en el puesto de control'
+---
+
+# El trabajo del arquitecto con agentes: roles y productividad
+
+Cuando un equipo empieza a trabajar con agentes de código, el primer cambio que se nota es que
+se escribe menos código a mano. El cambio importante llega después: el trabajo del arquitecto
+se mueve de **producir** a **especificar, delegar, verificar y decidir qué se automatiza**. Si
+el rol no se redefine, el arquitecto acaba revisando diffs que no entiende a la velocidad a la
+que los genera una máquina, y la productividad aparente se convierte en deuda.
+
+Este artículo recorre qué cambia en el puesto, qué habilidades suben y cuáles pierden valor,
+cómo medir si el equipo mejora de verdad sin caer en métricas de vanidad, y qué riesgos
+organizativos aparecen. Separa lo que está verificado de lo que es criterio propio. Para el
+diseño técnico del entorno en el que trabaja el agente, véase
+[harness engineering con Claude Code](/docs/harness-engineering-claude-code).
+
+<Callout tone="info" title="Qué hay verificado y qué no">
+  Las cifras de productividad proceden de estudios concretos, con tareas y contextos limitados. Se
+  citan con su alcance en la sección de fuentes. Lo demás (cómo se reparten los roles, qué
+  habilidades importan más) es criterio del autor y se presenta como tal.
+</Callout>
+
+## Qué cambia en el puesto
+
+El trabajo del arquitecto nunca fue solo escribir código, pero antes el código era la forma
+más visible de influir en el sistema. Con agentes, esa influencia pasa por otros canales. La
+tabla resume el desplazamiento según el criterio del autor:
+
+| Actividad             | Antes (principalmente humana)   | Con agentes                                                         |
+| --------------------- | ------------------------------- | ------------------------------------------------------------------- |
+| Implementar un cambio | Escribir y probar código propio | Redactar la especificación y revisar el resultado                   |
+| Decidir un diseño     | Prototipar para entender        | Pedir alternativas y contrastarlas con criterios explícitos         |
+| Mantener convenciones | Recordarlas en revisiones       | Codificarlas en reglas, hooks y pruebas que el agente respeta       |
+| Detectar riesgos      | Experiencia al leer el código   | Diseñar sensores (tests, tipos, revisión) que los detectan          |
+| Comunicar             | Documentos y reuniones          | Lo mismo, pero con una especificación que el agente también consume |
+
+El patrón se repite: el arquitecto deja de ser el cuello de botella de la escritura y se
+convierte en el **puesto de control** entre la intención (qué se quiere y por qué) y la
+ejecución (lo que hacen los agentes). Ese puesto tiene tres responsabilidades que no se
+delegan: fijar qué significa «correcto», comprobar que el resultado lo cumple y decidir qué
+trabajo merece ser automatizado.
+
+Esto no sustituye a la arquitectura de los sistemas; la hace más explícita. Un agente no
+puede inferir un límite de módulo que nadie escribió. Por eso el trabajo con agentes empuja
+hacia fronteras claras, contratos y decisiones registradas, que es el mismo material del que
+se ocupan [las decisiones de arquitectura](/docs/adr) y la [facilitación](/docs/arquitecto-como-facilitador).
+
+## Habilidades que suben de valor
+
+Si la ejecución se abarata, el valor se desplaza hacia lo que la máquina no hace bien sola.
+Según el criterio del autor, cuatro habilidades ganan peso:
+
+- **Especificación.** Describir un cambio con precisión suficiente para que otro pueda
+  verificarlo: entradas, salidas, casos límite, qué no debe tocarse. Una especificación
+  ambigua produce un cambio plausible y equivocado, y la ambigüedad se paga en revisión.
+- **Criterio de verificación.** Saber qué prueba, qué sensor o qué inspección demuestra que el
+  resultado es correcto antes de pedirlo. Quien no sabe cómo comprobar un resultado no puede
+  delegarlo sin riesgo.
+- **Lectura de sistemas.** Entender el acoplamiento, los datos que cruzan una frontera y los
+  efectos laterales. Es lo que permite revisar un cambio de cincuenta archivos sin leer cada
+  línea.
+- **Comunicación de decisiones.** Explicar por qué se automatiza algo, qué se acepta como riesgo
+  y qué queda en manos humanas. Ver [presentar ideas y propuestas](/docs/presentar-ideas-y-propuestas).
+
+### Habilidades que se devalúan
+
+Pierden valor relativo, sin desaparecer: la capacidad de producir código correcto
+rápidamente en un lenguaje concreto, el conocimiento de sintaxis y APIs que el modelo ya
+conoce, y la costumbre de resolver todo en el editor. Conviene no confundir «devaluarse» con
+«no hacer falta»: quien no sabe leer código no puede juzgar lo que el agente produce.
+
+## Productividad: qué sabemos con datos
+
+Hay tres estudios que suelen citarse y que conviene leer con su alcance real.
+
+**METR (julio de 2025).** Un ensayo controlado aleatorizado con 16 desarrolladores
+experimentados de proyectos open source, 246 incidencias en repositorios maduros y herramientas
+de IA de principios de 2025. Cuando se permitía usar IA, las incidencias tardaban un 19 % más.
+Los participantes esperaban un 24 % de mejora antes del estudio y, tras experimentarlo, seguían
+creyendo que la IA les había acelerado un 20 %. La brecha entre percepción y medida es el
+hallazgo más útil para un arquitecto: **la sensación de velocidad no es una métrica**. METR
+advierte que el resultado es histórico y publicó en febrero de 2026 una actualización con datos
+nuevos; hay que leerla antes de usar la cifra como referencia.
+
+**Peng y colaboradores (arXiv, febrero de 2023).** Un experimento controlado con desarrolladores
+que debían implementar un servidor HTTP en JavaScript lo más rápido posible. El grupo con
+GitHub Copilot terminó un 55,8 % antes que el de control. Es una tarea acotada y bien definida,
+muy lejos de un cambio en un sistema heredado con dependencias. Es un preprint de arXiv, sin revisión por pares indicada en su ficha;
+el contexto importa tanto
+como la cifra.
+
+**DORA, State of AI-assisted Software Development 2025.** A nivel de organización, DORA encontró
+que una mayor adopción de IA se asocia con más rendimiento de entrega (throughput) y también con
+más inestabilidad. Es una **asociación**, no una relación causal demostrada, y el informe
+sugiere que el código se genera más rápido de lo que los procesos de revisión, prueba y
+despliegue pueden absorber. La lectura para el arquitecto es directa: acelerar la escritura sin
+acelerar la verificación traslada el cuello de botella y no lo elimina.
+
+Lo que une los tres estudios: la ganancia de velocidad en la escritura es real en tareas
+acotadas, pero no se traduce sin fricción en entrega estable en sistemas complejos. Por eso
+hay que medir el flujo completo.
+
+## Métricas: cuáles sirven y cuáles engañan
+
+El marco de referencia sigue siendo el de _Accelerate_ (Forsgren, Humble y Kim, 2018), que
+popularizó las métricas de entrega de software de DORA: frecuencia de despliegue, lead time
+para cambios, tiempo de restauración del servicio y tasa de fallo de cambios. DORA las ha
+actualizado desde entonces; su página vigente describe cinco métricas, entre ellas el tiempo
+de recuperación de un despliegue fallido y la tasa de retrabajo de despliegues. Consulta la
+definición actual en su guía antes de fijar objetivos, porque los nombres han cambiado.
+
+| Métrica                                | Qué mide                                       | Dónde engaña                                                                                                |
+| -------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Lead time para cambios                 | Desde el commit (o la idea) hasta producción   | Si se mide desde el commit, la especificación queda fuera                                                   |
+| Frecuencia de despliegue               | Cuántas veces llega código a producción        | Se puede subir dividiendo cambios sin valor                                                                 |
+| Tasa de fallo de cambios               | Qué parte de los despliegues causa incidencias | Sube si no se miden incidencias de forma consistente                                                        |
+| Tiempo de recuperación                 | Cuánto tarda en restaurarse el servicio        | Mejora con buenos runbooks, no solo con agentes                                                             |
+| Tasa de retrabajo de despliegues       | Cuántos despliegues son correcciones urgentes  | Revela el coste oculto de cambios aceptados sin verificar                                                   |
+| Líneas o porcentaje de código generado | Volumen de código producido                    | **Métrica de vanidad**: más código no es más valor                                                          |
+| Tokens consumidos                      | Coste de inferencia                            | Mide gasto, no resultado; útil para [costo de inferencia](/docs/costo-de-inferencia), no para productividad |
+| Número de PRs abiertos                 | Actividad                                      | Se infla con cambios pequeños o descartados                                                                 |
+
+La regla práctica: **una métrica de volumen solo vale si una métrica de resultado la
+acompaña**. Si el equipo genera el doble de código y el lead time real no baja, o la tasa de
+retrabajo sube, la productividad no ha mejorado. Esa es la ley de Goodhart en su versión
+cotidiana, que se desarrolla en [medir decisiones con OKR y KPI](/docs/medir-decisiones-okr-kpi#la-ley-de-goodhart).
+
+## Riesgos de organización
+
+Los riesgos más serios no están en el código sino en cómo se reparte el trabajo y el
+conocimiento.
+
+- **Sobrecarga de revisión.** Si el agente produce diez cambios al día y cada uno exige revisión
+  humana profunda, la revisión se convierte en el nuevo cuello de botella y empieza a hacerse
+  superficialmente. El remedio es reducir el tamaño de los cambios, aumentar los sensores
+  automáticos y reservar la revisión humana para decisiones y riesgos, no para estilo.
+- **Desaprendizaje de juniors.** Si los perfiles junior solo supervisan agentes, no adquieren
+  la intuición que luego les permite revisar. Hace falta diseñar tareas de aprendizaje
+  deliberado: implementar a mano algunos cambios, explicar decisiones y revisar código ajeno con
+  criterio.
+- **Dependencia de un proveedor.** El flujo de trabajo, las reglas y las habilidades del equipo
+  pueden quedar atados a una herramienta concreta. Conviene mantener las especificaciones, las
+  reglas y los criterios de verificación en formatos portables. Ver
+  [casado a un proveedor](/docs/casado-a-un-proveedor).
+- **Métricas que premian el volumen.** Si el equipo se evalúa por código generado, optimizará
+  eso, aunque el sistema empeore.
+
+## Cuándo sí y cuándo no
+
+**Sí conviene redefinir el rol** cuando el equipo ya usa agentes de forma habitual, los cambios
+de código se generan en volumen y la revisión empieza a ser el cuello de botella.
+
+**No conviene** tratar la transición como un cambio de herramienta. Si no hay pruebas
+automáticas, tipos ni límites claros, el agente produce más trabajo de verificación del que
+ahorra; primero hay que construir los sensores y las fronteras. Tampoco aplica a decisiones
+donde el criterio humano es el producto (por ejemplo, qué problema resolver), que no se
+delegan.
+
+Para la parte de autonomía y control de un sistema con IA, véanse
+[cuánta autonomía dar a un agente](/docs/autonomia-de-la-ia) y
+[controlar la IA: gobierno, autonomía y evaluación](/docs/controlar-la-ia-gobierno-y-autonomia).
+
+## Errores frecuentes
+
+- **Medir la productividad por la sensación del equipo.** El estudio de METR muestra que la
+  percepción puede ir en sentido contrario a la medida.
+- **Celebrar el volumen de código.** Más líneas generadas sin menos retrabajo ni menos lead time
+  no es progreso.
+- **Delegar sin especificar.** Un encargo vago produce un resultado plausible que la revisión
+  tendrá que deshacer.
+- **Revisar todo al mismo nivel.** Un cambio de formato y un cambio de contrato entre servicios
+  no merecen la misma atención.
+- **Dejar de formar a quien revisa.** La supervisión necesita criterio, y el criterio se
+  construye practicando.
+- **Confundir asociación con causa.** Los datos agregados de DORA describen tendencias de
+  organizaciones; no prueban que una herramienta concreta cause un resultado en tu equipo.
+
+## Ejemplo ilustrativo: un equipo de seis personas
+
+Un equipo de backend de seis personas adopta agentes para cambios en su API interna. Al cabo de
+dos meses, el número de PRs se ha duplicado, pero el lead time mediano no ha cambiado y la tasa
+de retrabajo ha subido. El arquitecto hace tres cambios de rol y de proceso, sin tocar la
+herramienta:
+
+1. Exige una especificación de una página para cualquier cambio que toque un contrato, con
+   casos límite y criterios de aceptación.
+2. Convierte en sensores automáticos las reglas que revisaba a mano (contratos de API, límites
+   de módulo, pruebas de compatibilidad) para que la revisión humana se centre en el diseño.
+3. Cambia el tablero: deja de mostrar PRs abiertos y muestra lead time, tasa de fallo y retrabajo
+   por semana.
+
+Tras un trimestre, el número de PRs baja, el lead time se reduce y el retrabajo cae. Es un caso
+ilustrativo construido para este artículo, no un dato medido; sirve para mostrar el orden de
+decisiones: primero especificar y verificar, después medir el flujo.
+
+## Checklist
+
+- [ ] Cada cambio que tocas por agente tiene una especificación con casos límite y criterio de
+      aceptación escrito.
+- [ ] Sabes qué sensor (prueba, tipo, regla, revisión) demuestra que el cambio es correcto.
+- [ ] El tablero mide lead time, frecuencia de despliegue, tasa de fallo y retrabajo, no solo
+      código generado o tokens.
+- [ ] Las métricas de volumen aparecen siempre junto a una métrica de resultado.
+- [ ] La revisión humana se reserva para decisiones de diseño y riesgo; el estilo lo
+      verifican las herramientas.
+- [ ] Los perfiles junior tienen tareas deliberadas de implementación y revisión.
+- [ ] Especificaciones, reglas y criterios están en formatos que no dependen de un único proveedor.
+- [ ] Revisas de vez en cuando las cifras de estudios externos, porque envejecen rápido.
+
+## Fuentes
+
+- METR, [Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/), 10 de julio de 2025 (incluye la referencia a la actualización de febrero de 2026).
+- Sida Peng, Eirini Kalliamvakou, Peter Cihon y Mert Demirer, [The Impact of AI on Developer Productivity: Evidence from GitHub Copilot](https://arxiv.org/abs/2302.06590), arXiv:2302.06590, febrero de 2023.
+- DORA, [Balancing AI tensions](https://dora.dev/insights/balancing-ai-tensions/) (resultados del informe _State of AI-assisted Software Development 2025_).
+- DORA, [Guía de métricas DORA](https://dora.dev/guides/dora-metrics/) (definiciones vigentes).
+- Nicole Forsgren, Jez Humble y Gene Kim, [_Accelerate_](https://itrevolution.com/product/accelerate/), IT Revolution, 2018.
+- Consulta interna: [Medir decisiones: OKR, KPI y métricas guía](/docs/medir-decisiones-okr-kpi),
+  [El arquitecto como facilitador](/docs/arquitecto-como-facilitador),
+  [IA para decidir: investigar, escenarios y pre-mortem](/docs/ia-para-decidir-negocio) y
+  [Presentar ideas y propuestas que se aprueban](/docs/presentar-ideas-y-propuestas).

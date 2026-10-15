@@ -1,0 +1,283 @@
+---
+title: 'Evaluating agents: trajectories, regressions and judges'
+description: 'How to evaluate an agent that acts: trajectories versus final outcome, tasks with verifiable criteria, model-based judges, variance and evals in CI.'
+category: practicas
+tags:
+  - agents
+  - evaluation
+  - llm-as-judge
+  - regressions
+  - trajectories
+order: 10
+roadmap:
+  id: ia
+  stage: gobierno
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A trajectory crosses a verification gate while a judge scores the full trace'
+---
+
+# Evaluating agents: trajectories, regressions and judges
+
+Evaluating an answer means comparing a text with a reference. Evaluating an agent is different:
+you have to judge **what it did** to reach the answer, with which tools, in how many steps, and
+what state it left the system in. Two runs can end with the same text while one of them deleted
+data along the way. If you only look at the final output, you cannot see that problem.
+
+This article covers how to design evaluations for an agent: what to record, how to score, when to
+use another model as judge, how to calibrate it, and how to turn evals into a quality gate that
+stops regressions. It follows the overview of [LLM applications and agents](/docs/arquitectura-agentes-llm#evaluations-evals)
+and the governance of [autonomy](/docs/controlar-la-ia-gobierno-y-autonomia#continuous-evaluation),
+and focuses on the measurement part.
+
+## Why evaluating the answer is not enough
+
+An agent makes decisions in a loop: it picks a tool, reads the result, decides the next step and,
+sometimes, asks for help. Each step can be reasonable and the whole can still go wrong. The reverse
+also happens: a clumsy path that reaches a correct result at five times the token cost.
+
+In its guide to agent evals, Anthropic draws a useful line between the **transcript** (the full
+record of a trial: messages, tool calls, intermediate results) and the **outcome** (the final state
+of the environment when the trial ends). For a reservation, for instance, what matters is that the
+reservation exists in the database, not that the agent says "booked". An agent can claim a success
+that never happened, and only the state of the system reveals it.
+
+The design consequence is that an agent eval has at least two layers: one checks the **outcome**
+(is the final state correct?), and another inspects the **trajectory** (how was it reached? were
+forbidden actions taken, were steps wasted, did it loop on retries?).
+
+## Minimal vocabulary
+
+Before building anything, fix four terms, because they are often confused:
+
+| Term             | What it is                                                   | Example                                                       |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------- |
+| **Task**         | A test case with inputs and success criteria                 | "Cancel order 4471 and refund the full amount"                |
+| **Trial**        | One execution of a task                                      | Run number 3 of that same task                                |
+| **Grader**       | Logic that scores one aspect of a trial                      | Check that the refund exists; score the tone of the reply     |
+| **Eval harness** | The infrastructure that runs, records, scores and aggregates | The script that runs tasks in a sandbox and stores the traces |
+
+A task can have several graders, and each grader can have several checks. Evaluating an agent also
+means evaluating the **agent harness** (the scaffolding that lets it act: prompts, tools, memory)
+together with the model. If you change a tool and results get worse, the culprit may be the
+scaffolding and not the model.
+
+## Kinds of grader
+
+There are three families, with different costs and guarantees:
+
+- **Code-based:** exact comparisons, schema validation, queries against the final state, static
+  analysis. They are fast, cheap, reproducible and objective, but brittle to valid variation: a
+  correct answer phrased differently can fail.
+- **Model-based:** an LLM applies a rubric or compares two outputs. They capture nuance and scale
+  well, but are non-deterministic and need calibration against people.
+- **Human:** they set the reference standard. They are expensive and slow, so they are used to
+  calibrate the other two and for periodic samples, not for every run.
+
+A practical rule: start with what code can check, and reserve model judgment for what has no simple
+check. A record in a database is verified with a query; the quality of an explanation is not.
+
+## Trajectory versus final outcome
+
+It is tempting to require the agent to follow the exact sequence of steps you expected. That is
+usually a mistake: there are many valid paths, and a strict sequence check breaks as soon as the
+agent finds a better one. Anthropic recommends grading the outcome rather than the exact path, and
+reserving trajectory inspection for properties that do matter:
+
+- **Hard constraints:** never call a delete tool without confirmation; never read another
+  customer's data. These are failures even when the outcome is correct.
+- **Efficiency:** number of calls, tokens and time per task, compared against a baseline.
+- **Loops and stalls:** the same tool called repeatedly with the same arguments, or an agent that
+  declares the job finished too early.
+
+Reading traces is not optional. Reviewing transcripts regularly is how you confirm that graders
+measure what you think they measure: many "regressions" are badly written tasks or checks that
+fail on a formatting difference.
+
+## A task set with verifiable criteria
+
+The task set is the most valuable asset in evaluation. A good task has a realistic input, a success
+criterion written before running anything, and a way to verify it. An example of the shape (not an
+implementation) of one task:
+
+```yaml
+task: refund-cancelled-order-07
+input: 'Cancel order 4471 and refund the full amount.'
+graders:
+  - type: code # final state, checked in the database
+    check: refund exists for order 4471
+  - type: model # tone and clarity of the reply, with a rubric
+    rubric: rubrics/customer-support.md
+trials: 5
+isolation: clean-sandbox
+```
+
+Three criteria for building the set:
+
+1. **Cover the usual cases, the edge cases and the adversarial ones.** Normal tasks measure
+   usefulness; edge cases (incomplete data, ambiguity) measure robustness; prompt-injection attempts
+   measure safety.
+2. **Turn every real incident into a fixed task.** A failure that reaches production is added to
+   the regression set and is never deleted afterwards.
+3. **Keep a held-out set.** If you tune prompts while always looking at the same tasks, you end up
+   optimizing for them. A reserved set that is never used for tuning guards against that.
+
+Starting early with a small sample of 20 to 50 simple tasks drawn from real failures, as Anthropic recommends, rather than waiting for a large set. What matters is that it is representative and grows with the
+errors you find.
+
+## Metrics: task completion, cost, steps and safety
+
+A report that shows only an "accuracy rate" hides almost everything. Report at least four families:
+
+| Metric               | Question it answers                                | How it is obtained                    |
+| -------------------- | -------------------------------------------------- | ------------------------------------- |
+| **Task completion**  | Does the final state meet the criterion?           | Outcome graders                       |
+| **Cost and latency** | What does each completed task cost and take?       | Tokens, calls and time per trial      |
+| **Steps and tools**  | Was the path reasonable?                           | Trajectory: step count, retries       |
+| **Safety**           | Were there forbidden actions or out-of-scope data? | Hard constraints applied to the trace |
+
+Two figures deserve their own attention. The **escalation rate** (how many tasks end with a person)
+tells you whether the agent is useful or just moves work around. And the **cost per completed task**,
+not per trial, avoids rewarding a cheap agent that rarely finishes. A safety failure counts as a
+failure even when the task succeeds: treat it as a gate, not as one more point.
+
+## Model-based judges: when they work
+
+An LLM as judge is useful when the criterion is subjective or has many valid forms: whether an
+explanation is clear, whether the tone fits, whether a summary leaves out what matters. It is not
+the right tool for facts a query can verify; there, code always wins.
+
+To make the judge trustworthy:
+
+- **An explicit, concrete rubric.** Anthropic notes that vague rubrics produce inconsistent
+  judgments. A useful rubric describes each level of the scale, with examples.
+- **One criterion per judge.** Grade each dimension in its own call instead of asking for one overall
+  score. Failures are then localized and biases are isolated.
+- **Allow "unknown".** Giving the judge an explicit way out when information is missing reduces
+  invented verdicts.
+- **Pairwise comparison when possible.** Choosing between two outputs is usually more stable than
+  assigning an absolute score.
+
+### Known biases
+
+The Zheng et al. paper on MT-Bench examined three biases in GPT-4 as a judge that should be
+assumed from the design stage:
+
+- **Position bias.** When the order of the two answers is swapped, GPT-4 gave consistent results in
+  more than 60 % of cases, and preferred the first position 30 % of the time. The usual mitigation:
+  evaluate in both orders and count verdicts that disagree as a tie.
+- **Verbosity bias.** Judges tend to reward longer answers even when they are less clear. Mitigation:
+  instruct the judge not to reward length, and cap output length when comparing.
+- **Self-enhancement.** The study reports that GPT-4 and Claude-v1 had a win rate for their own answers
+  10 % and 25 % higher, but its authors cannot conclude that this bias exists with the data available.
+  As a precaution, do not let the evaluated model act as its own judge.
+
+### Calibrating against human annotation
+
+A judge is not reliable by default. You have to measure its agreement with people. The procedure is
+simple: a sample of outputs scored by expert humans, the same outputs scored by the judge, and the
+match rate. In the same Zheng et al. study, agreement between GPT-4 and humans reached 85 % in the
+setting without ties, comparable to human-to-human agreement. That number is not a licence: each
+rubric and each judge model must be calibrated on your own data, and recalibrated when either
+changes.
+
+A judge that disagrees with people measures something else. That gap is itself a signal that the
+rubric is badly written or the judge does not understand the domain.
+
+## Non-determinism: repetitions and variance
+
+The same agent, on the same task, can succeed in one run and fail in the next. That is why a
+single-run eval measures nothing reliable. Repeat each task several times and measure the
+**variance**. Two metrics describe two different properties:
+
+- **pass@k:** the probability of at least one success in k attempts. It rises with k. It fits
+  cases where one correct result is enough, such as generating candidates that a person reviews.
+- **pass^k:** the probability that all k attempts succeed. It falls as k grows. It is the metric for
+  agents that act without supervision, where consistency matters.
+
+Anthropic gives an example: with a 75 % per-trial success rate over three trials, pass^3 drops to
+roughly 42 %, while pass@k approaches 1 as k increases. An agent that succeeds three times out of
+four looks very good under pass@k and unreliable under pass^k. The τ-bench paper (Yao et al., 2024)
+introduced pass^k precisely for customer-service-style agents, where consistency is the real
+requirement; it reported that the agents it evaluated, GPT-4o among them, solved fewer than half of
+the tasks and were inconsistent when repeated.
+
+A task that passes in some runs and fails in others is not a "random failure" to ignore. It is a
+property of the system to report, with its per-task rate, and it sometimes points to an ambiguous
+instruction or a fragile tool.
+
+## Isolated test environments
+
+Every trial should start from a clean environment. If files, caches or database state survive from
+one run to the next, failures become correlated and look like an agent problem when they are really
+infrastructure problems. The reverse also happens: an agent that finds leftovers from earlier trials
+(for instance, Git history) can look more capable than it is. Anthropic reports a case like this in
+its own evals.
+
+For practice, two rules are enough: each trial runs in an environment rebuilt from a known image or
+dump, and the harness stores the full trace of every trial so a failure can be reproduced. A
+repeated 0 % success rate on a task usually means a broken task, not an incapable agent; check the
+task before touching the model.
+
+## Evals as a CI gate and regressions between versions
+
+The value of an eval lies in its ability to block. Changing the model, a prompt version, a tool or
+the retry policy is a release and should pass the same threshold. A practical scheme:
+
+- **Before merging:** a fast subset of regression and safety tasks, with few repetitions, that blocks
+  if it drops below a threshold.
+- **Before deploying:** the full set, with enough repetitions to estimate pass^k.
+- **In production:** a sample of real traffic, reviewed periodically, to detect drift when the
+  provider changes the model or usage changes.
+
+Two rules keep the set valuable. Regression tasks are not deleted even when the agent already passes
+them. And when a capability set saturates (the agent passes nearly everything), those tasks graduate
+into the regression suite and harder new ones are written. What is compared across versions are
+rates, not anecdotes: a two-point difference with five repetitions per task may be noise, and the
+report should say so.
+
+## When a complex eval is not worth it
+
+Not every agent needs a sophisticated evaluation harness. If the agent performs a bounded, low-risk
+task whose output a person can review easily, a small set of cases (around twenty, author's judgment) and human review of changes is
+enough. A calibrated judge, massive repetitions and isolated environments carry engineering and
+maintenance costs that are only justified with volume, risk or frequent model changes.
+
+The criterion is the same as for any measurement: the evaluation must be able to change a decision.
+If no possible result would delay a release or restrict a tool, it is probably a metrics exercise
+with no function. The reverse is also true: an agent with write access to business systems and no
+safety eval at all is debt that grows silently.
+
+## Common mistakes
+
+- **Grading only the final answer.** The agent may say "done" without having done anything, or reach
+  a good result by a path it should not have taken.
+- **Requiring an exact sequence of steps.** It penalizes valid paths and produces false failures.
+- **One trial per task.** With non-deterministic agents, a single run says nothing reliable.
+- **An uncalibrated judge.** It measures its own biases and presents them as quality.
+- **Using the evaluated model as its own judge.** It introduces self-preference.
+- **Environments shared between trials.** They create correlated failures and inflated scores.
+- **Tuning on the held-out set.** The number goes up; the real capability does not.
+- **Treating evals as a report instead of a gate.** If nothing is blocked, nobody reads them.
+
+## Checklist
+
+- [ ] Each task has a realistic input, a written success criterion and a way to verify it.
+- [ ] The final state is checked with code wherever possible.
+- [ ] The trajectory is reviewed only for hard constraints, efficiency and loops.
+- [ ] Each trial runs in a clean environment and its full trace is stored.
+- [ ] Each task is repeated several times, and pass^k is reported for agents that act unsupervised.
+- [ ] Judges have a concrete rubric, one criterion per judge and a documented calibration against people.
+- [ ] The evaluated model is not its own judge, and position and length bias are mitigated.
+- [ ] A regression subset blocks in CI, and the full set runs before deployment.
+- [ ] Each real incident becomes a fixed task, and regression tasks are never deleted.
+- [ ] Transcripts are reviewed periodically to confirm that graders measure the right thing.
+
+## Sources
+
+- Anthropic, [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) (engineering). Definitions of task, trial, grader and transcript; pass@k versus pass^k; judge calibration and clean environments. Recommends 20 to 50 simple tasks drawn from real failures.
+- Yao et al., [τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains](https://arxiv.org/abs/2406.12045), arXiv:2406.12045 (2024). Definition of pass^k.
+- Zheng et al., [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685), arXiv:2306.05685 (2023). Position, verbosity and self-enhancement biases; agreement with humans.
+- OpenTelemetry, [GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai). Conventions for generative AI traces; check their stability status in the repository before adopting them.
+- Author's judgment, not verified as external fact: the task-mix proportions and the escalation threshold are practical recommendations, not normative figures.

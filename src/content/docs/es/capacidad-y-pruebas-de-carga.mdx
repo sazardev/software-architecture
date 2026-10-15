@@ -1,0 +1,223 @@
+---
+title: 'Capacidad y pruebas de carga: medir con cargas reales'
+description: 'Cuánta capacidad necesita un sistema y cómo comprobarlo con cargas parecidas al tráfico real: modelo de carga, tipos de prueba, errores de medición y margen.'
+category: practicas
+tags:
+  - pruebas-de-carga
+  - capacidad
+  - latencia-de-cola
+  - dimensionamiento
+  - escalado-automatico
+order: 18
+roadmap:
+  id: sistemas
+  stage: escala
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Latencia p99 frente a carga: el objetivo va con margen antes del codo de saturación'
+---
+
+# Capacidad y pruebas de carga: medir con cargas reales
+
+Caso ilustrativo: a tres semanas de la campaña de Navidad, el equipo de tienda dice que el sistema «aguanta». La prueba que tienen es un script que lanza cincuenta usuarios virtuales contra preproducción durante cinco minutos, con datos de juguete. Pasa en verde. El día de la campaña, la latencia del pago sube a varios segundos a la mitad del pico previsto y la cola de pedidos se atasca. Nadie mintió: la prueba respondía a otra pregunta. No preguntaba con cuánta carga el sistema mantiene una latencia aceptable, ni con qué mezcla de operaciones, ni qué pasa cuando la caché está fría.
+
+Planificar capacidad es responder a esa pregunta antes de que la conteste el tráfico real: cuánta capacidad hace falta, con qué margen y cómo se comprueba. Este artículo recorre el modelo de carga, los tipos de prueba y cuándo usar cada uno, los errores de medición que invalidan resultados y cómo convertir los números en decisiones sobre instancias, escalado y presupuesto. Las leyes que explican por qué la latencia se dispara están en [números y leyes de rendimiento](/docs/numeros-y-leyes-de-rendimiento); aquí las usamos sin repetirlas. El método de estimación aplicado a casos concretos está en [escalabilidad y casos clásicos](/docs/escalabilidad-casos-clasicos).
+
+<Callout tone="info" title="Verificado y criterio">
+  Lo que afirmo sobre el comportamiento de los generadores de carga y sobre AWS sale de las fuentes
+  citadas al final. Las cifras de tráfico, mezcla y costes son **supuestos** para practicar el
+  cálculo; no describen ningún sistema real. Las reglas de dimensionamiento con margen son criterio
+  del autor.
+</Callout>
+
+## Qué pregunta responde cada medición
+
+Antes de elegir una prueba, conviene saber qué decisión depende de ella. Una misma herramienta sirve para preguntas distintas, y cada una necesita un perfil de carga distinto.
+
+| Pregunta                                    | Qué medir                                             | Prueba que la responde |
+| ------------------------------------------- | ----------------------------------------------------- | ---------------------- |
+| ¿Funciona el despliegue con tráfico normal? | Latencia y errores en el perfil medio                 | Carga media            |
+| ¿Cuánto aguanta una instancia con el SLO?   | Caudal máximo que mantiene el p99 dentro del objetivo | Punto de ruptura       |
+| ¿Qué pasa si el pico llega de golpe?        | Latencia y recuperación tras un salto                 | Picos                  |
+| ¿Se degrada si la carga dura horas?         | Memoria, conexiones y latencia en el tiempo           | Resistencia (soak)     |
+| ¿Qué ocurre por encima de lo que esperamos? | Comportamiento y degradación bajo sobrecarga          | Estrés                 |
+
+## El modelo de carga: lo que realmente llega
+
+Una prueba vale lo que vale su modelo de carga. «Mil peticiones por segundo» dice poco si no sabes qué peticiones son, cuándo llegan y qué pasa entre ellas. Un modelo razonable tiene cuatro piezas.
+
+**Tráfico medido, no imaginado.** Saca el caudal medio, el pico por minuto y la proporción de lecturas frente a escrituras de las métricas de producción de las últimas semanas. Si el sistema es nuevo, usa como referencia un lanzamiento parecido y escribe la hipótesis en el informe.
+
+**Mezcla de operaciones.** No todas las peticiones cuestan lo mismo. Una búsqueda que toca el índice puede costar diez veces más que leer una ficha cacheada. Repartir la carga de forma uniforme entre endpoints subestima el pico, porque el pico rara vez es uniforme. Con pesos y costes supuestos, la mezcla cambia el resultado:
+
+| Operación         | Peso en el tráfico (supuesto) | Coste relativo (supuesto) | Parte del coste total |
+| ----------------- | ----------------------------- | ------------------------- | --------------------- |
+| Búsqueda          | 55 %                          | 10                        | 78 %                  |
+| Ficha de producto | 35 %                          | 2                         | 10 %                  |
+| Añadir al carrito | 8 %                           | 4                         | 4,6 %                 |
+| Pago              | 2 %                           | 25                        | 7,1 %                 |
+
+La búsqueda pesa el 78 % del coste con el 55 % del tráfico, y el pago, que es el 2 % de las peticiones, pesa más que el carrito. Si la prueba solo lanza fichas de producto, da un caudal muy optimista.
+
+**Perfil temporal.** Hay una hora punta diaria, un pico de campaña y un pico del pico, que es el primer minuto de una oferta. Cada uno exige su propia comprobación; una media de 24 horas no sirve para dimensionar.
+
+**Sesiones, no peticiones sueltas.** Un usuario entra, navega, añade al carrito y paga, con pausas entre pasos. Modelar la carga como sesiones captura la presión sobre el estado (sesiones, carritos, bloqueos de filas) que una lista de URL no captura.
+
+Hay un punto que suele pasarse por alto: el modelo de llegadas. En un modelo **cerrado**, cada usuario virtual espera a que termine su iteración antes de empezar la siguiente, así que un sistema lento recibe menos carga y la prueba se frena sola. En un modelo **abierto**, las peticiones llegan a su ritmo, respondas como respondas. La documentación de k6 lo describe así: en el modelo cerrado la siguiente iteración no empieza hasta que termina la anterior, y el modelo abierto lo implementan los ejecutores de tasa de llegada (`constant-arrival-rate` y `ramping-arrival-rate`). Para tráfico de clientes independientes, como una API pública, el abierto es el que se parece a la realidad. Para un número fijo de empleados usando un panel, el cerrado encaja.
+
+```yaml
+# Forma conceptual del modelo; no es sintaxis de ninguna herramienta concreta.
+escenario: hora-punta
+llegadas: 1800/s # modelo abierto: tasa fija, independiente de la latencia
+mezcla:
+  busqueda: 55%
+  ficha-producto: 35%
+  carrito: 8%
+  pago: 2%
+pausas: 1-4 s # tiempo de lectura entre pasos de cada sesión
+```
+
+## Tipos de prueba y cuándo usar cada una
+
+La documentación de k6 y la de Grafana Labs describen seis tipos de prueba con propósitos y duraciones orientativas. Las duraciones son las de esa guía, no reglas universales.
+
+| Tipo               | Pregunta                             | Perfil de carga               | Duración orientativa |
+| ------------------ | ------------------------------------ | ----------------------------- | -------------------- |
+| Humo (smoke)       | ¿El script y el sistema funcionan?   | Muy poca carga                | Segundos a minutos   |
+| Carga media        | ¿Cómo va con el tráfico normal?      | Carga media de producción     | De 5 a 60 minutos    |
+| Estrés (stress)    | ¿Qué pasa por encima de lo esperado? | Por encima de la media        | De 5 a 60 minutos    |
+| Picos (spike)      | ¿Sobrevive a un salto repentino?     | Muy alta durante unos minutos | Minutos              |
+| Resistencia (soak) | ¿Se degrada con horas de carga?      | Media sostenida               | Horas                |
+| Punto de ruptura   | ¿Dónde está el límite?               | Rampa creciente hasta fallar  | Hasta que falle      |
+
+Empieza siempre por la prueba de humo: si el script no funciona, las demás son ruido. La de resistencia encuentra lo que la de cinco minutos no ve: fugas de memoria, conexiones que no se devuelven al pool, logs que llenan el disco, cachés que expiran en bloque. La de punto de ruptura es la que responde a «cuánto aguanta una instancia», y se hace mejor por escalones: subir la carga por niveles y mantener cada uno lo bastante para que el p99 se estabilice. Para cualquiera de ellas, la forma de carga recomendada es simple: subida, meseta y bajada, sin oscilaciones.
+
+## Errores de medición que invalidan el resultado
+
+### El generador de carga es el cuello de botella
+
+Si la máquina que genera la carga se queda sin CPU, sin memoria o sin sockets, la prueba mide al generador. El síntoma típico es un caudal que se estanca en un valor que coincide con el límite del cliente, mientras la latencia del sistema no cambia. Mide los recursos del generador durante la prueba y reparte la carga entre varias máquinas si hace falta. Un generador en el mismo host que el sistema probado tampoco sirve: compite con él por los mismos recursos.
+
+### Datos de prueba que no se parecen a producción
+
+Cien mil productos con nombres iguales o un único cliente de prueba cambian el plan de consulta, la tasa de aciertos de caché y la contención de filas. Lo que importa es la **distribución**, más que el volumen: cuántas claves son calientes, cuántas filas tiene cada cliente, cuánto pesan las respuestas. Si puedes, muestrea producción anonimizada. Si no, genera datos con la misma forma (cardinalidad, asimetría, tamaños).
+
+### Cachés calientes o frías
+
+Una prueba que arranca con la caché vacía mide el arranque; una de una hora con la caché llena mide un estado estable que no verás en el primer minuto de un despliegue. Ninguna de las dos es «la» respuesta. Separa las fases (calentamiento, estado estable y arranque en frío, con instancias recién reiniciadas) y reporta cada una. La mecánica de las cachés está en [caché, colas y streaming](/docs/caching-colas-streaming).
+
+### Medias que esconden colas
+
+La media de latencia puede ser excelente mientras el 1 % de las peticiones tarda diez veces más. Reporta p50, p95, p99 y máximo por operación, nunca solo la media global.
+
+A esto se suma la **omisión coordinada**. Si el generador espera la respuesta antes de enviar la siguiente petición, un sistema que se atasca recibe menos peticiones justo cuando más lento va, y los percentiles altos quedan subrepresentados. El README de wrk2, la herramienta de Gil Tene, describe este efecto y lo corrige midiendo la latencia desde el instante en que la petición debía salir, no desde el envío real. La documentación de k6 presenta el mismo problema como propio del modelo cerrado.
+
+Un ejemplo con cifras supuestas: 100 peticiones por segundo durante un minuto (6.000 peticiones) y un atasco de diez segundos. Con llegadas abiertas, durante el atasco se programan 1.000 peticiones, que esperan hasta diez segundos cada una: son alrededor del 17 % de la muestra y el p99 lo refleja. Con un bucle cerrado de 10 usuarios, solo hay 10 peticiones en vuelo durante el atasco: 10 de 6.000, el 0,17 %. El p99 del segundo informe apenas lo nota, aunque el usuario real haya sufrido lo mismo.
+
+## Capacidad: cuánto hay y cuánto debe haber
+
+### Capacidad por instancia y punto de saturación
+
+Define la capacidad de una instancia como **el caudal máximo que mantiene el p99 y la tasa de errores dentro del SLO**, no como el máximo que aguanta antes de caerse. Un servicio que responde con un p99 de ocho segundos está saturado aunque no devuelva ningún error. Para medirla, sube la carga en una escalera (por ejemplo, un 10 % más cada cinco minutos) hasta cruzar el objetivo; la capacidad es el último nivel que lo cumple con latencia estable.
+
+El punto de saturación es el codo de la curva latencia-carga. Antes del codo, el sistema absorbe el incremento con poco cambio; después, cada escalón cuesta más. Las leyes de colas explican esa forma (en M/M/1, la respuesta crece como 1/(1−ρ)) y están desarrolladas en [números y leyes de rendimiento](/docs/numeros-y-leyes-de-rendimiento). Para planificar, lo práctico es fijar el objetivo de carga por debajo del codo, no en él. Y la ley de Little da un atajo útil: si mides la latencia W a un caudal λ conocido, el número de conexiones ocupadas L (λW) es el tamaño mínimo del pool que necesitas a ese caudal.
+
+### Regla de dimensionamiento con margen
+
+El criterio es del autor, pero las variables salen de la prueba. Un punto de partida:
+
+- **Carga de diseño** P' = pico previsto × (1 + crecimiento hasta la próxima revisión).
+- **Capacidad al SLO por instancia** c, medida en la prueba de punto de ruptura.
+- **Utilización objetivo** u: la fracción de c que quieres usar en régimen, por ejemplo el 60 %.
+- **Zonas** Z: el margen debe aguantar la caída de una.
+
+El número de instancias N cumple `N × (1 − 1/Z) × c × u ≥ P'`. Con números supuestos:
+
+| Paso                                   | Valor (supuesto)                 |
+| -------------------------------------- | -------------------------------- |
+| Pico previsto                          | 3.000 peticiones/s               |
+| Con un 30 % de crecimiento (P')        | 3.900 peticiones/s               |
+| Capacidad al SLO por instancia (c)     | 400 peticiones/s                 |
+| Utilización objetivo (u)               | 60 %, es decir 240 peticiones/s  |
+| Sin zonas: 3.900 / 240 = 16,25         | 17 instancias                    |
+| Tres zonas, aguantando la caída de una | 25, redondeado a 27 (9 por zona) |
+
+La última fila es la lección. Con 27 instancias, la caída de una zona deja 18 instancias, que sirven 4.320 peticiones/s al objetivo del 60 %. Con 17, la caída dejaría una capacidad inferior a la carga de diseño. El margen de fallo cuesta más que el de crecimiento, y en régimen normal el clúster trabaja al 36 % de su capacidad al SLO. Ese es el precio del margen, y conviene decirlo en voz alta. Durante una caída puedes aceptar otro objetivo de utilización (por ejemplo, el 80 %), pero decídelo antes y pruébalo; no lo descubras en la caída.
+
+### Escalado automático con límites
+
+Un escalado reactivo ajusta N para mantener una métrica objetivo. Hay dos advertencias. La primera sale de la documentación de AWS: las instancias que se están calentando no cuentan en las métricas agregadas hasta que expira su tiempo de calentamiento, y ese ajuste no viene activado por defecto; AWS recomienda configurarlo y, si no sabes cuánto necesitas, empezar con 300 segundos y ajustar. La segunda es de criterio: CPU no siempre es la señal correcta. Si el p99 sube con la CPU al 40 %, el cuello está en un pool de conexiones o en un bloqueo, y añadir instancias solo reparte el problema.
+
+Los límites de escalado son decisiones de presupuesto y de dependencias. Con cifras supuestas, un máximo de 27 instancias con 20 conexiones cada una son 540 conexiones contra la base de datos: si la base aguanta 200, el escalado ha trasladado la saturación a otro sitio. Cada límite máximo tiene que caber en lo que aguantan las piezas de detrás.
+
+### Presupuesto: el coste de una petición
+
+Convierte la capacidad en dinero para poder comparar opciones. Con una instancia a 0,30 € por hora (supuesto):
+
+- Si su caudal útil es de 240 peticiones/s, cada millón de peticiones cuesta 0,35 €.
+- Si la prueba demuestra que aguanta 400 peticiones/s al SLO, cuesta 0,21 €.
+
+Esa diferencia es lo que cuesta el margen en la práctica, y es el número que conviene discutir con negocio. El enfoque de coste como atributo de arquitectura está en [FinOps: el coste como atributo](/docs/finops-costo-como-atributo).
+
+## Entornos de prueba y cómo acercarse a producción sin riesgo
+
+No siempre puedes probar en un entorno idéntico a producción, y casi nunca hace falta. Las opciones se reparten entre lo que aprendes, el riesgo y el coste:
+
+| Opción                         | Qué aprendes                                        | Riesgo                                          | Coste |
+| ------------------------------ | --------------------------------------------------- | ----------------------------------------------- | ----- |
+| Réplica idéntica de producción | Todo, incluidos los límites reales                  | Bajo                                            | Alto  |
+| Escala reducida y proporcional | Ratios, límites por instancia y forma de las curvas | Bajo                                            | Medio |
+| Tráfico sombra o reproducción  | Carga real con datos reales                         | Escrituras y efectos externos (cargos, correos) | Medio |
+| Canary con flags en producción | Comportamiento real por porcentaje de tráfico       | Medio, pero controlable y reversible            | Bajo  |
+
+Lo que escala proporcionalmente son ratios: conexiones por instancia, tamaño de caché frente a datos, réplicas por partición. Lo que no escala linealmente son la base de datos, los bloqueos y las dependencias de terceros. Esas se prueban aparte, con dobles o con sus propios límites de tasa. En el tráfico sombra, desactiva los efectos secundarios (cargos, correos, eventos hacia terceros) antes de reproducir nada. Las pruebas de punto de ruptura contra producción solo deberían correr en ventana, con rampas y un botón de parada; el despliegue gradual con [entrega progresiva](/docs/entrega-progresiva-flags-canary) es la forma más segura de acercarse al límite real.
+
+## De resultados a decisiones
+
+Una prueba que no cambia ninguna decisión es un ritual caro. Estos patrones suelen indicar qué hacer:
+
+| Lo que ves                                              | Lo que suele significar                  | Decisión                                                                                        |
+| ------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| El p99 sube antes que la CPU, con colas en un pool      | Espera o contención, no falta de cómputo | Revisar el pool y los bloqueos antes de añadir instancias                                       |
+| CPU al 90 % y latencia subiendo con la carga            | El cómputo es el límite                  | Añadir capacidad o reducir el coste por petición                                                |
+| Latencia correcta y timeouts o 503 a partir de un nivel | Límite de conexiones, cola o tasa        | Ajustar límites y contrapresión, como en [resiliencia](/docs/resiliencia-sistemas-distribuidos) |
+| Estable durante una hora, degrada a las seis            | Fuga o acumulación                       | Investigar con prueba de resistencia y perfilado                                                |
+| Cae al pasar a un nivel, sin tocar la aplicación        | Saturación de una dependencia            | Medir cada dependencia por separado                                                             |
+
+De cada ejercicio salen tres números que deben quedar escritos: la capacidad máxima por instancia al SLO, con la versión del software y la fecha; el margen objetivo, con su justificación; y los límites de escalado, con la dependencia que los fija. Esos números van a un [ADR](/docs/adr) y el cociente entre pico previsto y capacidad disponible se vigila con una [fitness function](/docs/fitness-functions), para que el aviso llegue antes que el pico.
+
+## Cuándo sí y cuándo no
+
+Hace falta una prueba de carga con modelo y criterio antes de un lanzamiento o una campaña, antes de tocar el camino crítico (pagos, base de datos, autenticación), antes de una migración que cambie el perfil de consultas, y cada vez que haya un SLO que cumplir.
+
+No merece la pena una campaña completa para un sistema interno con veinte usuarios, ni optimizar sin medir qué fracción del tiempo domina (esa es la pregunta de [Amdahl](/docs/numeros-y-leyes-de-rendimiento)). Y una prueba sin SLO no tiene criterio de aceptación: cualquier número parece bueno.
+
+## Errores frecuentes
+
+- **Probar un solo endpoint** y reportar el caudal total como si fuera el del sistema.
+- **Usar la latencia media** como criterio de aceptación.
+- **Dimensionar con la CPU media de 24 horas**, que esconde el pico.
+- **Escalar la aplicación y olvidar la base de datos**, que sigue siendo el mismo punto único.
+- **Ignorar el arranque en frío**: una instancia nueva tarda en aportar y, si no se mide, el escalado oscila.
+- **Escalar por CPU cuando el cuello es un pool o un bloqueo.**
+
+## Checklist
+
+- [ ] El modelo de carga viene de métricas de producción y declara sus supuestos.
+- [ ] Hay mezcla de operaciones con pesos y costes, no un único endpoint.
+- [ ] Las llegadas son abiertas para clientes independientes y cerradas solo para usuarios fijos.
+- [ ] Se han ejecutado humo, carga, picos, resistencia y punto de ruptura.
+- [ ] Se reportan p50, p95, p99 y errores por operación, con la omisión coordinada controlada.
+- [ ] El generador tiene recursos de sobra y no es el límite del resultado.
+- [ ] Hay una capacidad máxima por instancia al SLO, con versión y fecha.
+- [ ] El margen cubre el crecimiento previsto y la caída de una zona.
+- [ ] Los límites de escalado respetan lo que aguantan las dependencias.
+- [ ] La decisión queda en un ADR con el coste por millón de peticiones.
+
+## Fuentes
+
+- Grafana Labs, «Test types» (documentación de k6): https://grafana.com/docs/k6/latest/testing-guides/test-types/
+- Grafana Labs, «Open and closed models» (documentación de k6): https://grafana.com/docs/k6/latest/using-k6/scenarios/concepts/open-vs-closed/
+- Amazon Web Services, «Set the default instance warmup for an Auto Scaling group»: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html
+- Gil Tene, README de wrk2 (corrección de la omisión coordinada): https://github.com/giltene/wrk2

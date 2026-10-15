@@ -1,0 +1,238 @@
+---
+title: 'Trunk-based vs long branches in continuous delivery'
+description: 'How the distance between code and trunk sets the cost of integration: trunk-based versus long branches, flags that expire, a healthy trunk and what to measure.'
+category: practicas
+tags:
+  - branching
+  - trunk-based-development
+  - continuous-integration
+  - feature-flags
+  - dora
+order: 16
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A trunk with daily integrations against a branch that returns with a conflict'
+---
+
+# Trunk-based vs long branches in continuous delivery
+
+Every branch is a decision about how long code may live apart from the rest. That distance is not
+a Git detail: it determines how much integration costs, how many conflicts appear and, in the end,
+how long a change takes to reach production. A team that spends three weeks in a private branch is
+not doing its work more carefully; it is postponing integration until it hurts the most.
+
+This article compares the two extremes, trunk-based development and long-lived branches, and
+explains how feature flags let you live on the trunk without releasing anything early. At the end
+there are criteria for when a long branch still makes sense, what a healthy trunk requires and what
+to measure.
+
+<Callout tone="info" title="Cut-off date">
+  The references are from October 2026. The primary sources cited at the end were read directly;
+  figures that do not appear there are marked as unverified.
+</Callout>
+
+## What each model means
+
+**Trunk-based development** is a version-control model in which developers collaborate on a single
+branch, the trunk, and avoid long-lived development branches. The reference definition, kept at
+trunkbaseddevelopment.com, describes short-lived branches used for review and for CI build checks,
+not for publishing. Releases can be cut from the trunk or from a release branch created just in time
+and deleted afterwards.
+
+**Long-lived branches** (or feature branches) are the opposite: each large piece of work lives in
+its own branch for days or weeks and is integrated at the end. This is not a beginner's mistake; it
+is what many teams do because the flow feels safer. The problem is that the safety is apparent. What
+gets postponed is the integration test, not the risk.
+
+The useful distinction is not "branch or no branch" but **how much unintegrated code exists at any
+given moment**. Fowler puts it in his article on continuous integration with a practical rule: every
+developer should integrate into the mainline every day, and no code should sit unintegrated for more
+than a few hours. That is the measure that matters.
+
+## The cost of integrating late
+
+Integration is expensive in a non-linear way. Fowler states it directly: it is very hard to estimate
+how long a complex integration takes, and if there is twice as much code to integrate, it is more
+likely to take four times as long. The reason is that every day of separation adds changes to the
+trunk that the branch does not know about, and the branch accumulates assumptions about code that no
+longer exists.
+
+Three costs grow with the branch's lifetime:
+
+- **Textual and semantic conflicts.** A line conflict is the least worrying. Worse is the one Git
+  never reports: two changes that merge cleanly but break an assumption of the other.
+- **Late, large review.** A three-week branch is reviewed as one block. The reviewer faces hundreds
+  of lines and more comments than they can process, and often approves out of fatigue.
+- **Dead time for information.** While the branch is away, nobody else sees the work. That delays
+  design decisions and leads other teams to rebuild pieces that already exist.
+
+The relation between size and risk also shows in Google's practice. Its eng-practices guide on small
+CLs (the unit of change in its review system) considers about 100 lines a reasonable size and 1000
+usually too large. Its reasons are three: a reviewer finds five minutes several times easier than a
+half-hour block; small changes are reviewed more thoroughly and understood better; and they merge
+with fewer conflicts.
+
+<Callout tone="tip" title="Size and risk are not the same">
+  A small change is not automatically safe. A one-line change in a payments system can be more
+  dangerous than a hundred-line refactoring. What size does control is the ability to review,
+  understand and revert. That is why it helps to split by intent, not only by line count.
+</Callout>
+
+## Short-lived branches and fast review
+
+Trunk-based does not mean "everything straight on the trunk". Many teams keep temporary branches for
+review, but with a lifetime measured in hours. What makes them compatible with the model is that they
+meet three conditions: they start from the trunk, they merge soon and they are reviewed in minutes,
+not days.
+
+That requires treating review as part of integration. If a change request waits two days for
+someone to look at it, the branch lives two days even if the code is small. Reasonable practices are:
+review before starting new work, split the change into steps that each leave the trunk working and,
+for large work, use **branch by abstraction**: introduce the new implementation behind an interface
+that already exists, migrate in small steps and remove the old one at the end. The trunk then always
+builds and deploys, and any branch lasts hours.
+
+## Feature flags: decoupling deployment from release
+
+The most common reason for a long branch is that a feature is unfinished and nobody should see it yet.
+A feature flag solves that without a branch: the code reaches the trunk and is deployed, but the new
+behaviour stays off. Deploying stops being the same as releasing.
+
+Fowler distinguishes four kinds of toggles with very different lifetimes: **release** toggles (to
+launch a feature), **experiment** toggles, **ops** toggles (operational switches, some long-lived as
+kill switches) and **permissioning** toggles (access by segment, which may last years). For release
+toggles his guidance is clear: they should not stick around much longer than a week or two. A flag
+that decides nothing is still conditional code, test doubles and a branch nobody understands.
+
+The risk of flags is the mirror image of the risk of branches: instead of unintegrated code, you get
+integrated code with dead paths. Fowler calls them inventory with a carrying cost: each flag adds
+abstractions, conditions and testing burden. That is why every release flag should be born with its
+removal task in the backlog. How to make flags expire and how to retire code without fear is covered in
+[Design for deletion](/docs/disenar-para-borrar#flags-that-expire), and staged rollout strategies are in
+[Progressive delivery](/docs/entrega-progresiva-flags-canary#feature-flags-release-without-deploying).
+
+An example of shape, not implementation: the minimum worth recording for a flag is who owns it and
+when it should disappear.
+
+```yaml
+flag: pagos-nuevo-checkout
+type: release
+owner: equipo-pagos
+created: 2026-10-15
+planned_removal: 2026-11-05
+removal_task: PAY-412
+```
+
+## Requirements for a healthy trunk
+
+Integrating daily only works if the trunk holds. No model compensates for a trunk broken every
+afternoon. These are the requirements that, in practice, separate a healthy trunk from one that becomes
+a bottleneck:
+
+- **Fast, reliable tests.** If the suite takes an hour, nobody integrates several times a day. What
+  blocks a merge has to finish in minutes, and slow tests move off the critical path.
+  [Fitness functions in CI](/docs/fitness-en-el-ci) are the natural place for architecture rules that
+  should fail early.
+- **Quick review.** Review needs a bounded response time, not a queue. If answering takes days, the
+  branch lives for days.
+- **Automated deployment.** The trunk must reach production without a manual ceremony. If every
+  deployment is an event, the team spaces them out and the trunk ages between them.
+- **Cheap rollback.** When something goes wrong, going back must be fast and well known. With cheap
+  rollback, integrating often stops looking like a gamble.
+- **A green-trunk culture.** A broken trunk is the whole team's priority, not the priority of whoever
+  broke it. Without that norm, people stop integrating so they do not become the one blocking others.
+
+The culture that sustains these practices is the one described in [DevOps and its culture](/docs/devops-cultura).
+Tools do not compensate for an organization that punishes frequent integration.
+
+## What to measure
+
+DORA measures delivery performance with five metrics. According to its metrics guide on dora.dev,
+they fall into two families. **Throughput** includes _change lead time_, _deployment frequency_ and
+_failed deployment recovery time_. **Instability** includes _change fail rate_ and _deployment rework
+rate_, which measures the share of deployments that are unplanned and triggered by a production
+incident.
+
+For this topic, three signals are enough to diagnose the trunk:
+
+| Signal                | What it indicates                                     | Where to look                        |
+| --------------------- | ----------------------------------------------------- | ------------------------------------ |
+| Integration frequency | How many times a day code reaches the trunk           | Commits to the main branch per day   |
+| Branch lifetime       | How long a branch lives from creation to merge        | Average age of open branches         |
+| Time to production    | How long an approved change takes to reach production | Change lead time in the DORA metrics |
+
+The rule that follows from the model is simple: if branch lifetime rises, time to production rises too, and
+more rework usually follows, by the author's judgment. Each team's performance data is its own; do not compare it with other
+teams' figures without understanding their context. This article uses no industry benchmark that I
+could not verify.
+
+## When long branches still make sense
+
+There are real cases where a longer-lived branch is reasonable, and denying them forces a model that
+does not fit:
+
+- **External teams or vendors** who work in a separate repository and cannot integrate into your trunk
+  daily. What you can require is that they integrate into a trunk of their own with the same frequency,
+  and that the join with yours happens in short, agreed steps.
+- **Published versions under support.** A library or an installable application needs maintenance
+  branches to fix version 2.3 while 3.0 moves on. That branch is a release branch, not a feature
+  branch, and it should live as long as the support does.
+- **Work that changes contracts incompatibly**, such as a database migration or a public API change.
+  Here the risk lies in the contract, not in the branch, and it is better handled with
+  [expand and contract](/docs/migraciones-bd-sin-downtime) than with an isolated branch.
+
+When a long branch is unavoidable, still practise frequent integration: integrate into the trunk in
+partial form (flags off, or behind an interface), bring trunk changes into the branch every day and
+measure its lifetime so the exception does not become the norm.
+
+## When to use it and when not to
+
+**Frequent trunk integration makes sense when:**
+
+- The team can review in hours and has tests that finish in minutes.
+- It deploys often and rollback is proven.
+- Release flags have an owner and a removal date.
+
+**Do not force it when:**
+
+- The product is a published version under support and the maintenance branch is the product.
+- An external vendor cannot integrate into your repository and there is no way to agree on short steps.
+- The team does not have automated tests yet: frequent integration without a safety net only brings
+  incidents forward.
+
+## Common mistakes
+
+- **Treating the branch as a guarantee.** A branch does not avoid risk; it postpones it to the merge,
+  when it is more expensive and there is less time to resolve it.
+- **Flags without expiry.** A release flag that has been in the code for a year is named debt. Without
+  a removal task, the inventory only grows.
+- **Reviewing over days.** A two-day review queue turns a small change into a two-day branch, even when
+  the code is five lines.
+- **Integrating without a green trunk.** If the trunk breaks every week, the team stops trusting it and
+  goes back to long branches out of defence.
+- **Measuring only the number of branches.** What matters is how long they live and how much code waits
+  unintegrated.
+
+## Checklist
+
+- [ ] On average, how many hours pass between a branch being created and merged?
+- [ ] Does every developer integrate into the trunk at least once a day?
+- [ ] Does every release flag have an owner, a removal date and an associated task?
+- [ ] Do the tests that block a merge finish in minutes?
+- [ ] Is there an agreed response time for review?
+- [ ] Can the trunk be deployed automatically and rolled back without ceremony?
+- [ ] Are the exceptions (vendors, versions under support) documented and due for review?
+
+## Sources
+
+Primary sources, read directly:
+
+- Martin Fowler, [Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html): integrating into the mainline every day and the cost of late integration.
+- Martin Fowler, [Feature Toggles](https://martinfowler.com/articles/feature-toggles.html): toggle types, lifetimes and the cost of keeping them.
+- [Trunk-based development](https://trunkbaseddevelopment.com/): definition, short-lived branches and integration at least every 24 hours.
+- Google, [eng-practices: Small CLs](https://google.github.io/eng-practices/review/developer/small-cls.html): change size and the reasons to keep changes small.
+- DORA, [Software delivery metrics](https://dora.dev/guides/dora-metrics/): the five metrics and their families.

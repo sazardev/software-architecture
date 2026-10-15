@@ -1,0 +1,280 @@
+---
+title: 'Infrastructure as code and GitOps'
+description: 'Reviewable infrastructure as code: remote state with locking, drift, versioned modules, least-privilege appliers and GitOps versus a push-based pipeline.'
+category: practicas
+tags:
+  - infrastructure-as-code
+  - gitops
+  - terraform
+  - drift
+  - state
+order: 20
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A loop compares the repository with the environment and corrects the drift'
+---
+
+# Infrastructure as code and GitOps
+
+Infrastructure that nobody can reproduce is a risk. If rebuilding it means remembering what
+someone clicked in a console on a Tuesday night, the infrastructure is a historical accident, not
+a design. Infrastructure as code (IaC) fixes that: the topology is declared in files, those files
+are versioned, reviewed like any software change and always applied through the same path.
+
+GitOps takes the idea one step further. Instead of a pipeline pushing changes into the
+environment, an agent inside the environment continuously compares what the repository declares
+with what is actually running, and corrects the difference. This article covers what it takes for
+that to work in practice: where the state lives, how environments are separated, what to do about
+drift, who may apply, and when none of this is worth building.
+
+## What treating infrastructure as code means
+
+The core idea is not writing YAML or HCL. It is making the repository the **source of truth** for
+the desired state and forcing every change through it: a proposal, a review, a traceable apply.
+The OpenGitOps principles (version 1.0.0) state it in four points: the system is described
+**declaratively**, the desired state is stored **versioned and immutable**, software agents
+**pull** it automatically from its source, and agents **continuously reconcile** the live system
+with it.
+
+Two things are often confused and are worth separating:
+
+- **IaC** describes _how changes are applied_: a tool such as Terraform or OpenTofu computes a
+  plan and executes it against the cloud. The trigger is a person or a pipeline.
+- **GitOps** describes _who keeps the state_: a controller watches the repository and the
+  environment and acts on the difference. The trigger is the difference itself.
+
+You can have IaC without GitOps (a pipeline that runs `apply` on merge), and that is a perfectly
+sound choice. What is not sound is declarative files that nobody applies, or changes that exist in
+no file at all.
+
+## State: where it lives and who can touch it
+
+Tools such as Terraform keep a **state file** that maps each declared resource to its real
+identifier at the provider. Without it, the tool does not know what already exists and what it must
+create. It is the most delicate piece of any IaC workflow.
+
+### Remote storage with locking
+
+State on someone's laptop does not scale. Two people applying at once against the same state can
+corrupt it. The usual answer is a **remote backend** with **locking**: while one run is modifying
+the state, no other run may.
+
+In Terraform's S3 backend, locking is opt-in and is enabled with `use_lockfile`, which defaults to
+`false`. Terraform 1.10 introduced it as an opt-in, experimental feature, as its upgrade guide describes. The official documentation also recommends enabling bucket versioning so that a state
+deleted or overwritten by mistake can be recovered. DynamoDB-based locking is marked deprecated and
+will be removed in a future minor version, so new projects should use lockfiles in the bucket.
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket       = "platform-state" # bucket with versioning enabled
+    key          = "prod/network/terraform.tfstate"
+    encrypt      = true
+    use_lockfile = true
+  }
+}
+```
+
+One detail is easy to miss: locking protects against concurrent writes, not against bad decisions.
+An apply run from an outdated version of the code is still a problem even when the lock works.
+
+### The state holds secrets
+
+Terraform's documentation is explicit: if a secret is written into the configuration, it is stored
+in the state and in plan files. Marking a value as `sensitive` only hides it in console output and
+in the UI; the value is still stored in state. Two practical consequences follow:
+
+- Anyone who can **read the state** can read every secret that ever passed through it. Restrict
+  access to the bucket as strictly as you would restrict access to the database itself.
+- A **saved plan** (`-out`) contains the configuration and variable values, also in cleartext. The
+  documentation treats it as a potentially sensitive artifact.
+
+Ephemeral values, which Terraform keeps out of both state and plan files, are the answer for
+secrets needed only during a run. Their reach is limited: anything that must be kept has to be
+stored in another resource or in a secrets manager. More detail in
+[Secrets and keys: rotation without drama](/docs/gestion-secretos-claves#why-the-secret-cannot-live-in-the-repository).
+
+### Coupling stacks through state couples teams
+
+One stack can read another's outputs with the `terraform_remote_state` data source. It is
+convenient, but the documentation warns that the consumer needs access to the **entire** state,
+secrets included, even if it only wants one output. Only root-module outputs are exposed; resources
+inside nested modules are not reachable.
+
+My view: a stack should consume **explicit outputs**, ideally through a parameter store or a
+published contract, rather than another team's state directly. The owning team can then change its
+implementation without breaking others, and access shrinks to what is published on purpose.
+
+## Separating environments without duplicating code
+
+There are two common ways to separate development, staging and production:
+
+| Approach                                      | Advantage                              | Cost                                                         |
+| --------------------------------------------- | -------------------------------------- | ------------------------------------------------------------ |
+| One directory per environment calling modules | Differences are visible and reviewable | Environments drift apart unless modules are shared           |
+| One codebase with per-environment variables   | Less duplication                       | Conditionals grow and make it hard to see what gets deployed |
+
+In both cases each environment should have **its own state** and its own credentials. A mistake in a
+test environment must not be able to write to production state, not even through a mistyped
+workspace name.
+
+## Modules and their versions
+
+A module is the reusable unit: a network, a cluster, a database with its defaults. Without versions,
+a change to a module changes every environment at once on the next run. With versions, the change
+propagates when someone decides it should.
+
+- For registry modules, the `version` argument sets the accepted range. A wide range amounts to
+  accepting changes without review.
+- For Git sources, without a `ref` Terraform uses the default branch. Pinning a tag or a commit SHA
+  prevents surprise changes; the documentation shows both forms.
+- A module that changes on every commit and is consumed by every environment is coupling dressed up
+  as reuse.
+
+Module versioning costs what any internal library costs: someone has to publish, communicate and
+migrate. It is worth it once there is more than one consumer.
+
+## Drift: declared versus real
+
+**Drift** is the difference between the declared state and the real one. It appears when someone
+edits a resource by hand in the console, when a provider changes something on its own (a managed
+version that gets upgraded, a policy that adds a tag), or when a tool fails halfway through an apply.
+
+Detecting it is cheap; correcting it is not always. Terraform offers two complementary paths:
+
+- `terraform plan -refresh-only` builds a plan whose only goal is to update the state and the root
+  module outputs, reconciling what changed outside Terraform. It lets you review the difference
+  before accepting it.
+- `terraform plan -detailed-exitcode` returns `2` when there are pending changes and `0` when there
+  are none. In a scheduled CI job, that is a simple way to raise a drift alert.
+
+Deciding **when to correct** is an architecture decision, not only an operations one. My rule of
+thumb:
+
+- If the manual change was an emergency patch, **accept the difference** into state with
+  `-refresh-only` and record why: the repository should reflect the reality that survives.
+- If the change had no reason to exist, **revert** by applying the declared code.
+- If it happens often, the problem is not drift but permissions: someone has write access they
+  should not have.
+
+## Plan before applying
+
+A plan is a contract: what will be created, modified or destroyed. Reviewing it in the proposal (the
+plan output as a PR comment) turns the apply into a formality and prevents the surprise of destroying
+a resource that holds data. In plan output, Terraform distinguishes replacements (destroy and create)
+from in-place updates; a replacement on a database deserves an explicit review.
+
+Two practices pay off:
+
+- Apply **only the reviewed plan**, not a new one generated at apply time. A saved plan file
+  guarantees that what was reviewed is what runs.
+- Treat **plan files as sensitive**, for the reasons given about secrets.
+
+Rules about the plan (for example, forbidding the destruction of a database without explicit
+approval) are architecture checks like any other: they can fail CI just as a dependency rule does.
+See [Your architecture should fail in CI](/docs/fitness-en-el-ci#from-diagram-to-check).
+
+## Least privilege for whoever applies
+
+The account that applies infrastructure is the most powerful identity in the system. The design
+should therefore separate at least two identities:
+
+- A **read** identity that can plan and see the state, used by reviews and by the drift detector.
+- A **write** identity used only after approval, for one specific environment, for a short window
+  if the provider allows it.
+
+Above all, the identity should be a **workload identity**, not a static key stored in CI. Obtaining
+it through identity federation with the provider is the same approach described in the secrets
+article. A pipeline holding a plaintext administrator key carries, in practice, the same risk as a
+state file full of secrets.
+
+## GitOps: a reconciler versus a pipeline that pushes
+
+In a push pipeline, CI holds credentials for the environment and runs `apply` when something changes
+on the main branch. In a GitOps model, the environment runs a **controller** that has read access to
+the repository and manages the environment from inside, comparing declared and live state at regular
+intervals.
+
+| Aspect            | Push pipeline                           | Reconciler (GitOps)                           |
+| ----------------- | --------------------------------------- | --------------------------------------------- |
+| Who has access    | CI, with permissions on the environment | The controller, inside the environment itself |
+| When it acts      | On the pipeline event                   | Continuously, on any difference               |
+| Manual changes    | Go unnoticed until the next run         | Are detected and can be reverted              |
+| Connectivity loss | The pipeline fails and must be retried  | The controller retries until it converges     |
+
+Controllers differ in how they synchronize. Argo CD, for example, does not revert manual changes by
+default: automated sync is designed to make the repository the source of truth, but you must enable
+`selfHeal` to correct changes made in the cluster, and pruning of resources removed from the
+repository is also opt-in. Its default reconciliation period is 120 seconds, with an additional jitter that defaults to 60 seconds. Flux reconciles each `Kustomization` at its `interval`, with a recommended minimum of 60
+seconds, and corrects drift on every cycle with a server-side apply dry run.
+
+What GitOps does not solve on its own: a controller only reconciles what it can see. Resources
+outside its scope (a managed database created in the console, a service account with excessive
+permissions) remain invisible drift. It is the same limit as the loop in the figure: it compares what
+the repository describes, not everything that exists.
+
+## Risks to watch
+
+- **Secrets in state and plans.** Already covered, but the most common failure. Restrict access,
+  encrypt, and do not echo values in outputs.
+- **Manual changes outside the repository.** They are drift with an author nobody recorded. An
+  emergency process that leaves a trace (a follow-up PR) keeps the repository honest.
+- **Coupling between stacks.** A stack that depends on another's state blocks changes to either one
+  without coordination. Explicit outputs and contracts shrink the blast radius.
+- **Unversioned or wide-range modules.** A small change becomes a migration of every environment at
+  once.
+- **Reconciliation without a clear scope.** A controller with administrator rights over the whole
+  cluster amplifies every configuration mistake.
+
+## When it is not worth it
+
+- **One service, one environment, a small team.** A versioned script with the commands and clear
+  documentation may be enough; a remote backend, modules and a controller have real maintenance cost.
+- **Ephemeral test infrastructure.** If it is created and destroyed on every run, the value of
+  persistent state drops; the code itself provides reproducibility.
+- **Resources that cannot be declared.** Some provider settings have no declarative API. Forcing IaC
+  onto them produces more drift than order.
+- **When the problem is process, not tooling.** Without reviews and clear owners, a GitOps controller
+  only automates the mess. Start with what the [DevOps culture](/docs/devops-cultura#measuring-dora-research)
+  article describes.
+
+## Common mistakes
+
+- **Local or shared state without locking**, with two people applying against the same file.
+- **One state for the whole organization.** Any change has an enormous blast radius and access to the
+  state means access to everything.
+- **Applying a plan different from the reviewed one**, because it was regenerated at apply time.
+- **Ignoring drift** for months until the next apply destroys something someone changed by hand and
+  had forgotten.
+- **Modules consumed from the main branch** with no version and no test branch.
+- **Administrator permissions in CI** so that "it works", with no workload identity and no separation
+  between planning and applying.
+
+## Checklist
+
+- [ ] State lives in a remote backend with locking enabled and storage versioning on.
+- [ ] Access to the state and to plan files is restricted the way secrets are.
+- [ ] Each environment has its own state and credentials; no environment writes to another.
+- [ ] Shared modules have a pinned version and a plan for moving to the next one.
+- [ ] Drift is detected on a schedule, and every difference has a recorded decision.
+- [ ] What gets applied is the reviewed plan, not one regenerated.
+- [ ] Planning and applying use separate identities with least privilege and workload identity.
+- [ ] If GitOps is used, the controller's scope is explicit and it is known which resources it does not watch.
+- [ ] There is a documented emergency path for manual changes that ends in the repository.
+
+## Sources
+
+- [OpenGitOps: principles (v1.0.0)](https://opengitops.dev/), official.
+- [Terraform: S3 backend and locking with `use_lockfile`](https://developer.hashicorp.com/terraform/language/backend/s3), official.
+- [Terraform: sensitive data in state](https://developer.hashicorp.com/terraform/language/state/sensitive-data), official.
+- [Terraform: `plan` command (`-refresh-only`, `-detailed-exitcode`, `-out`)](https://developer.hashicorp.com/terraform/cli/commands/plan), official.
+- [Terraform: `terraform_remote_state` data source](https://developer.hashicorp.com/terraform/language/state/remote-state-data), official.
+- [Terraform: module sources and versions](https://developer.hashicorp.com/terraform/language/modules/sources), official.
+- [Argo CD: automated sync](https://argo-cd.readthedocs.io/en/latest/user-guide/auto_sync/), official.
+- [Argo CD: `argocd-cm` reference (timeout.reconciliation and timeout.reconciliation.jitter)](https://argo-cd.readthedocs.io/en/stable/operator-manual/argocd-cm-yaml/), official.
+- [Terraform 1.10: upgrade guide (native S3 state locking with `use_lockfile`)](https://developer.hashicorp.com/terraform/language/v1.10.x/upgrade-guides), official.
+- [Flux: Kustomization](https://fluxcd.io/flux/components/kustomize/kustomizations/), official.

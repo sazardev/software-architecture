@@ -1,0 +1,305 @@
+---
+title: 'Identidad y permisos de agentes: privilegio y auditoría'
+description: 'Qué identidad usa un agente, cómo delegar credenciales con alcance acotado, mínimo privilegio por acción, secretos fuera de su contexto y revocación.'
+category: practicas
+tags:
+  - identidad
+  - permisos
+  - minimo-privilegio
+  - auditoria
+  - prompt-injection
+order: 11
+roadmap:
+  id: ia
+  stage: gobierno
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un agente con llave por puerta: alcance mínimo y aprobación para lo arriesgado'
+---
+
+# Identidad y permisos de agentes: privilegio y auditoría
+
+Cuando un agente consulta el ERP, abre un ticket o escribe en un repositorio, lo hace con una
+credencial. Esa credencial lo convierte en un actor más del sistema, con los mismos derechos que
+cualquier cuenta, y con una diferencia importante: no tiene criterio propio sobre lo que debería
+poder hacer. Este artículo sostiene una tesis sencilla: **trata al agente como una identidad de
+primera clase**, con su propio alcance, sus propios secretos y su propio rastro, y no como una
+extensión invisible de la persona que lo lanzó.
+
+Lo que aquí se describe complementa la [autonomía por niveles](/docs/controlar-la-ia-gobierno-y-autonomia),
+que decide cuánto puede decidir el sistema. La identidad responde a otra pregunta: con qué poder
+actúa cuando decide.
+
+<Callout tone="info" title="Fecha de los datos">
+  Las referencias están consultadas en octubre de 2026. Las especificaciones de OAuth y MCP cambian
+  con poca frecuencia, pero los productos (Claude Code, plataformas de identidad, proveedores de
+  modelos) se mueven rápido: contrasta cada detalle de implementación con su documentación vigente.
+</Callout>
+
+## Un agente es un actor no humano
+
+Un agente tiene tres propiedades que cambian el diseño de sus permisos. Actúa a velocidad de
+máquina, de modo que un error se repite miles de veces antes de que alguien lo vea. Lee contenido
+que no escribió nadie de confianza (correos, páginas web, respuestas de API de terceros), y ese
+contenido puede contener instrucciones. Y no se detiene por sí mismo cuando algo le parece raro:
+sigue intentando hasta cumplir el objetivo.
+
+Un humano con un permiso amplio lo usa con cierta prudencia, porque conoce el contexto y siente
+la responsabilidad. El agente usa exactamente lo que le permite su credencial. Por eso el permiso
+debe ser lo que _necesita_ la tarea, no lo que sería cómodo tener.
+
+## Qué identidad usa el agente
+
+Hay tres modelos habituales. Elegir uno es una decisión de arquitectura, y conviene escribirla.
+
+| Modelo                       | Quién aparece en el registro                  | Cuándo encaja                                                 | Riesgo principal                                                                      |
+| ---------------------------- | --------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Delegación del usuario       | La persona, actuando a través del agente      | Tareas personales: su correo, sus documentos, su agenda       | Hereda todo lo que la persona puede hacer, y el agente puede ser engañado para usarlo |
+| Identidad propia de servicio | El agente, como cuenta técnica                | Procesos sin persona presente: lotes, análisis, reportes      | Suele acumular permisos amplios y permanentes, es un usuario técnico más              |
+| Ambas a la vez               | La persona que autoriza y el agente que llama | Acciones que exigen consentimiento humano y un actor concreto | Más difícil de auditar si solo se registra una de las dos identidades                 |
+
+Una pregunta ordena la decisión: **si esta acción sale mal, ¿a quién debe pedir cuentas el
+sistema?** Si la respuesta es una persona concreta, conviene la delegación del usuario con alcance
+reducido. Si la respuesta es el proceso, conviene una identidad propia con alcance diseñado a mano.
+
+Las plataformas empiezan a modelar esto de forma explícita. La documentación de Microsoft Entra
+describe una **identidad de agente** como un principal de servicio que no tiene credenciales
+propias: se crea desde una plantilla (un _blueprint_) que sí guarda las credenciales, y puede
+tener un **patrocinador** humano que responde por ella ante un incidente. La idea es transferible
+aunque no uses ese producto: separar quién representa al agente, quién guarda sus claves y quién
+responde por él.
+
+## Cómo se delega sin copiar secretos
+
+OAuth 2.0 ([RFC 6749](https://www.rfc-editor.org/rfc/rfc6749)) da el marco: la persona consiente un
+alcance y el cliente recibe un token de acceso limitado en el tiempo. Para cadenas en las que un
+servicio actúa en nombre de otro, el [RFC 8693](https://www.rfc-editor.org/rfc/rfc8693), publicado
+en enero de 2020, define el intercambio de tokens y la reclamación `act`, que deja constancia de
+quién actúa en nombre de quién. Un token que dice «esto lo hace el agente X en nombre de Y» es
+mucho más útil en un registro que un token que solo dice «esto lo hace Y».
+
+En el caso de los servidores de herramientas que siguen el protocolo MCP, la especificación de
+2025-06-18 exige que el servidor publique sus metadatos de recurso
+([RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)) y que el cliente pida el token para ese
+recurso concreto, con el parámetro `resource` del [RFC 8707](https://www.rfc-editor.org/rfc/rfc8707).
+El efecto práctico es que un token emitido para un servidor no sirve para otro. Revisa la
+[especificación de autorización de MCP](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization)
+antes de conectar un servidor de terceros.
+
+Cuatro reglas de delegación que se sostienen con independencia del proveedor:
+
+- **Vida corta.** Los tokens de acceso caducan rápido. Las credenciales de aplicación de GitHub, por
+  ejemplo, son [tokens de instalación que caducan a la hora](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app).
+  Un token robado vale poco tiempo.
+- **Alcance por herramienta.** Un token por servidor o por herramienta, no un token maestro que
+  sirva para todo. Si una herramienta se compromete, el daño queda dentro de su alcance.
+- **Audiencia comprobada.** Cada API valida que el token es para ella. Es la misma idea que en
+  [sesiones, tokens y SSO](/docs/sesiones-tokens-sso).
+- **Nada de credenciales de larga duración en el entorno del agente.** Si el agente puede leer
+  variables de entorno o ficheros de configuración, las leerá cuando lo necesite, y también cuando
+  una instrucción inyectada se lo pida.
+
+## Mínimo privilegio por herramienta y por acción
+
+«El agente tiene acceso a Jira» no es un permiso; es una renuncia. El mínimo privilegio se aplica
+en tres niveles: **herramienta**, **recurso** y **verbo**. La misma herramienta puede tener
+lectura casi libre y escritura muy acotada.
+
+| Clase de acción        | Ejemplo                                       | Alcance típico                                  | Aprobación                        |
+| ---------------------- | --------------------------------------------- | ----------------------------------------------- | --------------------------------- |
+| Lectura                | Leer tickets de un proyecto                   | Un proyecto, solo los campos necesarios         | No                                |
+| Escritura reversible   | Añadir un comentario, crear un borrador       | Un proyecto, sin cambiar estados críticos       | Según volumen y riesgo            |
+| Escritura con efecto   | Cambiar un estado, enviar un correo a cliente | Un recurso concreto, destino o importe acotados | Sí, por política                  |
+| Borrado o irreversible | Borrar una rama, cancelar un cobro            | Casi nunca concedido al agente                  | Siempre, con una persona distinta |
+
+Una consecuencia práctica: **lectura y escritura son credenciales distintas**. Si el mismo token
+sirve para ambas, cualquier lectura, incluida la de un contenido envenenado, puede terminar en una
+escritura. La política de cada herramienta se escribe junto a su credencial:
+
+```yaml
+# forma de una política por herramienta (ilustrativa)
+tool: tracker
+server: tracker-prod
+credential: tracker-agent-lectura # sin escritura por defecto
+actions:
+  issue.read: { projects: [ARQ] }
+  issue.comment: { projects: [ARQ], approval: none }
+  issue.transition: { projects: [ARQ], approval: owner }
+  issue.delete: { deny: true }
+```
+
+El mínimo privilegio vive en la credencial, no en el prompt. Escribir «no borres ramas» en las
+instrucciones del agente es un deseo; que la credencial no pueda borrarlas es un permiso.
+
+## Secretos fuera del contexto del modelo
+
+Todo lo que entra en el contexto del modelo puede acabar en una respuesta, en un registro o en el
+argumento de otra herramienta. Por eso la regla es que **el secreto no entra en el contexto**. El
+agente pide «crear el ticket»; la herramienta, del lado del servidor, usa su credencial. El modelo
+nunca ve el token, así que tampoco puede repetirlo ni ser inducido a revelarlo.
+
+Esto obliga a tres decisiones concretas. Las herramientas no devuelven cabeceras de autorización
+ni cuerpos de respuesta con datos de sesión: los filtran antes de devolver el resultado. Los
+registros y trazas redactan los valores que parecen secretos. Y las credenciales se rotan con el
+mismo ciclo que cualquier otra clave, tal como describe la guía de [secretos y claves](/docs/gestion-secretos-claves).
+
+Las reglas de denegación de lectura sobre ficheros concretos (por ejemplo, `.env`) ayudan, pero no
+son una barrera completa: un comando de shell puede leer el mismo fichero si el agente tiene
+permiso para ejecutarlo. La barrera real es que el secreto no esté accesible desde el entorno donde
+corre el agente.
+
+## Prompt injection como elevación de privilegios
+
+Sin herramientas, una inyección de instrucciones produce un texto equivocado. Con herramientas,
+produce una acción realizada con el permiso del agente. El atacante no necesita robar nada: le
+basta con escribir en algo que el agente vaya a leer, y el agente hace el resto con su propia
+identidad. Es una elevación de privilegios que no requiere vulnerar ningún sistema.
+
+Simon Willison llamó a la combinación peligrosa la **«trifecta letal»** en junio de 2025
+([su artículo](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)). Son tres capacidades
+que, juntas en un mismo agente, permiten robar datos mediante inyección:
+
+1. Acceso a datos privados.
+2. Exposición a contenido no confiable, es decir, cualquier texto o imagen que un atacante pueda controlar.
+3. Capacidad de comunicarse hacia el exterior de un modo que permita extraer información.
+
+El diseño que se deriva es concreto: en una misma ejecución, **no conviene reunir las tres sin
+control**. Si el agente ha leído contenido no confiable, sus acciones de escritura o de salida
+deben bajar de nivel o pasar por aprobación. Es la misma regla que aparece en el artículo sobre
+[controlar la IA](/docs/controlar-la-ia-gobierno-y-autonomia#guardrails): el nivel de autonomía
+depende también de lo que entró en el contexto.
+
+OWASP recoge el problema como [LLM06:2025, Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/):
+un sistema al que se dan más funciones, permisos o autonomía de los que su tarea requiere. La
+inyección es el disparador más habitual, pero no el único: un error del modelo o una salida
+inesperada pueden producir el mismo daño.
+
+## Quién propone y quién ejecuta
+
+Separa el componente que **propone** la acción del que la **ejecuta** con su credencial. El modelo
+genera una propuesta estructurada (herramienta, argumentos, motivo). Un componente determinista la
+valida contra la política, comprueba alcance, presupuesto y nivel de aprobación, y solo entonces
+usa la credencial. El modelo nunca tiene el token de escritura.
+
+Un revisor basado en otro modelo (un agente que «comprueba» al primero) es útil para detectar
+errores, pero no es una frontera de seguridad: puede equivocarse ante la misma inyección. La frontera
+debe ser determinista: una política que no depende de que alguien, o algo, esté de acuerdo.
+
+## Aprobación de acciones de alto impacto
+
+La aprobación humana solo sirve si es informada. Cuatro condiciones lo hacen real:
+
+- Quien aprueba ve **la acción exacta**: destino, importe, argumentos y el contenido que se va a
+  enviar. Un resumen generado por el propio agente no basta.
+- El aprobador es **distinto** de quien pidió la acción cuando el riesgo lo justifica.
+- La aprobación se liga a esos argumentos concretos. Si cambian, se vuelve a pedir.
+- La aprobación caduca. Una aprobación de hace una semana no autoriza nada hoy.
+
+El harness de Claude Code ofrece piezas para esto. Las reglas de permiso pueden exigir confirmación,
+y un hook `PreToolUse` puede devolver `ask` o `deny` con un motivo. Según su documentación, un hook
+que sale con código 2 bloquea la llamada aunque el JSON de salida diga `allow`. Para ver cómo se
+combinan hooks, reglas y modos, consulta la [capa de permisos del harness](/docs/harness-engineering-claude-code#capa-3-permisos-y-sandbox).
+
+Un control de aprobación que siempre aprueba es un control falso. Mide la tasa de rechazo de los
+aprobadores: si nunca rechazan nada, aprueban sin mirar o la acción debería estar en otro nivel.
+
+## Auditoría: quién pidió qué
+
+Para cada acción con efecto, el registro debe permitir responder a «quién pidió qué» sin
+preguntar a nadie:
+
+- La identidad usada (la persona delegada, el agente o ambas) y el identificador de la ejecución.
+- Quién o qué inició la ejecución, y con qué procedencia entró cada entrada en el contexto.
+- La acción solicitada, sus argumentos, la decisión de la política y el resultado.
+- El aprobador, cuándo aprobó y qué información se le mostró.
+- El coste de la ejecución, para detectar abusos de presupuesto.
+
+El registro del proveedor de identidad dice que una cuenta hizo algo; no dice por qué. Para eso
+hace falta el registro de la orquestación, que conoce la petición original. Decide también cuánto
+se conserva y qué datos personales entran en él: un registro completo de todo puede convertirse en
+un problema de privacidad.
+
+## Revocación
+
+Revocar tiene que ser posible en minutos y por identidad. Un camino de corte razonable incluye
+detener la ejecución en curso, revocar el consentimiento de delegación, deshabilitar la identidad
+del agente y rotar las claves del blueprint o del servidor que hayan podido exponerse. Los tokens
+de vida corta acotan la ventana, pero no sustituyen a este camino.
+
+Prueba el corte como un simulacro: arranca una ejecución de prueba, revoca y comprueba que las
+siguientes llamadas fallan, que el registro muestra el corte y que el responsable recibe la
+notificación. Un mecanismo que nunca se ha probado no existe a efectos prácticos.
+
+## Cuándo sí y cuándo no
+
+Una identidad propia y una política por acción tienen sentido cuando:
+
+- El agente produce efectos reales sobre sistemas, clientes o dinero.
+- Accede a datos personales o confidenciales.
+- Usa herramientas de terceros, en especial servidores MCP de los que no controlas el código.
+- Varias personas o equipos usan el mismo agente con permisos distintos.
+
+Basta con mucho menos cuando:
+
+- No hay modelo decidiendo: un proceso determinista con una cuenta de servicio acotada es más
+  simple y más auditable que un agente con credenciales delegadas.
+- El agente solo lee documentación pública, sin datos privados ni capacidad de salida.
+- La acción la hace la propia persona en su sesión, con sus permisos, y el registro ya basta.
+
+## Errores frecuentes
+
+Usar la cuenta personal de un desarrollador, o un token de administración «para probar», es la
+forma más rápida de que el agente llegue a producción con poderes que nadie pensó en conceder.
+
+Dar un token de escritura «por si acaso» para tareas que solo leen convierte cada lectura en una
+posible escritura, y cada contenido leído en un vector de ataque.
+
+Confiar en que el prompt impide una acción. Las instrucciones son una guía; la credencial es el
+límite.
+
+Poner secretos en variables de entorno o en ficheros que el agente puede leer y mostrar.
+
+Configurar un hook de validación sin control de fallos. Según la documentación de Claude Code, un
+hook que expira no bloquea la llamada por defecto; para que actúe como barrera hay que configurar
+explícitamente que el fallo bloquee (`"onFailure": "block"`, disponible desde Claude Code v2.1.295).
+
+Aprobaciones que muestran un resumen del agente en lugar de la acción exacta, o que aprueba
+siempre la misma persona sin límite de volumen.
+
+Registros que dicen «el servicio X hizo esto» sin decir quién lo pidió ni con qué entrada.
+
+## Checklist
+
+- Está escrito qué identidad usa cada agente (delegada, propia o ambas) y quién responde por ella.
+- Lectura y escritura usan credenciales distintas, y ninguna herramienta tiene borrado sin aprobación.
+- Los tokens son de vida corta y tienen audiencia comprobada por cada servicio.
+- El modelo nunca recibe el secreto; las herramientas lo usan del lado del servidor y filtran sus respuestas.
+- Las ejecuciones con contenido no confiable en el contexto bajan de nivel en sus acciones de escritura.
+- El modelo que decide y el componente que ejecuta están separados, y la frontera es determinista.
+- Las aprobaciones muestran la acción exacta, caducan y se vuelven a pedir si cambian los argumentos.
+- Cada acción con efecto queda registrada con quién la pidió, quién la aprobó y su resultado.
+- Existe un procedimiento de corte probado, con revocación de delegaciones y rotación de claves.
+
+## Fuentes
+
+Consultadas en octubre de 2026.
+
+- Anthropic, [Configure permissions](https://code.claude.com/docs/en/permissions): niveles de aprobación por tipo de herramienta y reglas de permiso.
+- Anthropic, [Choose a permission mode](https://code.claude.com/docs/en/permission-modes): modos de permiso de la sesión.
+- Anthropic, [Hooks reference](https://code.claude.com/docs/en/hooks): códigos de salida de `PreToolUse`, `permissionDecision` y comportamiento ante fallos o tiempos de espera.
+- Model Context Protocol, [Authorization (2025-06-18)](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization): metadatos de recurso y parámetro `resource`.
+- RFC 6749, [The OAuth 2.0 Authorization Framework](https://www.rfc-editor.org/rfc/rfc6749).
+- RFC 8693, [OAuth 2.0 Token Exchange](https://www.rfc-editor.org/rfc/rfc8693), enero de 2020: reclamación `act`.
+- RFC 9728, [OAuth 2.0 Protected Resource Metadata](https://www.rfc-editor.org/rfc/rfc9728).
+- RFC 8707, [Resource Indicators for OAuth 2.0](https://www.rfc-editor.org/rfc/rfc8707).
+- GitHub, [Generating an installation access token for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app): caducidad de una hora.
+- Microsoft Learn, [Overview of agent identities in Microsoft Entra](https://learn.microsoft.com/en-us/entra/agent-id/identity-platform/agent-identities): identidad de agente, blueprint y patrocinador.
+- OWASP, [LLM06:2025 Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/).
+- Simon Willison, [The lethal trifecta for AI agents](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), junio de 2025.
+
+Verificado frente a las fuentes: las citas de RFC y de la especificación MCP, la caducidad de una
+hora de los tokens de instalación de GitHub, la definición de la trifecta y el comportamiento de
+código de salida de los hooks. Criterio del autor: la separación entre proponer y ejecutar, la
+regla de bajar de nivel con contenido no confiable y el orden de la decisión sobre la identidad.
+Los nombres de campos de la política de ejemplo son ilustrativos y no corresponden a un producto concreto.

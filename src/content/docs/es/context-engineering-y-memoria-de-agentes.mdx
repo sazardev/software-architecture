@@ -1,0 +1,327 @@
+---
+title: Context engineering y memoria de agentes
+description: 'Cómo tratar el contexto de un agente como recurso escaso: qué entra en la ventana, cuándo compactar, qué guardar como memoria y cómo medir que funciona.'
+category: tendencias
+tags:
+  - context-engineering
+  - memoria
+  - agentes
+  - contexto
+  - ia
+order: 10
+roadmap:
+  id: ia
+  stage: produccion
+  step: 40
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: Una ventana de contexto con capas de memoria y un filtro que decide qué entra
+---
+
+# Context engineering y memoria de agentes
+
+Durante un tiempo, la mejora de un sistema con LLM se hablaba en términos de prompt: cambiar
+palabras, añadir ejemplos, pedir con más firmeza. Con agentes que llaman herramientas durante
+decenas de pasos, el problema se desplaza. Lo que decide el resultado es **qué hay en la ventana
+de contexto en cada llamada**: las instrucciones, las herramientas disponibles, el historial, los
+documentos recuperados y el estado de la tarea. A ese diseño se le llama _context engineering_, y
+la memoria del agente es la parte que decide qué sobrevive de una llamada a la siguiente.
+
+Este artículo trata el contexto como un recurso con coste y con límites de atención. Repasa qué
+entra en la ventana, por qué más contexto no siempre da mejores respuestas, cómo compactar sin
+perder lo importante y qué diferencia hay entre memoria de trabajo, memoria persistente y
+recuperación bajo demanda. Al final hay criterios para decidir qué guardar, cómo caduca, y una
+forma de medir si el contexto funciona. La arquitectura general de un agente está en
+[arquitectura de aplicaciones con LLM y agentes](/docs/arquitectura-agentes-llm); aquí se profundiza
+en la pieza que más decisiones concentra.
+
+<Callout tone="info" title="Fecha de corte">
+  Las referencias son de octubre de 2026. Las funciones de gestión de contexto de la API de
+  Anthropic están en beta y cambian: contrasta los nombres de campos y cabeceras con la
+  [documentación oficial](https://platform.claude.com/docs/en/build-with-claude/context-editing)
+  antes de usarlos.
+</Callout>
+
+## El contexto es un recurso escaso
+
+Anthropic lo plantea así en su artículo de septiembre de 2025 sobre context engineering: el
+contexto es un recurso «crítico pero finito», con rendimientos marginales decrecientes. Cada token
+nuevo consume una parte de lo que el artículo llama el _presupuesto de atención_ del modelo. El
+mismo artículo describe el _context rot_ (degradación del contexto): a medida que la ventana crece,
+la capacidad del modelo para recuperar con precisión la información que contiene disminuye.
+
+Esto no contradice que las ventanas sean cada vez más grandes. Una ventana grande es capacidad; la
+atención es otra cosa. Un modelo puede admitir cientos de miles de tokens y aun así tratar peor
+un dato situado en mitad de un contexto repleto. El artículo original de Liu y otros sobre
+[_lost in the middle_](https://arxiv.org/abs/2307.03172) (publicado en TACL en 2024) ya mostró que
+los modelos aprovechan mejor la información al principio y al final del contexto que en el centro,
+y que el rendimiento baja al aumentar la longitud de la entrada.
+
+Hay además un matiz operativo: la ventana no es un cajón donde todo cabe y se usa igual. Es un
+espacio donde cada elemento compite con los demás. Por eso la pregunta de diseño no es «¿cabe?»,
+sino «¿merece su coste y su sitio en esta llamada?».
+
+## Qué entra en la ventana
+
+Antes de optimizar, conviene inventariar. En un agente típico, la ventana contiene:
+
+- **Instrucciones del sistema:** rol, reglas, formato de salida. Es lo más estable y lo que más se
+  repite en cada llamada.
+- **Definiciones de herramientas:** nombres, descripciones y esquemas. Cada herramienta añadida
+  cuesta tokens en todas las llamadas, la use o no.
+- **Historial de la conversación:** turnos del usuario y respuestas del modelo.
+- **Resultados de herramientas:** la parte que más crece. Un `grep`, una respuesta de API o un
+  log pueden ocupar miles de tokens que solo sirven en un paso.
+- **Documentos recuperados:** fragmentos que trae un sistema de búsqueda, como en
+  [RAG en producción](/docs/rag-y-evaluacion-continua).
+- **Estado de la tarea:** qué está hecho, qué falta, qué se decidió y por qué.
+
+Las cuatro primeras crecen por defecto; las dos últimas son las que el diseño debe cuidar. Un
+error frecuente es dejar que el historial crezca sin política y confiar en que el modelo «ignorará
+lo que no importa». No lo ignora del todo: lo que está en la ventana influye, y los resultados de
+herramientas antiguos suelen distraer más que ayudar.
+
+Un buen punto de partida es decidir, para cada fuente, tres cosas: si entra siempre, si entra
+solo cuando la tarea lo pide, o si se resume antes de entrar.
+
+## Más contexto no siempre da mejores resultados
+
+El estudio de Chroma _Context Rot_, publicado en julio de 2025, probó 18 modelos de Anthropic,
+OpenAI, Google y Alibaba con tareas sencillas en las que solo variaba la longitud de la entrada. Sus
+conclusiones útiles para un arquitecto son tres:
+
+- El rendimiento **empeora con la longitud**, incluso en tareas triviales, y en todos los modelos
+  probados.
+- Los **distractores** pesan: añadir uno ya baja el resultado, y varios lo bajan más. Cuanto más
+  parecido es un fragmento irrelevante a la pregunta, más confunde.
+- Un texto de relleno **estructurado y coherente** rindió peor que el mismo texto barajado, en
+  los modelos probados. Eso sugiere que la coherencia del relleno puede competir con la pregunta.
+
+El mismo informe compara preguntas sobre historiales de conversación (LongMemEval) con entradas
+enfocadas de unos 300 tokens frente a entradas completas de unos 113.000, y obtiene diferencias
+significativas a favor de las enfocadas. Según el informe, buena parte de esa brecha se debe a
+abstenciones: ante la ambigüedad, los modelos prefieren no responder antes que arriesgarse. Los
+modelos de Claude tuvieron las tasas de alucinación más bajas en las tareas con distractores.
+
+La lección práctica no es «usa ventanas pequeñas», sino **recortar antes de llenar**. Recuperar
+cinco fragmentos muy relevantes suele ganar a recuperar cincuenta por si acaso. Y las instrucciones
+largas que se contradicen con el resto del contexto son ruido con tono de regla.
+
+## Compactar sin perder lo que importa
+
+Cuando una tarea supera lo que conviene mantener en la ventana, hay tres salidas: **descartar**
+(tool result clearing), **resumir** (compaction) o **externalizar** (memoria, sección siguiente).
+Son herramientas distintas y se complementan.
+
+El artículo de Anthropic recomienda empezar por la compactación de resultados de herramientas, que
+llama «una de las formas más suaves» de compactar: una vez que el agente ha usado un resultado y
+avanzado, rara vez necesita volver a ver su contenido bruto. En la compactación con resumen, la
+regla es **maximizar la recuperación primero** y luego **mejorar la precisión** quitando lo
+superfluo. Lo que debe sobrevivir al resumen son las decisiones de arquitectura, los fallos sin
+resolver y los detalles de implementación que condicionan el siguiente paso.
+
+Un resumen con pérdida siempre pierde algo. Por eso conviene tratar la compactación como un
+cambio de estado, no como un trámite invisible:
+
+- Guarda el resumen **y** la referencia a lo resumido (ruta del fichero, identificador de la
+  decisión), para poder recuperarlo si hace falta.
+- Haz que el resumen tenga una forma fija: objetivo, decisiones tomadas, pendientes, restricciones.
+  Un resumen libre deriva en cada compactación; uno con campos fijos se puede comparar.
+- Mide la deriva: si la tarea es larga, compara el objetivo original con el estado actual tras
+  varias compactaciones.
+
+En la API de Anthropic, la gestión de contexto tiene dos vías. La **edición de contexto** (beta,
+con la cabecera `context-management-2025-06-27`) limpia resultados de herramientas o bloques de
+razonamiento antiguos cuando el contexto supera un umbral; el cliente conserva su historial
+completo, y el servidor aplica la limpieza antes de que el prompt llegue al modelo. La
+**compactación** del lado del servidor resume la conversación al acercarse al límite, y la
+documentación la presenta como la estrategia principal para la mayoría de casos. La edición sirve
+cuando se necesita un control fino sobre qué se borra. Un ejemplo de su configuración:
+
+```json
+"context_management": {
+  "edits": [
+    {
+      "type": "clear_tool_uses_20250919",
+      "trigger": { "type": "input_tokens", "value": 50000 },
+      "keep": { "type": "tool_uses", "value": 5 }
+    }
+  ]
+}
+```
+
+Dos detalles de esa configuración merecen atención. El umbral por defecto de la limpieza de
+resultados es de 100.000 tokens de entrada, y `clear_at_least` evita limpiezas que no compensan:
+como borrar resultados invalida el prefijo cacheado, una limpieza minúscula puede costar más de lo
+que ahorra. Y `exclude_tools` protege las herramientas cuyo resultado nunca debe desaparecer.
+
+## Tres memorias, tres políticas
+
+La palabra «memoria» agrupa cosas que se comportan de forma distinta. Conviene separarlas porque
+cada una tiene su propia caducidad, su propio coste y su propio riesgo de privacidad.
+
+| Tipo                     | Qué guarda                                                | Dónde vive                             | Cuándo entra                                 | Caducidad                           |
+| ------------------------ | --------------------------------------------------------- | -------------------------------------- | -------------------------------------------- | ----------------------------------- |
+| **De trabajo**           | El contexto de la llamada o de la tarea en curso          | La ventana del modelo                  | Siempre que esté en la ventana               | Al terminar la tarea o al compactar |
+| **Persistente de tarea** | Estado, decisiones y progreso de un trabajo largo         | Un fichero o registro que tú controlas | Al reanudar: se lee al inicio o bajo demanda | Al cerrar la tarea                  |
+| **De largo plazo**       | Preferencias, hechos del usuario o del dominio aprendidos | Un almacén con control de acceso       | Solo cuando la tarea lo necesita             | Explícita: TTL o revisión periódica |
+
+La **recuperación bajo demanda** cruza las tres: en lugar de cargar todo al inicio, el agente
+consulta lo que necesita en el momento. Es la forma en que el contexto se mantiene pequeño sin
+perder acceso a lo que se sabe.
+
+Un ejemplo concreto es la memoria que Anthropic ofrece en la API (herramienta `memory_20250818`).
+Claude no guarda nada por sí mismo: pide operaciones sobre un directorio `/memories` (ver,
+crear, reemplazar, insertar, borrar y renombrar), y **tu aplicación** las ejecuta sobre el
+almacenamiento que elijas. Por diseño, al empezar una tarea Claude revisa ese directorio, y el
+sistema añade instrucciones para que registre su progreso, partiendo de que su ventana de contexto
+puede reiniciarse en cualquier momento. La idea de fondo es simple: lo que no está escrito en la
+memoria externa se considera perdido.
+
+```text
+/memories
+  progreso.md        # estado de la tarea: hecho, pendiente, bloqueos
+  decisiones.md      # decisiones con su motivo y fecha
+  preferencias.md    # reglas del usuario o del equipo, con origen
+```
+
+La organización de carpetas es una decisión de arquitectura: si cada fichero tiene un propósito
+claro, la recuperación es precisa; si todo acaba en un único archivo, la memoria vuelve a ser un
+contexto gigante con otro nombre.
+
+## Qué guardar y quién lo escribe
+
+No todo lo que el agente aprende merece memoria. Antes de escribir conviene responder tres
+preguntas:
+
+1. **¿Se volverá a necesitar?** Un resultado puntual de una búsqueda no lo es; una convención del
+   proyecto, sí.
+2. **¿Es verificable?** Una preferencia que el usuario dijo una vez vale menos que una regla
+   confirmada. Guarda también el origen: quién lo dijo y cuándo.
+3. **¿Puede ser falso sin que nadie lo note?** Lo que se escribe en memoria se relee en sesiones
+   futuras con apariencia de verdad. Un error guardado se propaga.
+
+Quién escribe importa tanto como qué. Hay tres patrones:
+
+- **El agente propone, una persona aprueba.** Adecuado para memoria de largo plazo que afecta a
+  otros usuarios o a decisiones de negocio.
+- **El agente escribe, el sistema valida.** Un validador rechaza formatos incorrectos, tamaños
+  excesivos o contenido sensible antes de persistir.
+- **Solo el sistema escribe.** Estado de la tarea (contador de pasos, identificadores, resultados
+  de pruebas) que no debe depender de que el modelo se acuerde de registrarlo.
+
+La [guía de harness de Claude Code](/docs/harness-engineering-claude-code) describe la misma
+tensión con ficheros de instrucciones: lo que debe cumplirse siempre va en un mecanismo
+determinista, y la memoria del modelo funciona mejor como contexto que como garantía.
+
+## Privacidad, seguridad y caducidad
+
+La memoria persistente convierte un error de contexto en un riesgo de datos. Tres frentes merecen
+diseño explícito.
+
+**Datos personales.** El principio de minimización del RGPD (artículo 5.1.c) exige que los datos
+tratados sean los necesarios para la finalidad, y el de limitación del plazo (artículo 5.1.e) que
+se conserven solo el tiempo necesario. Aplicado a un agente, significa que no debe guardar
+conversaciones completas por defecto, que cada categoría de memoria tiene un plazo y que el
+usuario puede consultar y borrar lo que se guardó sobre él. La documentación de Anthropic recomienda
+validar la escritura para eliminar datos sensibles antes de que el manejador los guarde, y
+limitar el tamaño de los ficheros.
+
+**Inyección de memoria.** La memoria es una superficie de ataque: un contenido malicioso leído una
+vez puede quedar escrito y reaparecer en sesiones posteriores o en otros usuarios. OWASP lo
+recoge en su lista para aplicaciones agénticas como _Memory & Context Poisoning_ (ASI06). Como
+mitigaciones, conviene validar las escrituras en memoria persistente, mantener el contexto
+efímero por defecto, acotar la memoria por usuario y tarea, y permitir a un operador inspeccionarla
+y limpiarla. Las rutas de la memoria también deben validarse: la documentación de Anthropic
+advierte de que una ruta como `/memories/../../` puede salir del directorio si el manejador no la
+resuelve y comprueba.
+
+**Caducidad.** Una memoria sin fecha de caducidad acumula contradicciones. Define un plazo por
+categoría, borra lo que no se ha usado en mucho tiempo y revisa periódicamente las reglas de largo
+plazo. Una memoria pequeña y actual rinde más que una grande y antigua.
+
+## El coste de cada decisión
+
+Cada token de la ventana tiene un coste, pero no todos cuestan igual. Un prefijo estable (las
+instrucciones y las herramientas) puede cachearse; un historial que cambia en cada turno, no. Por
+eso el orden de la ventana importa: lo estable va primero y lo volátil al final. La
+[guía de costo de inferencia](/docs/costo-de-inferencia) explica la caché con más detalle.
+
+Hay un efecto que se olvida con facilidad: **limpiar contexto también tiene coste**. Si la limpieza
+invalida la caché del prefijo, el ahorro en tokens puede perderse en la siguiente llamada. Conviene
+medir la combinación, no cada medida por separado: cuántos tokens se ahorran, cuánto cuesta la
+caché perdida y si la calidad se mantiene.
+
+La memoria también tiene coste de recuperación. Un sistema que consulta la memoria en cada turno
+paga latencia y tokens por leer lo que quizá no necesitaba. La recuperación bajo demanda compensa
+solo si el agente sabe cuándo consultar; si consulta siempre, es un contexto cargado en dos pasos.
+
+## Cómo medir que el contexto funciona
+
+Un cambio en el contexto (una instrucción nueva, una compactación, un resumen más corto) puede
+mejorar un caso y romper otros. Por eso necesita evaluación de regresión, igual que cualquier otro
+cambio de comportamiento. El enfoque es el mismo que en [RAG y evaluación continua](/docs/rag-y-evaluacion-continua),
+aplicado a la ventana:
+
+- **Conjunto dorado de tareas largas.** Tareas que requieren 20 o 30 pasos, con un resultado
+  verificable: un fichero que debe quedar correcto, un test que debe pasar, una decisión que debe
+  recordarse tras una compactación.
+- **Pruebas de recuerdo.** Tras una compactación o una reanudación, pregunta por decisiones
+  concretas tomadas al principio. Si el resumen las pierde, el fallo es del contexto, no del modelo.
+- **Pruebas de distractores.** Añade a propósito fragmentos parecidos pero irrelevantes y comprueba
+  que no cambian la respuesta.
+- **Métricas de coste y calidad juntas.** Tokens de entrada por tarea, tasa de aciertos de caché,
+  número de compactaciones y el resultado final. Un ahorro que baja la calidad no es un ahorro.
+
+Un detalle importante: el juez de estas evaluaciones no debe leer solo la respuesta final. Si el
+objetivo es que el agente no pierda el hilo, hay que comprobar el estado intermedio.
+
+## Cuándo no aplica
+
+- **Tareas cortas y cerradas.** Una pregunta con un documento de dos páginas no necesita compactación
+  ni memoria; añadirlas es complejidad sin beneficio.
+- **Cuando el dato debe ser exacto y estable.** Una tabla de precios o un catálogo se consultan
+  mejor en una base de datos que se recupera con filtros que en una memoria que el modelo resume.
+- **Sin evaluación.** Si no hay forma de medir si el contexto mejoró o empeoró, cualquier ajuste es
+  una suposición. Antes de optimizar, construye el conjunto de pruebas.
+
+## Errores frecuentes
+
+- **Tratar la ventana como almacenamiento.** Pegar todo lo que podría ser útil «por si acaso». El
+  resultado es más coste y peor atención.
+- **Memoria sin origen.** Guardar hechos sin registrar quién los dijo ni cuándo. Cuando algo sale
+  mal, nadie puede saber de dónde vino.
+- **Resúmenes libres.** Compactar con «resume la conversación» sin campos fijos. Cada resumen deriva
+  y las decisiones importantes desaparecen sin aviso.
+- **Confiar en que el modelo se acuerde.** Dejar que el estado de un flujo viva solo en el
+  contexto. Si la sesión se reinicia, el estado se pierde; el [diseño de flujos con agentes](/docs/disenar-flujos-con-agentes)
+  trata el estado como registro persistente por caso.
+- **Memoria sin caducidad.** Preferencias de hace dos años que contradicen las actuales.
+- **Limpiar sin medir.** Activar la limpieza de resultados sin comprobar si la caché perdida anula
+  el ahorro.
+
+## Checklist
+
+- [ ] Sabes qué entra en la ventana en cada llamada y en qué orden: lo estable primero.
+- [ ] Cada fuente de contexto tiene una regla: siempre, bajo demanda o resumida.
+- [ ] Los resultados de herramientas antiguos se descartan o se resumen con una política explícita.
+- [ ] El resumen de compactación tiene campos fijos y conserva decisiones y pendientes.
+- [ ] La memoria persistente está separada por categorías, con origen, plazo y forma de borrado.
+- [ ] Quién escribe en memoria está decidido, y lo escrito pasa por validación.
+- [ ] Las rutas de la memoria se validan y ningún dato sensible se guarda sin filtro.
+- [ ] Existe un conjunto de tareas largas con pruebas de recuerdo y de distractores.
+- [ ] Mides coste y calidad juntos, incluido el efecto de la caché.
+
+## Fuentes
+
+Consultadas en octubre de 2026. Las funciones de gestión de contexto de la API están en beta y
+conviene contrastarlas con la documentación vigente.
+
+- [Effective context engineering for AI agents (Anthropic Engineering, 29 de septiembre de 2025)](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- [Context Rot: How Increasing Input Tokens Impacts LLM Performance (Chroma, julio de 2025)](https://www.trychroma.com/research/context-rot)
+- [Lost in the Middle: How Language Models Use Long Contexts (Liu et al., arXiv:2307.03172; TACL, 2024)](https://arxiv.org/abs/2307.03172)
+- [Context editing (documentación de la API de Claude)](https://platform.claude.com/docs/en/build-with-claude/context-editing)
+- [Memory tool (documentación de la API de Claude)](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool)
+- [Compaction (documentación de la API de Claude)](https://platform.claude.com/docs/en/build-with-claude/compaction)
+- [OWASP Top 10 for Agentic Applications (OWASP Gen AI Security Project)](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/)
+- [Reglamento (UE) 2016/679, RGPD, artículo 5 (EUR-Lex)](https://eur-lex.europa.eu/eli/reg/2016/679/oj)

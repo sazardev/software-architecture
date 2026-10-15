@@ -1,0 +1,270 @@
+---
+title: 'Agents that use interfaces: browser and desktop'
+description: 'When an agent should drive a graphical interface instead of an API, what risks the page adds, and how to contain them with sandboxes, approvals and traces.'
+category: tendencias
+tags:
+  - agentes
+  - computer-use
+  - navegador
+  - prompt-injection
+  - sandbox
+order: 11
+roadmap:
+  id: ia
+  stage: gobierno
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'An agent moves the cursor, and a gate stops it before the irreversible action'
+---
+
+# Agents that use interfaces: browser and desktop
+
+An AI agent can call an API, but it can also do what a person does in front of a screen: look at a
+screenshot, decide where to click, type into a field and read the result. Vendors call this
+"computer use" or browser agents. It opens up processes that have no integration: a supplier's
+portal, a legacy system without an API, a desktop application that is ten years old.
+
+The thesis of this article is unglamorous: **operating an interface is the last option, not the
+first**. If there is an API or a connector with narrow permissions, it is almost always better. If
+there is not, the agent can do it, but the interface becomes the most fragile part of the system and
+the door through which an attacker gets in. The design has to assume both things from the start.
+
+<Callout tone="info" title="Cutoff date">
+  Data as of October 2026. Anthropic's computer use tool is on version `computer_toolset_20260801`,
+  generally available in the Claude API and on Google Cloud; earlier versions remain documented for
+  specific models. Browser products change names and plans often, so check the official
+  documentation before you decide.
+</Callout>
+
+## What it means to operate an interface
+
+There are three ways an agent can "see" an application, and each one changes the cost and the fragility:
+
+| Mode                  | What the agent receives                     | How it acts                                     | Cost per step                                                                                  | Fragile point                            |
+| --------------------- | ------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Desktop vision        | Screenshots                                 | Pixel coordinates, mouse and keyboard           | High: according to Anthropic's documentation, each screenshot costs roughly 1,000–1,800 tokens | Scaling, control sizes, layout changes   |
+| Browser accessibility | The page's accessibility tree               | References to elements (e.g. `e5`) or selectors | Low: text instead of images                                                                    | Badly labelled pages, structural changes |
+| Hybrid                | Tree, plus a screenshot when visuals matter | Depends on the step                             | Medium                                                                                         | Keeping two channels consistent          |
+
+The accessibility-tree approach is what Playwright MCP uses, for example: instead of screenshots it
+works with an accessibility tree where each element has a reference. Its documentation suggests
+combining the tree with screenshots when visual context matters, such as canvases, charts or image-heavy pages.
+
+Anthropic has the computer use tool in its API and the Claude in Chrome extension. Google documents a
+computer use model for Gemini. What they share is the
+point that matters for an architect: **the model does not execute anything**. It proposes an action;
+your code executes it and returns the result. The control point lives in your application, not in the
+model.
+
+## When it is the last option
+
+Rank the alternatives and step down only when the one above does not exist. Every step down raises
+cost, latency and attack surface:
+
+1. **API or direct integration**, with permissions per operation.
+2. **Connector or MCP server** that exposes the concrete action, not "the screen".
+3. **Browser through the accessibility tree** for a web without an API.
+4. **Desktop vision** for native applications or screens with no accessible structure.
+
+Author's view: the most common mistake is jumping to step 4 because it "works in the demo". A demo on a
+stable page hides exactly what costs you in production. What the
+[LLM application architecture](/docs/arquitectura-agentes-llm#tools-and-mcp) article says about tool
+contracts applies here too: a schema-defined action is worth more than a click.
+
+## Reliability: the interface changes
+
+An API has a contract and a version. An interface has an appearance that changes whenever its owner
+decides. These are the failures that repeat most often:
+
+- **Clicking the wrong element.** A small control, a badly applied scale or a window with another size
+  shifts the target. Anthropic's documentation suggests starting with a 1280×720 reference resolution,
+  enabling the zoom tool, and accounting for the 2x factor of Retina displays.
+- **Pages that change mid-task.** A cookie banner, a modal, an asynchronous load or an A/B test. With
+  accessibility references, the references expire when the page changes, so the agent must read the
+  page again after every navigation.
+- **Apparent success.** The agent believes it pressed "Save" and the form saved a draft, or nothing at
+  all. Verify the final state (the confirmation screen, the record in the backend), not the agent's intent.
+- **Batches that run too far.** Anthropic warns that a batch can complete a multistep action within a
+  single turn. If one step is sensitive, it should not sit inside a batch without a review point.
+
+Efficiency matters too. The OSWorld-Human paper, presented at MLSys 2026, finds that even the best agents
+take between 2.7 and 4.3 times more steps than necessary. That is not a success problem, but it is a
+cost and latency problem.
+
+## Cost and latency per step
+
+Every action is a round trip: capture, reasoning, action and waiting for the page to load. A twenty-step
+flow is twenty round trips, and with vision the context grows with every screenshot you keep. Anthropic's
+documentation warns that above twenty images, stricter per-side limits apply. These decisions change the bill:
+
+- Use the accessibility tree as the default channel and the screenshot only when it is needed.
+- Trim the history: keep the latest screenshot and the text of earlier steps.
+- Group actions only when they are reversible and no decision point sits between them.
+- Measure cost per completed task, not per step. A task that costs more per step but needs no manual
+  review can be cheaper overall.
+
+The policy that results from these decisions fits in a few lines. This is an illustrative shape, not a
+real configuration:
+
+```yaml
+# shape of an interface-use policy (illustrative)
+channel: accessibility # vision only when the task requires it
+domains: [portal.supplier.example]
+screenshot_history: 1 # older screenshots are replaced by text
+actions:
+  read: automatic
+  reversible_write: automatic
+  external_communication: approval_with_preview
+  money_or_delete: explicit_approval
+```
+
+## Prompt injection from the page
+
+This is the risk that changes the design most. An agent that reads someone else's text (an email, a
+document or a web page) can be fooled by instructions hidden in that text. With an interface, the whole
+page is that text: an `alt` attribute, white text on a white background or an image containing orders can
+all carry instructions. Anthropic warns in its documentation that, in some circumstances, Claude follows commands it finds
+in content even when they conflict with your instructions.
+
+Vendors answer with layers. Anthropic describes two classifiers in Claude in Chrome: one examines incoming
+content and another reviews each action before it runs. If it detects a possible injection attempt,
+Anthropic says the model checks that the instruction really came from the person before acting.
+Anthropic also acknowledges that the risk is not zero: its internal figure (under 0.08% attack
+success in its tests) measures its configuration under its own evaluations and is not a guarantee.
+
+Author's view: the architectural lesson is not "pick the vendor with the better filter", but to design as if
+the page could hijack the agent. In 2025 Simon Willison described the combination that makes this risk serious,
+the "lethal trifecta": access to private data, exposure to untrusted content and the ability to communicate
+externally. A browser agent that has all three can be induced to leak data. Break at least one leg:
+
+- **No private data:** a dedicated session, without the user's email or banking.
+- **No external communication:** sending, publishing or uploading data requires approval, and outbound
+  domains are a closed list.
+- **No untrusted content:** limit the agent to known domains, and separate agents that read open pages
+  from agents that act on internal systems.
+
+For the wider picture of injections and tool control, see
+[controlling AI](/docs/controlar-la-ia-gobierno-y-autonomia#prompt-injection-the-risk-that-changes-once-you-add-tools).
+
+## Irreversible actions and approval points
+
+Classify each action before you grant permission to run it:
+
+| Class                  | Examples                                     | Suggested policy                       |
+| ---------------------- | -------------------------------------------- | -------------------------------------- |
+| Read                   | Open, search, read a table                   | Automatic                              |
+| Reversible write       | Save a draft, fill fields without sending    | Automatic, with logging                |
+| External communication | Send an email, publish, share                | Approval with a preview                |
+| Money or accounts      | Pay, change a password, accept terms         | Explicit approval                      |
+| Destructive            | Delete, cancel a subscription, revoke access | Approval and, if possible, not allowed |
+
+Anthropic recommends human confirmation for decisions that might have meaningful real-world consequences,
+and cites payments, accepting terms and accepting cookies. Google advises against using computer use for
+critical decisions, sensitive data, or actions whose errors cannot be corrected.
+
+The approval must show the action in business terms ("send this invoice to this customer"), not the click
+coordinate. There is also a design risk: if everything asks for confirmation, people approve without looking.
+The Claude in Chrome extension distinguishes an "automatically approve" mode, in which Claude pauses only
+when needed, from a "manually approve" mode that reviews every action. Choosing between them is a
+governance decision, not a usability one, and it fits with the
+[autonomy levels](/docs/autonomia-de-la-ia#control-points) and the
+[mandatory approval points](/docs/controlar-la-ia-gobierno-y-autonomia#mandatory-approval-points).
+
+## Environment: sandbox, credentials and sessions
+
+The principle is that the agent works in an environment you can destroy without consequences:
+
+- **Disposable machine or container.** Anthropic recommends a dedicated virtual machine or container with
+  minimal privileges. Google asks you to run the agent in an isolated environment to limit its potential impact.
+- **Network with an allowlist of domains.** No free browsing from the agent's session.
+- **A separate browser profile,** without banking, health or public administration sessions. This is
+  Anthropic's recommendation for Claude in Chrome.
+- **Credentials outside the model's context.** Passwords should not appear in the prompt or in variables the
+  model can read. If a secret is needed, the system injects it at the step that uses it, from a secrets
+  store.- **Ephemeral sessions.** Each task starts from a known state and is destroyed at the end; cookies do not
+  survive from one task to the next.
+- **Never on the work machine.** An agent running on your laptop with your mail session open is the
+  combination that concentrates the most risk.
+
+## Traces, screenshots and audit
+
+After an incident you need to be able to reconstruct what the task asked for, what the agent saw
+(screenshots before and after each sensitive action), what action it proposed, who approved it and when,
+which URL was open, which model and version acted, and what it cost. This connects with what was said about
+[traceability and cost](/docs/autonomia-de-la-ia#traceability-and-cost) and the
+[decision log](/docs/controlar-la-ia-gobierno-y-autonomia#what-to-log-and-who-is-accountable).
+
+Two caveats. Screenshots are personal data and often show things that should not be visible: keep retention
+short, encrypt them and restrict access. And the log is useless if the agent can modify it: write it outside
+the agent's environment.
+
+## How to test it
+
+Testing an interface agent means testing an end-to-end task on a reproducible environment:
+
+- **A fixed test environment.** A copy of the application or a test page with synthetic data and a frozen
+  version. Without it, a change on the live site looks like an agent failure.
+- **Success criteria on the final state.** Check in the database or on the confirmation screen that the
+  order exists, not that the agent says it created it.
+- **Repeat.** Results vary between runs. Measure success rate and number of steps over dozens of runs, like
+  any eval ([RAG in production and continuous evaluation](/docs/rag-y-evaluacion-continua#continuous-evaluation-a-golden-set)).
+- **Injection tests.** Include pages with hidden instructions in the test set and require that the action does
+  not happen. It is one more case in the set, not a separate test.
+- **Separate the failures.** Distinguish "the interface changed" from "the agent decided wrongly". The first is
+  fixed in the selector or the connector; the second in the harness or the policy.
+
+## When to use it and when not
+
+It makes sense when:
+
+- There is a legacy process without an API, used often, with clear permissions.
+- It is exploratory or regression testing of an interface you control.
+- The task is reading or filling drafts, and a person reviews before anything is sent.
+- It is a one-off data migration from a screen, in a disposable environment with a review afterwards.
+
+It does not make sense when:
+
+- There are payments, account changes or sends to third parties without human approval.
+- The process is high-volume and could be an API or a connector.
+- The browser the agent runs in holds the user's banking, health or public administration sessions.
+- The interface changes every week and no tests warn you about the changes.
+
+## Common mistakes
+
+- **Treating the screen as an API.** A click is automated without defining the action, its result or how it
+  is verified.
+- **Trusting intent.** The agent's "done" is accepted without checking the final state.
+- **Personal credentials in the agent's browser.** The agent inherits the person's session with all its permissions.
+- **Unlimited retries.** Facing a page that does not respond, the agent keeps going and spends without progressing.
+- **Approving in the wrong place.** Confirmation is requested for reading but not for paying, or coordinates
+  are shown instead of the action in plain language.
+- **Unmanaged screenshots.** Every screen is kept in logs without minimisation, with personal or financial
+  data visible.
+
+## Checklist
+
+- There is an API, a connector or an MCP server for the task. If there is, it is the chosen channel.
+- Each action is classified (read, reversible write, communication, money, destructive) and has its policy.
+- Communication, money or deletion actions require approval with a preview in business language.
+- The environment is disposable, with minimal privileges, a domain allowlist and a browser profile without sensitive sessions.
+- No credential is in the model's context; secrets are injected at the step that uses them.
+- Success is verified on the final state, not on what the agent reports.
+- There are traces with screenshots before and after each sensitive action, kept outside the agent's reach.
+- The reproducible test set includes pages with injected instructions.
+- There are limits on steps and retries per task.
+
+## Sources
+
+- Anthropic, [Computer use tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool).
+  Toolset version, security warnings, image limits and per-screenshot costs.
+- Anthropic, [Use Claude in Chrome safely](https://support.claude.com/en/articles/12902428-use-claude-in-chrome-safely).
+  Classifiers, approval modes, user recommendations and residual risk.
+- Google, [Computer use (Gemini API)](https://ai.google.dev/gemini-api/docs/computer-use). A model that proposes
+  actions, supervision, isolation and confirmation of critical decisions.
+- Playwright, [Snapshots (Playwright MCP)](https://playwright.dev/mcp/snapshots). Accessibility tree, references
+  and when to add screenshots.
+- Simon Willison, [The lethal trifecta for AI agents](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/),
+  16 June 2025.
+- OSWorld-Human: [Benchmarking the Efficiency of Computer-Use Agents](https://mlsys.org/virtual/2026/oral/3865),
+  MLSys 2026.

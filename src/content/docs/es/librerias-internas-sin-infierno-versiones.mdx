@@ -1,0 +1,264 @@
+---
+title: 'Librerías internas: extraer, versionar o copiar'
+description: 'Cuándo convertir código compartido en una librería interna, cuándo es mejor copiarlo y cómo versionarla y retirarla sin que cada cambio sea un incendio.'
+category: decisiones
+tags:
+  - librerias-internas
+  - versionado
+  - monorepo
+  - deuda-tecnica
+  - gobierno
+order: 11
+roadmap:
+  id: liderazgo
+  stage: equipos
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un núcleo compartido se bifurca; una copia deriva sin dueño'
+---
+
+# Librerías internas: extraer, versionar o copiar
+
+Dos equipos escriben la misma función de formato de fechas. El tercero la copia y le añade una
+zona horaria. Al cabo de un año hay cinco versiones, ninguna idéntica y nadie sabe cuál es la
+correcta. El problema no es la duplicación en sí: es que nadie decidió dónde vivía el código ni
+quién respondía por él.
+
+Extraerlo a una librería interna resuelve ese caso, pero crea otro: ahora cada cambio pasa por
+una versión, cada consumidor decide cuándo actualizar y un fallo en la librería se propaga a
+todos a la vez. Copiarlo evita esa coordinación y, a cambio, deja que cada copia derive. Ninguna
+de las dos opciones es gratis.
+
+Este artículo trata la decisión como lo que es: un reparto de costes. Qué pagas al extraer, qué
+pagas al copiar, cómo versionar sin convertir cada release en una negociación y cómo retirar una
+librería cuando deja de servir. Se apoya en la discusión de [monorepo o polirepo](/docs/monorepo-o-polirepo),
+que decide dónde viven los paquetes, y en la de [arquitectura extensible con plugins](/docs/arquitectura-extensible-plugins),
+que trata de contratos públicos. Aquí el foco es más pequeño: una pieza de código compartida entre
+varios consumidores de tu organización.
+
+## Tres salidas para el código compartido
+
+Cuando dos consumidores necesitan la misma lógica hay tres salidas razonables:
+
+- **Copiar.** Cada consumidor tiene su versión. No hay coordinación, pero tampoco hay un lugar
+  donde corregir un error para todos.
+- **Referenciar dentro del mismo repositorio.** El código vive en un paquete del monorepo y los
+  consumidores lo importan mediante enlaces de workspace. Un cambio se prueba junto a sus
+  consumidores en el mismo commit.
+- **Publicar en un registro.** El paquete tiene versión propia y se instala desde un registro
+  privado. Es la opción que más se parece a una librería de terceros y la que más disciplina exige.
+
+La tabla resume qué se paga en cada una:
+
+| Opción                | Coste principal                          | Riesgo principal                               |
+| --------------------- | ---------------------------------------- | ---------------------------------------------- |
+| Copiar                | Corregir N veces el mismo error          | Deriva silenciosa entre copias                 |
+| Workspace en monorepo | Infraestructura de CI y pruebas cruzadas | Un cambio rompe a todos a la vez               |
+| Paquete en registro   | Versionado, publicación y actualización  | Consumidores que se quedan en versiones viejas |
+
+## Lo que cuesta cada opción
+
+Hay cuatro costes que conviene nombrar antes de decidir, porque cada uno aparece en un sitio
+distinto del equipo.
+
+**Acoplamiento de versiones.** Si la librería publica versiones, dos consumidores pueden estar en
+versiones distintas. Eso es normal, pero significa que el comportamiento de la misma función
+puede diferir según la aplicación. Si no lo quieres, tendrás que pagar con coordinación.
+
+**Coordinación de actualizaciones.** Un cambio de contrato exige que cada consumidor responda,
+cuando tenga tiempo, y que alguien siga el rastro de quién ya actualizó. Con tres consumidores
+es un hilo de chat; con treinta es un proyecto.
+
+**Riesgo de cascada.** Una librería compartida es un punto de fallo común. Un error en una versión
+publicada llega a todos los consumidores que se actualicen, y un consumidor que fija una versión
+antigua por miedo arrastra deuda de seguridad. Este riesgo no lo elimina el monorepo: solo cambia
+la forma en que se ve.
+
+**Duplicación con deriva.** Copiar es barato en el momento y caro después. Cada copia recibe
+correcciones distintas, o ninguna, y al cabo de un tiempo el código parece parecido pero no
+igual. Sandi Metz lo resumió en su post de 2016 «The Wrong Abstraction»: una duplicación es mucho
+más barata que una abstracción equivocada, pero la duplicación también acumula costes cuando las
+copias divergen sin que nadie lo note.
+
+La clave es que la duplicación y la abstracción equivocada fallan de forma distinta. La primera
+falla lento y en silencio. La segunda falla rápido y en voz alta, y obliga a rediseñar. Elegir
+bien consiste en saber cuál de los dos fallos te conviene más en ese momento.
+
+## Cuándo extraer: tres criterios
+
+Antes de crear una librería, comprueba tres cosas. Si no se cumplen las tres, lo más probable es
+que sea pronto para extraer.
+
+1. **Dos o tres consumidores reales.** No cuentan los consumidores hipotéticos ni el «algún día».
+   La regla de tres, atribuida a Don Roberts y recogida por Martin Fowler en _Refactoring_ (1999), sugiere que
+   con dos copias puedes esperar y con tres conviene extraer. Es un criterio heurístico, no una ley:
+   lo importante es que los consumidores existan hoy y necesiten lo mismo.
+2. **API estable.** La firma y el comportamiento observable están claros y casi no cambian. Si
+   cada consumidor necesita una variante distinta, todavía no has encontrado el concepto; extraer
+   ahora fija una forma equivocada y obliga a versionar errores.
+3. **Dueño claro.** Hay una persona o un equipo que responde por la librería: revisa cambios,
+   publica correcciones y decide qué entra. Sin dueño, la librería se convierte en un cementerio
+   con vida propia.
+
+Si solo cumples uno o dos, copiar durante un tiempo y vigilar la deriva suele ser la mejor
+decisión. Revisa el caso dentro de unos meses: el código que se parece a tres copias de la
+misma idea es una señal más fuerte que cualquier predicción.
+
+## Versionado: semver real o versiones por cambio
+
+Hay dos formas habituales de versionar una librería interna, y conviene elegir una antes de
+publicar la primera.
+
+**Semver de verdad.** La [especificación de Semantic Versioning 2.0.0](https://semver.org/) define
+que un cambio que rompe la API sube el número mayor, una adición compatible sube el menor y
+una corrección sube el parche. Su valor está en que el número comunica algo a quien consume la
+librería. Su coste está en que el autor tiene que clasificar cada cambio correctamente, y eso
+falla cuando el equipo no define qué es «la API pública». La especificación exige declarar esa
+API, aunque sea solo en la documentación.
+
+**Versiones por cambio.** Cada pull request declara qué tipo de cambio es y el número se calcula al
+publicar. [Changesets](https://github.com/changesets/changesets) trabaja así: cada cambio incluye un
+archivo que indica el tipo de bump y un resumen; el comando de versión agrupa esos archivos,
+calcula la nueva versión y escribe el changelog; el paso de publicación crea las etiquetas de git. En CI,
+la herramienta puede abrir una pull request de «Version Packages» que el equipo revisa antes de
+publicar. Es más ligera que exigir semver a mano y deja trazabilidad por cambio.
+
+Cualquiera de las dos sirve. Lo que no sirve es mezclar: un número que sube sin criterio ni
+registro no informa a nadie.
+
+### Rangos y fijación
+
+El segundo eje es cómo declara el consumidor la versión. Un rango (`^2.4.0`) recibe correcciones
+automáticamente y reduce la coordinación, pero delega en la disciplina del autor: una versión
+menor que rompe lo hace llegar a todos en la siguiente instalación. Una versión fijada (`2.4.0`)
+es predecible, pero obliga a un paso explícito de actualización por cada consumidor, que es
+exactamente el coste de coordinación que querías evitar. Para una librería interna con pocos
+consumidores, un rango acotado a la versión mayor y una actualización periódica suele equilibrar
+bien ambos riesgos. Es un criterio de este artículo, no una regla de la herramienta.
+
+## Monorepo con enlaces de workspace o registro privado
+
+Si los consumidores están en el mismo repositorio, el enlace de workspace evita casi toda la
+fricción. En Bun, un consumidor declara la dependencia como `workspace:*` y, al publicarse, la
+herramienta la sustituye por la versión real del paquete. [Bun documenta](https://bun.com/docs/pm/workspaces)
+el comportamiento para `workspace:*`, `workspace:^` y `workspace:~`. En pnpm, las versiones se
+pueden declarar una sola vez en `pnpm-workspace.yaml` y referenciar con el protocolo `catalog:`,
+lo que [centraliza la versión de una dependencia](https://pnpm.io/catalogs) para todo el repositorio.
+
+```json
+{
+  "name": "@acme/ui-kit",
+  "version": "2.4.0",
+  "dependencies": {
+    "@acme/tokens": "workspace:*"
+  }
+}
+```
+
+Con enlaces de workspace, la librería no necesita un registro: el cambio entra con sus consumidores
+y el CI prueba ambos. El precio es que un cambio incompatible te obliga a romper a todos en el
+mismo commit, y que el CI debe escalar con el repositorio.
+
+Publicar en un registro privado tiene sentido cuando los consumidores viven en repositorios
+distintos, cuando la librería cruza una frontera de equipo o de seguridad, o cuando necesitas que
+una versión concreta sea auditable. GitHub Packages, por ejemplo, [publica paquetes de Node.js bajo
+un scope](https://docs.github.com/en/actions/tutorials/publish-packages/publish-nodejs-packages)
+configurado en `.npmrc` a través de `setup-node`. El coste de esa opción es operativo: hay que
+gestionar permisos, tokens de publicación y el ciclo de vida de cada versión.
+
+## Gobierno: quién mantiene y cómo se cambia
+
+Una librería interna sin gobierno termina siendo de nadie. Cuatro decisiones escritas evitan la
+mayor parte de los problemas.
+
+- **Dueño.** Un equipo, no una persona. Responde a incidencias, revisa propuestas y publica
+  correcciones. Su nombre aparece en el `README` y en el archivo de propietarios del repositorio.
+- **Cómo se propone un cambio.** Una pull request con su archivo de cambio y, si rompe contrato,
+  una nota de migración. Para cambios grandes basta un RFC corto, en la línea de
+  [trade-offs y decisiones](/docs/trade-offs-y-decisiones): qué problema resuelve, qué opciones
+  hay y qué se pierde.
+- **Qué entra y qué no.** Una regla explícita sobre la API pública. Todo lo que no esté
+  documentado puede cambiar sin aviso; si un consumidor depende de algo no documentado, el
+  problema es del consumidor, no de la librería.
+- **Política de deprecación.** Plazo mínimo, mensaje de aviso y un reemplazo indicado desde el
+  primer día. Si el registro lo soporta, `npm deprecate` permite marcar una versión o un rango con
+  un mensaje visible para quien la instala; según [la documentación de npm](https://docs.npmjs.com/cli/v11/commands/npm-deprecate),
+  solo el dueño del paquete puede hacerlo, acepta rangos y se revierte con un mensaje vacío.
+
+El plazo de deprecación es una decisión de organización, no técnica. Un criterio razonable para
+una librería interna es que el consumidor tenga al menos un ciclo de publicación completo para
+migrar, y que el equipo dueño anote en su tablero quién sigue usando la versión antigua.
+
+## Cuándo retirar una librería
+
+Retirar es más difícil que crear, y por eso casi nadie lo hace. Hay tres señales que justifican
+hacerlo:
+
+- Solo queda un consumidor real. Mantener una librería para una aplicación es un módulo con otro
+  nombre; conviene devolver el código a su consumidor.
+- El concepto ya no existe en el dominio, o la librería se convirtió en un contenedor de excepciones.
+- El dueño ha cambiado y nadie puede explicar qué hace cada función exportada.
+
+El procedimiento es el mismo que una deprecación normal: aviso, plazo, reemplazo y retirada. La
+diferencia es que hay que decidir de antemano qué pasa con el código: si vuelve a los consumidores
+como copia o si se elimina porque ya no lo necesita nadie.
+
+## Un ejemplo trabajado
+
+Un equipo de producto tiene tres aplicaciones que usan la misma validación de direcciones. Las
+tres la copiaron hace seis meses. En el último trimestre, un error en el código de códigos postales
+se corrigió en una aplicación y en las otras dos siguió vivo durante semanas, porque cada equipo
+lo encontró por separado.
+
+Un análisis razonable: las tres aplicaciones son consumidores reales, la lógica ha sido estable
+durante el periodo, y hay un equipo dispuesto a ser dueño. Se cumplen los tres criterios. El
+equipo crea un paquete en el monorepo, lo consume con enlaces de workspace, usa versiones por cambio
+y publica en el registro solo cuando una aplicación externa al monorepo lo necesita. La aplicación
+que más cambiaba se convierte en la primera en probar cada cambio.
+
+Si, en cambio, la validación de direcciones fuera distinta en cada país y las tres aplicaciones
+solo compartieran la estructura del formulario, lo sensato sería copiar y no extraer nada: lo que
+se comparte es un patrón, no una función.
+
+## Errores frecuentes
+
+- **Extraer antes de tener el segundo consumidor.** La librería nace con una forma que solo sirve
+  para el primero y obliga a versionar errores desde el principio.
+- **Publicar sin definir la API pública.** Todo lo que se exporta se convierte en contrato, aunque
+  nadie lo haya pensado así.
+- **Usar rangos amplios y romper en silencio.** Un cambio incompatible dentro de un rango llega a
+  todos en la siguiente instalación.
+- **Dejar la librería sin dueño.** Cuando el único autor se va, la librería se congela o cambia sin
+  criterio.
+- **Mantener copias y librería a la vez.** Se paga el coste de coordinación y el de deriva a la vez.
+- **Nunca retirar.** Las librerías viejas acumulan dependencias y consumidores que nadie quiere tocar.
+
+## Cuándo no aplica
+
+Si tienes un solo consumidor, no hay nada que extraer. Si la pieza compartida es una especificación
+o un contrato de datos, quizá lo que necesitas es un esquema versionado, no una librería con código.
+Y si el equipo es muy pequeño y se despliega todo junto, copiar durante un tiempo puede ser la
+decisión más barata y la más honesta.
+
+## Checklist
+
+- [ ] ¿Hay al menos dos consumidores reales que necesitan hoy la misma lógica?
+- [ ] ¿La API pública está definida y documentada, y cambia poco?
+- [ ] ¿Tiene un equipo dueño con nombre?
+- [ ] ¿Está decidido si se versiona por semver, por cambio o con enlaces de workspace?
+- [ ] ¿Los consumidores usan rangos acotados o versiones fijadas, y quién actualiza?
+- [ ] ¿Hay una política escrita de deprecación con plazo y reemplazo?
+- [ ] ¿Sabes cuándo retirarla y qué pasa con su código?
+- [ ] ¿La decisión queda registrada en un [ADR](/docs/adr) con su criterio de revisión?
+
+## Fuentes
+
+- Semantic Versioning 2.0.0, [semver.org](https://semver.org/). Especificación oficial del versionado.
+- pnpm, [Catalogs](https://pnpm.io/catalogs). Protocolo `catalog:` y versiones centralizadas en `pnpm-workspace.yaml`.
+- Bun, [Workspaces](https://bun.com/docs/pm/workspaces). Enlaces `workspace:*` y sustitución al publicar.
+- Changesets, [repositorio oficial](https://github.com/changesets/changesets). Archivos de cambio, versión y publicación.
+- npm, [Deprecating and undeprecating packages or package versions](https://docs.npmjs.com/deprecating-and-undeprecating-packages-or-package-versions) y [npm deprecate](https://docs.npmjs.com/cli/v11/commands/npm-deprecate).
+- GitHub Docs, [Publishing Node.js packages](https://docs.github.com/en/actions/tutorials/publish-packages/publish-nodejs-packages). Publicación en GitHub Packages con scope.
+- Martin Fowler, [_Refactoring_](https://martinfowler.com/books/refactoring.html) (1999). Regla de tres atribuida a Don Roberts.
+- Sandi Metz, «The Wrong Abstraction» (20 de enero de 2016), [sandimetz.com/blog/2016/1/20/the-wrong-abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction). Origen de la frase sobre la duplicación frente a la abstracción equivocada.

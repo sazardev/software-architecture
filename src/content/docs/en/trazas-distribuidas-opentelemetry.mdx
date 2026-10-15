@@ -1,0 +1,272 @@
+---
+title: 'Distributed tracing with OpenTelemetry'
+description: 'How to follow a request across services with traces, which data makes each span useful, and how to sample and govern telemetry with OpenTelemetry.'
+category: practicas
+tags:
+  - tracing
+  - opentelemetry
+  - observability
+  - sampling
+  - w3c-trace-context
+order: 19
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 90
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A request leaves a thread of spans that share one trace-id'
+---
+
+# Distributed tracing with OpenTelemetry
+
+A log answers what happened inside one service. A trace answers a different question: where a
+specific request went and where its time went. While a request touches one or two services, both
+can be joined by hand. When it touches five, with queues in between, joining logs by hour becomes
+an investigation of hours that nobody wants to repeat.
+
+This article covers what a trace is, how context travels between services, where OpenTelemetry sits
+between the application and the backend, what to name in a span and what not to, how to sample
+without losing what matters, and how to govern telemetry so it does not grow out of control. The
+thesis is simple: **a trace is only useful if every hop propagates the same identifier and every
+span carries data that lets someone decide something**.
+
+## Trace, span and context
+
+A **trace** is the set of spans that share one identifier (`trace-id`). A **span** is, in the
+OpenTelemetry specification, "a unit of work or operation": it has a name, a start and end time, a
+parent (except the root span) and an immutable span context that holds the `trace-id` and its own
+identifier (`span-id`).
+
+Each span can carry three more things:
+
+- **Attributes:** key-value pairs that describe the operation (HTTP method, table name, payment
+  result).
+- **Events:** timestamped annotations inside the span, such as a retry or an exception. They are
+  useful, but they do not replace a log with context.
+- **Links:** associate a span with other spans that have a causal relationship without being its
+  parent. They are the tool for asynchronous work, as we will see below.
+
+The difference between a good span and a useless one is whether it answers a question. "HTTP call"
+answers nothing. "Confirm order, with payment method and number of lines" does.
+
+## How context travels: W3C Trace Context
+
+For spans from different services to join one trace, the context has to travel with every request.
+The standard is the **W3C Trace Context** recommendation (level 1, version of 23 November 2021). It
+defines two HTTP headers:
+
+- **`traceparent`**: the trace identifier, the identifier of the calling span and a byte of flags.
+  Its shape is `version-trace-id-parent-id-flags`, with 2, 32, 16 and 2 hexadecimal characters. The
+  example in the specification itself is:
+
+```text
+traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
+```
+
+The flag that matters is the least significant bit: it signals that the caller may have recorded the
+trace (the "sampled" flag). This is how a sampling decision reaches the rest of the services.
+
+- **`tracestate`**: vendor-specific information as key-value pairs. The specification limits the
+  list to 32 members.
+
+**Baggage** is a different and complementary mechanism: key-value pairs that travel with the request
+so that downstream services can read them, for example a tenant identifier. The OpenTelemetry
+specification allows propagating it across process boundaries and requires the API to offer a way to
+remove all baggage, so it is not sent to untrusted processes. The practical consequence: anything in
+baggage travels with the request to every service that forwards it, including third-party ones, so **it is not a place for personal data**.
+
+Context is lost at any hop that does not forward the header: a message queue that does not carry
+metadata, a proxy that strips unknown headers, a job started on a thread that does not receive the
+context, or a call to an external service that does not accept it. Each loss turns one trace into
+several incomplete ones. That is the first symptom to look for.
+
+## OpenTelemetry: instrument once, choose the backend later
+
+OpenTelemetry (OTel) is the open standard that groups what is needed to produce telemetry: the APIs
+the code uses to create spans, metrics and logs; the SDKs that process them; the OTLP transport
+protocol; semantic conventions (common attribute names); and the **Collector**, an intermediate
+process that receives, transforms and exports data. It is a CNCF project, which graduated it in May 2026.
+
+The signals are traces, metrics and logs. The specification describes all three as generally
+available, but maturity varies by language. According to the status table the project publishes,
+traces are stable in most SDKs, while Rust is listed as beta and Kotlin as in development; logs are
+still in development in some languages, such as JavaScript and Python. Check that table before
+adopting a signal in a specific service.
+
+The separation that gives the most value is this:
+
+```text
+application (OTel API) → SDK → OTLP → Collector → trace backend
+```
+
+Application code depends only on the OpenTelemetry API. The Collector decides which backend receives
+each signal. Changing vendor means changing an exporter in configuration, not re-instrumenting every
+service. That independence is the main argument, and the Collector is where data masking and tail
+sampling live. Its configuration describes components and pipelines; defining a receiver does not
+enable it, it has to appear in a pipeline:
+
+```yaml
+receivers:
+  otlp: {}
+processors:
+  batch: {}
+exporters:
+  otlp/backend:
+    endpoint: <trace-backend>
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/backend]
+```
+
+## Automatic versus manual instrumentation
+
+**Automatic instrumentation** uses libraries or agents that create spans at the common boundaries:
+inbound and outbound HTTP, database clients, queue clients. It gives visibility from day one without
+touching the code, but it captures everything that crosses those boundaries, noise included.
+
+**Manual instrumentation** creates spans for domain steps: validate the order, reserve stock, charge
+the customer. These answer business questions, and they require deciding what deserves a span.
+
+The practical criterion is to combine both: automatic for the edges of the service (inbound,
+outbound, database, queues) and manual for the steps the team will need to explain during an
+incident.
+
+## What to name and what not to
+
+Three decisions are expensive to correct once they are wrong.
+
+**Span names with low cardinality.** A name should describe a class of operation, not an instance.
+`GET /orders/{id}` works; `GET /orders/48213` does not, because every order creates a new name and
+analysis tools cannot group anything.
+
+**Attributes with consistent names.** OpenTelemetry's semantic conventions use dot-separated
+namespaces, lowercase names, and underscores between the words of a compound name. Reuse the standard
+names instead of inventing variants.
+
+**Values with controlled cardinality and no personal data.** A technical order identifier is useful
+for debugging. An email address, a name or a request body is not, and it turns every span into a
+personal record copied to another tool. Authentication headers and cookies must never appear. The
+full treatment of this point is in [privacy by design](/docs/privacidad-por-diseno-gdpr#observability-without-personal-data).
+
+A practical rule: if a value can take thousands of different values, it goes on the span as a
+debugging attribute and **never** as a metric label, where it multiplies the number of series.
+
+## Sampling: deciding at the start or at the end
+
+Keeping every trace of a high-traffic system costs storage and network. Sampling reduces that cost,
+but it decides what gets lost. There are two approaches.
+
+- **Head sampling:** the decision is made at the start of the trace, usually with a percentage. It is
+  simple, cheap and propagated with the `traceparent` flag. Its limit is that it cannot look at the
+  whole trace: it cannot guarantee keeping traces with errors or slow traces, because when the
+  decision is made the outcome is not yet known.
+- **Tail sampling:** the decision is made once the trace is complete, which allows keeping errors and
+  the slowest traces. The price is high: it needs stateful components, memory and capacity to hold
+  traces until a decision is made, it is hard to configure and, according to OpenTelemetry's own
+  documentation, tail samplers often end up as vendor-specific technology. The sampler itself has to
+  be monitored, because it can degrade under load.
+
+In practice the two are combined: moderate head sampling protects the pipeline and tail sampling
+decides what is exported. What must always be documented is which kind of trace is **not** kept. If
+nobody has decided, the trace of the request that failed in exactly that case disappears silently.
+
+## Correlation: traces, metrics and logs
+
+Each signal answers a different question, and the value appears when they are linked. A reasonable
+flow is: an alert about an SLO error budget (see
+[observability, SLI and SLO](/docs/observabilidad-slo-presupuesto-error)) leads to a metric showing
+the trend; the metric leads to a representative trace of the problem; the trace leads to the log of
+the failing span, filtered by the same `trace-id`.
+
+For that jump to work, the `trace-id` must be present in the service logs, and correlation must be
+kept across all services. Whether a backend can link a metric point to an example trace (exemplars)
+depends on the product; check it before designing a flow that depends on it.
+
+## Signs of poor instrumentation
+
+Some symptoms show that traces are not useful, even when the dashboard looks complete:
+
+- **Broken traces in queues or asynchronous calls.** The producer does not send the context and the
+  consumer starts a new trace. The fix is to propagate `traceparent` in the message metadata. When a
+  consumer processes many messages in a batch, each one arrives with its own cause, and links are
+  more honest than forcing a common parent. OpenTelemetry uses a similar case, work queued to
+  run asynchronously, as its example: it links the last span of the first trace to the first span of
+  the second.
+- **Orphan spans or repeated roots:** a parent that does not exist in the trace, or several roots for
+  one request. This is almost always a propagation problem.
+- **Sampling decisions that do not match:** one service samples and another does not, and traces
+  appear half-complete.
+- **Generic names:** many spans with the same name and no way to tell operations apart.
+- **Missing spans where latency is expected:** if the database or the queue does not appear, the time
+  is attributed to the caller and the analysis points at the wrong service.
+
+## Governance: conventions and a telemetry budget
+
+Telemetry does not govern itself. Without shared rules, each team invents different names for the
+same thing and cross-service queries stop working. What tends to work:
+
+- **Shared conventions:** a document or repository with the organization's own attributes, reviewed
+  like any interface. Standard attributes come from OpenTelemetry's semantic conventions.
+- **A telemetry budget:** a volume or cost limit per service and per team, reviewed each quarter. A
+  new attribute that inflates volume is either justified or removed. The budget turns an abstract
+  debate about "storing more" into a decision with visible cost.
+- **Clear owners:** the platform team defines the Collector, the exporters and the default sampling;
+  service teams decide which business spans to add.
+
+This governance follows the same logic as the error budget of an SLO: a limited resource shared
+under explicit rules, not under the pressure of an emergency.
+
+## When yes and when not
+
+**Yes** when a user request crosses several synchronous services or queues, when latency incidents
+take hours to locate, or when the team already uses logs and metrics and needs to join them.
+
+**Not yet** when the system is a single process with one database, where a profiler and logs with a
+request identifier are enough. Also not when the team cannot operate a Collector or has not defined
+which personal data must never leave the service: in that case, solve privacy and conventions first,
+or traces will become the channel through which data leaks.
+
+## Common mistakes
+
+- **Instrumenting everything and querying nothing.** Thousands of spans with no question behind them
+  only add cost.
+- **Attributes with identifiers or free text.** They inflate storage and, in metrics, the number of
+  series.
+- **Sampling without deciding what is lost.** A low percentage with no error logic leaves out exactly
+  the failures someone wanted to investigate.
+- **Context not propagated through queues.** It is the most frequent cause of incomplete traces.
+- **Personal data in attributes or baggage.** It reaches every service and every copy of the telemetry.
+
+## Checklist
+
+- [ ] Every synchronous and asynchronous hop propagates `traceparent` (and `tracestate` when a vendor uses it).
+- [ ] Span names describe operations and contain no identifiers.
+- [ ] Attributes follow shared conventions and no value carries personal data.
+- [ ] No metric label has unbounded cardinality.
+- [ ] The sampling decision is documented, including which error traces are kept.
+- [ ] Logs include the `trace-id`, and it is possible to jump from an alert to a trace.
+- [ ] A telemetry budget exists per service, with an owner.
+- [ ] A Collector sits between the application and the backend, so changing vendor does not force re-instrumentation.
+
+## Sources
+
+- W3C, [Trace Context (Recommendation, level 1)](https://www.w3.org/TR/trace-context-1/): `traceparent`
+  format, sampled flag and `tracestate` limit.
+- OpenTelemetry, [Specification overview](https://opentelemetry.io/docs/specs/otel/overview/): signals
+  and their status.
+- OpenTelemetry, [Implementation status by language](https://opentelemetry.io/status/): table of traces,
+  metrics and logs per SDK.
+- OpenTelemetry, [Traces (concept)](https://opentelemetry.io/docs/concepts/signals/traces/): spans,
+  attributes, events and links.
+- OpenTelemetry, [Context propagation](https://opentelemetry.io/docs/concepts/context-propagation/).
+- OpenTelemetry, [Sampling](https://opentelemetry.io/docs/concepts/sampling/): head and tail sampling and
+  their trade-offs.
+- OpenTelemetry, [Collector configuration](https://opentelemetry.io/docs/collector/configuration/):
+  receivers, processors, exporters and pipelines.
+- OpenTelemetry, [Semantic conventions: naming](https://opentelemetry.io/docs/specs/semconv/general/naming/).
+- OpenTelemetry, [Baggage API specification](https://opentelemetry.io/docs/specs/otel/baggage/api/).
+- OpenTelemetry, [Graduation blog post (2026)](https://opentelemetry.io/blog/2026/otel-grad-now-what/index.md).

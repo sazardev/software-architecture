@@ -1,0 +1,304 @@
+---
+title: 'Agent identity and permissions: least privilege and audit'
+description: 'Which identity an AI agent uses, how to delegate narrow credentials, least privilege per action, secrets kept out of context, and revocation.'
+category: practicas
+tags:
+  - identidad
+  - permisos
+  - minimo-privilegio
+  - auditoria
+  - prompt-injection
+order: 11
+roadmap:
+  id: ia
+  stage: gobierno
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'One key per door: minimal scope, and approval for the risky action'
+---
+
+# Agent identity and permissions: least privilege and audit
+
+When an agent queries the ERP, opens a ticket or writes to a repository, it does so with a
+credential. That credential makes it one more actor in the system, with the same rights as any
+account, and with one important difference: it has no judgment of its own about what it should be
+allowed to do. This article holds one simple thesis: **treat the agent as a first-class identity**,
+with its own scope, its own secrets and its own trail, not as an invisible extension of the person
+who launched it.
+
+What is described here complements [autonomy levels](/docs/controlar-la-ia-gobierno-y-autonomia),
+which decide how much the system may decide. Identity answers a different question: with what
+power does it act once it decides?
+
+<Callout tone="info" title="Date of the data">
+  References were checked in October 2026. OAuth and MCP specifications change slowly, but products
+  (Claude Code, identity platforms, model providers) move fast: check every implementation detail
+  against its current documentation.
+</Callout>
+
+## An agent is a non-human actor
+
+An agent has three properties that change how its permissions should be designed. It acts at
+machine speed, so a mistake repeats thousands of times before anyone sees it. It reads content that
+no trusted person wrote (emails, web pages, responses from third-party APIs), and that content can
+contain instructions. And it does not stop on its own when something looks wrong: it keeps trying
+until the goal is met.
+
+A human with broad access uses it with some caution, because they know the context and feel
+responsible. The agent uses exactly what its credential allows. That is why a permission should be
+what the task _needs_, not what would be convenient to have.
+
+## Which identity the agent uses
+
+There are three common models. Choosing one is an architecture decision, and it should be written
+down.
+
+| Model                    | Who appears in the log                             | When it fits                                                 | Main risk                                                                             |
+| ------------------------ | -------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Delegation from the user | The person, acting through the agent               | Personal tasks: their mail, documents, calendar              | Inherits everything the person can do, and the agent can be tricked into using it     |
+| Own service identity     | The agent, as a technical account                  | Processes with no person present: batches, analysis, reports | Tends to accumulate broad, permanent permissions; becomes a technical user with power |
+| Both at once             | The person who authorizes and the agent that calls | Actions that need human consent and a concrete actor         | Harder to audit if only one of the two identities is recorded                         |
+
+One question settles the choice: **if this action goes wrong, who should the system hold
+accountable?** If the answer is a specific person, prefer delegation from the user with narrow
+scope. If the answer is the process, prefer an own identity with a scope designed by hand.
+
+Platforms are starting to model this explicitly. Microsoft Entra documentation describes an
+**agent identity** as a service principal that has no credentials of its own: it is created from a
+template (an _agent identity blueprint_) that holds the credentials, and it can have a **sponsor**,
+a human who answers for it during an incident. The idea transfers even if you do not use that
+product: separate who represents the agent, who keeps its keys and who is accountable for it.
+
+## How to delegate without copying secrets
+
+OAuth 2.0 ([RFC 6749](https://www.rfc-editor.org/rfc/rfc6749)) provides the framework: the person
+consents to a scope and the client receives a time-limited access token. For chains in which one
+service acts on behalf of another, [RFC 8693](https://www.rfc-editor.org/rfc/rfc8693), published in
+January 2020, defines token exchange and the `act` claim, which records who acts on behalf of whom.
+A token that says "agent X does this on behalf of Y" is far more useful in a log than one that only
+says "Y does this".
+
+For tool servers that follow the MCP protocol, the 2025-06-18 specification requires the server to
+publish protected-resource metadata
+([RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)) and the client to request a token for that
+specific resource, using the `resource` parameter from
+[RFC 8707](https://www.rfc-editor.org/rfc/rfc8707). In practice, a token issued for one server is
+not valid for another. Read the
+[MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization)
+before connecting a third-party server.
+
+Four delegation rules hold regardless of provider:
+
+- **Short life.** Access tokens expire quickly. GitHub App installation tokens, for example, are
+  [valid for one hour](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app).
+  A stolen token is worth little time.
+- **Scope per tool.** One token per server or per tool, not a master token that does everything.
+  If one tool is compromised, the damage stays within its scope.
+- **Verified audience.** Each API checks that the token is meant for it. It is the same idea as in
+  [sessions, tokens and SSO](/docs/sesiones-tokens-sso).
+- **No long-lived credentials in the agent's environment.** If the agent can read environment
+  variables or configuration files, it will read them when it needs to, and also when an injected
+  instruction asks it to.
+
+## Least privilege per tool and per action
+
+"The agent has access to Jira" is not a permission; it is a surrender. Least privilege applies at
+three levels: **tool**, **resource** and **verb**. The same tool can allow almost free reading and
+very narrow writing.
+
+| Action class           | Example                           | Typical scope                                   | Approval                      |
+| ---------------------- | --------------------------------- | ----------------------------------------------- | ----------------------------- |
+| Read                   | Read tickets in one project       | One project, only the fields needed             | No                            |
+| Reversible write       | Add a comment, create a draft     | One project, no critical status changes         | Depends on volume and risk    |
+| Write with effect      | Change a status, email a customer | One concrete resource, bounded target or amount | Yes, by policy                |
+| Delete or irreversible | Delete a branch, cancel a charge  | Almost never granted to an agent                | Always, by a different person |
+
+A practical consequence: **read and write are different credentials**. If the same token serves
+both, any read, including one of poisoned content, can end in a write. Each tool's policy is written
+next to its credential:
+
+```yaml
+# shape of a per-tool policy (illustrative)
+tool: tracker
+server: tracker-prod
+credential: tracker-agent-read # no write access by default
+actions:
+  issue.read: { projects: [ARQ] }
+  issue.comment: { projects: [ARQ], approval: none }
+  issue.transition: { projects: [ARQ], approval: owner }
+  issue.delete: { deny: true }
+```
+
+Least privilege lives in the credential, not in the prompt. Writing "do not delete branches" in the
+agent's instructions is a wish; a credential that cannot delete them is a permission.
+
+## Secrets outside the model's context
+
+Everything that enters the model's context can end up in an answer, in a log or in the argument of
+another tool. So the rule is that **the secret does not enter the context**. The agent asks to
+"create the ticket"; the tool, on the server side, uses its credential. The model never sees the
+token, so it cannot repeat it or be induced to reveal it.
+
+This forces three concrete decisions. Tools do not return authorization headers or response bodies
+containing session data: they filter them before returning the result. Logs and traces redact values
+that look like secrets. And credentials are rotated on the same cycle as any other key, as the
+[secrets and keys](/docs/gestion-secretos-claves) guide describes.
+
+Denial rules for reads of specific files (for example `.env`) help, but they are not a complete
+barrier: a shell command can read the same file if the agent is allowed to run it. The real barrier
+is that the secret is not reachable from the environment where the agent runs.
+
+## Prompt injection as privilege escalation
+
+Without tools, a prompt injection produces a wrong text. With tools, it produces an action carried
+out with the agent's permission. The attacker does not need to steal anything: it is enough to write
+into something the agent will read, and the agent does the rest with its own identity. It is a
+privilege escalation that requires no breach of any system.
+
+Simon Willison named the dangerous combination the **"lethal trifecta"** in June 2025
+([his article](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)). These are three
+capabilities that, together in one agent, allow data theft through injection:
+
+1. Access to private data.
+2. Exposure to untrusted content, meaning any text or image an attacker could control.
+3. The ability to communicate externally in a way that could exfiltrate information.
+
+The design that follows is concrete: within a single run, **do not combine all three without
+control**. If the agent has read untrusted content, its write or outbound actions should drop a
+level or go through approval. This is the same rule as in the article on
+[controlling AI](/docs/controlar-la-ia-gobierno-y-autonomia#guardrails): the autonomy level also
+depends on what entered the context.
+
+OWASP covers the problem as [LLM06:2025, Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/):
+a system given more functions, permissions or autonomy than its task requires. Injection is the most
+common trigger, but not the only one: a model error or an unexpected output can cause the same harm.
+
+## Who proposes and who executes
+
+Separate the component that **proposes** the action from the one that **executes** it with its
+credential. The model produces a structured proposal (tool, arguments, reason). A deterministic
+component validates it against the policy, checks scope, budget and approval level, and only then
+uses the credential. The model never holds the write token.
+
+A reviewer based on another model (an agent that "checks" the first) is useful for catching errors,
+but it is not a security boundary: it can be fooled by the same injection. The boundary must be
+deterministic: a policy that does not depend on anyone, or anything, agreeing.
+
+## Approval of high-impact actions
+
+Human approval works only if it is informed. Four conditions make it real:
+
+- The approver sees **the exact action**: target, amount, arguments and the content about to be
+  sent. A summary generated by the agent itself is not enough.
+- The approver is **different** from whoever requested the action when the risk justifies it.
+- The approval is bound to those exact arguments. If they change, approval is requested again.
+- The approval expires. An approval from last week authorizes nothing today.
+
+Claude Code's harness provides pieces for this. Permission rules can require confirmation, and a
+`PreToolUse` hook can return `ask` or `deny` with a reason. According to its documentation, a hook
+that exits with code 2 blocks the call even if its JSON output says `allow`. To see how hooks,
+rules and modes combine, read the [harness permissions layer](/docs/harness-engineering-claude-code#layer-3-permissions-and-sandbox).
+
+An approval control that always approves is a fake control. Measure the rejection rate of approvers:
+if they never reject anything, they are approving without looking, or the action belongs at a
+different level.
+
+## Audit: who asked for what
+
+For every action with effect, the log must let you answer "who asked for what" without asking
+anyone:
+
+- The identity used (the delegated person, the agent or both) and the run identifier.
+- Who or what started the run, and the provenance of each input that entered the context.
+- The requested action, its arguments, the policy decision and the result.
+- The approver, when they approved, and what information they were shown.
+- The cost of the run, to detect budget abuse.
+
+The identity provider's log says that an account did something; it does not say why. For that you
+need the orchestration log, which knows the original request. Decide also how long it is kept and
+which personal data goes into it: a complete record of everything can become a privacy problem.
+
+## Revocation
+
+Revocation must be possible within minutes, per identity. A reasonable kill path includes stopping
+the ongoing run, revoking the delegation consent, disabling the agent's identity and rotating the
+keys of the blueprint or server that may have been exposed. Short-lived tokens narrow the window,
+but they do not replace this path.
+
+Test the kill path like a drill: start a test run, revoke, and check that the next calls fail, that
+the log shows the cut, and that the owner gets the notification. A mechanism that has never been
+tested does not exist in practice.
+
+## When yes and when no
+
+A dedicated identity and a per-action policy make sense when:
+
+- The agent produces real effects on systems, customers or money.
+- It accesses personal or confidential data.
+- It uses third-party tools, especially MCP servers whose code you do not control.
+- Several people or teams use the same agent with different permissions.
+
+Much less is enough when:
+
+- No model is deciding: a deterministic process with a narrow service account is simpler and more
+  auditable than an agent with delegated credentials.
+- The agent only reads public documentation, with no private data and no outbound capability.
+- The person performs the action in their own session, with their own permissions, and the normal
+  record is enough.
+
+## Common mistakes
+
+Using a developer's personal account, or an administration token "just to try", is the fastest way
+for an agent to reach production with powers nobody meant to grant.
+
+Giving a write token "just in case" to tasks that only read turns every read into a possible write,
+and every piece of content read into an attack vector.
+
+Trusting the prompt to prevent an action. Instructions are guidance; the credential is the limit.
+
+Putting secrets in environment variables or files that the agent can read and display.
+
+Configuring a validation hook without failure handling. According to Claude Code's documentation, a
+hook that times out does not block the call by default; to make it an actual gate you must explicitly
+configure failures to block (`"onFailure": "block"`, available since Claude Code v2.1.295).
+
+Approvals that show the agent's summary instead of the exact action, or that always go to the same
+person with no limit on volume.
+
+Logs that say "service X did this" without saying who asked or with what input.
+
+## Checklist
+
+- It is written which identity each agent uses (delegated, own or both) and who answers for it.
+- Read and write use different credentials, and no tool can delete without approval.
+- Tokens are short-lived and each service verifies their audience.
+- The model never receives the secret; tools use it server-side and filter their responses.
+- Runs with untrusted content in context drop their write actions to a lower level.
+- The model that decides and the component that executes are separate, and the boundary is deterministic.
+- Approvals show the exact action, expire, and are requested again if the arguments change.
+- Every action with effect is logged with who requested it, who approved it and its result.
+- A kill procedure exists and has been tested, with delegation revocation and key rotation.
+
+## Sources
+
+Consulted in October 2026.
+
+- Anthropic, [Configure permissions](https://code.claude.com/docs/en/permissions): approval levels by tool type and permission rules.
+- Anthropic, [Choose a permission mode](https://code.claude.com/docs/en/permission-modes): permission modes of a session.
+- Anthropic, [Hooks reference](https://code.claude.com/docs/en/hooks): `PreToolUse` exit codes, `permissionDecision` and behavior on failure or timeout.
+- Model Context Protocol, [Authorization (2025-06-18)](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization): resource metadata and the `resource` parameter.
+- RFC 6749, [The OAuth 2.0 Authorization Framework](https://www.rfc-editor.org/rfc/rfc6749).
+- RFC 8693, [OAuth 2.0 Token Exchange](https://www.rfc-editor.org/rfc/rfc8693), January 2020: the `act` claim.
+- RFC 9728, [OAuth 2.0 Protected Resource Metadata](https://www.rfc-editor.org/rfc/rfc9728).
+- RFC 8707, [Resource Indicators for OAuth 2.0](https://www.rfc-editor.org/rfc/rfc8707).
+- GitHub, [Generating an installation access token for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app): one-hour lifetime.
+- Microsoft Learn, [Overview of agent identities in Microsoft Entra](https://learn.microsoft.com/en-us/entra/agent-id/identity-platform/agent-identities): agent identity, blueprint and sponsor.
+- OWASP, [LLM06:2025 Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/).
+- Simon Willison, [The lethal trifecta for AI agents](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), June 2025.
+
+Checked against the sources: the RFC and MCP specification references, the one-hour lifetime of GitHub
+installation tokens, the definition of the trifecta and the exit-code behavior of hooks. Author's
+judgment: the separation between proposing and executing, the rule of dropping a level when untrusted
+content is in context, and the order of decisions about identity. Field names in the example policy
+are illustrative and do not correspond to any specific product.

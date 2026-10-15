@@ -1,0 +1,244 @@
+---
+title: 'Architecture with AI: what to bet on, what to watch'
+description: 'A forward look at 2027 to decide today: verified trends, labeled hypotheses, review signals and reversible decisions.'
+category: tendencias
+tags:
+  - ia
+  - prospectiva
+  - agentes
+  - interoperabilidad
+  - regulacion
+order: 14
+roadmap:
+  id: ia
+  stage: panorama
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A horizon in three bands: what is observable, the hypothesis, what is reversible today'
+---
+
+# Architecture with AI: what to bet on, what to watch
+
+Nobody knows what AI will look like in 2027. What we do know is what can already be measured,
+what is a reasonable assumption, and which decisions can be undone if the assumption fails. This
+article keeps those three layers apart. The thesis is simple: **bet heavily only on what is
+observable, treat hypotheses as hypotheses with signals that confirm or disprove them, and take
+today the reversible decisions that leave room to correct course**.
+
+This is not an article of predictions. Every factual claim comes with a source and a date; every
+assumption is labeled as one. [Lock-in](/docs/casado-a-un-proveedor) and
+[control of autonomy](/docs/controlar-la-ia-gobierno-y-autonomia) already have their own articles,
+so here we look at what changes on the horizon and how to decide without depending on it.
+
+<Callout tone="info" title="Cut-off date">
+  The figures are from October 2026. Several come from analyst reports or from the providers
+  themselves, and that is noted when it applies. Before deciding on a number, open the original
+  source: figures in this field go stale within months.
+</Callout>
+
+## Why predicting is not enough
+
+A strategy that depends on one concrete prediction ("in 2027 agents will do X") fails twice: if
+the prediction is wrong, and if, even when right, it arrives on a different schedule. A strategy
+that separates what is already true from what is likely can move without being rewritten.
+
+There is a common trap: confusing the speed of a phenomenon with its destination. Cost per
+capability falling very fast says nothing about whether the same providers will still be around,
+nor whether an organization's total spend will fall. It is worth reading every trend with that
+distinction in mind.
+
+## What can already be verified
+
+### Agents in production, with more caution than enthusiasm
+
+As the author's judgment, agentic AI projects tend to stall for three reasons: rising costs, unclear
+business value and insufficient risk controls. This is a reading frame, not a figure: the article
+cites no cancellation forecast, because the analyst's primary source could not be opened.
+
+What is observable is protocol adoption and the existence of deployments, covered in the next
+sections.
+
+### Interoperability protocols: MCP and A2A
+
+- **MCP (Model Context Protocol).** Anthropic donated it on 9 December 2025 to the Agentic AI
+  Foundation, a foundation co-founded by Anthropic, Block and OpenAI.
+  According to the announcement itself, there are more than 10,000 active public MCP servers and
+  more than 97 million monthly downloads of the Python and TypeScript SDKs. These are figures from
+  the protocol's own provider.
+- **A2A (Agent2Agent).** According to a Linux Foundation press release dated 9 April 2026, its
+  specification now has version 1.0, the first stable one. The same release speaks
+  of more than 150 supporting organizations and production use across several sectors; these too
+  are claims from the promoters.
+
+What is verifiable is that interoperability is already governed beyond any single provider. What a
+protocol does **not** guarantee is that two tools are interchangeable: the schema is shared, but
+permissions, data and the meaning of each integration remain yours to define. That reading is the
+author's judgment.
+
+### Cost per capability falls; total spend not necessarily
+
+On 22 September 2026 Epoch AI published "The plunging price of thought". Its estimate: the cost of
+reaching a fixed performance level has fallen about 47% per quarter since 2023, roughly 13 times a
+year. It carries caveats that matter more than the headline:
+
+- Near the frontier the decline is much faster right after a level is first reached, and it slows
+  over time. According to its analysis across five benchmarks, the cost at state of the art falls
+  about 75 times a year and, two years later, about 4.7 times a year.
+- The calculation assumes users always pick the cheapest model for each task. Epoch notes
+  that real users do not switch models that often, so real savings would be smaller.
+
+Separately, on 5 October 2026 Epoch AI reported that coding-agent spending by OpenAI researchers,
+valued at API prices, is doubling roughly every month. This is an exponential fit to preliminary
+OpenAI data, with estimated doubling times of 27 to 34 days depending on the group. Putting both together, the reading we hold
+(author's judgment) is this: unit prices fall very fast, but if usage grows faster than efficiency,
+the bill goes up. Inference cost is covered in depth in [inference cost](/docs/costo-de-inferencia).
+
+### Regulation in motion: the European calendar
+
+The European Commission lists the current timeline of the AI Act:
+
+- Obligations for general-purpose AI models apply from 2 August 2025.
+- Transparency rules apply from August 2026.
+- The Digital Omnibus on AI entered into force on 27 July 2026, after a political agreement on 7
+  May. It postpones high-risk use cases in Annex III to 2 December 2027, and those in Annex I to 2
+  August 2028.
+
+The delay changes when compliance is required, not whether it is. A system that makes decisions
+about people (employment, credit, education) will have to demonstrate what it did, with which data,
+and who supervised it, and that evidence takes months to build.
+
+## Reasonable hypotheses, not verified
+
+The following are **assumptions**. Each has a signal that would confirm it and one that would
+disprove it; without those signals they are not useful for deciding.
+
+- **H1. Capability gets cheaper, but the frontier stays expensive.** The advantage stops being
+  access to a model and becomes having evaluations, data and processes that use it well. It
+  conflicts with the slower frontier decline Epoch describes, so it is not a certainty.
+- **H2. Protocols consolidate and the difficulty moves elsewhere.** The question will no longer be
+  which protocol to use, but who authorizes an agent, how it is identified across organizations and
+  how its actions with third-party tools are audited.
+- **H3. Agents take bounded, reversible tasks with human review.** Long tasks, those without clear
+  metrics or with a high cost of error will stay with people, and many projects will be abandoned
+  for lack of measurable value. It has no date of its own.
+- **H4. Traceability is required by contract before it is required by law.** Customers, especially
+  those operating in the EU, will ask for records of AI decisions in their tenders long before the
+  legal calendar obliges them to.
+
+## Signals that confirm or disprove each hypothesis
+
+| Hypothesis | Signal that would confirm it                                  | Signal that would disprove it                                    | Where to look                                  |
+| ---------- | ------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------- |
+| H1         | Cost per task drops two quarters in a row for your use case   | A new frontier model raises your cost per task with no real gain | Your cost-per-task series; Epoch AI data       |
+| H2         | Several large vendors implement MCP and A2A in their products | A new closed protocol displaces the open ones                    | Linux Foundation changelogs and press releases |
+| H3         | Agent cases in production with published value metrics        | Growing cancellations in analyst surveys                         | Analyst reports with explicit methodology      |
+| H4         | Tenders asking for decision traces with concrete clauses      | Customers who ask nothing about traceability for a year          | Your own tenders and those of your sector      |
+
+Two reading rules. First, one isolated signal decides nothing: look for the one that repeats across
+several quarters. Second, if the source is the vendor itself or an analyst who sells tools, weigh
+it accordingly.
+
+## Reversible decisions for today
+
+Reversibility is the central criterion for deciding under uncertainty. Decisions in this group share
+one property: if the hypothesis fails, correcting them costs weeks, not years.
+
+- **Your own layer between the application and the model provider.** A company interface with one
+  adapter per provider, and the most sensitive calls isolated. It is the typical example of
+  [portability by layers](/docs/casado-a-un-proveedor#portability-layer-by-layer).
+- **Your own versioned evaluations.** A set of real cases with acceptance criteria that runs every
+  time you change model or prompt. It serves every hypothesis, because it is what measures their
+  signals. See [continuous evaluation](/docs/rag-y-evaluacion-continua).
+- **Traces for every agent decision.** Inputs, tools invoked, model version and outcome, stored in a
+  format that does not depend on a specific dashboard. It is the basis of the audit regulation asks
+  for and of any future analysis.
+- **An inventory of data and permissions.** What data exists, who can let an agent use it, and with
+  what classification. It is paid once and works with any model.
+- **Open protocols at the edges.** Exposing your internal capabilities as MCP-compatible tools is a
+  thin wrapper that is easy to remove. It is a cheap choice, not a commitment to a vendor.
+
+## Bets worth postponing
+
+These decisions are hard to undo and depend on hypotheses not verified today. This does not mean
+avoiding them forever; it means making them once the signals have arrived.
+
+- **Multi-year consumption contracts with a single agent vendor**, especially if price or billing
+  model can change before the contract ends.
+- **Redesigning a whole process around one specific agent** without evaluations that show what
+  happens when that agent changes.
+- **Training or hosting your own model at scale** before you have the volume and evaluations to
+  justify it. The safe path goes through [taking a model to production](/docs/mlops-modelo-a-produccion)
+  before investing in infrastructure.
+- **Reorganizing roles or headcount** based on a forecast of task substitution. It is the most
+  expensive decision to reverse and the one with the fewest verified signals.
+
+## How to review the strategy every quarter
+
+A strategy with a horizon is not written once. It is reviewed at a fixed rhythm, with the same
+questions, so that changes show up as data rather than opinions.
+
+A hypothesis register is enough to start. This is an illustrative shape, not a mandatory template:
+
+```yaml
+# shape of a hypothesis register (illustrative)
+id: H1
+statement: cost per task at fixed performance keeps falling
+signal_confirms: cost per task drops two quarters in a row for our use case
+signal_disproves: a new frontier model with no gain and higher cost
+source: Epoch AI price data and our cost-per-task invoice
+review: 2027-Q1
+if_confirmed: route more tasks to the cheaper model
+if_disproved: keep the own layer and rewrite nothing
+```
+
+In each review, in order:
+
+1. Look at the signals for each hypothesis and update its status: confirmed, disproved or open.
+2. Review the reversible decisions: are they still cheap to change?
+3. Decide which postponed bet is activated, if any has met its condition.
+4. Record what changed and why, in the same format as an architecture decision
+   ([ADR](/docs/adr)).
+
+## When to bet heavily, and when not to
+
+Betting heavily makes sense when the use case has its own metrics, data you control and a low exit
+cost: the bet can be wrong, but the damage is bounded.
+
+It does not make sense when the key capability changes every quarter without evaluations that would
+detect it, when the dependency is contractual or about data, or when the decision affects people
+without a review mechanism. In those cases caution is not slowness: it is the cost of not being
+able to go back.
+
+## Common mistakes
+
+- **Presenting a forecast as a fact.** A figure from an analyst or a date from a regulatory calendar
+  is not a certainty about the market.
+- **Using secondary figures without opening the source.** Many AI figures circulate rewritten and
+  with variations. Cite the original, or say you could not consult it.
+- **Planning with today's price.** If cost per task changes every few months, an annual plan without
+  review is obsolete before it closes.
+- **Confusing unit cost with the invoice.** The first can fall while the second rises.
+- **Expecting the standard to solve governance.** A shared protocol does not define who authorizes,
+  what gets recorded or who answers for it.
+
+## Checklist
+
+- [ ] Every trend in the plan has a source and a date, and predictions are labeled as such.
+- [ ] Every hypothesis has a signal that confirms it and one that disproves it.
+- [ ] Reversible decisions (provider layer, evaluations, traces, data) are taken.
+- [ ] Postponed bets have a written condition for activation.
+- [ ] The quarterly review has an owner, a date and a change log.
+- [ ] Total cost (the invoice) is tracked alongside unit cost.
+- [ ] The regulatory calendar that applies to your systems is identified with dates.
+
+## Sources
+
+Consulted on 15 October 2026. Third-party figures are marked as such in the text.
+
+- [Anthropic: donating the Model Context Protocol and establishing the Agentic AI Foundation (9 December 2025)](https://anthropic.com/news/donating-the-model-context-protocol-and-establishing-of-the-agentic-ai-foundation)
+- [Linux Foundation: A2A protocol surpasses 150 organizations (9 April 2026)](https://www.linuxfoundation.org/press/a2a-protocol-surpasses-150-organizations-lands-in-major-cloud-platforms-and-sees-enterprise-production-use-in-first-year)
+- [A2A Protocol: specification and documentation](https://a2a-protocol.org/latest/)
+- [Epoch AI: The plunging price of thought (22 September 2026)](https://epoch.ai/publications/the-plunging-price-of-thought)
+- [Epoch AI: coding-agent spending by OpenAI researchers (5 October 2026)](https://epoch.ai/data-insights/openai-coding-agent-spending)
+- [European Commission: regulatory framework for AI (calendar and Digital Omnibus)](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai)

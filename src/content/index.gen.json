@@ -3458,6 +3458,195 @@
     },
     {
       "category": "diseno",
+      "description": "Cuándo un agente con buenas herramientas basta, qué cuesta cada enlace de un sistema multiagente y cómo diseñar contratos, trazas y límites entre agentes.",
+      "figureCaption": "Un supervisor reparte a agentes con contextos separados, y cada enlace cuesta",
+      "order": 10,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 70
+      },
+      "tags": [
+        "agentes",
+        "multiagente",
+        "coordinacion",
+        "contratos",
+        "trazas"
+      ],
+      "title": "Multiagente: cuándo un agente basta",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "multiagente-cuándo-un-agente-basta",
+          "level": 1,
+          "text": "Multiagente: cuándo un agente basta"
+        },
+        {
+          "id": "un-agente-con-buenas-herramientas-suele-bastar",
+          "level": 2,
+          "text": "Un agente con buenas herramientas suele bastar"
+        },
+        {
+          "id": "cinco-patrones-de-coordinación",
+          "level": 2,
+          "text": "Cinco patrones de coordinación"
+        },
+        {
+          "id": "lo-que-cuesta-cada-enlace",
+          "level": 2,
+          "text": "Lo que cuesta cada enlace"
+        },
+        {
+          "id": "cuándo-sí-se-justifica",
+          "level": 2,
+          "text": "Cuándo sí se justifica"
+        },
+        {
+          "id": "contratos-entre-agentes",
+          "level": 2,
+          "text": "Contratos entre agentes"
+        },
+        {
+          "id": "trazas-límites-y-presupuesto",
+          "level": 2,
+          "text": "Trazas, límites y presupuesto"
+        },
+        {
+          "id": "ejemplo-trabajado-un-asistente-de-soporte",
+          "level": 2,
+          "text": "Ejemplo trabajado: un asistente de soporte"
+        },
+        {
+          "id": "cuándo-no-usar-varios-agentes",
+          "level": 2,
+          "text": "Cuándo no usar varios agentes"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/multiagente-cuando-un-agente-basta",
+      "slug": "multiagente-cuando-un-agente-basta"
+    },
+    {
+      "category": "diseno",
+      "description": "Cómo organizar el árbol de un repositorio grande para que los límites entre módulos sean reales: dominio, API pública, reglas de dependencia y propiedad.",
+      "figureCaption": "Cada módulo oculta lo suyo: solo sus puertas cruzan la frontera",
+      "order": 11,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 60
+      },
+      "tags": [
+        "monorepo",
+        "boundaries",
+        "dependencies",
+        "modularity",
+        "codeowners"
+      ],
+      "title": "Arquitectura de archivos para repos grandes",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "arquitectura-de-archivos-para-repos-grandes",
+          "level": 1,
+          "text": "Arquitectura de archivos para repos grandes"
+        },
+        {
+          "id": "dos-ejes-para-organizar-por-dominio-o-por-capa",
+          "level": 2,
+          "text": "Dos ejes para organizar: por dominio o por capa"
+        },
+        {
+          "id": "qué-hace-que-una-frontera-sea-real",
+          "level": 2,
+          "text": "Qué hace que una frontera sea real"
+        },
+        {
+          "id": "barriles-cómodos-pero-con-costos",
+          "level": 3,
+          "text": "Barriles: cómodos, pero con costos"
+        },
+        {
+          "id": "reglas-de-dependencia-que-una-herramienta-hace-cumplir",
+          "level": 2,
+          "text": "Reglas de dependencia que una herramienta hace cumplir"
+        },
+        {
+          "id": "ciclos-y-medición-del-grafo",
+          "level": 2,
+          "text": "Ciclos y medición del grafo"
+        },
+        {
+          "id": "tamaño-umbrales-por-archivo-y-por-módulo",
+          "level": 2,
+          "text": "Tamaño: umbrales por archivo y por módulo"
+        },
+        {
+          "id": "propiedad-con-codeowners",
+          "level": 2,
+          "text": "Propiedad con CODEOWNERS"
+        },
+        {
+          "id": "código-generado-frente-a-código-escrito-a-mano",
+          "level": 2,
+          "text": "Código generado frente a código escrito a mano"
+        },
+        {
+          "id": "por-qué-la-disposición-afecta-a-la-caché-y-al-build-incremental",
+          "level": 2,
+          "text": "Por qué la disposición afecta a la caché y al build incremental"
+        },
+        {
+          "id": "migrar-un-árbol-desordenado-sin-parar-la-entrega",
+          "level": 2,
+          "text": "Migrar un árbol desordenado sin parar la entrega"
+        },
+        {
+          "id": "cómo-lo-hace-este-repositorio",
+          "level": 2,
+          "text": "Cómo lo hace este repositorio"
+        },
+        {
+          "id": "cuándo-no-y-errores-frecuentes",
+          "level": 2,
+          "text": "Cuándo no y errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 15,
+      "route": "/es/docs/arquitectura-de-archivos-repos-grandes",
+      "slug": "arquitectura-de-archivos-repos-grandes"
+    },
+    {
+      "category": "diseno",
       "description": "Timeouts, plazos, reintentos con backoff y jitter, circuit breaker, bulkheads y deslastre de carga para contener fallos parciales y medirlos.",
       "figureCaption": "Una llamada agota su timeout, reintenta con jitter y el circuito se abre",
       "order": 11,
@@ -3747,6 +3936,98 @@
     },
     {
       "category": "diseno",
+      "description": "Cómo evolucionar eventos sin romper consumidores: el esquema como contrato, compatibilidad hacia atrás y hacia adelante, versionado y deprecación medida.",
+      "figureCaption": "Dos versiones de un evento conviven en el canal y el consumidor las lee ambas",
+      "order": 12,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 90
+      },
+      "tags": [
+        "eventos",
+        "contratos",
+        "esquemas",
+        "versionado",
+        "kafka"
+      ],
+      "title": "Contratos de eventos versionados y compatibles",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "contratos-de-eventos-versionados-y-compatibles",
+          "level": 1,
+          "text": "Contratos de eventos versionados y compatibles"
+        },
+        {
+          "id": "el-evento-como-contrato",
+          "level": 2,
+          "text": "El evento como contrato"
+        },
+        {
+          "id": "esquema-en-un-registro-y-verificado-en-ci",
+          "level": 2,
+          "text": "Esquema en un registro y verificado en CI"
+        },
+        {
+          "id": "qué-cambios-son-seguros",
+          "level": 2,
+          "text": "Qué cambios son seguros"
+        },
+        {
+          "id": "versionar-el-evento-o-el-tópico",
+          "level": 2,
+          "text": "Versionar el evento o el tópico"
+        },
+        {
+          "id": "deprecación-doble-publicación-y-retirada-medida",
+          "level": 2,
+          "text": "Deprecación: doble publicación y retirada medida"
+        },
+        {
+          "id": "propiedad-del-evento",
+          "level": 2,
+          "text": "Propiedad del evento"
+        },
+        {
+          "id": "pruebas-de-contrato-entre-productor-y-consumidor",
+          "level": 2,
+          "text": "Pruebas de contrato entre productor y consumidor"
+        },
+        {
+          "id": "ejemplo-trabajado-un-pedido-que-gana-un-canal",
+          "level": 2,
+          "text": "Ejemplo trabajado: un pedido que gana un canal"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/contratos-de-eventos-versionados",
+      "slug": "contratos-de-eventos-versionados"
+    },
+    {
+      "category": "diseno",
       "description": "Método para escalar: requisitos, estimación de orden de magnitud, particiones y réplicas, aplicado a un acortador de URLs, un limitador de tasa y un feed.",
       "figureCaption": "Tráfico, servicios sin estado y particiones: el cuello de botella es la clave caliente",
       "order": 13,
@@ -3924,6 +4205,260 @@
     },
     {
       "category": "diseno",
+      "description": "Dónde se genera el HTML y cuándo: CSR, SSR, SSG, ISR, streaming e islands, con sus costes, criterios de elección y errores frecuentes.",
+      "figureCaption": "Una misma página en tres momentos: construida, en servidor y en el navegador",
+      "order": 13,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 70
+      },
+      "tags": [
+        "renderizado",
+        "ssr",
+        "isr",
+        "islands",
+        "hidratacion"
+      ],
+      "title": "Renderizado web: SSR, SSG, ISR e islands",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "renderizado-web-ssr-ssg-isr-e-islands",
+          "level": 1,
+          "text": "Renderizado web: SSR, SSG, ISR e islands"
+        },
+        {
+          "id": "tres-preguntas-antes-de-elegir",
+          "level": 2,
+          "text": "Tres preguntas antes de elegir"
+        },
+        {
+          "id": "las-estrategias-y-sus-costes",
+          "level": 2,
+          "text": "Las estrategias y sus costes"
+        },
+        {
+          "id": "csr-el-navegador-construye-la-página",
+          "level": 3,
+          "text": "CSR: el navegador construye la página"
+        },
+        {
+          "id": "ssr-el-servidor-genera-cada-respuesta",
+          "level": 3,
+          "text": "SSR: el servidor genera cada respuesta"
+        },
+        {
+          "id": "ssg-el-html-sale-del-build",
+          "level": 3,
+          "text": "SSG: el HTML sale del build"
+        },
+        {
+          "id": "isr-regenerar-en-segundo-plano",
+          "level": 3,
+          "text": "ISR: regenerar en segundo plano"
+        },
+        {
+          "id": "streaming-el-html-en-trozos",
+          "level": 3,
+          "text": "Streaming: el HTML en trozos"
+        },
+        {
+          "id": "hidratación-la-parte-que-se-paga-dos-veces",
+          "level": 2,
+          "text": "Hidratación: la parte que se paga dos veces"
+        },
+        {
+          "id": "islands-y-server-components",
+          "level": 2,
+          "text": "Islands y Server Components"
+        },
+        {
+          "id": "islands-html-por-defecto-interactividad-donde-haga-falta",
+          "level": 3,
+          "text": "Islands: HTML por defecto, interactividad donde haga falta"
+        },
+        {
+          "id": "server-components-código-que-nunca-llega-al-cliente",
+          "level": 3,
+          "text": "Server Components: código que nunca llega al cliente"
+        },
+        {
+          "id": "caché-en-el-borde-e-invalidación",
+          "level": 2,
+          "text": "Caché en el borde e invalidación"
+        },
+        {
+          "id": "criterios-de-decisión",
+          "level": 2,
+          "text": "Criterios de decisión"
+        },
+        {
+          "id": "un-caso-este-sitio",
+          "level": 2,
+          "text": "Un caso: este sitio"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 14,
+      "route": "/es/docs/renderizado-web-ssr-ssg-islands",
+      "slug": "renderizado-web-ssr-ssg-islands"
+    },
+    {
+      "category": "diseno",
+      "description": "Caso ilustrativo de un sistema de reservas: requisitos, fronteras, datos, integración, seguridad y evolución, con cada decisión y su alternativa.",
+      "figureCaption": "Mapa del sistema: fronteras, flujos y el primer servicio que se separa",
+      "order": 14,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 90
+      },
+      "tags": [
+        "caso-de-estudio",
+        "decisiones",
+        "arquitectura-evolutiva",
+        "sistemas-distribuidos",
+        "adr"
+      ],
+      "title": "Caso de estudio: un sistema de principio a fin",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "caso-de-estudio-un-sistema-de-principio-a-fin",
+          "level": 1,
+          "text": "Caso de estudio: un sistema de principio a fin"
+        },
+        {
+          "id": "el-sistema-y-sus-requisitos",
+          "level": 2,
+          "text": "El sistema y sus requisitos"
+        },
+        {
+          "id": "requisitos-funcionales",
+          "level": 3,
+          "text": "Requisitos funcionales"
+        },
+        {
+          "id": "atributos-de-calidad",
+          "level": 3,
+          "text": "Atributos de calidad"
+        },
+        {
+          "id": "dominio-y-fronteras",
+          "level": 2,
+          "text": "Dominio y fronteras"
+        },
+        {
+          "id": "estilo-inicial-monolito-modular",
+          "level": 2,
+          "text": "Estilo inicial: monolito modular"
+        },
+        {
+          "id": "cuándo-se-separa-el-primer-servicio",
+          "level": 3,
+          "text": "Cuándo se separa el primer servicio"
+        },
+        {
+          "id": "modelo-de-datos-y-almacenes",
+          "level": 2,
+          "text": "Modelo de datos y almacenes"
+        },
+        {
+          "id": "integración-llamadas-eventos-y-sagas",
+          "level": 2,
+          "text": "Integración: llamadas, eventos y sagas"
+        },
+        {
+          "id": "reserva-con-cobro-saga-orquestada",
+          "level": 3,
+          "text": "Reserva con cobro: saga orquestada"
+        },
+        {
+          "id": "outbox-en-la-frontera",
+          "level": 3,
+          "text": "Outbox en la frontera"
+        },
+        {
+          "id": "caché-y-colas",
+          "level": 2,
+          "text": "Caché y colas"
+        },
+        {
+          "id": "seguridad-e-identidad",
+          "level": 2,
+          "text": "Seguridad e identidad"
+        },
+        {
+          "id": "observabilidad-y-slo",
+          "level": 2,
+          "text": "Observabilidad y SLO"
+        },
+        {
+          "id": "despliegue-y-entrega-progresiva",
+          "level": 2,
+          "text": "Despliegue y entrega progresiva"
+        },
+        {
+          "id": "un-año-después-cuando-cambian-los-requisitos",
+          "level": 2,
+          "text": "Un año después: cuando cambian los requisitos"
+        },
+        {
+          "id": "tabla-de-decisiones",
+          "level": 2,
+          "text": "Tabla de decisiones"
+        },
+        {
+          "id": "adr-resumido",
+          "level": 2,
+          "text": "ADR resumido"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 20,
+      "route": "/es/docs/caso-estudio-sistema-completo",
+      "slug": "caso-estudio-sistema-completo"
+    },
+    {
+      "category": "diseno",
       "description": "Cómo diseñar un SaaS multi-tenant: modelos de aislamiento, identificación del tenant, Row-Level Security, vecino ruidoso, migraciones y medición de uso.",
       "figureCaption": "Pool y silo en un mismo sistema: la frontera de aislamiento separa a los tenants",
       "order": 14,
@@ -4089,6 +4624,103 @@
       "readingMinutes": 3,
       "route": "/es/docs/capas-no-son-arquitectura",
       "slug": "capas-no-son-arquitectura"
+    },
+    {
+      "category": "diseno",
+      "description": "Cómo modelar datos según cómo se leen y escriben: normalización, copias con dueño, relacional frente a documental y diseño guiado por consultas.",
+      "figureCaption": "Una entidad en piezas unidas por claves, o copiada en cada lectura",
+      "order": 15,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 70
+      },
+      "tags": [
+        "modelado-de-datos",
+        "normalizacion",
+        "desnormalizacion",
+        "bases-de-datos",
+        "diseno-guiado-por-consultas"
+      ],
+      "title": "Modelado de datos: normalizar o desnormalizar",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "modelado-de-datos-normalizar-o-desnormalizar",
+          "level": 1,
+          "text": "Modelado de datos: normalizar o desnormalizar"
+        },
+        {
+          "id": "conceptual-lógico-y-físico",
+          "level": 2,
+          "text": "Conceptual, lógico y físico"
+        },
+        {
+          "id": "entidades-relaciones-y-claves",
+          "level": 2,
+          "text": "Entidades, relaciones y claves"
+        },
+        {
+          "id": "normalizar-qué-anomalía-evitas",
+          "level": 2,
+          "text": "Normalizar: qué anomalía evitas"
+        },
+        {
+          "id": "desnormalizar-a-propósito",
+          "level": 2,
+          "text": "Desnormalizar a propósito"
+        },
+        {
+          "id": "quién-responde-del-desfase",
+          "level": 3,
+          "text": "Quién responde del desfase"
+        },
+        {
+          "id": "relacional-documental-y-clave-valor",
+          "level": 2,
+          "text": "Relacional, documental y clave-valor"
+        },
+        {
+          "id": "diseñar-desde-las-consultas",
+          "level": 2,
+          "text": "Diseñar desde las consultas"
+        },
+        {
+          "id": "índices-la-copia-que-mantiene-el-motor",
+          "level": 2,
+          "text": "Índices: la copia que mantiene el motor"
+        },
+        {
+          "id": "señales-de-que-el-modelo-está-mal",
+          "level": 2,
+          "text": "Señales de que el modelo está mal"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 14,
+      "route": "/es/docs/modelado-de-datos-normalizacion",
+      "slug": "modelado-de-datos-normalizacion"
     },
     {
       "category": "diseno",
@@ -6120,6 +6752,220 @@
     },
     {
       "category": "practicas",
+      "description": "Cómo evaluar un agente que actúa: trayectorias frente a resultado final, tareas con criterios verificables, jueces basados en modelos, varianza y evals en CI.",
+      "figureCaption": "Una trayectoria atraviesa una compuerta y un juez puntúa la traza completa",
+      "order": 10,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 50
+      },
+      "tags": [
+        "agentes",
+        "evaluacion",
+        "llm-as-judge",
+        "regresiones",
+        "trayectorias"
+      ],
+      "title": "Evaluar agentes: trayectorias, regresiones y jueces",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "evaluar-agentes-trayectorias-regresiones-y-jueces",
+          "level": 1,
+          "text": "Evaluar agentes: trayectorias, regresiones y jueces"
+        },
+        {
+          "id": "por-qué-no-basta-con-evaluar-la-respuesta",
+          "level": 2,
+          "text": "Por qué no basta con evaluar la respuesta"
+        },
+        {
+          "id": "vocabulario-mínimo",
+          "level": 2,
+          "text": "Vocabulario mínimo"
+        },
+        {
+          "id": "tipos-de-calificador",
+          "level": 2,
+          "text": "Tipos de calificador"
+        },
+        {
+          "id": "trayectoria-frente-a-resultado-final",
+          "level": 2,
+          "text": "Trayectoria frente a resultado final"
+        },
+        {
+          "id": "dataset-de-tareas-con-criterios-verificables",
+          "level": 2,
+          "text": "Dataset de tareas con criterios verificables"
+        },
+        {
+          "id": "métricas-tarea-completada-coste-pasos-y-seguridad",
+          "level": 2,
+          "text": "Métricas: tarea completada, coste, pasos y seguridad"
+        },
+        {
+          "id": "jueces-basados-en-modelos-cuándo-sirven",
+          "level": 2,
+          "text": "Jueces basados en modelos: cuándo sirven"
+        },
+        {
+          "id": "sesgos-conocidos",
+          "level": 3,
+          "text": "Sesgos conocidos"
+        },
+        {
+          "id": "calibrar-con-anotación-humana",
+          "level": 3,
+          "text": "Calibrar con anotación humana"
+        },
+        {
+          "id": "no-determinismo-repeticiones-y-varianza",
+          "level": 2,
+          "text": "No determinismo: repeticiones y varianza"
+        },
+        {
+          "id": "entornos-de-prueba-aislados",
+          "level": 2,
+          "text": "Entornos de prueba aislados"
+        },
+        {
+          "id": "evals-como-puerta-en-ci-y-regresiones-entre-versiones",
+          "level": 2,
+          "text": "Evals como puerta en CI y regresiones entre versiones"
+        },
+        {
+          "id": "cuándo-no-vale-la-pena-un-eval-complejo",
+          "level": 2,
+          "text": "Cuándo no vale la pena un eval complejo"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 14,
+      "route": "/es/docs/evaluar-agentes-trayectorias",
+      "slug": "evaluar-agentes-trayectorias"
+    },
+    {
+      "category": "practicas",
+      "description": "Qué identidad usa un agente, cómo delegar credenciales con alcance acotado, mínimo privilegio por acción, secretos fuera de su contexto y revocación.",
+      "figureCaption": "Un agente con llave por puerta: alcance mínimo y aprobación para lo arriesgado",
+      "order": 11,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 60
+      },
+      "tags": [
+        "identidad",
+        "permisos",
+        "minimo-privilegio",
+        "auditoria",
+        "prompt-injection"
+      ],
+      "title": "Identidad y permisos de agentes: privilegio y auditoría",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "identidad-y-permisos-de-agentes-privilegio-y-auditoría",
+          "level": 1,
+          "text": "Identidad y permisos de agentes: privilegio y auditoría"
+        },
+        {
+          "id": "un-agente-es-un-actor-no-humano",
+          "level": 2,
+          "text": "Un agente es un actor no humano"
+        },
+        {
+          "id": "qué-identidad-usa-el-agente",
+          "level": 2,
+          "text": "Qué identidad usa el agente"
+        },
+        {
+          "id": "cómo-se-delega-sin-copiar-secretos",
+          "level": 2,
+          "text": "Cómo se delega sin copiar secretos"
+        },
+        {
+          "id": "mínimo-privilegio-por-herramienta-y-por-acción",
+          "level": 2,
+          "text": "Mínimo privilegio por herramienta y por acción"
+        },
+        {
+          "id": "secretos-fuera-del-contexto-del-modelo",
+          "level": 2,
+          "text": "Secretos fuera del contexto del modelo"
+        },
+        {
+          "id": "prompt-injection-como-elevación-de-privilegios",
+          "level": 2,
+          "text": "Prompt injection como elevación de privilegios"
+        },
+        {
+          "id": "quién-propone-y-quién-ejecuta",
+          "level": 2,
+          "text": "Quién propone y quién ejecuta"
+        },
+        {
+          "id": "aprobación-de-acciones-de-alto-impacto",
+          "level": 2,
+          "text": "Aprobación de acciones de alto impacto"
+        },
+        {
+          "id": "auditoría-quién-pidió-qué",
+          "level": 2,
+          "text": "Auditoría: quién pidió qué"
+        },
+        {
+          "id": "revocación",
+          "level": 2,
+          "text": "Revocación"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 14,
+      "route": "/es/docs/identidad-y-permisos-de-agentes",
+      "slug": "identidad-y-permisos-de-agentes"
+    },
+    {
+      "category": "practicas",
       "description": "Cómo aplicar STRIDE a un diagrama de flujo de datos real: límites de confianza, las seis categorías de amenaza y un ejemplo completo de revisión.",
       "figureCaption": "Cada flujo que cruza un límite de confianza es una superficie de ataque",
       "order": 11,
@@ -6188,6 +7034,98 @@
       "readingMinutes": 4,
       "route": "/es/docs/modelado-de-amenazas-stride",
       "slug": "modelado-de-amenazas-stride"
+    },
+    {
+      "category": "practicas",
+      "description": "Cuando un modelo escribe el código, cambian la revisión, la propiedad y la deuda: qué medir, quién responde por un cambio y cómo dejar criterio.",
+      "figureCaption": "Lo generado cruza la revisión o se acumula como deuda",
+      "order": 12,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 60
+      },
+      "tags": [
+        "codigo-generado-ia",
+        "revision-de-codigo",
+        "deuda-tecnica",
+        "propiedad-del-codigo",
+        "pull-requests"
+      ],
+      "title": "Código generado por IA: revisión, propiedad y deuda",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "código-generado-por-ia-revisión-propiedad-y-deuda",
+          "level": 1,
+          "text": "Código generado por IA: revisión, propiedad y deuda"
+        },
+        {
+          "id": "cuando-el-volumen-supera-la-revisión",
+          "level": 2,
+          "text": "Cuando el volumen supera la revisión"
+        },
+        {
+          "id": "qué-dicen-los-datos-y-qué-no",
+          "level": 2,
+          "text": "Qué dicen los datos (y qué no)"
+        },
+        {
+          "id": "propiedad-quién-responde-por-un-cambio-generado",
+          "level": 2,
+          "text": "Propiedad: quién responde por un cambio generado"
+        },
+        {
+          "id": "tests-y-contratos-como-criterio-de-aceptación",
+          "level": 2,
+          "text": "Tests y contratos como criterio de aceptación"
+        },
+        {
+          "id": "tamaño-del-pr-la-unidad-de-revisión",
+          "level": 2,
+          "text": "Tamaño del PR: la unidad de revisión"
+        },
+        {
+          "id": "señales-medibles",
+          "level": 2,
+          "text": "Señales medibles"
+        },
+        {
+          "id": "duplicación-y-abstracciones-prematuras",
+          "level": 2,
+          "text": "Duplicación y abstracciones prematuras"
+        },
+        {
+          "id": "dejar-criterio-escrito-adr-y-convenciones",
+          "level": 2,
+          "text": "Dejar criterio escrito: ADR y convenciones"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no-aceptar-código-generado",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no aceptar código generado"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/codigo-generado-por-ia",
+      "slug": "codigo-generado-por-ia"
     },
     {
       "category": "practicas",
@@ -6265,6 +7203,93 @@
       "readingMinutes": 13,
       "route": "/es/docs/privacidad-por-diseno-gdpr",
       "slug": "privacidad-por-diseno-gdpr"
+    },
+    {
+      "category": "practicas",
+      "description": "Por qué el código que no se puede borrar acumula coste, y cómo diseñar límites, flags con caducidad y retiradas por fases que se pueden revertir.",
+      "figureCaption": "Un módulo se retira en tres fases; el registro de uso confirma que nadie lo lee",
+      "order": 13,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 70
+      },
+      "tags": [
+        "retirada",
+        "deuda-tecnica",
+        "codigo-muerto",
+        "feature-flags",
+        "deprecacion"
+      ],
+      "title": "Diseñar para borrar: retirar código sin miedo",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "diseñar-para-borrar-retirar-código-sin-miedo",
+          "level": 1,
+          "text": "Diseñar para borrar: retirar código sin miedo"
+        },
+        {
+          "id": "por-qué-borrar-cuesta-más-de-lo-que-parece",
+          "level": 2,
+          "text": "Por qué borrar cuesta más de lo que parece"
+        },
+        {
+          "id": "diseñar-para-retirar-desde-el-principio",
+          "level": 2,
+          "text": "Diseñar para retirar desde el principio"
+        },
+        {
+          "id": "señales-de-código-muerto-y-cómo-medirlo",
+          "level": 2,
+          "text": "Señales de código muerto y cómo medirlo"
+        },
+        {
+          "id": "flags-que-caducan",
+          "level": 2,
+          "text": "Flags que caducan"
+        },
+        {
+          "id": "retirada-por-fases-dejar-de-escribir-dejar-de-leer-borrar",
+          "level": 2,
+          "text": "Retirada por fases: dejar de escribir, dejar de leer, borrar"
+        },
+        {
+          "id": "servicios-y-apis-deprecar-con-métricas-antes-de-apagar",
+          "level": 2,
+          "text": "Servicios y APIs: deprecar con métricas antes de apagar"
+        },
+        {
+          "id": "por-qué-el-miedo-a-borrar-es-un-problema-de-arquitectura",
+          "level": 2,
+          "text": "Por qué el miedo a borrar es un problema de arquitectura"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/disenar-para-borrar",
+      "slug": "disenar-para-borrar"
     },
     {
       "category": "practicas",
@@ -6424,6 +7449,608 @@
       "readingMinutes": 13,
       "route": "/es/docs/gestion-secretos-claves",
       "slug": "gestion-secretos-claves"
+    },
+    {
+      "category": "practicas",
+      "description": "Guía para arquitectos: qué inventario, firmas y procedencia exigir a tu software, cómo fijar dependencias y qué nivel SLSA apuntar, a octubre de 2026.",
+      "figureCaption": "Cada eslabón firma lo que produce; se comprueba todo antes de desplegar",
+      "order": 15,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 70
+      },
+      "tags": [
+        "sbom",
+        "cadena-de-suministro",
+        "slsa",
+        "dependencias",
+        "firmas"
+      ],
+      "title": "Cadena de suministro: SBOM, firmas y SLSA",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "cadena-de-suministro-sbom-firmas-y-slsa",
+          "level": 1,
+          "text": "Cadena de suministro: SBOM, firmas y SLSA"
+        },
+        {
+          "id": "cinco-eslabones-cinco-superficies",
+          "level": 2,
+          "text": "Cinco eslabones, cinco superficies"
+        },
+        {
+          "id": "sbom-un-inventario-no-una-garantía",
+          "level": 2,
+          "text": "SBOM: un inventario, no una garantía"
+        },
+        {
+          "id": "dependencias-fijar-revisar-desconfiar",
+          "level": 2,
+          "text": "Dependencias: fijar, revisar, desconfiar"
+        },
+        {
+          "id": "construcción-reproducible-y-efímera",
+          "level": 2,
+          "text": "Construcción reproducible y efímera"
+        },
+        {
+          "id": "firmas-y-procedencia-qué-prueba-cada-una",
+          "level": 2,
+          "text": "Firmas y procedencia: qué prueba cada una"
+        },
+        {
+          "id": "slsa-niveles-y-cómo-elegir-uno",
+          "level": 2,
+          "text": "SLSA: niveles y cómo elegir uno"
+        },
+        {
+          "id": "cuando-una-dependencia-tiene-una-vulnerabilidad",
+          "level": 2,
+          "text": "Cuando una dependencia tiene una vulnerabilidad"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 10,
+      "route": "/es/docs/cadena-de-suministro-software",
+      "slug": "cadena-de-suministro-software"
+    },
+    {
+      "category": "practicas",
+      "description": "Cómo la distancia entre el código y el tronco decide el coste de integrar: trunk-based frente a ramas largas, flags que caducan, tronco sano y qué medir.",
+      "figureCaption": "Un tronco con integraciones diarias frente a una rama que vuelve con conflicto",
+      "order": 16,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 80
+      },
+      "tags": [
+        "ramas",
+        "trunk-based-development",
+        "integracion-continua",
+        "feature-flags",
+        "dora"
+      ],
+      "title": "Ramas y entrega continua: trunk-based frente a ramas largas",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "ramas-y-entrega-continua-trunk-based-frente-a-ramas-largas",
+          "level": 1,
+          "text": "Ramas y entrega continua: trunk-based frente a ramas largas"
+        },
+        {
+          "id": "qué-significa-cada-modelo",
+          "level": 2,
+          "text": "Qué significa cada modelo"
+        },
+        {
+          "id": "el-coste-de-integrar-tarde",
+          "level": 2,
+          "text": "El coste de integrar tarde"
+        },
+        {
+          "id": "ramas-de-corta-vida-y-revisión-rápida",
+          "level": 2,
+          "text": "Ramas de corta vida y revisión rápida"
+        },
+        {
+          "id": "flags-de-funcionalidad-desacoplar-despliegue-de-liberación",
+          "level": 2,
+          "text": "Flags de funcionalidad: desacoplar despliegue de liberación"
+        },
+        {
+          "id": "requisitos-de-un-tronco-sano",
+          "level": 2,
+          "text": "Requisitos de un tronco sano"
+        },
+        {
+          "id": "qué-medir",
+          "level": 2,
+          "text": "Qué medir"
+        },
+        {
+          "id": "cuándo-las-ramas-largas-siguen-teniendo-sentido",
+          "level": 2,
+          "text": "Cuándo las ramas largas siguen teniendo sentido"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 12,
+      "route": "/es/docs/ramas-y-entrega-continua",
+      "slug": "ramas-y-entrega-continua"
+    },
+    {
+      "category": "practicas",
+      "description": "Cómo probar la resiliencia con fallos inyectados de forma controlada: hipótesis, radio de impacto, condición de parada y game days con los equipos.",
+      "figureCaption": "Un fallo inyectado en un solo componente, dentro de un radio acotado y con parada",
+      "order": 17,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 80
+      },
+      "tags": [
+        "chaos-engineering",
+        "game-days",
+        "resiliencia",
+        "slo",
+        "sre"
+      ],
+      "title": "Chaos engineering y game days: fallar a propósito",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "chaos-engineering-y-game-days-fallar-a-propósito",
+          "level": 1,
+          "text": "Chaos engineering y game days: fallar a propósito"
+        },
+        {
+          "id": "qué-es-y-qué-no-es",
+          "level": 2,
+          "text": "Qué es y qué no es"
+        },
+        {
+          "id": "los-principios-en-la-práctica",
+          "level": 2,
+          "text": "Los principios, en la práctica"
+        },
+        {
+          "id": "estado-estable-sli-slo-y-presupuesto-de-error",
+          "level": 2,
+          "text": "Estado estable, SLI, SLO y presupuesto de error"
+        },
+        {
+          "id": "tipos-de-fallo-que-merece-la-pena-inyectar",
+          "level": 2,
+          "text": "Tipos de fallo que merece la pena inyectar"
+        },
+        {
+          "id": "diseñar-un-experimento",
+          "level": 2,
+          "text": "Diseñar un experimento"
+        },
+        {
+          "id": "game-days-ensayar-a-las-personas",
+          "level": 2,
+          "text": "Game days: ensayar a las personas"
+        },
+        {
+          "id": "game-day-frente-a-simulacro-de-recuperación",
+          "level": 3,
+          "text": "Game day frente a simulacro de recuperación"
+        },
+        {
+          "id": "herramientas",
+          "level": 2,
+          "text": "Herramientas"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 10,
+      "route": "/es/docs/chaos-engineering-game-days",
+      "slug": "chaos-engineering-game-days"
+    },
+    {
+      "category": "practicas",
+      "description": "Cuánta capacidad necesita un sistema y cómo comprobarlo con cargas parecidas al tráfico real: modelo de carga, tipos de prueba, errores de medición y margen.",
+      "figureCaption": "Latencia p99 frente a carga: el objetivo va con margen antes del codo de saturación",
+      "order": 18,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 80
+      },
+      "tags": [
+        "pruebas-de-carga",
+        "capacidad",
+        "latencia-de-cola",
+        "dimensionamiento",
+        "escalado-automatico"
+      ],
+      "title": "Capacidad y pruebas de carga: medir con cargas reales",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "capacidad-y-pruebas-de-carga-medir-con-cargas-reales",
+          "level": 1,
+          "text": "Capacidad y pruebas de carga: medir con cargas reales"
+        },
+        {
+          "id": "qué-pregunta-responde-cada-medición",
+          "level": 2,
+          "text": "Qué pregunta responde cada medición"
+        },
+        {
+          "id": "el-modelo-de-carga-lo-que-realmente-llega",
+          "level": 2,
+          "text": "El modelo de carga: lo que realmente llega"
+        },
+        {
+          "id": "tipos-de-prueba-y-cuándo-usar-cada-una",
+          "level": 2,
+          "text": "Tipos de prueba y cuándo usar cada una"
+        },
+        {
+          "id": "errores-de-medición-que-invalidan-el-resultado",
+          "level": 2,
+          "text": "Errores de medición que invalidan el resultado"
+        },
+        {
+          "id": "el-generador-de-carga-es-el-cuello-de-botella",
+          "level": 3,
+          "text": "El generador de carga es el cuello de botella"
+        },
+        {
+          "id": "datos-de-prueba-que-no-se-parecen-a-producción",
+          "level": 3,
+          "text": "Datos de prueba que no se parecen a producción"
+        },
+        {
+          "id": "cachés-calientes-o-frías",
+          "level": 3,
+          "text": "Cachés calientes o frías"
+        },
+        {
+          "id": "medias-que-esconden-colas",
+          "level": 3,
+          "text": "Medias que esconden colas"
+        },
+        {
+          "id": "capacidad-cuánto-hay-y-cuánto-debe-haber",
+          "level": 2,
+          "text": "Capacidad: cuánto hay y cuánto debe haber"
+        },
+        {
+          "id": "capacidad-por-instancia-y-punto-de-saturación",
+          "level": 3,
+          "text": "Capacidad por instancia y punto de saturación"
+        },
+        {
+          "id": "regla-de-dimensionamiento-con-margen",
+          "level": 3,
+          "text": "Regla de dimensionamiento con margen"
+        },
+        {
+          "id": "escalado-automático-con-límites",
+          "level": 3,
+          "text": "Escalado automático con límites"
+        },
+        {
+          "id": "presupuesto-el-coste-de-una-petición",
+          "level": 3,
+          "text": "Presupuesto: el coste de una petición"
+        },
+        {
+          "id": "entornos-de-prueba-y-cómo-acercarse-a-producción-sin-riesgo",
+          "level": 2,
+          "text": "Entornos de prueba y cómo acercarse a producción sin riesgo"
+        },
+        {
+          "id": "de-resultados-a-decisiones",
+          "level": 2,
+          "text": "De resultados a decisiones"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 17,
+      "route": "/es/docs/capacidad-y-pruebas-de-carga",
+      "slug": "capacidad-y-pruebas-de-carga"
+    },
+    {
+      "category": "practicas",
+      "description": "Cómo seguir una petición entre servicios con trazas, qué datos hacen útil cada tramo y cómo muestrear y gobernar la telemetría con OpenTelemetry.",
+      "figureCaption": "Una petición deja un hilo de tramos con el mismo trace-id",
+      "order": 19,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 90
+      },
+      "tags": [
+        "trazas",
+        "opentelemetry",
+        "observabilidad",
+        "muestreo",
+        "w3c-trace-context"
+      ],
+      "title": "Trazas distribuidas con OpenTelemetry",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "trazas-distribuidas-con-opentelemetry",
+          "level": 1,
+          "text": "Trazas distribuidas con OpenTelemetry"
+        },
+        {
+          "id": "traza-tramo-y-contexto",
+          "level": 2,
+          "text": "Traza, tramo y contexto"
+        },
+        {
+          "id": "cómo-viaja-el-contexto-w3c-trace-context",
+          "level": 2,
+          "text": "Cómo viaja el contexto: W3C Trace Context"
+        },
+        {
+          "id": "opentelemetry-instrumentar-una-vez-elegir-backend-después",
+          "level": 2,
+          "text": "OpenTelemetry: instrumentar una vez, elegir backend después"
+        },
+        {
+          "id": "instrumentación-automática-frente-a-manual",
+          "level": 2,
+          "text": "Instrumentación automática frente a manual"
+        },
+        {
+          "id": "qué-nombrar-y-qué-no",
+          "level": 2,
+          "text": "Qué nombrar y qué no"
+        },
+        {
+          "id": "muestreo-decidir-al-principio-o-al-final",
+          "level": 2,
+          "text": "Muestreo: decidir al principio o al final"
+        },
+        {
+          "id": "correlación-trazas-métricas-y-logs",
+          "level": 2,
+          "text": "Correlación: trazas, métricas y logs"
+        },
+        {
+          "id": "señales-de-mala-instrumentación",
+          "level": 2,
+          "text": "Señales de mala instrumentación"
+        },
+        {
+          "id": "gobierno-convenciones-y-presupuesto-de-telemetría",
+          "level": 2,
+          "text": "Gobierno: convenciones y presupuesto de telemetría"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 12,
+      "route": "/es/docs/trazas-distribuidas-opentelemetry",
+      "slug": "trazas-distribuidas-opentelemetry"
+    },
+    {
+      "category": "practicas",
+      "description": "Infraestructura como código revisable: estado remoto con bloqueo, drift, módulos versionados, permisos mínimos y GitOps frente a un pipeline que empuja.",
+      "figureCaption": "Un bucle compara el repositorio con el entorno y corrige la desviación",
+      "order": 20,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 70
+      },
+      "tags": [
+        "infraestructura-como-codigo",
+        "gitops",
+        "terraform",
+        "drift",
+        "estado"
+      ],
+      "title": "Infraestructura como código y GitOps",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "infraestructura-como-código-y-gitops",
+          "level": 1,
+          "text": "Infraestructura como código y GitOps"
+        },
+        {
+          "id": "qué-significa-tratar-la-infraestructura-como-código",
+          "level": 2,
+          "text": "Qué significa tratar la infraestructura como código"
+        },
+        {
+          "id": "el-estado-dónde-vive-y-quién-puede-tocarlo",
+          "level": 2,
+          "text": "El estado: dónde vive y quién puede tocarlo"
+        },
+        {
+          "id": "almacenamiento-remoto-con-bloqueo",
+          "level": 3,
+          "text": "Almacenamiento remoto con bloqueo"
+        },
+        {
+          "id": "el-estado-guarda-secretos",
+          "level": 3,
+          "text": "El estado guarda secretos"
+        },
+        {
+          "id": "acoplar-stacks-por-el-estado-es-acoplar-equipos",
+          "level": 3,
+          "text": "Acoplar stacks por el estado es acoplar equipos"
+        },
+        {
+          "id": "separar-entornos-sin-duplicar-el-código",
+          "level": 2,
+          "text": "Separar entornos sin duplicar el código"
+        },
+        {
+          "id": "módulos-y-su-versionado",
+          "level": 2,
+          "text": "Módulos y su versionado"
+        },
+        {
+          "id": "drift-lo-declarado-frente-a-lo-real",
+          "level": 2,
+          "text": "Drift: lo declarado frente a lo real"
+        },
+        {
+          "id": "planificar-antes-de-aplicar",
+          "level": 2,
+          "text": "Planificar antes de aplicar"
+        },
+        {
+          "id": "permisos-mínimos-para-quien-aplica",
+          "level": 2,
+          "text": "Permisos mínimos para quien aplica"
+        },
+        {
+          "id": "gitops-el-reconciliador-frente-al-pipeline-que-empuja",
+          "level": 2,
+          "text": "GitOps: el reconciliador frente al pipeline que empuja"
+        },
+        {
+          "id": "riesgos-que-conviene-vigilar",
+          "level": 2,
+          "text": "Riesgos que conviene vigilar"
+        },
+        {
+          "id": "cuándo-no-compensa",
+          "level": 2,
+          "text": "Cuándo no compensa"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/infraestructura-como-codigo-gitops",
+      "slug": "infraestructura-como-codigo-gitops"
     },
     {
       "category": "tendencias",
@@ -7139,6 +8766,608 @@
       "readingMinutes": 13,
       "route": "/es/docs/edge-computing-cdn",
       "slug": "edge-computing-cdn"
+    },
+    {
+      "category": "tendencias",
+      "description": "Qué estandarizan MCP y A2A, qué ganas y qué pagas al adoptarlos, y cuándo exponer una herramienta por MCP en lugar de una API normal.",
+      "figureCaption": "Un agente usa conectores MCP con herramientas y habla A2A con otro agente",
+      "order": 9,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 40
+      },
+      "tags": [
+        "mcp",
+        "a2a",
+        "agentes",
+        "interoperabilidad",
+        "seguridad"
+      ],
+      "title": "MCP y A2A: integrar herramientas y agentes",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "mcp-y-a2a-integrar-herramientas-y-agentes",
+          "level": 1,
+          "text": "MCP y A2A: integrar herramientas y agentes"
+        },
+        {
+          "id": "dos-problemas-distintos",
+          "level": 2,
+          "text": "Dos problemas distintos"
+        },
+        {
+          "id": "mcp-qué-estandariza",
+          "level": 2,
+          "text": "MCP: qué estandariza"
+        },
+        {
+          "id": "la-revisión-2026-07-28",
+          "level": 3,
+          "text": "La revisión 2026-07-28"
+        },
+        {
+          "id": "un-contrato-que-se-ejecuta-fuera-de-tu-control",
+          "level": 3,
+          "text": "Un contrato que se ejecuta fuera de tu control"
+        },
+        {
+          "id": "a2a-delegación-entre-agentes",
+          "level": 2,
+          "text": "A2A: delegación entre agentes"
+        },
+        {
+          "id": "gobernanza-y-estado-de-adopción",
+          "level": 3,
+          "text": "Gobernanza y estado de adopción"
+        },
+        {
+          "id": "qué-ganas-y-qué-pagas",
+          "level": 2,
+          "text": "Qué ganas y qué pagas"
+        },
+        {
+          "id": "exponer-por-mcp-o-usar-una-api-normal",
+          "level": 2,
+          "text": "Exponer por MCP o usar una API normal"
+        },
+        {
+          "id": "contratos-descripción-versionado-y-permisos",
+          "level": 2,
+          "text": "Contratos: descripción, versionado y permisos"
+        },
+        {
+          "id": "seguridad-qué-mirar-antes-de-conectar-un-servidor",
+          "level": 2,
+          "text": "Seguridad: qué mirar antes de conectar un servidor"
+        },
+        {
+          "id": "cuándo-no-conviene-adoptarlos-todavía",
+          "level": 2,
+          "text": "Cuándo no conviene adoptarlos todavía"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/mcp-y-a2a-integracion-de-herramientas",
+      "slug": "mcp-y-a2a-integracion-de-herramientas"
+    },
+    {
+      "category": "tendencias",
+      "description": "Cómo tratar el contexto de un agente como recurso escaso: qué entra en la ventana, cuándo compactar, qué guardar como memoria y cómo medir que funciona.",
+      "figureCaption": "Una ventana de contexto con capas de memoria y un filtro que decide qué entra",
+      "order": 10,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "produccion",
+        "step": 40
+      },
+      "tags": [
+        "context-engineering",
+        "memoria",
+        "agentes",
+        "contexto",
+        "ia"
+      ],
+      "title": "Context engineering y memoria de agentes",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "context-engineering-y-memoria-de-agentes",
+          "level": 1,
+          "text": "Context engineering y memoria de agentes"
+        },
+        {
+          "id": "el-contexto-es-un-recurso-escaso",
+          "level": 2,
+          "text": "El contexto es un recurso escaso"
+        },
+        {
+          "id": "qué-entra-en-la-ventana",
+          "level": 2,
+          "text": "Qué entra en la ventana"
+        },
+        {
+          "id": "más-contexto-no-siempre-da-mejores-resultados",
+          "level": 2,
+          "text": "Más contexto no siempre da mejores resultados"
+        },
+        {
+          "id": "compactar-sin-perder-lo-que-importa",
+          "level": 2,
+          "text": "Compactar sin perder lo que importa"
+        },
+        {
+          "id": "tres-memorias-tres-políticas",
+          "level": 2,
+          "text": "Tres memorias, tres políticas"
+        },
+        {
+          "id": "qué-guardar-y-quién-lo-escribe",
+          "level": 2,
+          "text": "Qué guardar y quién lo escribe"
+        },
+        {
+          "id": "privacidad-seguridad-y-caducidad",
+          "level": 2,
+          "text": "Privacidad, seguridad y caducidad"
+        },
+        {
+          "id": "el-coste-de-cada-decisión",
+          "level": 2,
+          "text": "El coste de cada decisión"
+        },
+        {
+          "id": "cómo-medir-que-el-contexto-funciona",
+          "level": 2,
+          "text": "Cómo medir que el contexto funciona"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 15,
+      "route": "/es/docs/context-engineering-y-memoria-de-agentes",
+      "slug": "context-engineering-y-memoria-de-agentes"
+    },
+    {
+      "category": "tendencias",
+      "description": "Cuándo un agente debe manejar una interfaz gráfica en vez de una API, qué riesgos añade la página y cómo acotarlo con sandbox, aprobaciones y trazas.",
+      "figureCaption": "Un agente mueve el cursor y una compuerta lo frena antes de la acción irreversible",
+      "order": 11,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 80
+      },
+      "tags": [
+        "agentes",
+        "computer-use",
+        "navegador",
+        "prompt-injection",
+        "sandbox"
+      ],
+      "title": "Agentes que usan interfaces: navegador y escritorio",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "agentes-que-usan-interfaces-navegador-y-escritorio",
+          "level": 1,
+          "text": "Agentes que usan interfaces: navegador y escritorio"
+        },
+        {
+          "id": "qué-significa-operar-una-interfaz",
+          "level": 2,
+          "text": "Qué significa operar una interfaz"
+        },
+        {
+          "id": "cuándo-es-la-última-opción",
+          "level": 2,
+          "text": "Cuándo es la última opción"
+        },
+        {
+          "id": "fiabilidad-la-interfaz-cambia",
+          "level": 2,
+          "text": "Fiabilidad: la interfaz cambia"
+        },
+        {
+          "id": "coste-y-latencia-por-paso",
+          "level": 2,
+          "text": "Coste y latencia por paso"
+        },
+        {
+          "id": "inyección-de-instrucciones-desde-la-página",
+          "level": 2,
+          "text": "Inyección de instrucciones desde la página"
+        },
+        {
+          "id": "acciones-irreversibles-y-puntos-de-aprobación",
+          "level": 2,
+          "text": "Acciones irreversibles y puntos de aprobación"
+        },
+        {
+          "id": "entorno-sandbox-credenciales-y-sesiones",
+          "level": 2,
+          "text": "Entorno: sandbox, credenciales y sesiones"
+        },
+        {
+          "id": "trazas-capturas-y-auditoría",
+          "level": 2,
+          "text": "Trazas, capturas y auditoría"
+        },
+        {
+          "id": "cómo-probarlo",
+          "level": 2,
+          "text": "Cómo probarlo"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/agentes-que-usan-interfaces",
+      "slug": "agentes-que-usan-interfaces"
+    },
+    {
+      "category": "tendencias",
+      "description": "Cuándo un modelo pequeño en el dispositivo o en infraestructura propia gana a una API frontier: latencia, privacidad, coste, soberanía y lo que se pierde.",
+      "figureCaption": "Un modelo pequeño procesa dentro de una frontera: los datos no salen de ella",
+      "order": 12,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 50
+      },
+      "tags": [
+        "slm",
+        "on-device",
+        "soberania-de-datos",
+        "cuantizacion",
+        "enrutamiento-de-modelos"
+      ],
+      "title": "Modelos pequeños, on-device y soberanía de datos",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "modelos-pequeños-on-device-y-soberanía-de-datos",
+          "level": 1,
+          "text": "Modelos pequeños, on-device y soberanía de datos"
+        },
+        {
+          "id": "qué-entendemos-por-pequeño-y-on-device",
+          "level": 2,
+          "text": "Qué entendemos por «pequeño» y «on-device»"
+        },
+        {
+          "id": "los-criterios-de-decisión",
+          "level": 2,
+          "text": "Los criterios de decisión"
+        },
+        {
+          "id": "lo-que-se-pierde",
+          "level": 2,
+          "text": "Lo que se pierde"
+        },
+        {
+          "id": "hardware-como-restricción-real",
+          "level": 2,
+          "text": "Hardware como restricción real"
+        },
+        {
+          "id": "modelos-abiertos-qué-significa-abierto",
+          "level": 2,
+          "text": "Modelos abiertos: qué significa «abierto»"
+        },
+        {
+          "id": "soberanía-de-datos-dónde-se-procesa-y-dónde-se-guarda",
+          "level": 2,
+          "text": "Soberanía de datos: dónde se procesa y dónde se guarda"
+        },
+        {
+          "id": "enrutamiento-lo-simple-local-lo-difícil-fuera",
+          "level": 2,
+          "text": "Enrutamiento: lo simple local, lo difícil fuera"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/modelos-pequenos-on-device-soberania",
+      "slug": "modelos-pequenos-on-device-soberania"
+    },
+    {
+      "category": "tendencias",
+      "description": "Calidad de datos para modelos y RAG, datos sintéticos con sus riesgos y el marco de licencias y consentimiento que cambia según la jurisdicción.",
+      "figureCaption": "Tubería de datos con filtros de calidad, rama sintética y compuerta de licencia",
+      "order": 13,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 60
+      },
+      "tags": [
+        "datos",
+        "calidad-de-datos",
+        "datos-sinteticos",
+        "licencias",
+        "ia"
+      ],
+      "title": "Datos para IA: calidad, sintéticos y licencias",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "datos-para-ia-calidad-sintéticos-y-licencias",
+          "level": 1,
+          "text": "Datos para IA: calidad, sintéticos y licencias"
+        },
+        {
+          "id": "calidad-el-fallo-que-no-da-error",
+          "level": 2,
+          "text": "Calidad: el fallo que no da error"
+        },
+        {
+          "id": "contratos-de-datos-y-linaje",
+          "level": 2,
+          "text": "Contratos de datos y linaje"
+        },
+        {
+          "id": "evaluar-la-calidad-antes-de-indexar",
+          "level": 2,
+          "text": "Evaluar la calidad antes de indexar"
+        },
+        {
+          "id": "datos-sintéticos-para-qué-sirven",
+          "level": 2,
+          "text": "Datos sintéticos: para qué sirven"
+        },
+        {
+          "id": "el-colapso-por-entrenar-con-la-propia-salida",
+          "level": 3,
+          "text": "El colapso por entrenar con la propia salida"
+        },
+        {
+          "id": "sesgo-heredado-y-falsa-confianza",
+          "level": 3,
+          "text": "Sesgo heredado y falsa confianza"
+        },
+        {
+          "id": "etiquetado-con-modelos-y-verificación-humana",
+          "level": 2,
+          "text": "Etiquetado con modelos y verificación humana"
+        },
+        {
+          "id": "licencias-y-derechos-datos-y-modelo",
+          "level": 2,
+          "text": "Licencias y derechos: datos y modelo"
+        },
+        {
+          "id": "por-qué-el-texto-legal-cambia-según-la-jurisdicción",
+          "level": 3,
+          "text": "Por qué el texto legal cambia según la jurisdicción"
+        },
+        {
+          "id": "qué-exige-la-regulación-de-la-ue-hoy",
+          "level": 3,
+          "text": "Qué exige la regulación de la UE hoy"
+        },
+        {
+          "id": "consentimiento-personas-y-retirada",
+          "level": 2,
+          "text": "Consentimiento, personas y retirada"
+        },
+        {
+          "id": "cómo-encaja-con-el-resto-de-la-arquitectura",
+          "level": 2,
+          "text": "Cómo encaja con el resto de la arquitectura"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 13,
+      "route": "/es/docs/calidad-datos-para-ia",
+      "slug": "calidad-datos-para-ia"
+    },
+    {
+      "category": "tendencias",
+      "description": "Mirada prospectiva a 2027 para decidir hoy: tendencias verificadas, hipótesis etiquetadas, señales de revisión y decisiones reversibles.",
+      "figureCaption": "Un horizonte en tres bandas: lo observable, la hipótesis y lo reversible hoy",
+      "order": 14,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 70
+      },
+      "tags": [
+        "ia",
+        "prospectiva",
+        "agentes",
+        "interoperabilidad",
+        "regulacion"
+      ],
+      "title": "Arquitectura con IA: qué apostar, qué vigilar",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "arquitectura-con-ia-qué-apostar-qué-vigilar",
+          "level": 1,
+          "text": "Arquitectura con IA: qué apostar, qué vigilar"
+        },
+        {
+          "id": "por-qué-no-basta-con-predecir",
+          "level": 2,
+          "text": "Por qué no basta con predecir"
+        },
+        {
+          "id": "lo-que-ya-se-puede-verificar",
+          "level": 2,
+          "text": "Lo que ya se puede verificar"
+        },
+        {
+          "id": "agentes-en-producción-con-más-cautela-que-el-entusiasmo",
+          "level": 3,
+          "text": "Agentes en producción, con más cautela que el entusiasmo"
+        },
+        {
+          "id": "protocolos-de-interoperabilidad-mcp-y-a2a",
+          "level": 3,
+          "text": "Protocolos de interoperabilidad: MCP y A2A"
+        },
+        {
+          "id": "el-coste-por-capacidad-cae-el-gasto-total-no-necesariamente",
+          "level": 3,
+          "text": "El coste por capacidad cae; el gasto total no necesariamente"
+        },
+        {
+          "id": "regulación-en-marcha-el-calendario-europeo",
+          "level": 3,
+          "text": "Regulación en marcha: el calendario europeo"
+        },
+        {
+          "id": "hipótesis-razonables-no-verificadas",
+          "level": 2,
+          "text": "Hipótesis razonables, no verificadas"
+        },
+        {
+          "id": "señales-que-confirman-o-refutan-cada-hipótesis",
+          "level": 2,
+          "text": "Señales que confirman o refutan cada hipótesis"
+        },
+        {
+          "id": "decisiones-reversibles-para-hoy",
+          "level": 2,
+          "text": "Decisiones reversibles para hoy"
+        },
+        {
+          "id": "apuestas-que-conviene-aplazar",
+          "level": 2,
+          "text": "Apuestas que conviene aplazar"
+        },
+        {
+          "id": "cómo-revisar-la-estrategia-cada-trimestre",
+          "level": 2,
+          "text": "Cómo revisar la estrategia cada trimestre"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no-apostar-fuerte",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no apostar fuerte"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 12,
+      "route": "/es/docs/futuro-arquitectura-con-ia",
+      "slug": "futuro-arquitectura-con-ia"
     },
     {
       "category": "nube",
@@ -8738,6 +10967,200 @@
       "slug": "sesiones-tokens-sso"
     },
     {
+      "category": "nube",
+      "description": "Cómo atribuir el gasto de nube a equipos y funcionalidades: etiquetas obligatorias, reparto de costes compartidos y alertas de presupuesto antes del límite.",
+      "figureCaption": "Un gasto repartido en bloques por equipo, con una alerta que se enciende antes del límite",
+      "order": 14,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 50
+      },
+      "tags": [
+        "finops",
+        "etiquetas",
+        "presupuestos",
+        "atribucion-de-costes",
+        "costes-compartidos"
+      ],
+      "title": "Costes por equipo y funcionalidad: etiquetar y alertar",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "costes-por-equipo-y-funcionalidad-etiquetar-y-alertar",
+          "level": 1,
+          "text": "Costes por equipo y funcionalidad: etiquetar y alertar"
+        },
+        {
+          "id": "qué-se-atribuye-y-a-quién",
+          "level": 2,
+          "text": "Qué se atribuye y a quién"
+        },
+        {
+          "id": "etiquetas-un-contrato-no-una-convención",
+          "level": 2,
+          "text": "Etiquetas: un contrato, no una convención"
+        },
+        {
+          "id": "validar-en-el-aprovisionamiento",
+          "level": 3,
+          "text": "Validar en el aprovisionamiento"
+        },
+        {
+          "id": "cuando-falta-una-etiqueta",
+          "level": 3,
+          "text": "Cuando falta una etiqueta"
+        },
+        {
+          "id": "costes-compartidos-redes-registros-y-bases-comunes",
+          "level": 2,
+          "text": "Costes compartidos: redes, registros y bases comunes"
+        },
+        {
+          "id": "presupuestos-por-equipo-y-alertas-que-avisan-antes",
+          "level": 2,
+          "text": "Presupuestos por equipo y alertas que avisan antes"
+        },
+        {
+          "id": "coste-y-métricas-de-producto-sin-vanidad",
+          "level": 2,
+          "text": "Coste y métricas de producto, sin vanidad"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 12,
+      "route": "/es/docs/costes-por-equipo-y-funcionalidad",
+      "slug": "costes-por-equipo-y-funcionalidad"
+    },
+    {
+      "category": "nube",
+      "description": "Qué resuelve Kubernetes de verdad, qué coste operativo trae y cuándo un servicio gestionado, un PaaS o una VM bien gestionada son la decisión más barata.",
+      "figureCaption": "Una carga sobre un plano de control, con una ruta corta para el caso simple",
+      "order": 15,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 50
+      },
+      "tags": [
+        "kubernetes",
+        "contenedores",
+        "plataforma",
+        "operacion",
+        "nube"
+      ],
+      "title": "Kubernetes: cuándo sí y cuándo no",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "kubernetes-cuándo-sí-y-cuándo-no",
+          "level": 1,
+          "text": "Kubernetes: cuándo sí y cuándo no"
+        },
+        {
+          "id": "qué-resuelve-de-verdad",
+          "level": 2,
+          "text": "Qué resuelve de verdad"
+        },
+        {
+          "id": "lo-que-no-hace",
+          "level": 2,
+          "text": "Lo que no hace"
+        },
+        {
+          "id": "el-coste-operativo",
+          "level": 2,
+          "text": "El coste operativo"
+        },
+        {
+          "id": "curva-de-aprendizaje",
+          "level": 3,
+          "text": "Curva de aprendizaje"
+        },
+        {
+          "id": "actualizaciones-del-clúster",
+          "level": 3,
+          "text": "Actualizaciones del clúster"
+        },
+        {
+          "id": "redes-y-almacenamiento",
+          "level": 3,
+          "text": "Redes y almacenamiento"
+        },
+        {
+          "id": "observabilidad-y-seguridad",
+          "level": 3,
+          "text": "Observabilidad y seguridad"
+        },
+        {
+          "id": "alternativas-que-resuelven-el-mismo-problema",
+          "level": 2,
+          "text": "Alternativas que resuelven el mismo problema"
+        },
+        {
+          "id": "criterios-de-decisión",
+          "level": 2,
+          "text": "Criterios de decisión"
+        },
+        {
+          "id": "señales-de-que-es-prematuro",
+          "level": 2,
+          "text": "Señales de que es prematuro"
+        },
+        {
+          "id": "señales-de-que-ya-no-basta",
+          "level": 2,
+          "text": "Señales de que ya no basta"
+        },
+        {
+          "id": "un-ejemplo-trabajado",
+          "level": 2,
+          "text": "Un ejemplo trabajado"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 10,
+      "route": "/es/docs/kubernetes-cuando-si-cuando-no",
+      "slug": "kubernetes-cuando-si-cuando-no"
+    },
+    {
       "category": "decisiones",
       "description": "Cómo ordenar un backlog con RICE, ICE y WSJF: fórmulas, costo del retraso, un ejemplo con cinco iniciativas y las trampas de la falsa precisión.",
       "figureCaption": "Cinco iniciativas cambian de puesto al dividir por el esfuerzo",
@@ -9897,6 +12320,93 @@
     },
     {
       "category": "decisiones",
+      "description": "Qué cambia en el rol del arquitecto cuando el equipo trabaja con agentes de IA: especificar, delegar con criterio, revisar y medir el flujo sin engañarse.",
+      "figureCaption": "Especificar, delegar y verificar: el arquitecto en el puesto de control",
+      "order": 10,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 50
+      },
+      "tags": [
+        "agentes",
+        "rol-arquitecto",
+        "productividad",
+        "metricas-de-flujo",
+        "equipos"
+      ],
+      "title": "El trabajo del arquitecto con agentes: roles y productividad",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "el-trabajo-del-arquitecto-con-agentes-roles-y-productividad",
+          "level": 1,
+          "text": "El trabajo del arquitecto con agentes: roles y productividad"
+        },
+        {
+          "id": "qué-cambia-en-el-puesto",
+          "level": 2,
+          "text": "Qué cambia en el puesto"
+        },
+        {
+          "id": "habilidades-que-suben-de-valor",
+          "level": 2,
+          "text": "Habilidades que suben de valor"
+        },
+        {
+          "id": "habilidades-que-se-devalúan",
+          "level": 3,
+          "text": "Habilidades que se devalúan"
+        },
+        {
+          "id": "productividad-qué-sabemos-con-datos",
+          "level": 2,
+          "text": "Productividad: qué sabemos con datos"
+        },
+        {
+          "id": "métricas-cuáles-sirven-y-cuáles-engañan",
+          "level": 2,
+          "text": "Métricas: cuáles sirven y cuáles engañan"
+        },
+        {
+          "id": "riesgos-de-organización",
+          "level": 2,
+          "text": "Riesgos de organización"
+        },
+        {
+          "id": "cuándo-sí-y-cuándo-no",
+          "level": 2,
+          "text": "Cuándo sí y cuándo no"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "ejemplo-ilustrativo-un-equipo-de-seis-personas",
+          "level": 2,
+          "text": "Ejemplo ilustrativo: un equipo de seis personas"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 12,
+      "route": "/es/docs/trabajo-del-arquitecto-con-agentes",
+      "slug": "trabajo-del-arquitecto-con-agentes"
+    },
+    {
+      "category": "decisiones",
       "description": "Un marco para elegir software de decisiones y documentación por integración, exportación, costo de salida, permisos y búsqueda, no por moda.",
       "figureCaption": "Embudo de criterios que filtra herramientas; el costo de salida decide al final",
       "order": 10,
@@ -10041,6 +12551,103 @@
       "readingMinutes": 21,
       "route": "/es/docs/herramientas-para-decidir-y-documentar",
       "slug": "herramientas-para-decidir-y-documentar"
+    },
+    {
+      "category": "decisiones",
+      "description": "Cuándo convertir código compartido en una librería interna, cuándo es mejor copiarlo y cómo versionarla y retirarla sin que cada cambio sea un incendio.",
+      "figureCaption": "Un núcleo compartido se bifurca; una copia deriva sin dueño",
+      "order": 11,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 60
+      },
+      "tags": [
+        "librerias-internas",
+        "versionado",
+        "monorepo",
+        "deuda-tecnica",
+        "gobierno"
+      ],
+      "title": "Librerías internas: extraer, versionar o copiar",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "librerías-internas-extraer-versionar-o-copiar",
+          "level": 1,
+          "text": "Librerías internas: extraer, versionar o copiar"
+        },
+        {
+          "id": "tres-salidas-para-el-código-compartido",
+          "level": 2,
+          "text": "Tres salidas para el código compartido"
+        },
+        {
+          "id": "lo-que-cuesta-cada-opción",
+          "level": 2,
+          "text": "Lo que cuesta cada opción"
+        },
+        {
+          "id": "cuándo-extraer-tres-criterios",
+          "level": 2,
+          "text": "Cuándo extraer: tres criterios"
+        },
+        {
+          "id": "versionado-semver-real-o-versiones-por-cambio",
+          "level": 2,
+          "text": "Versionado: semver real o versiones por cambio"
+        },
+        {
+          "id": "rangos-y-fijación",
+          "level": 3,
+          "text": "Rangos y fijación"
+        },
+        {
+          "id": "monorepo-con-enlaces-de-workspace-o-registro-privado",
+          "level": 2,
+          "text": "Monorepo con enlaces de workspace o registro privado"
+        },
+        {
+          "id": "gobierno-quién-mantiene-y-cómo-se-cambia",
+          "level": 2,
+          "text": "Gobierno: quién mantiene y cómo se cambia"
+        },
+        {
+          "id": "cuándo-retirar-una-librería",
+          "level": 2,
+          "text": "Cuándo retirar una librería"
+        },
+        {
+          "id": "un-ejemplo-trabajado",
+          "level": 2,
+          "text": "Un ejemplo trabajado"
+        },
+        {
+          "id": "errores-frecuentes",
+          "level": 2,
+          "text": "Errores frecuentes"
+        },
+        {
+          "id": "cuándo-no-aplica",
+          "level": 2,
+          "text": "Cuándo no aplica"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "fuentes",
+          "level": 2,
+          "text": "Fuentes"
+        }
+      ],
+      "locale": "es",
+      "readingMinutes": 12,
+      "route": "/es/docs/librerias-internas-sin-infierno-versiones",
+      "slug": "librerias-internas-sin-infierno-versiones"
     },
     {
       "category": "decisiones",
@@ -14246,6 +16853,195 @@
     },
     {
       "category": "diseno",
+      "description": "When one agent with good tools is enough, what each link in a multi-agent system costs, and how to design contracts, traces and limits between agents.",
+      "figureCaption": "A supervisor hands work to agents with separate contexts, and every link costs",
+      "order": 10,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 70
+      },
+      "tags": [
+        "agents",
+        "multi-agent",
+        "coordination",
+        "contracts",
+        "tracing"
+      ],
+      "title": "Multi-agent systems: when one agent is enough",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "multi-agent-systems-when-one-agent-is-enough",
+          "level": 1,
+          "text": "Multi-agent systems: when one agent is enough"
+        },
+        {
+          "id": "one-agent-with-good-tools-is-usually-enough",
+          "level": 2,
+          "text": "One agent with good tools is usually enough"
+        },
+        {
+          "id": "five-coordination-patterns",
+          "level": 2,
+          "text": "Five coordination patterns"
+        },
+        {
+          "id": "what-each-link-costs",
+          "level": 2,
+          "text": "What each link costs"
+        },
+        {
+          "id": "when-it-is-justified",
+          "level": 2,
+          "text": "When it is justified"
+        },
+        {
+          "id": "contracts-between-agents",
+          "level": 2,
+          "text": "Contracts between agents"
+        },
+        {
+          "id": "traces-limits-and-budget",
+          "level": 2,
+          "text": "Traces, limits and budget"
+        },
+        {
+          "id": "worked-example-a-support-assistant",
+          "level": 2,
+          "text": "Worked example: a support assistant"
+        },
+        {
+          "id": "when-not-to-use-several-agents",
+          "level": 2,
+          "text": "When not to use several agents"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 12,
+      "route": "/en/docs/multiagente-cuando-un-agente-basta",
+      "slug": "multiagente-cuando-un-agente-basta"
+    },
+    {
+      "category": "diseno",
+      "description": "How to organize a large repository tree so module boundaries are real: domain, public API, enforced dependency rules, ownership and build cost.",
+      "figureCaption": "Each module hides its files: only its doors cross the boundary",
+      "order": 11,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "dominio",
+        "step": 60
+      },
+      "tags": [
+        "monorepo",
+        "boundaries",
+        "dependencies",
+        "modularity",
+        "codeowners"
+      ],
+      "title": "File architecture for large repositories",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "file-architecture-for-large-repositories",
+          "level": 1,
+          "text": "File architecture for large repositories"
+        },
+        {
+          "id": "two-axes-for-organizing-by-domain-or-by-layer",
+          "level": 2,
+          "text": "Two axes for organizing: by domain or by layer"
+        },
+        {
+          "id": "what-makes-a-boundary-real",
+          "level": 2,
+          "text": "What makes a boundary real"
+        },
+        {
+          "id": "barrels-convenient-with-costs",
+          "level": 3,
+          "text": "Barrels: convenient, with costs"
+        },
+        {
+          "id": "dependency-rules-a-tool-enforces",
+          "level": 2,
+          "text": "Dependency rules a tool enforces"
+        },
+        {
+          "id": "cycles-and-graph-measurement",
+          "level": 2,
+          "text": "Cycles and graph measurement"
+        },
+        {
+          "id": "size-thresholds-per-file-and-per-module",
+          "level": 2,
+          "text": "Size: thresholds per file and per module"
+        },
+        {
+          "id": "ownership-with-codeowners",
+          "level": 2,
+          "text": "Ownership with CODEOWNERS"
+        },
+        {
+          "id": "generated-code-versus-hand-written-code",
+          "level": 2,
+          "text": "Generated code versus hand-written code"
+        },
+        {
+          "id": "why-layout-affects-caching-and-incremental-builds",
+          "level": 2,
+          "text": "Why layout affects caching and incremental builds"
+        },
+        {
+          "id": "migrating-a-messy-tree-without-stopping-delivery",
+          "level": 2,
+          "text": "Migrating a messy tree without stopping delivery"
+        },
+        {
+          "id": "how-this-repository-does-it",
+          "level": 2,
+          "text": "How this repository does it"
+        },
+        {
+          "id": "when-not-to-and-common-mistakes",
+          "level": 2,
+          "text": "When not to, and common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 14,
+      "route": "/en/docs/arquitectura-de-archivos-repos-grandes",
+      "slug": "arquitectura-de-archivos-repos-grandes"
+    },
+    {
+      "category": "diseno",
       "description": "Timeouts, deadlines, retries with backoff and jitter, circuit breakers, bulkheads and load shedding to contain partial failures and measure them.",
       "figureCaption": "A call hits its timeout, retries with jitter, and the open breaker fails fast",
       "order": 11,
@@ -14535,6 +17331,98 @@
     },
     {
       "category": "diseno",
+      "description": "How to evolve events without breaking consumers: the schema as a contract, backward and forward compatibility, versioning and measured deprecation.",
+      "figureCaption": "Two versions of one event share the channel and the consumer reads both",
+      "order": 12,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "integracion",
+        "step": 90
+      },
+      "tags": [
+        "eventos",
+        "contratos",
+        "esquemas",
+        "versionado",
+        "kafka"
+      ],
+      "title": "Versioned, compatible event contracts",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "versioned-compatible-event-contracts",
+          "level": 1,
+          "text": "Versioned, compatible event contracts"
+        },
+        {
+          "id": "the-event-as-a-contract",
+          "level": 2,
+          "text": "The event as a contract"
+        },
+        {
+          "id": "schema-in-a-registry-and-verified-in-ci",
+          "level": 2,
+          "text": "Schema in a registry and verified in CI"
+        },
+        {
+          "id": "which-changes-are-safe",
+          "level": 2,
+          "text": "Which changes are safe"
+        },
+        {
+          "id": "versioning-the-event-or-the-topic",
+          "level": 2,
+          "text": "Versioning the event or the topic"
+        },
+        {
+          "id": "deprecation-double-publishing-and-measured-retirement",
+          "level": 2,
+          "text": "Deprecation: double publishing and measured retirement"
+        },
+        {
+          "id": "ownership-of-the-event",
+          "level": 2,
+          "text": "Ownership of the event"
+        },
+        {
+          "id": "contract-tests-between-producer-and-consumer",
+          "level": 2,
+          "text": "Contract tests between producer and consumer"
+        },
+        {
+          "id": "worked-example-an-order-that-gains-a-channel",
+          "level": 2,
+          "text": "Worked example: an order that gains a channel"
+        },
+        {
+          "id": "when-it-does-and-does-not-apply",
+          "level": 2,
+          "text": "When it does and does not apply"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 13,
+      "route": "/en/docs/contratos-de-eventos-versionados",
+      "slug": "contratos-de-eventos-versionados"
+    },
+    {
+      "category": "diseno",
       "description": "A method for scaling: requirements, back-of-the-envelope estimates, partitions and replicas, applied to a URL shortener, a rate limiter and a news feed.",
       "figureCaption": "Traffic, stateless services and shards: the bottleneck is the hot key",
       "order": 13,
@@ -14712,6 +17600,260 @@
     },
     {
       "category": "diseno",
+      "description": "Where HTML is generated and when: CSR, SSR, SSG, ISR, streaming and islands, with their costs, selection criteria and common mistakes.",
+      "figureCaption": "One page at three moments: built, on the server and in the browser",
+      "order": 13,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 70
+      },
+      "tags": [
+        "rendering",
+        "ssr",
+        "isr",
+        "islands",
+        "hydration"
+      ],
+      "title": "Web rendering: SSR, SSG, ISR and islands",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "web-rendering-ssr-ssg-isr-and-islands",
+          "level": 1,
+          "text": "Web rendering: SSR, SSG, ISR and islands"
+        },
+        {
+          "id": "three-questions-before-choosing",
+          "level": 2,
+          "text": "Three questions before choosing"
+        },
+        {
+          "id": "the-strategies-and-their-costs",
+          "level": 2,
+          "text": "The strategies and their costs"
+        },
+        {
+          "id": "csr-the-browser-builds-the-page",
+          "level": 3,
+          "text": "CSR: the browser builds the page"
+        },
+        {
+          "id": "ssr-the-server-generates-each-response",
+          "level": 3,
+          "text": "SSR: the server generates each response"
+        },
+        {
+          "id": "ssg-the-html-comes-out-of-the-build",
+          "level": 3,
+          "text": "SSG: the HTML comes out of the build"
+        },
+        {
+          "id": "isr-regenerating-in-the-background",
+          "level": 3,
+          "text": "ISR: regenerating in the background"
+        },
+        {
+          "id": "streaming-the-html-in-pieces",
+          "level": 3,
+          "text": "Streaming: the HTML in pieces"
+        },
+        {
+          "id": "hydration-the-part-you-pay-for-twice",
+          "level": 2,
+          "text": "Hydration: the part you pay for twice"
+        },
+        {
+          "id": "islands-and-server-components",
+          "level": 2,
+          "text": "Islands and Server Components"
+        },
+        {
+          "id": "islands-html-by-default-interactivity-where-it-is-needed",
+          "level": 3,
+          "text": "Islands: HTML by default, interactivity where it is needed"
+        },
+        {
+          "id": "server-components-code-that-never-reaches-the-client",
+          "level": 3,
+          "text": "Server Components: code that never reaches the client"
+        },
+        {
+          "id": "edge-caching-and-invalidation",
+          "level": 2,
+          "text": "Edge caching and invalidation"
+        },
+        {
+          "id": "decision-criteria",
+          "level": 2,
+          "text": "Decision criteria"
+        },
+        {
+          "id": "a-case-this-site",
+          "level": 2,
+          "text": "A case: this site"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 13,
+      "route": "/en/docs/renderizado-web-ssr-ssg-islands",
+      "slug": "renderizado-web-ssr-ssg-islands"
+    },
+    {
+      "category": "diseno",
+      "description": "Illustrative case of a booking system: requirements, boundaries, data, integration, security and evolution, with each decision and its alternative.",
+      "figureCaption": "System map: boundaries, main flows and the first service to split out",
+      "order": 14,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 90
+      },
+      "tags": [
+        "case-study",
+        "decisions",
+        "evolutionary-architecture",
+        "distributed-systems",
+        "adr"
+      ],
+      "title": "Case study: a system from start to finish",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "case-study-a-system-from-start-to-finish",
+          "level": 1,
+          "text": "Case study: a system from start to finish"
+        },
+        {
+          "id": "the-system-and-its-requirements",
+          "level": 2,
+          "text": "The system and its requirements"
+        },
+        {
+          "id": "functional-requirements",
+          "level": 3,
+          "text": "Functional requirements"
+        },
+        {
+          "id": "quality-attributes",
+          "level": 3,
+          "text": "Quality attributes"
+        },
+        {
+          "id": "domain-and-boundaries",
+          "level": 2,
+          "text": "Domain and boundaries"
+        },
+        {
+          "id": "starting-style-modular-monolith",
+          "level": 2,
+          "text": "Starting style: modular monolith"
+        },
+        {
+          "id": "when-the-first-service-is-split-out",
+          "level": 3,
+          "text": "When the first service is split out"
+        },
+        {
+          "id": "data-model-and-stores",
+          "level": 2,
+          "text": "Data model and stores"
+        },
+        {
+          "id": "integration-calls-events-and-sagas",
+          "level": 2,
+          "text": "Integration: calls, events and sagas"
+        },
+        {
+          "id": "booking-with-a-charge-an-orchestrated-saga",
+          "level": 3,
+          "text": "Booking with a charge: an orchestrated saga"
+        },
+        {
+          "id": "outbox-at-the-boundary",
+          "level": 3,
+          "text": "Outbox at the boundary"
+        },
+        {
+          "id": "caching-and-queues",
+          "level": 2,
+          "text": "Caching and queues"
+        },
+        {
+          "id": "security-and-identity",
+          "level": 2,
+          "text": "Security and identity"
+        },
+        {
+          "id": "observability-and-slos",
+          "level": 2,
+          "text": "Observability and SLOs"
+        },
+        {
+          "id": "deployment-and-progressive-delivery",
+          "level": 2,
+          "text": "Deployment and progressive delivery"
+        },
+        {
+          "id": "one-year-later-when-requirements-change",
+          "level": 2,
+          "text": "One year later: when requirements change"
+        },
+        {
+          "id": "decision-table",
+          "level": 2,
+          "text": "Decision table"
+        },
+        {
+          "id": "summary-adr",
+          "level": 2,
+          "text": "Summary ADR"
+        },
+        {
+          "id": "when-it-applies-and-when-it-does-not",
+          "level": 2,
+          "text": "When it applies and when it does not"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 19,
+      "route": "/en/docs/caso-estudio-sistema-completo",
+      "slug": "caso-estudio-sistema-completo"
+    },
+    {
+      "category": "diseno",
       "description": "How to design a multi-tenant SaaS: isolation models, tenant identification, Row-Level Security, noisy neighbors, schema migrations and usage metering.",
       "figureCaption": "Pool and silo in one system: the isolation boundary keeps tenants apart",
       "order": 14,
@@ -14821,6 +17963,103 @@
       "readingMinutes": 20,
       "route": "/en/docs/multi-tenancy",
       "slug": "multi-tenancy"
+    },
+    {
+      "category": "diseno",
+      "description": "How to model data after how it is read and written: normalization, deliberate copies with an owner, relational versus document models and query-driven design.",
+      "figureCaption": "One entity in joined pieces, or copied into every read model",
+      "order": 15,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "datos",
+        "step": 70
+      },
+      "tags": [
+        "modelado-de-datos",
+        "normalizacion",
+        "desnormalizacion",
+        "bases-de-datos",
+        "diseno-guiado-por-consultas"
+      ],
+      "title": "Data modeling: normalize or denormalize",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "data-modeling-normalize-or-denormalize",
+          "level": 1,
+          "text": "Data modeling: normalize or denormalize"
+        },
+        {
+          "id": "conceptual-logical-and-physical",
+          "level": 2,
+          "text": "Conceptual, logical and physical"
+        },
+        {
+          "id": "entities-relationships-and-keys",
+          "level": 2,
+          "text": "Entities, relationships and keys"
+        },
+        {
+          "id": "normalize-which-anomaly-you-avoid",
+          "level": 2,
+          "text": "Normalize: which anomaly you avoid"
+        },
+        {
+          "id": "denormalize-on-purpose",
+          "level": 2,
+          "text": "Denormalize on purpose"
+        },
+        {
+          "id": "who-answers-for-the-drift",
+          "level": 3,
+          "text": "Who answers for the drift"
+        },
+        {
+          "id": "relational-document-and-key-value",
+          "level": 2,
+          "text": "Relational, document and key-value"
+        },
+        {
+          "id": "design-from-the-queries",
+          "level": 2,
+          "text": "Design from the queries"
+        },
+        {
+          "id": "indexes-the-copy-the-engine-keeps-for-you",
+          "level": 2,
+          "text": "Indexes: the copy the engine keeps for you"
+        },
+        {
+          "id": "signs-that-the-model-is-wrong",
+          "level": 2,
+          "text": "Signs that the model is wrong"
+        },
+        {
+          "id": "when-to-and-when-not-to",
+          "level": 2,
+          "text": "When to and when not to"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 13,
+      "route": "/en/docs/modelado-de-datos-normalizacion",
+      "slug": "modelado-de-datos-normalizacion"
     },
     {
       "category": "diseno",
@@ -16831,6 +20070,118 @@
     },
     {
       "category": "practicas",
+      "description": "How to evaluate an agent that acts: trajectories versus final outcome, tasks with verifiable criteria, model-based judges, variance and evals in CI.",
+      "figureCaption": "A trajectory crosses a verification gate while a judge scores the full trace",
+      "order": 10,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 50
+      },
+      "tags": [
+        "agents",
+        "evaluation",
+        "llm-as-judge",
+        "regressions",
+        "trajectories"
+      ],
+      "title": "Evaluating agents: trajectories, regressions and judges",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "evaluating-agents-trajectories-regressions-and-judges",
+          "level": 1,
+          "text": "Evaluating agents: trajectories, regressions and judges"
+        },
+        {
+          "id": "why-evaluating-the-answer-is-not-enough",
+          "level": 2,
+          "text": "Why evaluating the answer is not enough"
+        },
+        {
+          "id": "minimal-vocabulary",
+          "level": 2,
+          "text": "Minimal vocabulary"
+        },
+        {
+          "id": "kinds-of-grader",
+          "level": 2,
+          "text": "Kinds of grader"
+        },
+        {
+          "id": "trajectory-versus-final-outcome",
+          "level": 2,
+          "text": "Trajectory versus final outcome"
+        },
+        {
+          "id": "a-task-set-with-verifiable-criteria",
+          "level": 2,
+          "text": "A task set with verifiable criteria"
+        },
+        {
+          "id": "metrics-task-completion-cost-steps-and-safety",
+          "level": 2,
+          "text": "Metrics: task completion, cost, steps and safety"
+        },
+        {
+          "id": "model-based-judges-when-they-work",
+          "level": 2,
+          "text": "Model-based judges: when they work"
+        },
+        {
+          "id": "known-biases",
+          "level": 3,
+          "text": "Known biases"
+        },
+        {
+          "id": "calibrating-against-human-annotation",
+          "level": 3,
+          "text": "Calibrating against human annotation"
+        },
+        {
+          "id": "non-determinism-repetitions-and-variance",
+          "level": 2,
+          "text": "Non-determinism: repetitions and variance"
+        },
+        {
+          "id": "isolated-test-environments",
+          "level": 2,
+          "text": "Isolated test environments"
+        },
+        {
+          "id": "evals-as-a-ci-gate-and-regressions-between-versions",
+          "level": 2,
+          "text": "Evals as a CI gate and regressions between versions"
+        },
+        {
+          "id": "when-a-complex-eval-is-not-worth-it",
+          "level": 2,
+          "text": "When a complex eval is not worth it"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 14,
+      "route": "/en/docs/evaluar-agentes-trayectorias",
+      "slug": "evaluar-agentes-trayectorias"
+    },
+    {
+      "category": "practicas",
       "description": "Deploying without exposing every user: feature flags, canary and blue/green releases, and how to roll back without deploying again.",
       "figureCaption": "Traffic rises in steps and a flag rolls back without a deploy",
       "order": 10,
@@ -16903,6 +20254,108 @@
     },
     {
       "category": "practicas",
+      "description": "Which identity an AI agent uses, how to delegate narrow credentials, least privilege per action, secrets kept out of context, and revocation.",
+      "figureCaption": "One key per door: minimal scope, and approval for the risky action",
+      "order": 11,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 60
+      },
+      "tags": [
+        "identidad",
+        "permisos",
+        "minimo-privilegio",
+        "auditoria",
+        "prompt-injection"
+      ],
+      "title": "Agent identity and permissions: least privilege and audit",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "agent-identity-and-permissions-least-privilege-and-audit",
+          "level": 1,
+          "text": "Agent identity and permissions: least privilege and audit"
+        },
+        {
+          "id": "an-agent-is-a-non-human-actor",
+          "level": 2,
+          "text": "An agent is a non-human actor"
+        },
+        {
+          "id": "which-identity-the-agent-uses",
+          "level": 2,
+          "text": "Which identity the agent uses"
+        },
+        {
+          "id": "how-to-delegate-without-copying-secrets",
+          "level": 2,
+          "text": "How to delegate without copying secrets"
+        },
+        {
+          "id": "least-privilege-per-tool-and-per-action",
+          "level": 2,
+          "text": "Least privilege per tool and per action"
+        },
+        {
+          "id": "secrets-outside-the-models-context",
+          "level": 2,
+          "text": "Secrets outside the model's context"
+        },
+        {
+          "id": "prompt-injection-as-privilege-escalation",
+          "level": 2,
+          "text": "Prompt injection as privilege escalation"
+        },
+        {
+          "id": "who-proposes-and-who-executes",
+          "level": 2,
+          "text": "Who proposes and who executes"
+        },
+        {
+          "id": "approval-of-high-impact-actions",
+          "level": 2,
+          "text": "Approval of high-impact actions"
+        },
+        {
+          "id": "audit-who-asked-for-what",
+          "level": 2,
+          "text": "Audit: who asked for what"
+        },
+        {
+          "id": "revocation",
+          "level": 2,
+          "text": "Revocation"
+        },
+        {
+          "id": "when-yes-and-when-no",
+          "level": 2,
+          "text": "When yes and when no"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 14,
+      "route": "/en/docs/identidad-y-permisos-de-agentes",
+      "slug": "identidad-y-permisos-de-agentes"
+    },
+    {
+      "category": "practicas",
       "description": "How to apply STRIDE to a real data flow diagram: trust boundaries, the six threat categories and a complete review example.",
       "figureCaption": "Every flow that crosses a trust boundary is an attack surface",
       "order": 11,
@@ -16971,6 +20424,98 @@
       "readingMinutes": 4,
       "route": "/en/docs/modelado-de-amenazas-stride",
       "slug": "modelado-de-amenazas-stride"
+    },
+    {
+      "category": "practicas",
+      "description": "When a model writes the code, review, ownership and debt change: what to measure, who answers for a change and how to leave criteria.",
+      "figureCaption": "Generated changes pass review or pile up as debt",
+      "order": 12,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 60
+      },
+      "tags": [
+        "codigo-generado-ia",
+        "revision-de-codigo",
+        "deuda-tecnica",
+        "propiedad-del-codigo",
+        "pull-requests"
+      ],
+      "title": "AI-generated code: review, ownership and debt",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "ai-generated-code-review-ownership-and-debt",
+          "level": 1,
+          "text": "AI-generated code: review, ownership and debt"
+        },
+        {
+          "id": "when-volume-outpaces-review",
+          "level": 2,
+          "text": "When volume outpaces review"
+        },
+        {
+          "id": "what-the-data-says-and-what-it-does-not",
+          "level": 2,
+          "text": "What the data says (and what it does not)"
+        },
+        {
+          "id": "ownership-who-answers-for-a-generated-change",
+          "level": 2,
+          "text": "Ownership: who answers for a generated change"
+        },
+        {
+          "id": "tests-and-contracts-as-acceptance-criteria",
+          "level": 2,
+          "text": "Tests and contracts as acceptance criteria"
+        },
+        {
+          "id": "pr-size-the-unit-of-review",
+          "level": 2,
+          "text": "PR size: the unit of review"
+        },
+        {
+          "id": "measurable-signals",
+          "level": 2,
+          "text": "Measurable signals"
+        },
+        {
+          "id": "duplication-and-premature-abstractions",
+          "level": 2,
+          "text": "Duplication and premature abstractions"
+        },
+        {
+          "id": "leaving-criteria-in-writing-adrs-and-conventions",
+          "level": 2,
+          "text": "Leaving criteria in writing: ADRs and conventions"
+        },
+        {
+          "id": "when-to-accept-generated-code-and-when-not-to",
+          "level": 2,
+          "text": "When to accept generated code, and when not to"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 12,
+      "route": "/en/docs/codigo-generado-por-ia",
+      "slug": "codigo-generado-por-ia"
     },
     {
       "category": "practicas",
@@ -17048,6 +20593,93 @@
       "readingMinutes": 13,
       "route": "/en/docs/privacidad-por-diseno-gdpr",
       "slug": "privacidad-por-diseno-gdpr"
+    },
+    {
+      "category": "practicas",
+      "description": "Why code you cannot delete keeps costing you, and how to design boundaries, expiring flags and phased retirements you can reverse.",
+      "figureCaption": "A module retires in three phases; the usage registry confirms nobody reads it",
+      "order": 13,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 70
+      },
+      "tags": [
+        "retirement",
+        "technical-debt",
+        "dead-code",
+        "feature-flags",
+        "deprecation"
+      ],
+      "title": "Designing for deletion: retiring code without fear",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "designing-for-deletion-retiring-code-without-fear",
+          "level": 1,
+          "text": "Designing for deletion: retiring code without fear"
+        },
+        {
+          "id": "why-deleting-costs-more-than-it-looks",
+          "level": 2,
+          "text": "Why deleting costs more than it looks"
+        },
+        {
+          "id": "designing-for-retirement-from-the-start",
+          "level": 2,
+          "text": "Designing for retirement from the start"
+        },
+        {
+          "id": "signals-of-dead-code-and-how-to-measure-them",
+          "level": 2,
+          "text": "Signals of dead code and how to measure them"
+        },
+        {
+          "id": "flags-that-expire",
+          "level": 2,
+          "text": "Flags that expire"
+        },
+        {
+          "id": "phased-retirement-stop-writing-stop-reading-delete",
+          "level": 2,
+          "text": "Phased retirement: stop writing, stop reading, delete"
+        },
+        {
+          "id": "services-and-apis-deprecate-with-metrics-before-switching-off",
+          "level": 2,
+          "text": "Services and APIs: deprecate with metrics before switching off"
+        },
+        {
+          "id": "why-fear-of-deleting-is-an-architecture-problem",
+          "level": 2,
+          "text": "Why fear of deleting is an architecture problem"
+        },
+        {
+          "id": "when-to-delete-and-when-not-to",
+          "level": 2,
+          "text": "When to delete and when not to"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 13,
+      "route": "/en/docs/disenar-para-borrar",
+      "slug": "disenar-para-borrar"
     },
     {
       "category": "practicas",
@@ -17207,6 +20839,608 @@
       "readingMinutes": 11,
       "route": "/en/docs/gestion-secretos-claves",
       "slug": "gestion-secretos-claves"
+    },
+    {
+      "category": "practicas",
+      "description": "Architect's guide: which inventory, signatures and provenance to require, how to pin dependencies and which SLSA level to target, as of October 2026.",
+      "figureCaption": "Each link signs what it produces; everything is checked before deploy",
+      "order": 15,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "seguridad",
+        "step": 70
+      },
+      "tags": [
+        "sbom",
+        "cadena-de-suministro",
+        "slsa",
+        "dependencias",
+        "firmas"
+      ],
+      "title": "Software supply chain: SBOM, signatures and SLSA",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "software-supply-chain-sbom-signatures-and-slsa",
+          "level": 1,
+          "text": "Software supply chain: SBOM, signatures and SLSA"
+        },
+        {
+          "id": "five-links-five-surfaces",
+          "level": 2,
+          "text": "Five links, five surfaces"
+        },
+        {
+          "id": "sbom-an-inventory-not-a-guarantee",
+          "level": 2,
+          "text": "SBOM: an inventory, not a guarantee"
+        },
+        {
+          "id": "dependencies-pin-review-distrust",
+          "level": 2,
+          "text": "Dependencies: pin, review, distrust"
+        },
+        {
+          "id": "reproducible-and-ephemeral-builds",
+          "level": 2,
+          "text": "Reproducible and ephemeral builds"
+        },
+        {
+          "id": "signatures-and-provenance-what-each-one-proves",
+          "level": 2,
+          "text": "Signatures and provenance: what each one proves"
+        },
+        {
+          "id": "slsa-levels-and-how-to-choose-one",
+          "level": 2,
+          "text": "SLSA: levels and how to choose one"
+        },
+        {
+          "id": "when-a-dependency-has-a-vulnerability",
+          "level": 2,
+          "text": "When a dependency has a vulnerability"
+        },
+        {
+          "id": "when-yes-and-when-not",
+          "level": 2,
+          "text": "When yes and when not"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 10,
+      "route": "/en/docs/cadena-de-suministro-software",
+      "slug": "cadena-de-suministro-software"
+    },
+    {
+      "category": "practicas",
+      "description": "How the distance between code and trunk sets the cost of integration: trunk-based versus long branches, flags that expire, a healthy trunk and what to measure.",
+      "figureCaption": "A trunk with daily integrations against a branch that returns with a conflict",
+      "order": 16,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "codigo",
+        "step": 80
+      },
+      "tags": [
+        "branching",
+        "trunk-based-development",
+        "continuous-integration",
+        "feature-flags",
+        "dora"
+      ],
+      "title": "Trunk-based vs long branches in continuous delivery",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "trunk-based-vs-long-branches-in-continuous-delivery",
+          "level": 1,
+          "text": "Trunk-based vs long branches in continuous delivery"
+        },
+        {
+          "id": "what-each-model-means",
+          "level": 2,
+          "text": "What each model means"
+        },
+        {
+          "id": "the-cost-of-integrating-late",
+          "level": 2,
+          "text": "The cost of integrating late"
+        },
+        {
+          "id": "short-lived-branches-and-fast-review",
+          "level": 2,
+          "text": "Short-lived branches and fast review"
+        },
+        {
+          "id": "feature-flags-decoupling-deployment-from-release",
+          "level": 2,
+          "text": "Feature flags: decoupling deployment from release"
+        },
+        {
+          "id": "requirements-for-a-healthy-trunk",
+          "level": 2,
+          "text": "Requirements for a healthy trunk"
+        },
+        {
+          "id": "what-to-measure",
+          "level": 2,
+          "text": "What to measure"
+        },
+        {
+          "id": "when-long-branches-still-make-sense",
+          "level": 2,
+          "text": "When long branches still make sense"
+        },
+        {
+          "id": "when-to-use-it-and-when-not-to",
+          "level": 2,
+          "text": "When to use it and when not to"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 11,
+      "route": "/en/docs/ramas-y-entrega-continua",
+      "slug": "ramas-y-entrega-continua"
+    },
+    {
+      "category": "practicas",
+      "description": "How to test resilience by injecting controlled faults: hypotheses, blast radius, stop conditions and game days with the teams that run the system.",
+      "figureCaption": "One fault injected into a single component, inside a limited radius, with a stop rule",
+      "order": 17,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 80
+      },
+      "tags": [
+        "chaos-engineering",
+        "game-days",
+        "resiliencia",
+        "slo",
+        "sre"
+      ],
+      "title": "Chaos engineering and game days: failing on purpose",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "chaos-engineering-and-game-days-failing-on-purpose",
+          "level": 1,
+          "text": "Chaos engineering and game days: failing on purpose"
+        },
+        {
+          "id": "what-it-is-and-what-it-is-not",
+          "level": 2,
+          "text": "What it is and what it is not"
+        },
+        {
+          "id": "the-principles-in-practice",
+          "level": 2,
+          "text": "The principles, in practice"
+        },
+        {
+          "id": "steady-state-sli-slo-and-error-budget",
+          "level": 2,
+          "text": "Steady state, SLI, SLO and error budget"
+        },
+        {
+          "id": "fault-types-worth-injecting",
+          "level": 2,
+          "text": "Fault types worth injecting"
+        },
+        {
+          "id": "designing-an-experiment",
+          "level": 2,
+          "text": "Designing an experiment"
+        },
+        {
+          "id": "game-days-rehearsing-the-people",
+          "level": 2,
+          "text": "Game days: rehearsing the people"
+        },
+        {
+          "id": "game-day-versus-recovery-drill",
+          "level": 3,
+          "text": "Game day versus recovery drill"
+        },
+        {
+          "id": "tools",
+          "level": 2,
+          "text": "Tools"
+        },
+        {
+          "id": "when-it-makes-sense-and-when-it-does-not",
+          "level": 2,
+          "text": "When it makes sense and when it does not"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 9,
+      "route": "/en/docs/chaos-engineering-game-days",
+      "slug": "chaos-engineering-game-days"
+    },
+    {
+      "category": "practicas",
+      "description": "How much capacity a system needs and how to check it with loads that resemble real traffic: load model, test types, measurement errors and headroom.",
+      "figureCaption": "p99 latency against load: the target sits with margin before the saturation knee",
+      "order": 18,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "sistemas",
+        "stage": "escala",
+        "step": 80
+      },
+      "tags": [
+        "pruebas-de-carga",
+        "capacidad",
+        "latencia-de-cola",
+        "dimensionamiento",
+        "escalado-automatico"
+      ],
+      "title": "Capacity and load testing: measure with real loads",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "capacity-and-load-testing-measure-with-real-loads",
+          "level": 1,
+          "text": "Capacity and load testing: measure with real loads"
+        },
+        {
+          "id": "what-each-measurement-answers",
+          "level": 2,
+          "text": "What each measurement answers"
+        },
+        {
+          "id": "the-load-model-what-really-arrives",
+          "level": 2,
+          "text": "The load model: what really arrives"
+        },
+        {
+          "id": "test-types-and-when-to-use-each",
+          "level": 2,
+          "text": "Test types and when to use each"
+        },
+        {
+          "id": "measurement-errors-that-invalidate-the-result",
+          "level": 2,
+          "text": "Measurement errors that invalidate the result"
+        },
+        {
+          "id": "the-load-generator-is-the-bottleneck",
+          "level": 3,
+          "text": "The load generator is the bottleneck"
+        },
+        {
+          "id": "test-data-that-does-not-look-like-production",
+          "level": 3,
+          "text": "Test data that does not look like production"
+        },
+        {
+          "id": "warm-or-cold-caches",
+          "level": 3,
+          "text": "Warm or cold caches"
+        },
+        {
+          "id": "averages-that-hide-the-tail",
+          "level": 3,
+          "text": "Averages that hide the tail"
+        },
+        {
+          "id": "capacity-how-much-there-is-and-how-much-there-should-be",
+          "level": 2,
+          "text": "Capacity: how much there is and how much there should be"
+        },
+        {
+          "id": "capacity-per-instance-and-the-saturation-point",
+          "level": 3,
+          "text": "Capacity per instance and the saturation point"
+        },
+        {
+          "id": "headroom-sizing-rule",
+          "level": 3,
+          "text": "Headroom sizing rule"
+        },
+        {
+          "id": "autoscaling-with-limits",
+          "level": 3,
+          "text": "Autoscaling with limits"
+        },
+        {
+          "id": "budget-the-cost-of-a-request",
+          "level": 3,
+          "text": "Budget: the cost of a request"
+        },
+        {
+          "id": "test-environments-and-getting-close-to-production-safely",
+          "level": 2,
+          "text": "Test environments and getting close to production safely"
+        },
+        {
+          "id": "from-results-to-decisions",
+          "level": 2,
+          "text": "From results to decisions"
+        },
+        {
+          "id": "when-yes-and-when-not",
+          "level": 2,
+          "text": "When yes and when not"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 16,
+      "route": "/en/docs/capacidad-y-pruebas-de-carga",
+      "slug": "capacidad-y-pruebas-de-carga"
+    },
+    {
+      "category": "practicas",
+      "description": "How to follow a request across services with traces, which data makes each span useful, and how to sample and govern telemetry with OpenTelemetry.",
+      "figureCaption": "A request leaves a thread of spans that share one trace-id",
+      "order": 19,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 90
+      },
+      "tags": [
+        "tracing",
+        "opentelemetry",
+        "observability",
+        "sampling",
+        "w3c-trace-context"
+      ],
+      "title": "Distributed tracing with OpenTelemetry",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "distributed-tracing-with-opentelemetry",
+          "level": 1,
+          "text": "Distributed tracing with OpenTelemetry"
+        },
+        {
+          "id": "trace-span-and-context",
+          "level": 2,
+          "text": "Trace, span and context"
+        },
+        {
+          "id": "how-context-travels-w3c-trace-context",
+          "level": 2,
+          "text": "How context travels: W3C Trace Context"
+        },
+        {
+          "id": "opentelemetry-instrument-once-choose-the-backend-later",
+          "level": 2,
+          "text": "OpenTelemetry: instrument once, choose the backend later"
+        },
+        {
+          "id": "automatic-versus-manual-instrumentation",
+          "level": 2,
+          "text": "Automatic versus manual instrumentation"
+        },
+        {
+          "id": "what-to-name-and-what-not-to",
+          "level": 2,
+          "text": "What to name and what not to"
+        },
+        {
+          "id": "sampling-deciding-at-the-start-or-at-the-end",
+          "level": 2,
+          "text": "Sampling: deciding at the start or at the end"
+        },
+        {
+          "id": "correlation-traces-metrics-and-logs",
+          "level": 2,
+          "text": "Correlation: traces, metrics and logs"
+        },
+        {
+          "id": "signs-of-poor-instrumentation",
+          "level": 2,
+          "text": "Signs of poor instrumentation"
+        },
+        {
+          "id": "governance-conventions-and-a-telemetry-budget",
+          "level": 2,
+          "text": "Governance: conventions and a telemetry budget"
+        },
+        {
+          "id": "when-yes-and-when-not",
+          "level": 2,
+          "text": "When yes and when not"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 11,
+      "route": "/en/docs/trazas-distribuidas-opentelemetry",
+      "slug": "trazas-distribuidas-opentelemetry"
+    },
+    {
+      "category": "practicas",
+      "description": "Reviewable infrastructure as code: remote state with locking, drift, versioned modules, least-privilege appliers and GitOps versus a push-based pipeline.",
+      "figureCaption": "A loop compares the repository with the environment and corrects the drift",
+      "order": 20,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "entrega",
+        "stage": "entrega",
+        "step": 70
+      },
+      "tags": [
+        "infrastructure-as-code",
+        "gitops",
+        "terraform",
+        "drift",
+        "state"
+      ],
+      "title": "Infrastructure as code and GitOps",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "infrastructure-as-code-and-gitops",
+          "level": 1,
+          "text": "Infrastructure as code and GitOps"
+        },
+        {
+          "id": "what-treating-infrastructure-as-code-means",
+          "level": 2,
+          "text": "What treating infrastructure as code means"
+        },
+        {
+          "id": "state-where-it-lives-and-who-can-touch-it",
+          "level": 2,
+          "text": "State: where it lives and who can touch it"
+        },
+        {
+          "id": "remote-storage-with-locking",
+          "level": 3,
+          "text": "Remote storage with locking"
+        },
+        {
+          "id": "the-state-holds-secrets",
+          "level": 3,
+          "text": "The state holds secrets"
+        },
+        {
+          "id": "coupling-stacks-through-state-couples-teams",
+          "level": 3,
+          "text": "Coupling stacks through state couples teams"
+        },
+        {
+          "id": "separating-environments-without-duplicating-code",
+          "level": 2,
+          "text": "Separating environments without duplicating code"
+        },
+        {
+          "id": "modules-and-their-versions",
+          "level": 2,
+          "text": "Modules and their versions"
+        },
+        {
+          "id": "drift-declared-versus-real",
+          "level": 2,
+          "text": "Drift: declared versus real"
+        },
+        {
+          "id": "plan-before-applying",
+          "level": 2,
+          "text": "Plan before applying"
+        },
+        {
+          "id": "least-privilege-for-whoever-applies",
+          "level": 2,
+          "text": "Least privilege for whoever applies"
+        },
+        {
+          "id": "gitops-a-reconciler-versus-a-pipeline-that-pushes",
+          "level": 2,
+          "text": "GitOps: a reconciler versus a pipeline that pushes"
+        },
+        {
+          "id": "risks-to-watch",
+          "level": 2,
+          "text": "Risks to watch"
+        },
+        {
+          "id": "when-it-is-not-worth-it",
+          "level": 2,
+          "text": "When it is not worth it"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 12,
+      "route": "/en/docs/infraestructura-como-codigo-gitops",
+      "slug": "infraestructura-como-codigo-gitops"
     },
     {
       "category": "tendencias",
@@ -17922,6 +22156,608 @@
       "readingMinutes": 12,
       "route": "/en/docs/edge-computing-cdn",
       "slug": "edge-computing-cdn"
+    },
+    {
+      "category": "tendencias",
+      "description": "What MCP and A2A standardize, what you gain and pay when adopting them, and when to expose a tool via MCP instead of a plain API.",
+      "figureCaption": "One agent uses MCP connectors to tools and speaks A2A with another agent",
+      "order": 9,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 40
+      },
+      "tags": [
+        "mcp",
+        "a2a",
+        "agents",
+        "interoperability",
+        "security"
+      ],
+      "title": "MCP and A2A: connecting tools and agents",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "mcp-and-a2a-connecting-tools-and-agents",
+          "level": 1,
+          "text": "MCP and A2A: connecting tools and agents"
+        },
+        {
+          "id": "two-different-problems",
+          "level": 2,
+          "text": "Two different problems"
+        },
+        {
+          "id": "mcp-what-it-standardizes",
+          "level": 2,
+          "text": "MCP: what it standardizes"
+        },
+        {
+          "id": "the-2026-07-28-revision",
+          "level": 3,
+          "text": "The 2026-07-28 revision"
+        },
+        {
+          "id": "a-contract-that-runs-outside-your-control",
+          "level": 3,
+          "text": "A contract that runs outside your control"
+        },
+        {
+          "id": "a2a-delegation-between-agents",
+          "level": 2,
+          "text": "A2A: delegation between agents"
+        },
+        {
+          "id": "governance-and-adoption-status",
+          "level": 3,
+          "text": "Governance and adoption status"
+        },
+        {
+          "id": "what-you-gain-and-what-you-pay",
+          "level": 2,
+          "text": "What you gain and what you pay"
+        },
+        {
+          "id": "expose-via-mcp-or-use-a-plain-api",
+          "level": 2,
+          "text": "Expose via MCP or use a plain API"
+        },
+        {
+          "id": "contracts-description-versioning-and-permissions",
+          "level": 2,
+          "text": "Contracts: description, versioning and permissions"
+        },
+        {
+          "id": "security-what-to-check-before-connecting-a-server",
+          "level": 2,
+          "text": "Security: what to check before connecting a server"
+        },
+        {
+          "id": "when-not-to-adopt-them-yet",
+          "level": 2,
+          "text": "When not to adopt them yet"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 12,
+      "route": "/en/docs/mcp-y-a2a-integracion-de-herramientas",
+      "slug": "mcp-y-a2a-integracion-de-herramientas"
+    },
+    {
+      "category": "tendencias",
+      "description": "How to treat an agent's context as a scarce resource: what enters the window, when to compact, what to store as memory, and how to measure that it works.",
+      "figureCaption": "A context window with memory layers and a filter that decides what gets in",
+      "order": 10,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "produccion",
+        "step": 40
+      },
+      "tags": [
+        "context-engineering",
+        "memoria",
+        "agentes",
+        "contexto",
+        "ia"
+      ],
+      "title": "Context engineering and agent memory",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "context-engineering-and-agent-memory",
+          "level": 1,
+          "text": "Context engineering and agent memory"
+        },
+        {
+          "id": "context-is-a-scarce-resource",
+          "level": 2,
+          "text": "Context is a scarce resource"
+        },
+        {
+          "id": "what-enters-the-window",
+          "level": 2,
+          "text": "What enters the window"
+        },
+        {
+          "id": "more-context-does-not-always-give-better-results",
+          "level": 2,
+          "text": "More context does not always give better results"
+        },
+        {
+          "id": "compacting-without-losing-what-matters",
+          "level": 2,
+          "text": "Compacting without losing what matters"
+        },
+        {
+          "id": "three-kinds-of-memory-three-policies",
+          "level": 2,
+          "text": "Three kinds of memory, three policies"
+        },
+        {
+          "id": "what-to-store-and-who-writes-it",
+          "level": 2,
+          "text": "What to store and who writes it"
+        },
+        {
+          "id": "privacy-security-and-expiry",
+          "level": 2,
+          "text": "Privacy, security and expiry"
+        },
+        {
+          "id": "the-cost-of-each-decision",
+          "level": 2,
+          "text": "The cost of each decision"
+        },
+        {
+          "id": "how-to-measure-that-the-context-works",
+          "level": 2,
+          "text": "How to measure that the context works"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 14,
+      "route": "/en/docs/context-engineering-y-memoria-de-agentes",
+      "slug": "context-engineering-y-memoria-de-agentes"
+    },
+    {
+      "category": "tendencias",
+      "description": "When an agent should drive a graphical interface instead of an API, what risks the page adds, and how to contain them with sandboxes, approvals and traces.",
+      "figureCaption": "An agent moves the cursor, and a gate stops it before the irreversible action",
+      "order": 11,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "gobierno",
+        "step": 80
+      },
+      "tags": [
+        "agentes",
+        "computer-use",
+        "navegador",
+        "prompt-injection",
+        "sandbox"
+      ],
+      "title": "Agents that use interfaces: browser and desktop",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "agents-that-use-interfaces-browser-and-desktop",
+          "level": 1,
+          "text": "Agents that use interfaces: browser and desktop"
+        },
+        {
+          "id": "what-it-means-to-operate-an-interface",
+          "level": 2,
+          "text": "What it means to operate an interface"
+        },
+        {
+          "id": "when-it-is-the-last-option",
+          "level": 2,
+          "text": "When it is the last option"
+        },
+        {
+          "id": "reliability-the-interface-changes",
+          "level": 2,
+          "text": "Reliability: the interface changes"
+        },
+        {
+          "id": "cost-and-latency-per-step",
+          "level": 2,
+          "text": "Cost and latency per step"
+        },
+        {
+          "id": "prompt-injection-from-the-page",
+          "level": 2,
+          "text": "Prompt injection from the page"
+        },
+        {
+          "id": "irreversible-actions-and-approval-points",
+          "level": 2,
+          "text": "Irreversible actions and approval points"
+        },
+        {
+          "id": "environment-sandbox-credentials-and-sessions",
+          "level": 2,
+          "text": "Environment: sandbox, credentials and sessions"
+        },
+        {
+          "id": "traces-screenshots-and-audit",
+          "level": 2,
+          "text": "Traces, screenshots and audit"
+        },
+        {
+          "id": "how-to-test-it",
+          "level": 2,
+          "text": "How to test it"
+        },
+        {
+          "id": "when-to-use-it-and-when-not",
+          "level": 2,
+          "text": "When to use it and when not"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 13,
+      "route": "/en/docs/agentes-que-usan-interfaces",
+      "slug": "agentes-que-usan-interfaces"
+    },
+    {
+      "category": "tendencias",
+      "description": "When a small model on the device or in your own infrastructure beats a frontier API: latency, privacy, cost, sovereignty and what you give up.",
+      "figureCaption": "A small model works inside a boundary: the data never leaves it",
+      "order": 12,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 50
+      },
+      "tags": [
+        "slm",
+        "on-device",
+        "soberania-de-datos",
+        "cuantizacion",
+        "enrutamiento-de-modelos"
+      ],
+      "title": "Small models, on-device and data sovereignty",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "small-models-on-device-and-data-sovereignty",
+          "level": 1,
+          "text": "Small models, on-device and data sovereignty"
+        },
+        {
+          "id": "what-we-mean-by-small-and-on-device",
+          "level": 2,
+          "text": "What we mean by \"small\" and \"on-device\""
+        },
+        {
+          "id": "the-decision-criteria",
+          "level": 2,
+          "text": "The decision criteria"
+        },
+        {
+          "id": "what-you-give-up",
+          "level": 2,
+          "text": "What you give up"
+        },
+        {
+          "id": "hardware-as-a-real-constraint",
+          "level": 2,
+          "text": "Hardware as a real constraint"
+        },
+        {
+          "id": "open-models-what-open-means",
+          "level": 2,
+          "text": "Open models: what \"open\" means"
+        },
+        {
+          "id": "data-sovereignty-where-it-is-processed-and-where-it-is-stored",
+          "level": 2,
+          "text": "Data sovereignty: where it is processed and where it is stored"
+        },
+        {
+          "id": "routing-simple-locally-hard-elsewhere",
+          "level": 2,
+          "text": "Routing: simple locally, hard elsewhere"
+        },
+        {
+          "id": "when-yes-and-when-no",
+          "level": 2,
+          "text": "When yes and when no"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 12,
+      "route": "/en/docs/modelos-pequenos-on-device-soberania",
+      "slug": "modelos-pequenos-on-device-soberania"
+    },
+    {
+      "category": "tendencias",
+      "description": "Data quality for models and RAG, synthetic data with its risks, and the licensing and consent framework that changes with jurisdiction.",
+      "figureCaption": "A data pipeline with quality filters, a synthetic branch and a licence gate",
+      "order": 13,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 60
+      },
+      "tags": [
+        "datos",
+        "calidad-de-datos",
+        "datos-sinteticos",
+        "licencias",
+        "ia"
+      ],
+      "title": "Data for AI: quality, synthetic data and licensing",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "data-for-ai-quality-synthetic-data-and-licensing",
+          "level": 1,
+          "text": "Data for AI: quality, synthetic data and licensing"
+        },
+        {
+          "id": "quality-the-failure-that-gives-no-error",
+          "level": 2,
+          "text": "Quality: the failure that gives no error"
+        },
+        {
+          "id": "data-contracts-and-lineage",
+          "level": 2,
+          "text": "Data contracts and lineage"
+        },
+        {
+          "id": "evaluate-quality-before-indexing",
+          "level": 2,
+          "text": "Evaluate quality before indexing"
+        },
+        {
+          "id": "synthetic-data-what-it-is-for",
+          "level": 2,
+          "text": "Synthetic data: what it is for"
+        },
+        {
+          "id": "collapse-from-training-on-your-own-output",
+          "level": 3,
+          "text": "Collapse from training on your own output"
+        },
+        {
+          "id": "inherited-bias-and-false-confidence",
+          "level": 3,
+          "text": "Inherited bias and false confidence"
+        },
+        {
+          "id": "labelling-with-models-and-human-verification",
+          "level": 2,
+          "text": "Labelling with models and human verification"
+        },
+        {
+          "id": "licences-and-rights-data-and-model",
+          "level": 2,
+          "text": "Licences and rights: data and model"
+        },
+        {
+          "id": "why-the-legal-text-changes-by-jurisdiction",
+          "level": 3,
+          "text": "Why the legal text changes by jurisdiction"
+        },
+        {
+          "id": "what-eu-regulation-requires-today",
+          "level": 3,
+          "text": "What EU regulation requires today"
+        },
+        {
+          "id": "consent-people-and-withdrawal",
+          "level": 2,
+          "text": "Consent, people and withdrawal"
+        },
+        {
+          "id": "how-it-fits-with-the-rest-of-the-architecture",
+          "level": 2,
+          "text": "How it fits with the rest of the architecture"
+        },
+        {
+          "id": "when-it-does-not-apply",
+          "level": 2,
+          "text": "When it does not apply"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 13,
+      "route": "/en/docs/calidad-datos-para-ia",
+      "slug": "calidad-datos-para-ia"
+    },
+    {
+      "category": "tendencias",
+      "description": "A forward look at 2027 to decide today: verified trends, labeled hypotheses, review signals and reversible decisions.",
+      "figureCaption": "A horizon in three bands: what is observable, the hypothesis, what is reversible today",
+      "order": 14,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "ia",
+        "stage": "panorama",
+        "step": 70
+      },
+      "tags": [
+        "ia",
+        "prospectiva",
+        "agentes",
+        "interoperabilidad",
+        "regulacion"
+      ],
+      "title": "Architecture with AI: what to bet on, what to watch",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "architecture-with-ai-what-to-bet-on-what-to-watch",
+          "level": 1,
+          "text": "Architecture with AI: what to bet on, what to watch"
+        },
+        {
+          "id": "why-predicting-is-not-enough",
+          "level": 2,
+          "text": "Why predicting is not enough"
+        },
+        {
+          "id": "what-can-already-be-verified",
+          "level": 2,
+          "text": "What can already be verified"
+        },
+        {
+          "id": "agents-in-production-with-more-caution-than-enthusiasm",
+          "level": 3,
+          "text": "Agents in production, with more caution than enthusiasm"
+        },
+        {
+          "id": "interoperability-protocols-mcp-and-a2a",
+          "level": 3,
+          "text": "Interoperability protocols: MCP and A2A"
+        },
+        {
+          "id": "cost-per-capability-falls-total-spend-not-necessarily",
+          "level": 3,
+          "text": "Cost per capability falls; total spend not necessarily"
+        },
+        {
+          "id": "regulation-in-motion-the-european-calendar",
+          "level": 3,
+          "text": "Regulation in motion: the European calendar"
+        },
+        {
+          "id": "reasonable-hypotheses-not-verified",
+          "level": 2,
+          "text": "Reasonable hypotheses, not verified"
+        },
+        {
+          "id": "signals-that-confirm-or-disprove-each-hypothesis",
+          "level": 2,
+          "text": "Signals that confirm or disprove each hypothesis"
+        },
+        {
+          "id": "reversible-decisions-for-today",
+          "level": 2,
+          "text": "Reversible decisions for today"
+        },
+        {
+          "id": "bets-worth-postponing",
+          "level": 2,
+          "text": "Bets worth postponing"
+        },
+        {
+          "id": "how-to-review-the-strategy-every-quarter",
+          "level": 2,
+          "text": "How to review the strategy every quarter"
+        },
+        {
+          "id": "when-to-bet-heavily-and-when-not-to",
+          "level": 2,
+          "text": "When to bet heavily, and when not to"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 11,
+      "route": "/en/docs/futuro-arquitectura-con-ia",
+      "slug": "futuro-arquitectura-con-ia"
     },
     {
       "category": "nube",
@@ -19521,6 +24357,200 @@
       "slug": "sesiones-tokens-sso"
     },
     {
+      "category": "nube",
+      "description": "How to attribute cloud spend to teams and features: mandatory tags, shared-cost allocation and budget alerts that fire before the limit.",
+      "figureCaption": "One spend split into team blocks, with an alert that lights before the limit",
+      "order": 14,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "nube",
+        "stage": "operacion",
+        "step": 50
+      },
+      "tags": [
+        "finops",
+        "tagging",
+        "budgets",
+        "cost-attribution",
+        "shared-costs"
+      ],
+      "title": "Cost per team and feature: tagging and alerts",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "cost-per-team-and-feature-tagging-and-alerts",
+          "level": 1,
+          "text": "Cost per team and feature: tagging and alerts"
+        },
+        {
+          "id": "what-is-attributed-and-to-whom",
+          "level": 2,
+          "text": "What is attributed, and to whom"
+        },
+        {
+          "id": "tags-a-contract-not-a-convention",
+          "level": 2,
+          "text": "Tags: a contract, not a convention"
+        },
+        {
+          "id": "validate-at-provisioning",
+          "level": 3,
+          "text": "Validate at provisioning"
+        },
+        {
+          "id": "when-a-tag-is-missing",
+          "level": 3,
+          "text": "When a tag is missing"
+        },
+        {
+          "id": "shared-costs-networking-registries-and-common-databases",
+          "level": 2,
+          "text": "Shared costs: networking, registries and common databases"
+        },
+        {
+          "id": "team-budgets-and-alerts-that-warn-early",
+          "level": 2,
+          "text": "Team budgets and alerts that warn early"
+        },
+        {
+          "id": "cost-and-product-metrics-without-vanity",
+          "level": 2,
+          "text": "Cost and product metrics, without vanity"
+        },
+        {
+          "id": "when-yes-and-when-no",
+          "level": 2,
+          "text": "When yes and when no"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 11,
+      "route": "/en/docs/costes-por-equipo-y-funcionalidad",
+      "slug": "costes-por-equipo-y-funcionalidad"
+    },
+    {
+      "category": "nube",
+      "description": "What Kubernetes actually solves, what operational cost it brings, and when a managed service, a PaaS or a well-run VM is the cheaper decision.",
+      "figureCaption": "A workload on a control plane, with a shorter route for the simple case",
+      "order": 15,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "nube",
+        "stage": "servicios",
+        "step": 50
+      },
+      "tags": [
+        "kubernetes",
+        "contenedores",
+        "plataforma",
+        "operacion",
+        "nube"
+      ],
+      "title": "Kubernetes: when yes and when no",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "kubernetes-when-yes-and-when-no",
+          "level": 1,
+          "text": "Kubernetes: when yes and when no"
+        },
+        {
+          "id": "what-it-actually-solves",
+          "level": 2,
+          "text": "What it actually solves"
+        },
+        {
+          "id": "what-it-does-not-do",
+          "level": 2,
+          "text": "What it does not do"
+        },
+        {
+          "id": "the-operational-cost",
+          "level": 2,
+          "text": "The operational cost"
+        },
+        {
+          "id": "learning-curve",
+          "level": 3,
+          "text": "Learning curve"
+        },
+        {
+          "id": "cluster-upgrades",
+          "level": 3,
+          "text": "Cluster upgrades"
+        },
+        {
+          "id": "networking-and-storage",
+          "level": 3,
+          "text": "Networking and storage"
+        },
+        {
+          "id": "observability-and-security",
+          "level": 3,
+          "text": "Observability and security"
+        },
+        {
+          "id": "alternatives-that-solve-the-same-problem",
+          "level": 2,
+          "text": "Alternatives that solve the same problem"
+        },
+        {
+          "id": "decision-criteria",
+          "level": 2,
+          "text": "Decision criteria"
+        },
+        {
+          "id": "signs-it-is-premature",
+          "level": 2,
+          "text": "Signs it is premature"
+        },
+        {
+          "id": "signs-it-is-no-longer-enough",
+          "level": 2,
+          "text": "Signs it is no longer enough"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 9,
+      "route": "/en/docs/kubernetes-cuando-si-cuando-no",
+      "slug": "kubernetes-cuando-si-cuando-no"
+    },
+    {
       "category": "decisiones",
       "description": "How to order a backlog with RICE, ICE and WSJF: formulas, cost of delay, a worked example with five initiatives and the traps of false precision.",
       "figureCaption": "Five initiatives swap places once you divide by effort",
@@ -20680,6 +25710,93 @@
     },
     {
       "category": "decisiones",
+      "description": "What changes in the architect role when teams work with AI agents: specifying, delegating with judgment, reviewing, and measuring flow honestly.",
+      "figureCaption": "Specify, delegate, verify: the architect at the control point",
+      "order": 10,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 50
+      },
+      "tags": [
+        "agentes",
+        "rol-arquitecto",
+        "productividad",
+        "metricas-de-flujo",
+        "equipos"
+      ],
+      "title": "The architect's work with agents: roles and productivity",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "the-architects-work-with-agents-roles-and-productivity",
+          "level": 1,
+          "text": "The architect's work with agents: roles and productivity"
+        },
+        {
+          "id": "what-changes-in-the-role",
+          "level": 2,
+          "text": "What changes in the role"
+        },
+        {
+          "id": "skills-that-gain-value",
+          "level": 2,
+          "text": "Skills that gain value"
+        },
+        {
+          "id": "skills-that-lose-value",
+          "level": 3,
+          "text": "Skills that lose value"
+        },
+        {
+          "id": "productivity-what-the-data-says",
+          "level": 2,
+          "text": "Productivity: what the data says"
+        },
+        {
+          "id": "metrics-which-help-and-which-mislead",
+          "level": 2,
+          "text": "Metrics: which help and which mislead"
+        },
+        {
+          "id": "organizational-risks",
+          "level": 2,
+          "text": "Organizational risks"
+        },
+        {
+          "id": "when-it-does-and-does-not-apply",
+          "level": 2,
+          "text": "When it does and does not apply"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "illustrative-example-a-six-person-team",
+          "level": 2,
+          "text": "Illustrative example: a six-person team"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 11,
+      "route": "/en/docs/trabajo-del-arquitecto-con-agentes",
+      "slug": "trabajo-del-arquitecto-con-agentes"
+    },
+    {
+      "category": "decisiones",
       "description": "A framework for choosing decision and documentation software by integration, data export, exit cost, permissions and search, not by hype.",
       "figureCaption": "A funnel of criteria filters candidate tools; exit cost makes the final cut",
       "order": 10,
@@ -20824,6 +25941,103 @@
       "readingMinutes": 20,
       "route": "/en/docs/herramientas-para-decidir-y-documentar",
       "slug": "herramientas-para-decidir-y-documentar"
+    },
+    {
+      "category": "decisiones",
+      "description": "When to turn shared code into an internal library, when copying is better, and how to version and retire it so that every change is not an incident.",
+      "figureCaption": "One shared core forks into apps, and one fork drifts away without an owner",
+      "order": 11,
+      "publishedAt": "2026-10-15",
+      "roadmap": {
+        "id": "liderazgo",
+        "stage": "equipos",
+        "step": 60
+      },
+      "tags": [
+        "librerias-internas",
+        "versionado",
+        "monorepo",
+        "deuda-tecnica",
+        "gobierno"
+      ],
+      "title": "Internal libraries: extract, version or copy",
+      "updatedAt": "2026-10-15",
+      "headings": [
+        {
+          "id": "internal-libraries-extract-version-or-copy",
+          "level": 1,
+          "text": "Internal libraries: extract, version or copy"
+        },
+        {
+          "id": "three-options-for-shared-code",
+          "level": 2,
+          "text": "Three options for shared code"
+        },
+        {
+          "id": "what-each-option-costs",
+          "level": 2,
+          "text": "What each option costs"
+        },
+        {
+          "id": "when-to-extract-three-criteria",
+          "level": 2,
+          "text": "When to extract: three criteria"
+        },
+        {
+          "id": "versioning-real-semver-or-per-change-versions",
+          "level": 2,
+          "text": "Versioning: real semver or per-change versions"
+        },
+        {
+          "id": "ranges-and-pinning",
+          "level": 3,
+          "text": "Ranges and pinning"
+        },
+        {
+          "id": "monorepo-workspace-links-or-a-private-registry",
+          "level": 2,
+          "text": "Monorepo workspace links or a private registry"
+        },
+        {
+          "id": "governance-who-maintains-and-how-changes-happen",
+          "level": 2,
+          "text": "Governance: who maintains and how changes happen"
+        },
+        {
+          "id": "when-to-retire-a-library",
+          "level": 2,
+          "text": "When to retire a library"
+        },
+        {
+          "id": "a-worked-example",
+          "level": 2,
+          "text": "A worked example"
+        },
+        {
+          "id": "common-mistakes",
+          "level": 2,
+          "text": "Common mistakes"
+        },
+        {
+          "id": "when-this-does-not-apply",
+          "level": 2,
+          "text": "When this does not apply"
+        },
+        {
+          "id": "checklist",
+          "level": 2,
+          "text": "Checklist"
+        },
+        {
+          "id": "sources",
+          "level": 2,
+          "text": "Sources"
+        }
+      ],
+      "locale": "en",
+      "readingMinutes": 12,
+      "route": "/en/docs/librerias-internas-sin-infierno-versiones",
+      "slug": "librerias-internas-sin-infierno-versiones"
     },
     {
       "category": "decisiones",

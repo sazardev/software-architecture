@@ -1,0 +1,393 @@
+---
+title: 'Case study: a system from start to finish'
+description: 'Illustrative case of a booking system: requirements, boundaries, data, integration, security and evolution, with each decision and its alternative.'
+category: diseno
+tags:
+  - case-study
+  - decisions
+  - evolutionary-architecture
+  - distributed-systems
+  - adr
+order: 14
+roadmap:
+  id: sistemas
+  stage: escala
+  step: 90
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'System map: boundaries, main flows and the first service to split out'
+---
+
+# Case study: a system from start to finish
+
+Standalone articles explain one decision each: when to choose a modular monolith, how to store
+data, what to do with a saga. In a real project the decisions chain together. The choice of
+database shapes how you guarantee that a seat is not sold twice; that guarantee shapes the
+integration; the integration shapes what can be deployed separately. This case walks through the
+order in which those decisions are worth taking and writes down why each one is taken.
+
+<Callout tone="info" title="Illustrative case, not a real system">
+  The system is invented to explain the reasoning. The requirement figures are **assumptions** and
+  are labelled as such; they are not measurements from any project. Replace them with your own
+  context before using this walkthrough as a template.
+</Callout>
+
+## The system and its requirements
+
+A chain of gyms wants members to book a place in classes (yoga, spinning, strength sessions) from
+a mobile app and from the web. Each class has a capacity, some are paid with a pass of sessions,
+and all send a confirmation and a reminder. The domain is kept narrow on purpose: there is no shop,
+no trainer payroll, no turnstile access control. These are pieces a reader would expect to see and
+that are left out here so the example does not scatter.
+
+### Functional requirements
+
+- See a centre's class timetable and book a free place.
+- Cancel a booking within the allowed window and get the place back.
+- Charge the booking to a pass when the member has no place included in their subscription.
+- Send confirmation and reminders by email and push notification.
+- Show the member's booking history.
+
+### Quality attributes
+
+Non-functional requirements weigh more than functional ones when decisions are made. The table
+separates what comes from the business from design assumptions the team must validate.
+
+| Attribute             | Target                                      | Source               |
+| --------------------- | ------------------------------------------- | -------------------- |
+| Overselling seats     | Zero                                        | Business requirement |
+| Booking availability  | 99.9 % per month                            | **Assumption**       |
+| Booking latency (p95) | Under 400 ms                                | **Assumption**       |
+| Booking confirmation  | Under 2 minutes (p95)                       | **Assumption**       |
+| Volume                | 120 centres, 300,000 active members         | **Assumption**       |
+| Peak                  | 1,500 bookings per minute at 7:00           | **Assumption**       |
+| Growth                | Three times the volume within twelve months | **Assumption**       |
+| Team size             | Six engineers and one half-time architect   | **Assumption**       |
+
+The zero-overselling rule weighs the most. An availability failure is annoying; a seat sold twice
+creates complaints and loss of trust. So integrity is treated as a hard requirement and performance
+as a target to measure. The criteria for choosing the attributes that drive decisions are in
+[quality attributes](/docs/atributos-de-calidad).
+
+## Domain and boundaries
+
+Before choosing any style, the contexts are drawn. A bounded context is an area where a term means
+one specific thing. This system has four:
+
+- **Catalog**: classes, timetables, capacity and cancellation rules.
+- **Bookings**: a member's place in a class. This is the core of the system.
+- **Passes and billing**: session balances, charges and the relationship with the payment gateway.
+- **Notifications**: templates, channels and deliveries. It knows nothing about places.
+
+Identity (who the member is and what they may do) is bought from an identity provider rather than
+built. The boundary between Bookings and Catalog causes the most debate: if capacity lives in
+Catalog, Bookings must ask it on every operation, and that puts a call on the critical path. The
+decision is that Bookings keeps its own copy of capacity, updated by events from the catalogue, and
+accepts that the copy may lag by seconds. The Bookings context does not contain the charging logic;
+it only knows that a booking needs a valid pass.
+
+The method for reaching these contexts, with ubiquitous language and context maps, is in
+[Domain-Driven Design](/docs/domain-driven-design).
+
+## Starting style: modular monolith
+
+The first style decision is the easiest to get wrong. With a team of six and a domain that is still
+changing, one deployment per service adds network, operational and coordination cost that buys
+nothing in the first phase. Martin Fowler makes this case in _MonolithFirst_ (2015): almost all the
+successful microservice stories started as a monolith that grew too large, and it is hard to draw
+good boundaries before you know the business. It is an opinion with limited evidence, and it should
+be read that way.
+
+The decision is a **modular monolith**: one process and one database, with each context as a module
+that has a public API and rules that prevent importing another module's internals. The rules are
+checked in CI, not by good intentions. The procedure is in
+[modular monolith first](/docs/monolito-modular-primero#why-start-with-a-modular-monolith), and the
+ways to enforce boundaries are in
+[monolith versus microservices](/docs/monolito-vs-microservicios#enforcing-boundaries-in-a-modular-monolith).
+
+The alternative rejected here is **microservices from day one**, one service per context. It is
+rejected because the boundaries are still hypotheses and each boundary mistake costs a network
+contract rather than a refactor. The risk of the modular monolith is the opposite: modules coupling
+over time. It is mitigated with dependency control, not with more services.
+
+```text
+src/
+  modules/
+    catalog/   api.ts  internal/
+    bookings/  api.ts  internal/
+    billing/   api.ts  internal/
+    notifications/  api.ts  internal/
+```
+
+### When the first service is split out
+
+The monolith is not forever. A module is extracted when the reason to separate it can be named and
+measured. The candidate here is **Notifications**, for reasons unrelated to the rest of the business:
+it has a different load profile (bulk sends spike at 19:00, assumption), it depends on external providers that
+fail in different ways, and its consistency is eventual by nature. If it stays inside, a slow
+provider lengthens booking transactions.
+
+The trigger rule the team commits to review each quarter is that at least two of these conditions
+hold: the module needs to scale independently, its release cycle differs from the rest, or one of
+its failures has already affected bookings more than once. The conditions and extraction order are
+discussed in [migration paths](/docs/monolito-vs-microservicios#migration-paths).
+
+The first service out is Notifications, in month four. It is the only boundary that crosses the
+network in this version, and the article's figure marks it on the map.
+
+## Data model and stores
+
+The monolith has one relational database. The reason is not ideological: booking is an operation
+that needs integrity, and a relational store provides it out of the box. The queries that justify
+the store are listed before choosing it, following
+[choosing a database from the queries](/docs/persistencia-politica-elegir-bd#start-with-the-list-of-queries).
+
+There are three ways to prevent overselling. The first is raising the isolation level to
+serializable and retrying transactions that fail. The second is locking the class row with
+`SELECT ... FOR UPDATE`. The third is decrementing capacity with a single conditional statement: an
+`UPDATE` on the class with the condition that at least one place remains, and checking that it
+affected one row. The third is chosen. It is the simplest, and the database guarantees the
+statement's atomicity without the application having to reason about concurrency.
+
+It is worth being precise about what PostgreSQL guarantees by default, because the example depends
+on it. According to its documentation, **Read Committed** is the default level, and **Repeatable
+Read** is implemented as _snapshot isolation_, which prevents dirty, non-repeatable and phantom
+reads but still allows serialization anomalies such as write skew. The conditional statement does
+not need a higher level for this specific case, but a higher level is not a universal guarantee
+either. The isolation reasoning is in
+[ACID data and isolation](/docs/datos-acid-y-aislamiento#transactions-and-acid).
+
+Each context's data lives in the same schema, with tables separated by module and no foreign keys
+crossing the boundaries of future contexts. That discipline is what will allow Notifications to be
+extracted without migrating data blind. For booking history a normal table with an index on member
+and date is used. No specialised store is needed yet, and a document store is rejected because the
+queries are few and relational.
+
+## Integration: calls, events and sagas
+
+There are three kinds of communication, and each has its place:
+
+- **Synchronous call** from the app to the Bookings API, because the member waits for a response.
+- **Synchronous call** from Bookings to Passes, and from Passes to the payment gateway, because the
+  charge must resolve before the place is confirmed.
+- **Asynchronous event** from Bookings to Notifications, because sending an email must not delay the
+  member or make a booking fail.
+
+### Booking with a charge: an orchestrated saga
+
+Booking with a pass involves three steps that are not in the same database when the charge goes out
+to the gateway: reserve the place, charge the pass and confirm. If the charge fails after the place
+was reserved, the place must be released. That is a **saga**: a sequence of local transactions with
+compensations. The alternative, a two-phase commit between the database and the gateway, is rejected
+because the gateway does not take part in that protocol, and holding resources while waiting for the
+provider penalises latency.
+
+The saga is orchestrated: the Bookings module coordinates the steps and decides what to compensate.
+It is preferred over choreography, in which each module reacts to the others' events, because this
+flow has only three steps and the compensation logic should live in one place where it can be read.
+Step types, compensation and its limits are in
+[sagas, outbox and idempotency](/docs/sagas-outbox-idempotencia#sagas-local-transactions-with-compensation).
+
+The call to the gateway carries an idempotency key. Stripe documents the same mechanism: the key is
+sent in a header, the platform stores the first response and returns it on retries, and keys of API v1 may be
+pruned after at least 24 hours
+([Stripe documentation](https://docs.stripe.com/api/idempotent_requests)). We apply the same approach
+to our booking API: the app generates a key per booking attempt, so a retry after a network drop does
+not create two places. The detail on keys in APIs is in
+[idempotency](/docs/sagas-outbox-idempotencia#idempotency-keys-in-apis).
+
+### Outbox at the boundary
+
+When Bookings confirms a place it must publish the `BookingConfirmed` event so that Notifications
+sends the email. If it writes to the database and then publishes to the broker, a failure between
+the two steps leaves data without an event or events without data. The solution is the **outbox
+table**: the event is stored in the same transaction as the booking, and a separate process forwards
+it to the broker. Microservices.io describes the pattern as the answer to the dual-write problem,
+with two ways of relaying: following the transaction log or polling the table
+([transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html)).
+
+Relaying can repeat messages after a restart, so the consumer must be idempotent. Here, Notifications
+stores the identifier of each event it has already processed. The outbox is introduced at the moment
+of extraction and not before: inside the monolith, Bookings and the sender can live with an in-memory
+event, because nothing crosses the network. The cost of adding the table is low, so it goes in
+together with the first real boundary.
+
+## Caching and queues
+
+The class catalogue is read far more often than it changes. A cache with a short TTL (30 seconds, design assumption) on
+timetable reads reduces database load at peak. Invalidation is the hard problem: the key is
+invalidated **after** the transaction that changed the capacity commits, never before, so that a
+concurrent read does not store the old value again. The short TTL is the safety net for whatever is
+forgotten. Strategies and their traps are in
+[caching, invalidation and stampedes](/docs/caching-colas-streaming#caching-buying-latency-with-freshness).
+
+Notifications go through a queue with competing consumers, a dead-letter queue for failed messages,
+and retries with growing delays and random variation. Retries without variation produce storms when
+a provider comes back. The retry mechanism and its budgets are in
+[resilience in distributed systems](/docs/resiliencia-sistemas-distribuidos#retries-useful-selfish-and-dangerous-in-chains).
+
+A partitioned log is not used yet. The volume of the confirmation event does not justify retaining
+history for reprocessing, and a queue is enough. If the team later needs to rebuild projections or
+reprocess a month of events, the decision is reopened; that is one of the changes in the evolution
+described below.
+
+## Security and identity
+
+The member authenticates with an identity provider that implements OpenID Connect; the app uses the
+authorization code flow with PKCE and does not store passwords. The OAuth 2.0 security best current
+practice (RFC 9700, published in 2025 as BCP 240) deprecates some modes of operation that are
+considered less secure, so the team takes it as the baseline for configuration
+([RFC 9700](https://www.rfc-editor.org/rfc/rfc9700)). Access tokens are short-lived, and app sessions
+are revoked from the provider.
+
+Authorization is finer than a role. A member can only book at a centre their subscription belongs to,
+and can only cancel their own bookings. A "member" role alone is not enough; the decision combines the
+role with membership. The model and its variants are in
+[RBAC, ABAC and ReBAC](/docs/autorizacion-rbac-abac-rebac#rbac-the-role-as-the-source-of-truth).
+
+Personal data (name, email, booking history) is minimised: the Notifications module receives only an
+identifier and a channel, and resolves the name at send time through Identity. So deleting a member
+does not require hunting for copies in the notification queue. The criteria and GDPR obligations are
+in [privacy by design](/docs/privacidad-por-diseno-gdpr).
+
+## Observability and SLOs
+
+The question the team must be able to answer is whether a member's booking was fast and correct. It
+is measured with two indicators taken from the user's point of view, not from the servers. The first
+is the percentage of bookings that respond in under 400 ms. The second is the percentage of
+confirmations that arrive in under 2 minutes. Both are assumptions and are revisited with real data
+in the first month.
+
+The availability SLO for booking is 99.9 % per month (assumption), and the error budget comes from that target. Google
+defines the SLI as a carefully defined quantitative measure and the SLO as a target value for that
+measure ([SRE, Service Level Objectives](https://sre.google/sre-book/service-level-objectives/)). The
+team decides the budget policy: while there is margin, it deploys; if the budget runs out, risky work
+stops and reliability takes priority. That policy and alerts based on budget burn are in
+[SLOs and the error budget](/docs/observabilidad-slo-presupuesto-error#slos-and-the-error-budget).
+
+Traces cross the modules and the queue with the same correlation identifier. Without it, the case of
+"the booking was charged but the email did not arrive" means cross-checking three dashboards by hand.
+
+## Deployment and progressive delivery
+
+The monolith deploys as one unit, but each behaviour change ships behind a feature flag. The new
+timetable screen is switched on first for the internal team, then for a pilot centre, and then for
+everyone. That separation between deploying and exposing is the basis of progressive delivery. For
+bookings, the critical part, a canary is used in steps: 5 %, 25 % and 100 % of traffic, with SLI
+checks at each step and automatic rollback if it drops below target. The procedure is in
+[flags and canaries](/docs/entrega-progresiva-flags-canary#canary-exposing-in-steps).
+
+Schema changes follow the expand-and-contract pattern, with three deployments: add the new column,
+copy and read in parallel, and remove the old one once nothing uses it. The migration of the seats
+table, the most sensitive one, runs in low-traffic windows with batched backfill. The phases are in
+[migrations without downtime](/docs/migraciones-bd-sin-downtime#the-four-phases).
+
+## One year later: when requirements change
+
+The initial architecture is checked against reality at twelve months. We assume three changes the
+business really asks for:
+
+1. **Waiting list per class.** A new feature reclaims released places. It is implemented inside
+   Bookings, because it shares the same capacity rule. It is not extracted: the integrity rule must
+   not cross the network.
+2. **Passes per centre.** The charge changes shape: a member can have different balances per centre.
+   It affects the data model of Passes, and the change is made with expand-and-contract, without
+   touching event consumers.
+3. **Gateway change.** The payment provider is replaced. The call is isolated behind an adapter inside
+   Passes, so the change does not reach Bookings or the app.
+
+The `BookingConfirmed` event gains a new field, `channel`, which Notifications uses to choose push or
+email. A change like this is safe if it does not break existing consumers, and contract versioning
+defines which changes are ([safe changes in event contracts](/docs/contratos-de-eventos-versionados#which-changes-are-safe)).
+
+With three times the volume, the 7:00 peak rises from 1,500 to about 4,500 bookings per minute
+(assumption). At that point the timetable cache is no longer enough, and the team decides whether the
+partitioned log is worth its cost. The decision is not taken on intuition: queue consumption is
+measured at the first real peak and compared with the target. If it falls short, the first candidate
+to change is the notification queue, not the bookings core.
+
+## Decision table
+
+Each row is a decision from the walkthrough, its rejected alternative and the main reason. The linked
+article is the one that justifies the decision in more depth.
+
+| Decision                                        | Rejected alternative           | Main reason                                                            | Read more                                                                                       |
+| ----------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Modular monolith at the start                   | Microservices from day one     | Boundaries are still hypotheses; each mistake costs a network contract | [Modular monolith first](/docs/monolito-modular-primero)                                        |
+| Notifications as the first boundary             | Extracting Bookings or Catalog | Different load profile and external providers; eventual consistency    | [Migration paths](/docs/monolito-vs-microservicios#migration-paths)                             |
+| Conditional statement for capacity              | Serializable with retries      | Atomicity of one statement; no concurrency reasoning in the app        | [ACID data and isolation](/docs/datos-acid-y-aislamiento#transactions-and-acid)                 |
+| Relational database                             | Document store                 | Few relational queries; integrity out of the box                       | [Choosing a database](/docs/persistencia-politica-elegir-bd#start-with-the-list-of-queries)     |
+| Orchestrated saga for booking and charge        | Two-phase commit (2PC)         | The gateway does not take part in 2PC; no locks held during the charge | [Sagas](/docs/sagas-outbox-idempotencia#sagas-local-transactions-with-compensation)             |
+| Outbox for the confirmation event               | Publishing after commit        | Avoids loss or orphan events in the dual write                         | [Transactional outbox](/docs/sagas-outbox-idempotencia#transactional-outbox)                    |
+| Timetable cache with short TTL                  | No cache, or cache without TTL | Reduces peak load; the TTL bounds staleness                            | [Caching and invalidation](/docs/caching-colas-streaming#caching-buying-latency-with-freshness) |
+| Retries with random variation                   | Fixed retries                  | Avoids storms when a provider comes back                               | [Retries with jitter](/docs/reintentos-con-jitter)                                              |
+| Bought identity, membership-based authorization | Own authentication             | Less surface to maintain; the role alone is not enough to book         | [RBAC, ABAC and ReBAC](/docs/autorizacion-rbac-abac-rebac#rbac-the-role-as-the-source-of-truth) |
+| 99.9 % SLO and error budget                     | Alerting on every error        | Ties deployment pace to measured reliability                           | [SLOs and the budget](/docs/observabilidad-slo-presupuesto-error#slos-and-the-error-budget)     |
+| Canary in steps for bookings                    | Full deployment at once        | Limits the blast radius of a failure in the critical part              | [Canary](/docs/entrega-progresiva-flags-canary#canary-exposing-in-steps)                        |
+
+## Summary ADR
+
+Decisions that change the shape of the system are written as ADRs. Nygard's 2011 format (title,
+context, decision, status and consequences) remains the basis of most templates
+([Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)).
+This is the ADR for the first boundary, in summary form:
+
+**ADR-007: Notifications is extracted as the first service in month four**
+
+- **Status:** accepted. Quarterly review.
+- **Context:** bulk sends degrade booking transactions; the email provider fails more often than the
+  rest of the system.
+- **Decision:** extract Notifications with its own queue and an outbox in Bookings. The rest of the
+  monolith does not change.
+- **Consequences:** the system's first network contract appears, and its versioning. Fault isolation
+  and independent scaling are gained. A relay process is added that must be operated.
+- **Review criterion:** if queue consumption misses the target at the first peak, or if Notifications
+  stops having a different load profile, the boundary is reconsidered.
+
+The format and lifecycle of ADRs are in [ADRs](/docs/adr#what-an-adr-is-and-what-problem-it-solves).
+
+## When it applies and when it does not
+
+This walkthrough is not a template for every system. With a two-person team and a single centre,
+almost all the distribution decisions are unnecessary: a monolith with one database and an events
+table solves the case. The integration pieces (saga, outbox, queue, stepped canary) are justified when
+there are several real boundaries, different loads, or failure costs the business can name. Before
+adding them, the question is which concrete requirement stops being met without them.
+
+## Common mistakes
+
+- **Starting from technology.** Choosing queues, Kubernetes and distributed databases before having the
+  list of queries and requirements. The result is complexity with no requirement behind it.
+- **Figures without labels.** Presenting an assumption as if it were a business requirement. In a later
+  decision nobody will know what to review.
+- **Boundaries by technical layer.** Splitting "API", "logic" and "data" into services instead of
+  business contexts. Every request crosses three networks and no boundary protects anything.
+- **Saga without thought-through compensation.** A flow with steps that cannot be undone and no decision
+  about what happens if the charge fails halfway.
+- **Cache without an invalidation plan.** A long TTL "so it is fast" that shows sold places as free for
+  minutes.
+- **Decisions that are not written down.** A year later nobody knows why the monolith has those
+  boundaries, and closed discussions get reopened.
+
+## Checklist
+
+- [ ] Quality requirements have figures, and assumed figures are labelled as such.
+- [ ] Each bounded context has an owner, its own language and boundary rules checked in CI.
+- [ ] The first extraction has a nameable reason and a review criterion.
+- [ ] Critical integrity (capacity, charge) is solved inside one transaction or a written saga.
+- [ ] Every published event leaves through an outbox, and every consumer is idempotent.
+- [ ] Caches have a TTL and an invalidation rule that runs after commit.
+- [ ] There are SLI, SLO and an error budget before the first production deployment.
+- [ ] Schema and contract changes follow expand-and-contract, without breaking changes.
+- [ ] Each relevant decision has its ADR, with the rejected alternative and a review criterion.
+
+## Sources
+
+- Martin Fowler, [MonolithFirst](https://martinfowler.com/bliki/MonolithFirst.html), 2015.
+- Microservices.io, [Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html).
+- Google, [Site Reliability Engineering: Service Level Objectives](https://sre.google/sre-book/service-level-objectives/).
+- PostgreSQL, [Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html), official documentation.
+- IETF, [RFC 9700: OAuth 2.0 Security Best Current Practice](https://www.rfc-editor.org/rfc/rfc9700), 2025.
+- Stripe, [Idempotent requests](https://docs.stripe.com/api/idempotent_requests), official documentation.
+- Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions), 2011.
+- Requirement, volume and peak figures: assumptions of the illustrative case, not data from a real project.

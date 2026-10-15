@@ -1,0 +1,266 @@
+---
+title: 'Web rendering: SSR, SSG, ISR and islands'
+description: 'Where HTML is generated and when: CSR, SSR, SSG, ISR, streaming and islands, with their costs, selection criteria and common mistakes.'
+category: diseno
+tags:
+  - rendering
+  - ssr
+  - isr
+  - islands
+  - hydration
+order: 13
+roadmap:
+  id: sistemas
+  stage: escala
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'One page at three moments: built, on the server and in the browser'
+---
+
+# Web rendering: SSR, SSG, ISR and islands
+
+Every page is built at some moment: at build time, on each request, or in the browser. That choice
+decides what the user sees first, how much it costs to serve the page, how long it can take to
+reflect a change, and how much JavaScript must download and run before a button responds. The names
+(CSR, SSR, SSG, ISR, islands) are ways of splitting those decisions. They are not categories you pick
+once for the whole site.
+
+The thesis here is simple: you decide per page or per page type, by measuring what changes and how
+often, and each mode is paid for at a different point in the system. At the end there is a real case,
+this site, which is generated entirely at build time.
+
+## Three questions before choosing
+
+Before choosing a strategy, answer three questions:
+
+1. **When is the HTML generated?** At build time, on each request, in the browser, or a mix.
+2. **How long is a copy valid?** From "until the next deploy" to "never expires", with windows of
+   seconds or minutes in between.
+3. **How much JavaScript arrives to make it interactive?** That decides the time until the page
+   responds, not just until it looks ready.
+
+The four classic strategies answer those three questions differently.
+
+## The strategies and their costs
+
+### CSR: the browser builds the page
+
+With client-side rendering, the server sends an almost empty template and the browser downloads the
+JavaScript, requests the data and mounts the view. It is cheap to serve, because it is a set of static
+files, and navigation after the first load is fast. The cost is at startup: content arrives late and
+depends on downloading and executing code. Link previewers and other crawlers that do not run
+JavaScript see very little.
+
+It fits internal dashboards, applications behind a login, or screens where SEO does not matter.
+
+### SSR: the server generates each response
+
+With server-side rendering, every request produces the HTML at that moment. According to the web.dev
+reference article _Rendering on the Web_ (Addy Osmani and Jason Miller), the browser receives markup
+instead of JavaScript that would build it. The price is the server: every visit runs code, and the
+time to first byte (TTFB) depends on it. A personalised response also cannot be shared between users,
+so intermediate caching helps little.
+
+### SSG: the HTML comes out of the build
+
+With static site generation, the HTML is produced during the build, one file per URL. Serving it is
+trivial and any CDN can carry it. The cost appears in two places: every content change requires
+rebuilding and redeploying, and build time grows with the number of pages. For content that changes
+with each publication, it is among the cheapest options to serve.
+
+### ISR: regenerating in the background
+
+Incremental static regeneration mixes the two previous approaches: the page is generated statically
+and, after a time window, the copy is considered stale. Next.js describes the behaviour in its
+official guide: the next visitor receives the cached copy while a new one is regenerated in the
+background, and later requests receive that version. The concept is _stale-while-revalidate_ from
+[RFC 5861](https://www.rfc-editor.org/rfc/rfc5861), which the [edge and CDN](/docs/edge-computing-cdn#the-cache-who-decides-how-long-a-copy-lasts)
+article explains for HTTP caches.
+
+In Next.js two models coexist depending on configuration, and they should not be mixed up:
+
+- **Without Cache Components**, the ISR guide still uses `revalidate` at route level. For example, a
+  value of 3600 regenerates the page at most once an hour.
+- **With `cacheComponents`**, caching is declared with the `'use cache'` directive and the lifetime
+  with `cacheLife`. According to the official reference, `cacheLife` was stabilised in version 16.0.0.
+  The `default` profile has a `stale` of 5 minutes, a `revalidate` of 15 minutes and an `expire` of
+  never.
+
+On-demand invalidation also has two levels. `revalidatePath` invalidates the entries of a route, but
+regeneration happens on the next request, not immediately. `revalidateTag` targets tagged data. The
+guide recommends revalidating whole paths in most cases and reserving tags for when you need precision.
+
+If regeneration fails, Next.js keeps serving the last correct version and retries on the next request.
+That is useful, but the guide warns about deployments with several instances: with the default
+file-system cache, an on-demand invalidation only affects the instance that receives the call, and
+coordinating instances requires a shared custom cache handler. Background regeneration also runs on the
+instance that receives the request, and on platforms that bill per request it counts as extra compute.
+
+Other frameworks call this something else or do not offer it. When you evaluate it, the important
+questions are not the name but three facts: who regenerates, when the copy is invalidated, and what
+happens when regeneration fails.
+
+### Streaming: the HTML in pieces
+
+With streaming SSR, the server sends HTML in fragments that the browser paints as they arrive. Web.dev
+describes it as a way to improve the First Contentful Paint. The practical benefit is that a slow part
+of the page, such as a list that depends on an expensive query, does not block the header or the rest.
+In React frameworks it usually relies on `Suspense` boundaries to decide what to wait for and what to
+send first (the author's judgement; I have not verified the mechanism in each framework).
+
+## Hydration: the part you pay for twice
+
+Hydration means attaching state and interactivity to HTML that is already on screen. Web.dev points to
+three problems worth keeping in mind:
+
+- A page can look ready and not respond to input until its JavaScript has finished running. On mobile
+  that gap can be long.
+- Work is repeated. The HTML, the serialised data and the client bundle travel together, and the client
+  rebuilds what the server already built.
+- Rehydration hurts Total Blocking Time and Interaction to Next Paint (INP), even when FCP improves.
+  Measuring only the first paint is misleading.
+
+So the useful question is not "SSR or CSR", but **how much JavaScript each part of the page needs**.
+That is the question islands answer.
+
+## Islands and Server Components
+
+### Islands: HTML by default, interactivity where it is needed
+
+In the islands model, the page is static HTML except for the areas that need interactivity, and each of
+those areas hydrates separately. Astro is the best-known example. According to its documentation,
+components render to HTML without client JavaScript unless they are marked with a `client:*` directive:
+
+| Directive        | When it hydrates                                               |
+| ---------------- | -------------------------------------------------------------- |
+| `client:load`    | Immediately on page load.                                      |
+| `client:idle`    | When the browser is idle, with an optional `timeout`.          |
+| `client:visible` | When the component enters the viewport (IntersectionObserver). |
+| `client:media`   | When a media query matches, for example a mobile menu.         |
+| `client:only`    | Never rendered on the server; only on the client.              |
+
+Dynamic server islands are marked with `server:defer` and show fallback content while they resolve. The
+advantage is that the JavaScript for non-interactive parts is never sent, and islands load in parallel
+without blocking one another.
+
+The risk is the opposite of hydrating everything: a simple-looking button that drags in a full framework,
+or a `client:load` island at the bottom of the page where `client:visible` would have been enough.
+
+### Server Components: code that never reaches the client
+
+React Server Components are something else. According to React's documentation, they render before
+bundling, either in a build step or on a server per request, and they can read files or query the
+database without an intermediate API. Their code and dependencies never reach the browser, which only
+receives the rendered output. They cannot use `useState` because they never run on the client. For
+interactivity they are composed with Client Components marked `'use client'`, which are bundled and
+shipped.
+
+The difference from SSR is one of axis. SSR describes **when and where the initial HTML is generated**.
+Server Components describe **which code is bundled for the client**. They can be combined: the tree of
+Server Components renders, and its output can also be served as SSR. React's documentation does not
+specify which framework or bundler to use, and it warns that the APIs for implementing a Server
+Components bundler do not follow semantic versioning and may change between minor versions. In practice,
+the framework is what decides the rendering strategy.
+
+| Approach | Where HTML is generated   | JavaScript reaching the browser | Typical freshness    |
+| -------- | ------------------------- | ------------------------------- | -------------------- |
+| CSR      | Browser                   | All of the view                 | Live                 |
+| SSR      | Server, per request       | What is needed to hydrate       | Live                 |
+| SSG      | Build                     | Hydration code, or none         | Until the next build |
+| ISR      | Server, in the background | Depends on configuration        | Revalidation window  |
+| Islands  | Build or server           | Only each island's code         | Depends on each part |
+
+## Edge caching and invalidation
+
+Generated HTML can be cached in a CDN, and most freshness problems show up there. There are two
+decisions. The first is the TTL: how long a copy can be served without asking. The second is
+invalidation: which event removes the copy before it expires. The [edge and CDN](/docs/edge-computing-cdn#a-case-personalising-a-front-page-without-losing-the-cache)
+article works through a personalised front page without losing the cache; here the general rule is
+enough: **personal data is not cached in the shared copy**. It is resolved at the edge or in a client
+island.
+
+Regenerating in bulk has its own risk. If many copies expire at once, the origin receives a flood of
+regenerations. The [caching, queues and streaming](/docs/caching-colas-streaming#cache-stampede)
+article describes cache stampedes and their remedies, which apply equally to page regeneration.
+
+## Decision criteria
+
+- **Content that changes.** If it changes with each publication and tolerates minutes of delay, SSG with
+  rebuilds or ISR. If it changes every second, SSR or a dynamic island for that data.
+- **Personalisation.** If each user sees something different, the shared HTML cannot contain it. Solve it
+  with SSR, client islands or at the edge.
+- **SEO and social sharing.** Important content must be in the initial HTML. Social link previewers do not
+  run JavaScript, so Open Graph tags must already be in the response.
+- **Server cost versus cache cost.** SSR pays per request or per instance. SSG pays at build time and at
+  the CDN. ISR moves some compute into regeneration, which also costs money.
+- **TTFB versus interactivity.** SSR and SSG deliver HTML early, but INP depends on how much JavaScript
+  runs afterwards. Measure both.
+- **Operational complexity.** Each mode adds parts: a server, a queue or revalidation process, an
+  invalidation strategy and, with several instances, a shared cache.
+
+When content is mostly the same, changes in discrete publications and nothing is personalised, the
+simplest option, SSG, is usually also the cheapest and most robust.
+
+## A case: this site
+
+This repository is a good example of pure SSG, with some nuances worth knowing:
+
+- It is published on GitHub Pages, with no rendering server. Every request is a static file.
+- It is a Vite and React SPA. `src/main.tsx` mounts the application with `createRoot`, not `hydrateRoot`,
+  so the prerendered HTML is not hydrated. Before mounting, it removes the `data-prerender` tags so the
+  router does not duplicate the `<head>`.
+- The postbuild (`tools/seo/prerender.ts`) writes one `index.html` per route and locale with the SEO
+  `<head>` already in place. Articles add their full text inside `<noscript>`, so crawlers without
+  JavaScript can read the content. The 1200×630 social cards and the RSS feeds are also generated at build
+  time.
+- The route list comes from the generated content index (`src/content/index.gen.json`). It plays the role
+  of `generateStaticParams`: every existing article has its route. Because there is no server, a route
+  that does not exist in the build cannot be generated afterwards.
+
+The consequences are the expected ones. A content change requires rebuilding and deploying: a push to
+`main` runs the deploy workflow, which runs `bun run check` and then the build. There is no revalidation
+and no server-side personalisation. In return, there is almost nothing to scale and the HTML is identical
+for everyone. The limit shows up when the number of pages grows or when some part needs freshness of
+minutes: then the dynamic data should be split out, for example as an island loaded from an API, instead
+of regenerating everything.
+
+I have not verified the cache headers that GitHub Pages applies to these files, so this article does not
+claim any specific value.
+
+## Common mistakes
+
+- **Hydrating everything by default.** An interactive component inside a text page ships JavaScript nobody
+  needs in that area. Start with HTML and add interactivity only where it is needed.
+- **Stale data with no owner.** A one-hour `revalidate` on data that changes every minute, or an
+  invalidation that clears the route while the same data appears on other routes. Every piece of data needs
+  an explicit answer to "who invalidates it, and when?".
+- **Invalidating one instance.** With a per-instance local cache, an on-demand invalidation reaches only the
+  instance that receives it. Without a shared cache, the others keep serving old copies.
+- **Dynamic routes without a generation plan.** Without a parameter list, every first visit pays for the
+  render or ends in a 404. In Next.js, `dynamicParams` decides whether routes not generated at build time
+  are rendered on demand or return 404.
+- **Treating SSR as a cache.** An SSR response without cache headers is computed on every visit. If the
+  content is shared, cache it at the edge.
+- **Measuring only the first paint.** A fast FCP with a high INP means the page looks ready and does not
+  respond. Measure both on mobile.
+
+## Checklist
+
+- [ ] Each page type declares when its HTML is generated and how long a copy lasts.
+- [ ] Personalised data does not live in the shared copy.
+- [ ] Each island has a justified `client:*` directive; none is `client:load` out of habit.
+- [ ] Each cache has an explicit invalidation, including across several instances.
+- [ ] Dynamic routes have a generation list and a policy for unknown ones.
+- [ ] The important content and the social tags are in the initial HTML.
+- [ ] INP and TTFB are measured on mobile, not just FCP.
+
+## Sources
+
+- [Rendering on the Web](https://web.dev/articles/rendering-on-the-web), Addy Osmani and Jason Miller, web.dev. Published in 2019, updated 5 January 2026.
+- [Next.js: Incremental Static Regeneration](https://nextjs.org/docs/app/guides/incremental-static-regeneration), official Next.js documentation (consulted 15 October 2026).
+- [Next.js: cacheLife](https://nextjs.org/docs/app/api-reference/functions/cacheLife), official reference, with the `default` profile values and version history.
+- [React: Server Components](https://react.dev/reference/rsc/server-components), official React documentation.
+- [Astro: Directives reference](https://docs.astro.build/en/reference/directives-reference/) and [Astro: Islands](https://docs.astro.build/en/concepts/islands/), official Astro documentation.
+- [RFC 5861: HTTP Cache-Control Extensions for Stale Content](https://www.rfc-editor.org/rfc/rfc5861), M. Nottingham, May 2010, informational.
+- Repository: `src/main.tsx`, `tools/seo/prerender.ts` and `AGENTS.md` §8.

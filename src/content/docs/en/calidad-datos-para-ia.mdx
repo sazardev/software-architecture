@@ -1,0 +1,264 @@
+---
+title: 'Data for AI: quality, synthetic data and licensing'
+description: 'Data quality for models and RAG, synthetic data with its risks, and the licensing and consent framework that changes with jurisdiction.'
+category: tendencias
+tags:
+  - datos
+  - calidad-de-datos
+  - datos-sinteticos
+  - licencias
+  - ia
+order: 13
+roadmap:
+  id: ia
+  stage: panorama
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A data pipeline with quality filters, a synthetic branch and a licence gate'
+---
+
+# Data for AI: quality, synthetic data and licensing
+
+A model or a RAG system is only as good as the data it receives. When an answer goes wrong, the
+cause is usually upstream: a field that stopped being updated, a duplicate that inflates a
+source, a label put on in a hurry, or a corpus with no documents from a group of users. No model
+change fixes that, and no prompt fixes it either.
+
+This article treats data as an architecture component with three questions: whether it is
+**good** for the use we give it, whether we can **generate more** without fooling ourselves
+(synthetic data), and whether we have the **right** to use it (licences, consent and
+jurisdiction). The regulatory facts were checked as of October 2026; the recommendations are the
+author's judgement and are marked as such.
+
+## Quality: the failure that gives no error
+
+A data pipeline rarely throws an exception when the data is bad. It trains, indexes and answers
+as usual, only worse. That is why quality must be measured as one more property, with thresholds
+and owners, just like latency or cost. The dimensions that matter most in AI are these:
+
+| Dimension       | Question it answers                                   | Symptom in AI                                                |
+| --------------- | ----------------------------------------------------- | ------------------------------------------------------------ |
+| Completeness    | Are all fields and all segments present?              | The model performs worse in one language or region           |
+| Freshness       | Is the fact still true?                               | The RAG cites rates or policies that no longer exist         |
+| Duplicates      | How many times does the same content appear?          | One source dominates results without being the most reliable |
+| Reliable labels | Do two annotators agree on the same thing?            | The evaluation metric rises while practice does not          |
+| Sampling bias   | Does the sample represent the population of use?      | Errors concentrated in the least represented group           |
+| Traceability    | Where does each record come from and what changed it? | Nobody can explain why an answer changed                     |
+
+The cheapest way to measure this is a set of checks that run on every load, like unit tests for
+data. No specific tool is needed to start: the rules must be written, versioned, and a failure
+must block publication of the dataset.
+
+## Data contracts and lineage
+
+A data contract declares what a consumer expects from a producer: schema, freshness, uniqueness,
+owner and what each field means. Without a contract, the AI team discovers changes when the model
+starts to fail. With a contract, the break happens in the producer, which is the party that can
+fix it.
+
+A minimal contract fits in a few lines. The format matters less than being readable by humans
+and checkable by machines:
+
+```yaml
+dataset: support-incidents
+owner: support-team
+freshness: 24h # the newest record cannot be older than 24 h
+primary_key: [ticket_id]
+columns:
+  ticket_id: { type: string, unique: true, nullable: false }
+  resolved_at: { type: timestamp, nullable: true }
+  body_text: { type: string, pii: true }
+```
+
+**Lineage** answers the reverse question: which sources and transformations produced each record.
+When a bad answer appears, it lets you walk back to the source and know what else may be
+contaminated. A lakehouse, with table versions and a change log, makes this easier; the details of
+that layer are in [data architecture: lakehouse and data mesh](/docs/arquitectura-de-datos-lakehouse).
+
+## Evaluate quality before indexing
+
+In a RAG system the cheap moment to catch a problem is before indexing. A duplicate, empty or
+outdated document that enters the index contaminates every answer that retrieves it. Author's
+judgement: three minimum gates before a batch is published to the index.
+
+- **Format:** the document can be read, has text, and is in the expected language.
+- **Freshness:** it has a source date and is not marked as withdrawn or expired.
+- **Uniqueness:** there is no exact or near-exact duplicate already indexed (content hash or similarity).
+
+These gates do not replace evaluating retrieval and generation. They measure the input; the
+[continuous evaluation of RAG](/docs/rag-y-evaluacion-continua#continuous-evaluation-a-golden-set)
+measures the output. You need both, because a clean index can still answer badly.
+
+## Synthetic data: what it is for
+
+Synthetic data is generated by a model or a simulator rather than collected from the world. It is
+useful for three specific things:
+
+- **Covering rare cases.** A fraud detector needs examples of an attack type that barely appears.
+  Generating controlled variants widens coverage, as long as they are validated against real cases.
+- **Testing without exposing.** A test environment with synthetic data that mimics the shape of
+  real data avoids copying personal data to places it should not be. It is not automatic
+  anonymisation: a synthetic record can still reproduce patterns that identify someone.
+- **Preparing a new domain.** Before having customers, a team can build a plausible test set to
+  validate the architecture.
+
+### Collapse from training on your own output
+
+The most cited risk is **model collapse**. Shumailov and colleagues published in _Nature_ (July 2024) that training recursively on content generated by models produces irreversible defects: the
+tail of the original distribution disappears and the model becomes progressively narrower. The
+mechanism is statistical: each generation loses the infrequent cases the previous one did not
+reproduce.
+
+The important nuance comes next. Gerstgrasser and colleagues (arXiv:2404.01413, April 2024) found that replacing real data with each
+generation's synthetic data tends towards collapse, whereas **accumulating** the synthetic
+generations alongside the original real data avoids it. In other
+words, synthetic data is a complement to real data, not a substitute for it.
+
+### Inherited bias and false confidence
+
+Synthetic data inherits the biases of the model that generated it and cannot see what that model
+does not know. So the most dangerous risk is not that the data is bad, but that it **looks good**:
+a perfectly formatted set with high metrics may be centred on what the generator already knew how
+to do. The warning sign is an evaluation that improves while real users notice nothing.
+
+## Labelling with models and human verification
+
+Labelling with a model is cheap and fast, and for many tasks it works as a first pass. The usual
+mistake is to accept its output without measuring it. Author's judgement: treat the model's label
+as a proposal and verify it systematically.
+
+- Sample each batch (for example, a fixed percentage plus everything the model flags with low confidence).
+- Measure agreement between human reviewers and between human and model, and keep both figures.
+- Review rare classes more thoroughly, because random sampling lets them slip through.
+- Record which model and which instruction version labelled each record: if either changes, older labels stop being comparable.
+
+## Licences and rights: data and model
+
+Two different licences are easy to confuse. The **data licence** says what you may do with the
+corpus. The **model licence** says what you may do with the weights or the service. One can allow
+what the other forbids, and neither protects you if the origin of the data was unclear.
+
+Some distinctions that often go unnoticed:
+
+- A non-commercial licence (such as some Creative Commons variants with the NC clause) limits
+  commercial use of the material. Training a paid product on it is a legal decision, not a technical one.
+- An open data licence may require attribution or share-alike, and that carries over to outputs or
+  to the model depending on how it is worded.
+- An API provider's terms are not a dataset's terms: they may forbid training on the service's
+  outputs even when the output feels like yours.
+- In the European Union, the text and data mining exception has a rights reservation (opt-out) that
+  rightsholders can invoke; respecting it is an obligation, not a courtesy.
+
+### Why the legal text changes by jurisdiction
+
+The same training run can be lawful in one country and contested in another. Two verified examples:
+
+- In the United Kingdom, the High Court found for Stability AI in _Getty Images v. Stability AI_
+  (November 2025) on secondary infringement: it did not treat the model as an "infringing copy".
+  Getty won only a limited trade mark claim. Getty obtained permission to appeal the secondary
+  infringement ruling (December 2025); at the time of writing I found no appeal judgment.
+- In Germany, the Munich Regional Court I ruled for GEMA in _GEMA v. OpenAI_ (11 November 2025, at
+  first instance): it held that song lyrics memorised in the model's parameters constitute
+  reproduction. It is not a final judgment.
+
+The lesson is not which case wins, but that the argument depends on technical facts: what gets
+memorised, where training happened and what gets distributed. That is why the technical
+documentation of a dataset is also legal documentation.
+
+### What EU regulation requires today
+
+The AI Act (Regulation (EU) 2024/1689) has a staggered timeline. What has been verified, from
+the European Commission's page on the AI regulatory framework, which is the source consulted for these dates:
+
+- **General-purpose AI models:** from 2 August 2025 their obligations apply, including publishing a
+  summary of the content used for training, following a Commission template, and having a copyright
+  compliance policy. From 2 August 2026 the Act applies in full, and the AI Office and national
+  authorities take on its implementation and enforcement.
+- **High-risk systems:** Article 10 requires that training, validation and testing datasets be
+  relevant, sufficiently representative, as free of errors and as complete as possible, and that
+  bias be examined. The _Digital Omnibus on AI_ (Regulation (EU) 2026/1744, in force from 27 July
+  2026 according to the Commission) moves the obligations for Annex III high-risk systems to 2
+  December 2027 and those for Annex I to 2 August 2028.
+- **Transparency (Article 50):** the Commission states that the transparency rules apply from August 2026.
+
+Dates change often and depend on the official publication. Before fixing a deadline in a plan,
+check the text of the Regulation and its amendments on EUR-Lex and the Commission's AI Act pages.
+Outside the EU the framework is different: do not assume it by analogy.
+
+## Consent, people and withdrawal
+
+If the corpus contains personal data, the GDPR applies to training and use, not only to the
+database. The European Data Protection Board (Opinion 28/2024) left three ideas that should go into
+the design: a model trained on personal data cannot be presumed anonymous; that has to be shown
+case by case, with a negligible risk of extraction; and legitimate interest is not a default legal
+basis. The opinion also leaves questions open about models trained on data processed unlawfully.
+Deciding that belongs to a judge or a supervisory authority, not to an engineering team.
+
+For withdrawal there is a real technical tension. Deleting a record from the corpus is simple;
+deleting its influence from an already trained model is, today, hard to guarantee. Author's
+judgement:
+
+- Keep the **provenance** of each record (source, legal basis, date) so you know what to delete.
+- Propagate deletion to derived datasets, RAG indexes, labels and test copies. The detail of
+  deletion across every copy is in [privacy by design](/docs/privacidad-por-diseno-gdpr#deletion-that-reaches-every-copy).
+- Define a retraining policy: how often the model is retrained without withdrawn data, and what is
+  documented if that cannot happen immediately.
+- Do not promise in the privacy policy a deletion "from the model" that the team cannot carry out.
+
+## How it fits with the rest of the architecture
+
+Quality data is not a separate project; it is the meeting point of three pieces that already have
+their own articles. Storage and lineage live in the lakehouse. The versioning of each dataset,
+code and model is handled separately in the [MLOps](/docs/mlops-modelo-a-produccion#version-data-code-and-model-separately)
+lifecycle, and drift monitoring ([MLOps](/docs/mlops-modelo-a-produccion#watch-for-drift)) detects
+when production data no longer looks like training data. RAG evaluation measures the effect of all
+of the above on the final answer.
+
+## When it does not apply
+
+A prototype with your own data that never leaves the team does not need a formal programme of
+quality, contracts and licences. Generating synthetic data does not make sense if the problem is
+that real cases are missing and the source exists: request it, do not fabricate it. And if the data
+has no clear owner, the right decision is not to use it until that is clarified, not to document the
+doubt and carry on.
+
+## Common mistakes
+
+- **Measuring only the model.** A gain in the evaluation metric may come from a test set that looks
+  too much like the training set.
+- **Replacing real data with synthetic.** It is the shortest route to the collapse described above.
+- **Trusting automatic labels without sampling.** Systematic error is the most expensive kind to detect.
+- **Treating "public" as "free".** Being on the web says nothing about the rights attached to it.
+- **Mixing licences without recording it.** When sources are combined, the strictest restriction
+  wins, and that must be written down in the dataset.
+- **Promising a deletion you cannot perform.** It is worse than promising nothing.
+
+## Checklist
+
+- Each dataset has an owner, a versioned data contract and quality thresholds.
+- Each record can be traced to its source and transformation.
+- Batches pass the format, freshness and uniqueness gates before being indexed or trained on.
+- Synthetic data is mixed with real data, validated and labelled as such.
+- Automatic labels have human sampling and agreement is measured.
+- Each source has a recorded licence, usage restrictions and, where applicable, a respected rights reservation.
+- The legal basis and jurisdiction for personal data are documented.
+- A withdrawal procedure reaches the index, the copies and the retraining policy.
+- Regulatory deadlines are checked against the official source before they go into a plan.
+
+## Sources
+
+Consulted in October 2026. The dates of the Regulation and the Omnibus come from the European
+Commission's page; the EUR-Lex text could not be opened in this verification, so check it against
+the official text.
+
+- [Shumailov et al., "AI models collapse when trained on recursively generated data", _Nature_ (2024)](https://doi.org/10.1038/s41586-024-07566-y)
+- [Gerstgrasser et al., "Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data" (arXiv:2404.01413)](https://arxiv.org/abs/2404.01413)
+- [Regulation (EU) 2024/1689 (AI Act), EUR-Lex](https://eur-lex.europa.eu/eli/reg/2024/1689/oj)
+- [Explanatory notice and template for the public summary of training content, as described in a commentary by Mayer Brown (August 2025)](https://www.mayerbrown.com/en/insights/publications/2025/08/eu-ai-act-news-rules-on-general-purpose-ai-start-applying-guidelines-and-template-for-summary-of-training-data-finalized)
+- [European Commission: regulatory framework for AI (AI Act calendar and Digital Omnibus, Regulation (EU) 2026/1744)](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai)
+- [Article 10 of the AI Act, EU AI Act Service Desk](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-10)
+- [European Data Protection Board, Opinion 28/2024 on AI models and personal data](https://www.edpb.europa.eu/system/files/2024-12/edpb_opinion_202428_ai-models_en.pdf)
+- [Getty Images v. Stability AI, summary of the High Court of England and Wales judgment (November 2025), Latham & Watkins](https://www.lw.com/en/insights/getty-images-v-stability-ai-english-high-court-rejects-secondary-copyright-claim)
+- [Getty Images v. Stability AI: permission to appeal (Burges Salmon)](https://www.burges-salmon.com/articles/102lydc/getty-images-v-stability-ai-getty-granted-permission-to-appeal)
+- [GEMA v. OpenAI, Munich Regional Court I, 11 November 2025 (42 O 14139/24), Taylor Wessing summary](https://www.taylorwessing.com/de/insights-and-events/insights/2025/11/gema-v-openai)

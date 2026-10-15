@@ -1,0 +1,283 @@
+---
+title: 'Agentes que usan interfaces: navegador y escritorio'
+description: 'Cuándo un agente debe manejar una interfaz gráfica en vez de una API, qué riesgos añade la página y cómo acotarlo con sandbox, aprobaciones y trazas.'
+category: tendencias
+tags:
+  - agentes
+  - computer-use
+  - navegador
+  - prompt-injection
+  - sandbox
+order: 11
+roadmap:
+  id: ia
+  stage: gobierno
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un agente mueve el cursor y una compuerta lo frena antes de la acción irreversible'
+---
+
+# Agentes que usan interfaces: navegador y escritorio
+
+Un agente de IA puede llamar a una API, pero también puede hacer lo que haría una persona frente a
+una pantalla: mirar una captura, decidir dónde hacer clic, escribir en un campo y leer el resultado.
+Los proveedores llaman a esto «computer use» o agentes de navegador. Abre procesos que no tienen
+integración: el portal de un proveedor, un sistema heredado sin API, una aplicación de escritorio
+de hace diez años.
+
+La tesis de este artículo es poco vistosa: **operar una interfaz es la última opción, no la
+primera**. Si existe una API o un conector con permisos acotados, casi siempre es mejor. Si no
+existe, el agente sí puede hacerlo, pero la interfaz se convierte en la parte más frágil del
+sistema y en la puerta por la que entra un atacante. El diseño tiene que asumir las dos cosas desde
+el principio.
+
+<Callout tone="info" title="Fecha de corte">
+  Datos de octubre de 2026. La herramienta de computer use de Anthropic va por la versión
+  `computer_toolset_20260801`, disponible con carácter general en la API de Claude y en Google
+  Cloud; las versiones anteriores siguen documentadas para modelos concretos. Los productos de
+  navegador cambian de nombre y de plan con frecuencia: contrasta con la documentación oficial antes
+  de decidir.
+</Callout>
+
+## Qué significa operar una interfaz
+
+Hay tres formas de que un agente «vea» una aplicación, y cada una cambia el coste y la fragilidad:
+
+| Modalidad            | Qué recibe el agente                     | Cómo actúa                                         | Coste por paso                                                                       | Punto frágil                                         |
+| -------------------- | ---------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| Visión de escritorio | Capturas de pantalla                     | Coordenadas en píxeles, ratón y teclado            | Alto: según la documentación de Anthropic, cada captura pesa unos 1.000–1.800 tokens | Escalado, tamaño de los controles, cambios de diseño |
+| Navegador por árbol  | Árbol de accesibilidad de la página      | Referencias a elementos (p. ej. `e5`) o selectores | Bajo: texto en lugar de imágenes                                                     | Páginas mal etiquetadas, cambios de estructura       |
+| Híbrida              | Árbol y captura cuando importa lo visual | Según el paso                                      | Medio                                                                                | Mantener dos canales coherentes                      |
+
+El navegador por árbol es el que usa, por ejemplo, Playwright MCP: en lugar de capturas, trabaja con
+un árbol de accesibilidad donde cada elemento tiene una referencia. Su documentación recomienda
+combinar el árbol con capturas cuando importa lo visual, como lienzos, gráficos o páginas con mucha imagen.
+
+Anthropic tiene la herramienta de computer use en su API y la extensión Claude in Chrome. Google
+documenta un modelo de computer use para Gemini. Lo que comparten es lo importante para el arquitecto: **el modelo no ejecuta
+nada**. Propone una acción; tu código la ejecuta y devuelve el resultado. El punto de control vive
+en tu aplicación, no en el modelo.
+
+## Cuándo es la última opción
+
+Ordena las alternativas y baja de escalón solo cuando el anterior no existe. Cada paso hacia abajo
+sube el coste, la latencia y la superficie de ataque:
+
+1. **API o integración directa**, con permisos por operación.
+2. **Conector o servidor MCP** que expone la acción concreta, no «la pantalla».
+3. **Navegador por árbol de accesibilidad** para una web sin API.
+4. **Visión de escritorio** para aplicaciones nativas o pantallas sin estructura accesible.
+
+Criterio del autor: el error más común es saltar al escalón 4 porque es el que «funciona en la
+demo». Una demo sobre una página estable oculta justo lo que cuesta en producción. Lo que
+[arquitectura de aplicaciones con LLM](/docs/arquitectura-agentes-llm#herramientas-y-mcp) dice sobre
+contratos de herramienta se aplica aquí: una acción definida con esquema vale más que un clic.
+
+## Fiabilidad: la interfaz cambia
+
+Una API tiene contrato y versión. Una interfaz tiene una apariencia que cambia cuando lo decide su
+dueño. Estos son los fallos que más se repiten:
+
+- **Clic sobre el elemento equivocado.** Un control pequeño, un escalado mal aplicado o una ventana
+  con otro tamaño desplazan el objetivo. La documentación de Anthropic sugiere empezar con una
+  resolución de referencia de 1280×720, activar la herramienta de zoom y tener en cuenta el factor 2x
+  de las pantallas Retina.
+- **Páginas que cambian a mitad de tarea.** Un banner de cookies, un modal, una carga asíncrona o una
+  prueba A/B. Con referencias de accesibilidad, las referencias caducan cuando la página cambia: el
+  agente debe volver a leerla tras cada navegación.
+- **Éxito aparente.** El agente cree que pulsó «Guardar» y el formulario guardó un borrador, o nada.
+  Hay que verificar el estado final (la pantalla de confirmación, el registro en el backend), no la
+  intención del agente.
+- **Lotes que ejecutan demasiado.** Anthropic advierte de que un lote puede completar un proceso de
+  varios pasos dentro de un mismo turno. Si un paso es sensible, no debe ir dentro de un lote sin
+  punto de revisión.
+
+La eficiencia también importa. El artículo OSWorld-Human, presentado en MLSys 2026, concluye que
+incluso los mejores agentes dan entre 2,7 y 4,3 veces más pasos de los necesarios. No es un fallo de
+éxito, pero sí de coste y latencia.
+
+## Coste y latencia por paso
+
+Cada acción es un viaje de ida y vuelta: captura, razonamiento, acción y espera a que la página
+cargue. Un flujo de veinte pasos son veinte vueltas, y en visión el contexto crece con cada captura
+que se conserva. La documentación de Anthropic avisa de que, con más de veinte imágenes, aplican
+límites más estrictos por lado. Estas decisiones cambian la factura:
+
+- Usar el árbol de accesibilidad como canal por defecto y la captura solo cuando hace falta.
+- Recortar el historial: conservar la última captura y el texto de los pasos anteriores.
+- Agrupar acciones solo cuando sean reversibles y no haya un punto de decisión entre ellas.
+- Medir el coste por tarea completada, no por paso. Una tarea que cuesta más por paso pero no
+  necesita revisión manual puede salir más barata en total.
+
+La política que resulta de estas decisiones cabe en unas pocas líneas. Es una forma ilustrativa, no
+una configuración real:
+
+```yaml
+# forma de una política de uso de interfaz (ilustrativa)
+canal: accesibilidad # visión solo si la tarea lo exige
+dominios: [portal.proveedor.example]
+historial_capturas: 1 # las anteriores se sustituyen por texto
+acciones:
+  lectura: automatica
+  escritura_reversible: automatica
+  comunicacion_externa: aprobacion_con_vista_previa
+  dinero_o_borrado: aprobacion_explicita
+```
+
+## Inyección de instrucciones desde la página
+
+Este es el riesgo que más cambia el diseño. Un agente que lee texto ajeno (un correo, un documento o
+una web) puede ser engañado con instrucciones escondidas en ese texto. Con una interfaz, la página
+entera es ese texto: un atributo `alt`, un texto blanco sobre fondo blanco o una imagen con órdenes
+pueden contener instrucciones. Anthropic advierte en su documentación de que, en algunas circunstancias, Claude sigue los comandos que
+encuentra en el contenido aunque contradigan tus instrucciones.
+
+Los proveedores responden con capas. Anthropic describe dos clasificadores en Claude in Chrome: uno
+examina el contenido que entra y otro revisa cada acción antes de ejecutarla. Ante un posible intento
+de inyección, Anthropic indica que el modelo comprueba que la instrucción venga realmente de la persona
+antes de actuar. Y Anthropic reconoce que el riesgo no es cero: su cifra interna (menos de un 0,08 % de éxito de
+ataque) mide su configuración en sus pruebas, no es una garantía.
+
+Criterio del autor: lo que se deduce para la arquitectura no es «elegir el proveedor con mejor
+filtro», sino diseñar como si la página pudiera secuestrar al agente. Simon Willison describió en
+2025 la combinación que vuelve grave este riesgo, la «trifecta letal»: acceso a datos privados,
+exposición a contenido no confiable y capacidad de comunicarse hacia fuera. Un agente de navegador
+que reúne las tres puede ser inducido a filtrar datos. Basta con romper una de las patas:
+
+- **Sin datos privados:** sesión dedicada, sin correo ni banca del usuario.
+- **Sin comunicación externa:** enviar, publicar o subir datos exige aprobación, y los dominios de
+  salida son una lista cerrada.
+- **Sin contenido no confiable:** limitar el agente a dominios conocidos y separar los agentes que
+  leen páginas abiertas de los que actúan sobre sistemas internos.
+
+Para el conjunto más amplio de inyecciones y del control de herramientas, véase
+[controlar la IA](/docs/controlar-la-ia-gobierno-y-autonomia#inyección-de-instrucciones-el-riesgo-que-cambia-al-dar-herramientas).
+
+## Acciones irreversibles y puntos de aprobación
+
+Clasifica cada acción antes de dar permiso para ejecutarla:
+
+| Clase                | Ejemplos                                        | Política sugerida                        |
+| -------------------- | ----------------------------------------------- | ---------------------------------------- |
+| Lectura              | Abrir, buscar, leer una tabla                   | Automática                               |
+| Escritura reversible | Guardar un borrador, rellenar campos sin enviar | Automática, con registro                 |
+| Comunicación externa | Enviar un correo, publicar, compartir           | Aprobación con vista previa              |
+| Dinero o cuentas     | Pagar, cambiar contraseña, aceptar términos     | Aprobación explícita                     |
+| Destructiva          | Borrar, dar de baja, revocar acceso             | Aprobación y, si es posible, no permitir |
+
+Anthropic recomienda pedir confirmación humana para las decisiones que puedan tener consecuencias
+reales en el mundo, y cita pagos, aceptación de términos y de cookies. Google desaconseja usar
+computer use para decisiones críticas, datos sensibles o acciones cuyos errores no se puedan corregir.
+
+La aprobación debe mostrar la acción en lenguaje de negocio («enviar esta factura a este cliente»),
+no la coordenada del clic. Hay además un riesgo de diseño: si todo pide confirmación, la persona
+aprueba sin mirar. La extensión Claude in Chrome distingue un modo «automatically approve», que pausa solo
+cuando hace falta, y otro «manually approve», que revisa cada acción. Elegir
+uno u otro es una decisión de gobierno, no de usabilidad, y encaja con los
+[niveles de autonomía](/docs/autonomia-de-la-ia#puntos-de-control) y con los
+[puntos de aprobación obligatorios](/docs/controlar-la-ia-gobierno-y-autonomia#puntos-de-aprobación-obligatorios).
+
+## Entorno: sandbox, credenciales y sesiones
+
+El principio es que el agente trabaje en un entorno que se pueda destruir sin consecuencias:
+
+- **Máquina o contenedor desechable.** Anthropic recomienda una máquina virtual o un contenedor
+  dedicado con privilegios mínimos. Google pide ejecutar el agente en un entorno aislado para limitar
+  su impacto potencial.
+- **Red con lista de dominios permitidos.** Nada de navegación libre desde la sesión del agente.
+- **Perfil de navegador separado,** sin sesiones de banca, salud o administración pública. Es la
+  recomendación de Anthropic para Claude in Chrome.
+- **Credenciales fuera del contexto del modelo.** Las contraseñas no deben aparecer en el prompt ni
+  en variables que el modelo pueda leer. Si hace falta un secreto, el sistema lo inyecta en el paso
+  que lo usa, desde un almacén de secretos.- **Sesiones efímeras.** Cada tarea arranca de un estado conocido y se destruye al terminar; las
+  cookies no sobreviven de una a otra.
+- **Nunca en el equipo de trabajo.** Un agente de escritorio en tu portátil, con tu sesión de correo
+  abierta, es la combinación que más riesgo concentra.
+
+## Trazas, capturas y auditoría
+
+Después de un incidente hay que poder reconstruir qué pidió la tarea, qué vio el agente (capturas
+antes y después de cada acción sensible), qué acción propuso, quién la aprobó y cuándo, qué URL
+estaba abierta, qué modelo y qué versión actuaron y cuánto costó. Esto enlaza con lo que ya se dijo
+sobre [trazabilidad y costo](/docs/autonomia-de-la-ia#trazabilidad-y-costo) y con el
+[registro de decisiones](/docs/controlar-la-ia-gobierno-y-autonomia#qué-debe-quedar-registrado-y-quién-responde).
+
+Dos matices. Las capturas son datos personales y muchas veces muestran lo que no debía verse: conviene
+una retención corta, cifrado y acceso restringido. Y el registro no sirve si el agente puede
+modificarlo: escríbelo fuera de su entorno.
+
+## Cómo probarlo
+
+Probar un agente de interfaz es probar una tarea de extremo a extremo sobre un entorno reproducible:
+
+- **Entorno de prueba fijo.** Una copia de la aplicación o una página de pruebas, con datos
+  sintéticos y versión congelada. Sin él, un cambio en la web real parece un fallo del agente.
+- **Criterio de éxito sobre el estado final.** Comprueba en la base de datos o en la pantalla de
+  confirmación que el pedido existe, no que el agente diga que lo creó.
+- **Repetir.** El resultado varía entre ejecuciones. Mide tasa de éxito y número de pasos sobre
+  decenas de ejecuciones, como cualquier eval
+  ([RAG en producción y evaluación continua](/docs/rag-y-evaluacion-continua#evaluación-continua-un-conjunto-dorado)).
+- **Pruebas de inyección.** Incluye páginas con instrucciones escondidas en el conjunto de pruebas y
+  exige que la acción no ocurra. Es un caso más del conjunto, no una prueba aparte.
+- **Separar fallos.** Distingue «la interfaz cambió» de «el agente decidió mal». Lo primero se
+  arregla en el selector o en el conector; lo segundo, en el arnés o en la política.
+
+## Cuándo sí y cuándo no
+
+Sí conviene cuando:
+
+- Hay un proceso heredado sin API, usado con frecuencia y con permisos claros.
+- Se trata de pruebas exploratorias o de regresión sobre una interfaz que controlas.
+- La tarea es de lectura o de relleno de borradores, y una persona revisa antes de enviar.
+- Se trata de una migración puntual de datos desde una pantalla, en un entorno desechable y con
+  revisión posterior.
+
+No conviene cuando:
+
+- Hay pagos, cambios de cuenta o envíos a terceros sin aprobación humana.
+- El proceso es de alto volumen y podría ser una API o un conector.
+- El navegador donde corre el agente tiene sesiones de banca, salud o administración del usuario.
+- La interfaz cambia cada semana y no hay pruebas que avisen de los cambios.
+
+## Errores frecuentes
+
+- **Tratar la pantalla como API.** Se automatiza un clic sin definir la acción, su resultado ni cómo
+  se verifica.
+- **Confiar en la intención.** Se acepta el «hecho» del agente sin comprobar el estado final.
+- **Credenciales personales en el navegador del agente.** El agente hereda la sesión de la persona con
+  todos sus permisos.
+- **Reintentos sin límite.** Ante una página que no responde, el agente insiste y gasta sin avanzar.
+- **Aprobar en el sitio equivocado.** Se pide confirmación para leer y no para pagar, o se muestran
+  coordenadas en lugar de la acción en lenguaje claro.
+- **Capturas sin tratamiento.** Cada pantalla se guarda en los registros sin minimizar, con datos
+  personales o financieros visibles.
+
+## Checklist
+
+- Hay API, conector o servidor MCP para la tarea. Si lo hay, es el canal elegido.
+- Cada acción está clasificada (lectura, escritura reversible, comunicación, dinero, destructiva) y
+  tiene su política.
+- Las acciones de comunicación, dinero o borrado piden aprobación con vista previa en lenguaje de negocio.
+- El entorno es desechable, con privilegios mínimos, red por lista de dominios y un perfil de
+  navegador sin sesiones sensibles.
+- Ninguna credencial está en el contexto del modelo; los secretos se inyectan en el paso que los usa.
+- El éxito se verifica sobre el estado final, no sobre lo que dice el agente.
+- Hay trazas con capturas antes y después de cada acción sensible, fuera del alcance del agente.
+- El conjunto de pruebas reproducible incluye páginas con instrucciones inyectadas.
+- Hay límites de pasos y de reintentos por tarea.
+
+## Fuentes
+
+- Anthropic, [Computer use tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool).
+  Versión del toolset, advertencias de seguridad, límites de imágenes y costes por captura.
+- Anthropic, [Use Claude in Chrome safely](https://support.claude.com/en/articles/12902428-use-claude-in-chrome-safely).
+  Clasificadores, modos de aprobación, recomendaciones al usuario y riesgo residual.
+- Google, [Computer use (Gemini API)](https://ai.google.dev/gemini-api/docs/computer-use). Modelo que
+  propone acciones, supervisión, aislamiento y confirmación de decisiones críticas.
+- Playwright, [Snapshots (Playwright MCP)](https://playwright.dev/mcp/snapshots). Árbol de
+  accesibilidad, referencias y cuándo añadir capturas.
+- Simon Willison, [The lethal trifecta for AI agents](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/),
+  16 de junio de 2025.
+- OSWorld-Human: [Benchmarking the Efficiency of Computer-Use Agents](https://mlsys.org/virtual/2026/oral/3865),
+  MLSys 2026.

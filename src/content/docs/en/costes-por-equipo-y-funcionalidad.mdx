@@ -1,0 +1,241 @@
+---
+title: 'Cost per team and feature: tagging and alerts'
+description: 'How to attribute cloud spend to teams and features: mandatory tags, shared-cost allocation and budget alerts that fire before the limit.'
+category: nube
+tags:
+  - finops
+  - tagging
+  - budgets
+  - cost-attribution
+  - shared-costs
+order: 14
+roadmap:
+  id: nube
+  stage: operacion
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'One spend split into team blocks, with an alert that lights before the limit'
+---
+
+# Cost per team and feature: tagging and alerts
+
+The cloud bill is one number over a system with many owners. While spend appears as a single line,
+no architecture decision has a visible price: the team that adds a queue, a replica or a cache does
+not pay for it and, in practice, does not know what it costs. The thesis of this article is simple:
+**a cost without an owner cannot be an architecture decision**. Attributing spend to teams and
+features is not bookkeeping for its own sake; it gives design the information it needs.
+
+The general framework (what FinOps is, cost per unit, pricing models) is covered in
+[FinOps: cost as an architecture attribute](/docs/finops-costo-como-atributo). Here we go down to the
+mechanism: how resources are tagged, how shared spend is split and how warnings arrive in time.
+
+<Callout tone="info" title="Cutoff date">
+  Tagging, allocation and budget capabilities change often. What is cited here was checked against
+  the vendors' official documentation in October 2026; before implementing anything, check your
+  provider's current documentation.
+</Callout>
+
+## What is attributed, and to whom
+
+Two dimensions should be kept apart. The **team** is accountable for the resource: it operates it and
+decides whether it keeps existing. The **feature** is accountable for the value: it is the slice of
+the product that justifies the spend. One cluster can serve three features owned by two teams, and
+the two questions have different answers.
+
+| Dimension   | Question it answers                       | Example value          |
+| ----------- | ----------------------------------------- | ---------------------- |
+| Team        | who decides about this resource?          | `team=payments`        |
+| Feature     | which product capability justifies it?    | `feature=checkout`     |
+| Environment | is it production, testing or development? | `env=prod`             |
+| Cost center | which financial line does it charge to?   | `cost_center=ops-2041` |
+
+The values are illustrative. What matters is that each dimension has exactly one possible answer: if
+two keys mean the same thing under different names, the spend splits into halves that nobody adds up.
+
+## Tags: a contract, not a convention
+
+A tag works as a contract between whoever creates a resource and whoever pays for it. That is why the
+schema should be short, with closed values, and written somewhere it is versioned. A reasonable shape
+looks like this:
+
+```yaml
+# Mandatory tag schema (shape, not implementation)
+required_keys:
+  team: <owning team identifier>
+  feature: <product feature>
+  env: [prod, staging, dev]
+  cost_center: <finance code>
+optional_keys:
+  - lifecycle # ephemeral or permanent
+```
+
+Three to five keys are enough. More keys mean more untagged resources, because nobody fills in a
+twelve-field form to create a test queue.
+
+### Validate at provisioning
+
+A tag corrected at the end of the month arrives too late: the resource already existed, already spent
+and the decision was already made without seeing its cost. The cheap control point is the creation
+gate, not the invoice.
+
+- **Azure.** Azure Policy includes built-in definitions such as "Require a tag on resources", with a
+  `deny` effect that prevents creating resources without the given tag, and "Inherit a tag from the
+  resource group if missing", with a `modify` effect that copies the tag from the resource group when
+  it is absent. The first one does not apply to resource groups, which have their own definition.
+- **AWS.** Tag policies in AWS Organizations standardize tag keys and values, including preferred
+  capitalization, and can prevent non-compliant tagging operations from completing on the resource
+  types you specify. Cost allocation tags also have to be activated separately in the Billing console.
+  Only the management account (or a standalone account) can access the cost allocation tags manager,
+  and a change can take up to 24 hours to appear.
+- **Google Cloud.** Budgets can only be filtered by labels at billing-account level, and each budget takes
+  one label. The budget documentation does not describe any mechanism that makes labels mandatory, so none is claimed here.
+
+The rule is the same across all three: compliance is validated at the gate (infrastructure as code,
+pipeline, organization policy) and audited afterwards, never the other way around.
+
+### When a tag is missing
+
+When a resource arrives without tags there are three outcomes, and a policy should choose one:
+
+1. **Block.** The default in production. If it has no `team`, it is not created.
+2. **Inherit.** The tag comes from the resource group, account or subscription. This is reasonable
+   for test environments; in production it inherits the error if the parent is mislabeled.
+3. **Park with an owner and a deadline.** Unassigned spend goes to an explicit bucket with a temporary
+   owner (usually the platform team) and a date. A bucket without a date becomes where unwanted spend
+   lives.
+
+AWS cost reports include both tagged and untagged resources, so the gap shows up as a line that has to
+be watched. If nobody watches it, unowned cost grows quietly.
+
+## Shared costs: networking, registries and common databases
+
+Shared spend is where attribution becomes policy. Outbound network traffic, a container registry, a
+cluster, a shared database or an observability platform serve several teams and belong to none of
+them. They must be split, and each rule has a bias:
+
+| Rule                     | How it splits                   | Bias it introduces                                               |
+| ------------------------ | ------------------------------- | ---------------------------------------------------------------- |
+| Equal parts              | the same amount for each team   | Subsidizes the heaviest user and penalizes the one who optimizes |
+| Proportional to a driver | by requests, GB, nodes or hours | What is measured gets optimized: the driver pushes behavior      |
+| Agreed fixed share       | each team pays an agreed amount | Predictable, but disconnected from real usage                    |
+| Central, unallocated     | platform budgets it separately  | Simple and honest, but hides the real cost of each feature       |
+
+There is no correct method. In the author's judgment, the most common mistake is not choosing badly but
+not choosing at all: the split is adjusted without notice and a team's budget moves although nobody
+touched anything. The FinOps framework treats allocation as a capability of its own: it defines strategies to assign and
+share cost and usage using accounts, tags, labels and other metadata (see [Allocation, FinOps Framework](https://www.finops.org/framework/capabilities/allocation/)).
+
+An example of bias: splitting data egress by GB penalizes the team that serves video, and it is right
+that it pays for what it uses. But if that team sees the cost in its budget, the conversation shifts
+from "what value does this give" to "how do I cut GB", and that can push teams to compress more or to
+delay a feature. The chosen driver is already an architecture decision.
+
+## Team budgets and alerts that warn early
+
+A budget per team (or per feature), with two kinds of alert: the **actual** one, which fires when a
+threshold has already been consumed, and the **forecast** one, which fires when the provider projects
+that the budget will be exceeded. The forecast is the one that leaves time to react. What the three
+large providers offer, verified in their documentation:
+
+- **AWS Budgets.** Each notification is of type `ACTUAL` or `FORECASTED`, with a threshold of type
+  `PERCENTAGE` or `ABSOLUTE_VALUE`. A budget supports up to ten notifications, and each one needs at
+  least one subscriber (one SNS topic and up to ten email addresses).
+- **Azure Cost Management.** Alerts can be set on actual or forecasted cost, with up to five thresholds
+  and five email addresses per budget. Cost data arrives within 8 to 24 hours, budgets are evaluated
+  every 24 hours, and the email usually arrives within an hour of the evaluation. Budgets do not stop
+  resources or consumption.
+- **Google Cloud Budgets.** Thresholds can compare actual or forecasted spend (the forecast runs to the
+  end of the period; budgets with a custom date range cannot use forecasts). The defaults are
+  50, 90 and 100 %. An alerts-only budget does not cap spending.
+
+One lesson follows from this data: alerts arrive late. If the only threshold is 100 %, the alert comes
+once the money is already spent. It is therefore worth putting the forecast threshold first, for example at 80 %
+(author's judgment), leaving room to react.
+
+A team budget can be described like any other contract, with its scope, amount and thresholds. This
+shape is not a template from any vendor; it only shows what information is needed:
+
+```yaml
+# Shape of a team budget (not a vendor template)
+budget: payments-prod-team
+scope: { team: payments, env: prod }
+monthly_amount: <amount agreed with finance>
+alerts:
+  - { type: forecast, threshold: 0.8 }
+  - { type: actual, threshold: 1.0 }
+recipients: [payments-owners@company.example]
+```
+
+The recipient matters as much as the threshold. A warning that lands in a group mailbox nobody reads
+is not a control; it is only evidence that a warning was sent.
+
+## Cost and product metrics, without vanity
+
+Once spend is attributed, the temptation is to divide it by something and present it as efficiency:
+cost per request, per active user, per order. That is useful, but it is easy to turn into a vanity
+metric. Cost per active user falls if "active" is redefined or if valuable work stops being counted.
+Cost per request falls with caching, but the request may no longer serve anyone.
+
+An illustrative piece of arithmetic: 1,200 euros of monthly spend for a feature across 300,000 orders
+gives 0.004 euros per order. The number is correct and says little on its own unless it is read with
+three things:
+
+1. **The unit means value.** An order, a minute of video served or a resolved conversation are
+   business units. An HTTP request is traffic, and dividing by traffic only measures how much arrives.
+2. **Volume and value sit next to the cost.** A unit cost that falls while volume stays flat may be an
+   improvement, or a sign that customers are being underserved.
+3. **The definition does not change silently.** Changing the unit creates a new series; note it, and do
+   not compare the new series with the old one as if they were the same.
+
+For inference, where the unit is the token or the conversation, the detail on how to measure it is in
+[Inference cost: model, cache and deployment](/docs/costo-de-inferencia). Here the only point is the
+attribution rule: every unit is split with the same tags as the spend that produces it.
+
+There is a useful parallel with [Observability: SLI, SLO and error budget](/docs/observabilidad-slo-presupuesto-error):
+the error budget says when to slow down for reliability, and the cost budget says when to slow down for
+spend. It is the same pattern in a different currency, and it works just as poorly if nobody looks at it.
+
+## When yes and when no
+
+**It is worth it** when several teams share an account, subscription or cluster; when spend grows with
+usage and is decided team by team; or when the business wants a unit figure to make product decisions.
+
+**It is not worth it** when spend is small and one person decides almost everything: tagging costs more
+than it saves. Nor when no owner is willing to answer for their number. Attribution without consequences
+is a nice report and not much more.
+
+## Common mistakes
+
+- **Tagging afterwards.** Compliance is discovered on the end-of-month invoice, after the resource has
+  been spending for weeks.
+- **Near-identical keys.** `Team`, `team` and `equipo` split spend into three buckets and none of them
+  adds up.
+- **Split changed without notice.** A team's budget moves because a driver changed, although the team
+  itself changed nothing.
+- **Alerts sent to a group mailbox.** Nobody owns the warning, so nobody reacts.
+- **A single 100 % threshold.** It warns when there is no longer room to decide.
+- **Dividing by traffic and calling it efficiency.** The unit does not represent value, and the metric
+  rewards the wrong thing.
+
+## Checklist
+
+- [ ] A tag schema of three to five keys, with closed values, versioned and published.
+- [ ] Mandatory tags are enforced at creation; exceptions have an owner and a date.
+- [ ] Cost tags are activated in the provider and it has been checked that they appear.
+- [ ] Every shared cost has a rule, an explicit driver and a review date.
+- [ ] Each team has a budget with a forecast alert and an actual alert, sent to a specific person or role.
+- [ ] Every unit cost has a defined business unit, shown next to its volume and value.
+- [ ] Unallocated spend is reviewed monthly against the agreed threshold.
+
+## Sources
+
+Checked in October 2026. Official sources first.
+
+- [Organizing and tracking costs using AWS cost allocation tags (AWS Billing)](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html): activation, the up-to-24-hour delay and access to the tags manager.
+- [Tag policies (AWS Organizations)](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html): keys, values and enforcement.
+- [AWS::Budgets::Budget Notification (AWS CloudFormation)](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-budgets-budget-notification.html): notification types, thresholds and number of subscribers.
+- [Tutorial: Create and manage budgets (Microsoft Learn)](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets): actual and forecast alerts, timing and threshold limits.
+- [Policy definitions for tagging resources (Microsoft Learn)](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tag-policies): built-in tag definitions with `deny`, `modify` and `append` effects.
+- [Set budgets and budget alerts (Google Cloud)](https://docs.cloud.google.com/billing/docs/how-to/budgets): actual and forecast thresholds, alerts-only budgets and label scoping.
+- [Allocation (FinOps Framework)](https://www.finops.org/framework/capabilities/allocation/): allocation as a framework capability, defined with accounts, tags, labels and other metadata.
