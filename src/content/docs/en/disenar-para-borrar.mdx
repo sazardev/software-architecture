@@ -1,0 +1,262 @@
+---
+title: 'Designing for deletion: retiring code without fear'
+description: 'Why code you cannot delete keeps costing you, and how to design boundaries, expiring flags and phased retirements you can reverse.'
+category: practicas
+tags:
+  - retirement
+  - technical-debt
+  - dead-code
+  - feature-flags
+  - deprecation
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+order: 13
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 70
+figureCaption: 'A module retires in three phases; the usage registry confirms nobody reads it'
+---
+
+# Designing for deletion: retiring code without fear
+
+A system grows by addition: a function, an endpoint, a flag, a table. Removing something costs more,
+because you have to find out who uses it, risk breaking someone and, often, give up a sense of
+safety nobody knew they had. The result is code nobody dares to touch and that still gets paid for
+on every change: more tests to maintain, more branches in the logic, more things to explain to each
+new person.
+
+The thesis of this article is that the fear of deleting is not a lack of personal discipline. It is
+a property of the architecture. If a module has no owner, if its dependencies are written down
+nowhere, if you do not know how many people read it, deleting it is a gamble. If those things are
+designed in, deleting it is one more step in the normal flow.
+
+## Why deleting costs more than it looks
+
+Software Engineering at Google devotes its chapter 15 to the retirement of systems and presents it as
+an orderly process of migration and removal. Its central argument is that well-planned retirement
+reduces costs and removes the redundancy that accumulates over time, while a badly done one can cost
+more than leaving the system as it was. The book also recalls Hyrum's Law: with enough users, every
+observable behavior of an API ends up depended on by someone, even if the contract does not promise it.
+
+That law explains why deletion is hard. Consumers do not depend only on what you documented, but on
+what your system does by accident: the order of results, a field that always arrives filled in, a
+response time someone uses as a timer. When code has been in production for years, the list of real
+dependents is not the one in the repository.
+
+The [technical debt article](/docs/deuda-tecnica-evolucion#measuring-debt-without-vanity-metrics)
+already treats this cost as interest. The focus here is different: not how to pay the debt, but how
+to make a piece able to disappear without negotiating its death.
+
+## Designing for retirement from the start
+
+The cheap way to delete something tomorrow is to have designed it to be deleted. Three decisions help
+more than any tool.
+
+**Small boundaries and clear owners.** A module with a responsible team, an explicit frontier and a
+size that fits in someone's head can be retired in one conversation. A module that belongs to
+"everyone" is never retired, because nobody has the authority to say it no longer serves. Write the
+owner down where it can be queried, not in the memory of someone who may have already left.
+
+**Explicit dependencies.** What can only be known by reading other people's code cannot be retired
+without reading all of it. Layering rules, ports and contracts make visible who depends on what. The
+chapter on [fitness functions in CI](/docs/fitness-en-el-ci#from-diagram-to-check) explains how to
+turn those rules into automatic checks, and the
+[anti-corruption layer](/docs/legado-strangler-anticorrupcion#the-anti-corruption-layer) isolates a
+new model from the details of the old one.
+
+**Retirement planned from the start.** A new module can declare, as part of its documentation, when it
+is expected to stop existing and what replaces it. The date does not need to be exact; it needs to
+exist and someone needs to review it. A metadata file shaped like this is enough for "who answers for
+this and when does it expire?" to have an answer:
+
+```yaml
+# modules/billing/MODULE.yaml (shape, not implementation)
+name: billing
+owner: payments-team
+retirement:
+  plannedBy: 2027-03-31
+  replacedBy: billing-v2
+```
+
+This file deletes nothing by itself. Its value is that a periodic process can read it and warn when
+the date passes with the module still in use.
+
+## Signals of dead code and how to measure them
+
+Before deleting, you need to know what is dead. No single signal is enough, and each one is wrong in a
+different way.
+
+| Signal             | What it detects                                         | Typical false positive                                          |
+| ------------------ | ------------------------------------------------------- | --------------------------------------------------------------- |
+| Static analysis    | Files and exports the import graph never reaches        | Dynamic imports, reflection, loading by name from configuration |
+| Test coverage      | Lines that no test executes                             | Paths that only run in production or during periodic closings   |
+| Runtime usage logs | Which module, route or function ran, and how many times | Observation window too short for the business cycle             |
+
+Static analysis is the starting point. Tools such as
+[Knip](https://smashingmagazine.com/2023/08/knip-automated-tool-find-unused-files-exports-dependencies/)
+in the JavaScript and TypeScript ecosystem start from entry files, build the dependency graph and
+mark what it does not reach. Its limits are those of any static analysis: what is referenced by string
+or loaded dynamically does not appear in the graph, and must be declared as an exception.
+
+Test coverage has the opposite bias. A test that never touches a function does not prove the function
+is useless; it only says no test touches it. The
+[ember-dead-code](https://github.com/buschtoens/ember-dead-code) project, for example, warns that if
+your tests do not cover all the code, it will report as dead something that is in fact used in
+production.
+
+That is why the strong signal comes from runtime usage in production. A counter per module or route,
+incremented each time it runs, answers the question that matters: has anyone used it in recent months?
+The observation window must cover a full business cycle. A billing module that only runs on closing
+day will look dead for 29 days out of every 30 (illustrative example). Combining both sources is a reasonable
+approach (this article's judgment): static analysis generates candidates and execution traces confirm or
+discard them.
+
+Author's criterion: a candidate is considered dead when static analysis flags it, the usage registry
+has seen no execution in a window that covers the business cycle, and an owner confirms it. That last
+step is the one most often skipped and the one that prevents the most scares.
+
+## Flags that expire
+
+Feature flags are the debt that accumulates most, because each one is born with a good reason and dies
+without anyone removing it. The [progressive delivery chapter](/docs/entrega-progresiva-flags-canary#feature-flags-release-without-deploying)
+explains what they are for. Here the question is how to make them expire.
+
+Martin Fowler distinguishes flag types with very different lifespans. In his article on
+[feature toggles](https://martinfowler.com/articles/feature-toggles.html), release toggles should
+generally not stick around much longer than a week or two (the original wording), except product-centric
+ones, which may stay longer. He describes as a team practice adding the removal task to the backlog
+whenever one is created. Experiment and
+permission flags are dynamic by nature and do not expire the same way. Mixing them in one registry
+without telling them apart is the fastest way to leave nobody knowing which ones can be deleted.
+
+Unleash, a flag platform, applies a similar idea: it marks flags as potentially stale automatically once
+they exceed their expected lifetime, which is configured per flag type.
+
+What you can do in your own code is make each flag declare, at minimum, its type, its owner and the
+date it should disappear:
+
+```ts
+// Shape of the metadata, not implementation
+type FlagMeta = {
+  name: string;
+  owner: string;
+  kind: 'release' | 'ops' | 'experiment' | 'permission';
+  removeBy: string; // YYYY-MM-DD
+};
+```
+
+With that, a periodic job can list the expired flags and notify their owner. The notice is what
+matters: an expired flag that nobody claims is a decision taken by default.
+
+## Phased retirement: stop writing, stop reading, delete
+
+Deleting a module in one go concentrates all the risk in one step. Splitting the retirement into three
+phases spreads the risk and leaves a point of reversal in each. The order matters: first you stop
+writes, then reads, and only at the end do you delete.
+
+**Phase 1: stop writing.** The module keeps working, but accepts no new data. Entries are redirected to
+the replacement or marked read-only. If the module owns data, this phase forces a decision about what
+happens to what already exists. It is the moment to discover who really writes to it: often a batch
+process nobody remembered shows up.
+
+**Phase 2: stop reading.** Readers are migrated to the replacement, one by one, and the usage registry
+confirms the module is no longer queried. This phase is the most delicate because of Hyrum's Law: an
+unknown reader may depend on something you never documented. So keep the phase for a window that covers
+a full cycle and notify whoever still appears in the registry before moving on.
+
+**Phase 3: delete.** Only now is the code removed. The change should be one commit or a small set of
+commits that can be reverted without undoing other changes. If there is associated data, deleting the
+table or column follows the phase pattern of
+[database migrations without downtime](/docs/migraciones-bd-sin-downtime#the-four-phases): first stop
+using it, then contract the schema.
+
+Reversal takes a different form in each phase. In the first, write access is re-enabled with a flag. In
+the second, reads go back to the original module, which is still deployed. In the third, going back is a
+revert of the commit and, if there was data, restoring from a copy. That is why you should not delete in
+the same week you stop reads: let enough time pass for an unknown dependency to surface while you can
+still recover cheaply.
+
+## Services and APIs: deprecate with metrics before switching off
+
+With an API the problem is the same, but consumers are not under your control. The healthy way to retire
+an endpoint is to warn in advance, measure who uses it and switch it off when usage reaches zero or a
+threshold agreed with the clients still left.
+
+There are two standardized HTTP headers to communicate this. The
+[Deprecation header](https://www.rfc-editor.org/rfc/rfc9745.html), published as RFC 9745 in March 2025,
+indicates the date on which the resource is or was deprecated. It does not change behavior: the client can
+keep using it as before. The [Sunset header](https://www.rfc-editor.org/rfc/rfc8594), defined in RFC 8594
+in 2019, indicates a future date on which the resource will probably stop responding. The RFC treats it as
+a hint, not a guarantee, so it should not be your only communication. Both allow a link to the
+documentation of the retirement, which is where the alternative should be.
+
+The metrics for deciding when to switch off must separate clients, not just volume. An endpoint with 2%
+of requests may be a single critical client that has not migrated yet. Measure per client or per
+credential, identify the owners of those still calling and negotiate the date with them. A deprecation
+period of months, with metrics visible on a dashboard, is a small investment compared with a production
+outage.
+
+## Why fear of deleting is an architecture problem
+
+If every time someone proposes deleting something there is a long discussion, the problem is not that the
+team is fearful. It is that the system does not give them the answers they need: it does not know who
+depends on what, it does not measure usage, it has no dates, and it has no way back. In that context,
+not deleting is the rational decision.
+
+The decisions that change that are architectural: clear boundaries, written owners, visible dependencies,
+built-in usage measurement and retirements that can be reverted step by step. With them, deleting stops
+being an act of courage and becomes one more task, with criteria and an owner. Asking people for more
+courage without changing any of that does not work, and a rule of "delete more" does not fix it either.
+
+## When to delete and when not to
+
+Deleting always pays off when the code is dead with evidence, an owner confirms it and there is a way
+back. Retiring immediately does not always pay off:
+
+- **When there is a retention obligation.** Data or records that a regulation requires you to keep are not
+  deleted for tidiness; they are archived under their access policy.
+- **When the migration cost exceeds the cost of keeping it.** A small, stable module with no changes may
+  cost less left in place than a risky migration. It is a decision that should be written down, not an
+  oversight.
+- **When there is no replacement yet.** Retiring before you have an alternative turns the retirement into
+  an outage. Build the replacement first, then retire.
+- **When you have no window to observe.** If you cannot measure usage over a full cycle, you do not have
+  enough evidence to delete. Wait or instrument first.
+
+## Common mistakes
+
+- **Deleting without measuring.** Removing something because "nobody seems to use it" is the recipe for
+  the Friday incident. Without a usage registry, intuition about what is dead is often wrong.
+- **Flags without a date.** A flag with no owner or expiry is debt with an experiment label. Every flag
+  should be born with its end written down.
+- **Retiring everything at once.** A single delete operation concentrates the risk and leaves no point of
+  reversal. Separate writes, reads and deletion into distinct steps.
+- **Trusting coverage.** Tests not touching something does not make it dead. Closing paths, retries and
+  rare errors run outside the suite.
+- **Deprecating without telling anyone.** A header nobody reads is not a notice. Whoever still uses the API
+  needs a contact, an alternative and a concrete date.
+- **Forgetting the debt of the retirement itself.** A module "in retirement" that has been that way for two
+  years is the same dead code under another name. The deletion phase also needs a date.
+
+## Checklist
+
+- Every module, service and endpoint has a written owner and a planned retirement date.
+- Dependencies between modules can be listed with a tool, not only from the team's memory.
+- Static analysis produces retirement candidates, with its exceptions documented.
+- A production usage registry covers a full business cycle before anything is deleted.
+- Flags declare type, owner and retirement date, and a process warns when they expire.
+- Each retirement happens in phases: stop writing first, then stop reading, delete last.
+- Each phase has a concrete way back, without depending on a manual restore.
+- APIs publish deprecation headers and link to the alternative before switching off.
+- Written decisions exist for the cases where deleting is not worth it.
+
+## Sources
+
+- Titus Winters, Tom Manshreck and Hyrum Wright, _Software Engineering at Google_ (O'Reilly, 2020), chapter 15 (Deprecation): [official book index](https://abseil.io/resources/swe-book/html/toc.html), [chapter 15](https://abseil.io/resources/swe-book/html/ch15.html) and [Hyrum's Law entry](https://lawsofsoftwareengineering.com/laws/hyrums-law/).
+- Martin Fowler, [Feature Toggles](https://martinfowler.com/articles/feature-toggles.html).
+- Unleash documentation, [feature flags and stale state](https://docs.getunleash.io/concepts/feature-flags).
+- S. Dalal and E. Wilde, [RFC 9745: The Deprecation HTTP Response Header Field](https://www.rfc-editor.org/rfc/rfc9745.html) (March 2025).
+- E. Wilde, [RFC 8594: The Sunset HTTP Header Field](https://www.rfc-editor.org/rfc/rfc8594) (May 2019).
+- Knip, [description and operation of unused file and export detection](https://smashingmagazine.com/2023/08/knip-automated-tool-find-unused-files-exports-dependencies/) (Smashing Magazine article, August 2023).
+- ember-dead-code project, [documentation on false positives from coverage](https://github.com/buschtoens/ember-dead-code).

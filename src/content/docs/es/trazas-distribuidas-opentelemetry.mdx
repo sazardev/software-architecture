@@ -1,0 +1,277 @@
+---
+title: 'Trazas distribuidas con OpenTelemetry'
+description: 'Cómo seguir una petición entre servicios con trazas, qué datos hacen útil cada tramo y cómo muestrear y gobernar la telemetría con OpenTelemetry.'
+category: practicas
+tags:
+  - trazas
+  - opentelemetry
+  - observabilidad
+  - muestreo
+  - w3c-trace-context
+order: 19
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 90
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Una petición deja un hilo de tramos con el mismo trace-id'
+---
+
+# Trazas distribuidas con OpenTelemetry
+
+Un log responde a qué pasó en un servicio. Una traza responde a algo distinto: por dónde pasó una
+petición concreta y dónde se fue el tiempo. Mientras la petición toca uno o dos servicios, las dos
+cosas se pueden cruzar a mano. Cuando toca cinco, con colas por medio, cruzar logs por hora se
+convierte en una investigación de horas que nadie quiere repetir.
+
+Este artículo cubre qué es una traza, cómo viaja el contexto entre servicios, qué lugar ocupa
+OpenTelemetry entre la aplicación y el backend, qué nombrar en un tramo y qué no, cómo muestrear sin
+perder lo importante, y cómo gobernar la telemetría para que no crezca sin control. La tesis es
+sencilla: **una traza solo sirve si cada salto propaga el mismo identificador y cada tramo lleva
+datos que permitan decidir algo**.
+
+## Traza, tramo y contexto
+
+Una **traza** es el conjunto de tramos que comparten un mismo identificador (`trace-id`). Un
+**tramo** (_span_) es, según la especificación de OpenTelemetry, «una unidad de trabajo o
+operación»: tiene nombre, hora de inicio y fin, un padre (salvo el tramo raíz) y un contexto
+inmutable que contiene el `trace-id` y su propio identificador (`span-id`).
+
+Cada tramo puede llevar tres cosas más:
+
+- **Atributos:** pares clave-valor que describen la operación (método HTTP, nombre de la tabla,
+  resultado del pago).
+- **Eventos:** anotaciones con marca temporal dentro del tramo, por ejemplo un reintento o una
+  excepción. Son útiles, pero no sustituyen a un log con contexto.
+- **Enlaces (_links_):** asocian un tramo con otros que tienen una relación causal sin ser su padre.
+  Son la herramienta para el trabajo asíncrono, como veremos más abajo.
+
+La diferencia entre un tramo bien hecho y uno inútil está en si responde a una pregunta. «Llamada
+HTTP» no responde a nada. «Confirmar pedido, con el método de pago y el número de líneas» sí.
+
+## Cómo viaja el contexto: W3C Trace Context
+
+Para que los tramos de servicios distintos se unan en una sola traza, el contexto tiene que viajar
+en cada petición. El estándar es la recomendación **W3C Trace Context** (nivel 1, en su versión de 23 de
+noviembre de 2021). Define dos cabeceras HTTP:
+
+- **`traceparent`**: el identificador de la traza, el del tramo que hace la llamada y un byte de
+  banderas. Su forma es `versión-trace-id-parent-id-banderas`, con 2, 32, 16 y 2 caracteres
+  hexadecimales. El ejemplo de la propia especificación es:
+
+```text
+traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
+```
+
+La bandera que importa es el bit menos significativo: indica que el emisor puede haber registrado
+la traza («sampled»). Es la forma en que una decisión de muestreo se propaga al resto de servicios.
+
+- **`tracestate`**: información específica de cada proveedor de trazas, en pares clave-valor. La
+  especificación limita la lista a 32 miembros.
+
+**Baggage** es un mecanismo distinto y complementario: pares clave-valor que viajan con la petición
+para que los servicios posteriores los lean (por ejemplo, un identificador de inquilino). La
+especificación de OpenTelemetry permite propagarlo entre procesos y exige que la API permita borrar
+todo el baggage para no enviarlo a procesos no fiables. Su consecuencia práctica: lo que va en
+baggage viaja con la petición a los servicios que la reenvían, incluidos los de terceros, así que **no es lugar para datos personales**.
+
+El contexto se pierde en cualquier salto que no reenvíe la cabecera: una cola de mensajes que no
+guarda los metadatos, un proxy que filtra cabeceras desconocidas, un trabajo lanzado en un hilo que
+no recibe el contexto, o una llamada a un servicio externo que no la acepta. Cada pérdida convierte
+una traza en varias trazas incompletas. Ese es el primer síntoma que hay que buscar.
+
+## OpenTelemetry: instrumentar una vez, elegir backend después
+
+OpenTelemetry (OTel) es el estándar abierto que agrupa lo necesario para producir telemetría: las
+APIs con las que el código crea tramos, métricas y logs; los SDK que los procesan; el protocolo de
+transporte OTLP; las convenciones semánticas (nombres comunes de atributos); y el **Collector**, un
+proceso intermedio que recibe, transforma y exporta datos. Es un proyecto de la CNCF, que lo graduó
+en mayo de 2026.
+
+Las señales son trazas, métricas y logs. La especificación declara los tres como disponibles con
+estabilidad general, pero la madurez varía por lenguaje. Según la tabla de estado que publica el
+proyecto, las trazas están en estado estable en la mayoría de los SDK, mientras que Rust figura en
+beta y Kotlin en desarrollo; los logs están aún en desarrollo en algunos lenguajes, como JavaScript
+y Python. Conviene consultar esa tabla antes de adoptar una señal en un servicio concreto.
+
+La separación que más valor aporta es esta:
+
+```text
+aplicación (API de OTel) → SDK → OTLP → Collector → backend de trazas
+```
+
+El código de la aplicación depende solo de la API de OpenTelemetry. El Collector decide a qué
+backend se envía cada señal. Cambiar de proveedor es cambiar un exportador en la configuración, no
+reinstrumentar cada servicio. Esa independencia es el argumento principal, y el Collector es el
+lugar donde viven el enmascarado de datos y el muestreo de cola. Su configuración describe
+componentes y pipelines; definir un receptor no lo activa, hay que incluirlo en un pipeline:
+
+```yaml
+receivers:
+  otlp: {}
+processors:
+  batch: {}
+exporters:
+  otlp/backend:
+    endpoint: <backend-de-trazas>
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/backend]
+```
+
+## Instrumentación automática frente a manual
+
+La **instrumentación automática** usa librerías o agentes que crean tramos para las fronteras
+comunes: entrada y salida HTTP, cliente de base de datos, cliente de colas. Da visibilidad desde el
+primer día sin tocar el código, pero captura todo lo que pasa por esas fronteras, incluido el ruido.
+
+La **instrumentación manual** crea tramos para los pasos del dominio: validar el pedido, reservar
+stock, cobrar. Es la que responde preguntas de negocio, y exige decidir qué merece un tramo.
+
+El criterio práctico es combinarlas: automática para los bordes del servicio (entrada, salida, base
+de datos, colas) y manual para los pasos que el equipo necesita explicar en un incidente.
+
+## Qué nombrar y qué no
+
+Hay tres decisiones que, una vez tomadas mal, cuestan caro de corregir.
+
+**Nombre del tramo, con baja cardinalidad.** El nombre tiene que describir una clase de operación,
+no una instancia. `GET /pedidos/{id}` sirve; `GET /pedidos/48213` no, porque cada pedido crea un
+nombre nuevo y las herramientas de análisis no pueden agrupar nada.
+
+**Atributos con nombres consistentes.** Las convenciones semánticas de OpenTelemetry usan espacios
+de nombres separados por puntos y en minúsculas con guiones bajos para palabras compuestas, y
+conviene reutilizar los nombres estándar en lugar de inventar variantes.
+
+**Valores con cardinalidad controlada y sin datos personales.** Un identificador técnico de pedido
+es útil para depurar. Un correo, un nombre o el cuerpo de una petición no lo es, y además
+convierten cada tramo en un registro personal copiado a otra herramienta. Las cabeceras de
+autenticación y las cookies no deben aparecer nunca. El tratamiento completo de este punto está en
+[privacidad por diseño](/docs/privacidad-por-diseno-gdpr#observabilidad-sin-datos-personales).
+
+Una regla práctica: si un valor puede tomar miles de valores distintos, va en el tramo como
+atributo de depuración y **nunca** como etiqueta de una métrica, donde multiplica las series.
+
+## Muestreo: decidir al principio o al final
+
+Guardar todas las trazas de un sistema con mucho tráfico tiene coste de almacenamiento y de red.
+Muestrear reduce ese coste, pero decide qué se pierde. Hay dos enfoques.
+
+- **Muestreo de cabeza (_head sampling_):** la decisión se toma al inicio de la traza, normalmente
+  con un porcentaje. Es sencillo, barato y se propaga con la bandera de `traceparent`. Su límite es
+  que no puede mirar la traza completa: no garantiza guardar las trazas con error ni las lentas,
+  porque en el momento de decidir todavía no se sabe cómo acabará la petición.
+- **Muestreo de cola (_tail sampling_):** la decisión se toma cuando la traza está completa, lo que
+  permite quedarse con los errores y con las trazas más lentas. El precio es alto: necesita
+  componentes con estado, memoria y capacidad para retener trazas hasta decidir, es difícil de
+  configurar y, según la propia documentación de OpenTelemetry, los muestreadores de cola suelen ser
+  tecnología específica de cada proveedor. Hay que monitorizar el propio muestreador, porque bajo
+  carga puede degradarse.
+
+En la práctica se combinan: un muestreo de cabeza moderado protege el pipeline y un muestreo de cola
+decide qué se exporta. Lo que siempre hay que documentar es qué clase de traza **no** se guarda. Si
+nadie lo ha decidido, la traza de la petición que falló justo en ese caso desaparece sin aviso.
+
+## Correlación: trazas, métricas y logs
+
+Cada señal responde una pregunta distinta, y el valor aparece cuando se enlazan. Un flujo razonable
+es: una alerta sobre el presupuesto de error de un SLO (ver
+[observabilidad, SLI y SLO](/docs/observabilidad-slo-presupuesto-error)) lleva a una métrica con
+tendencia; la métrica lleva a una traza representativa del problema; la traza lleva al log del tramo
+que falló, filtrado por el mismo `trace-id`.
+
+Para que ese salto funcione, el `trace-id` debe estar en los logs del servicio, y la correlación
+debe mantenerse en todos los servicios. Si el backend admite enlazar un punto de una métrica
+con una traza de ejemplo (exemplars), depende de cada producto: compruébalo antes de diseñar el flujo sobre ella.
+
+## Señales de mala instrumentación
+
+Algunos síntomas delatan que las trazas no sirven, aunque el dashboard se vea completo:
+
+- **Trazas rotas en colas o llamadas asíncronas.** El productor no envía el contexto y el consumidor
+  abre una traza nueva. La solución es propagar `traceparent` en los metadatos del mensaje. Si el
+  consumidor procesa muchos mensajes en un lote, cada uno llega con su propia causa, y ahí los
+  enlaces son más honestos que forzar un padre común. OpenTelemetry usa un caso parecido, trabajo
+  encolado que se ejecuta de forma asíncrona, como ejemplo: enlaza el último tramo de la primera
+  traza con el primero de la segunda.
+- **Tramos huérfanos o raíces repetidas:** un padre que no existe en la traza o varias raíces para
+  una misma petición. Casi siempre es un problema de propagación.
+- **Decisiones de muestreo que no coinciden:** un servicio muestrea y otro no, y las trazas aparecen
+  a medias.
+- **Nombres genéricos:** muchos tramos llamados igual, sin forma de distinguir una operación de otra.
+- **Ausencia de tramos en los puntos donde se espera latencia:** si la base de datos o la cola no
+  aparecen, el tiempo se atribuye a quien llama, y el análisis señala al servicio equivocado.
+
+## Gobierno: convenciones y presupuesto de telemetría
+
+La telemetría no se gobierna sola. Sin reglas compartidas, cada equipo inventa nombres distintos
+para lo mismo y la consulta entre servicios deja de funcionar. Lo que suele funcionar:
+
+- **Convenciones compartidas:** un documento o repositorio con los atributos propios de la
+  organización, revisado como cualquier interfaz. Los atributos estándar se toman de las convenciones
+  semánticas de OpenTelemetry.
+- **Presupuesto de telemetría:** un límite de volumen o de coste por servicio y por equipo, revisado
+  cada trimestre. Un atributo nuevo que dispara el volumen se justifica o se retira. El presupuesto
+  convierte una discusión abstracta sobre «guardar más» en una decisión con coste visible.
+- **Responsables claros:** la plataforma define el Collector, los exportadores y el muestreo por
+  defecto; los equipos de servicio deciden qué tramos de negocio añaden.
+
+Este gobierno tiene la misma lógica que el presupuesto de error de los SLO: un recurso limitado que
+se reparte con reglas explícitas, no a golpe de urgencia.
+
+## Cuándo sí y cuándo no
+
+**Sí** cuando una petición de usuario atraviesa varios servicios síncronos o colas, cuando los
+incidentes de latencia cuestan horas en localizarse, o cuando el equipo ya usa logs y métricas y
+necesita unirlas.
+
+**No, al menos todavía,** cuando el sistema es un proceso con una base de datos, donde un perfilador
+y los logs con identificador de petición bastan. Tampoco cuando el equipo no puede operar un
+Collector ni definir qué datos personales no deben salir del servicio: en ese caso, primero hay que
+resolver la privacidad y las convenciones, o las trazas se convertirán en el canal por el que se
+filtren datos.
+
+## Errores frecuentes
+
+- **Instrumentar todo y no consultar nada.** Miles de tramos sin una pregunta detrás solo añaden coste.
+- **Atributos con identificadores o texto libre.** Explotan el almacenamiento y, en métricas, el
+  número de series.
+- **Muestreo sin decidir qué se pierde.** Un porcentaje bajo sin lógica de errores deja sin trazas
+  justo los fallos que se quería investigar.
+- **Contexto sin propagar en las colas.** Es la causa más frecuente de trazas incompletas.
+- **Datos personales en atributos o en baggage.** Llegan a todos los servicios y a todas las copias
+  de la telemetría.
+
+## Checklist
+
+- [ ] Cada salto síncrono y asíncrono propaga `traceparent` (y `tracestate` cuando lo use un proveedor).
+- [ ] Los nombres de tramo describen operaciones, sin identificadores.
+- [ ] Los atributos siguen convenciones compartidas y ningún valor lleva datos personales.
+- [ ] Ninguna etiqueta de métrica tiene cardinalidad sin límite.
+- [ ] La decisión de muestreo está documentada, incluido qué trazas de error se conservan.
+- [ ] Los logs incluyen el `trace-id` y se puede saltar de una alerta a una traza.
+- [ ] Existe un presupuesto de telemetría por servicio, con responsable.
+- [ ] Hay un Collector entre la aplicación y el backend, de modo que cambiar de proveedor no obliga a reinstrumentar.
+
+## Fuentes
+
+- W3C, [Trace Context (Recommendation, nivel 1)](https://www.w3.org/TR/trace-context-1/): formato de
+  `traceparent`, bandera de muestreo y límite de `tracestate`.
+- OpenTelemetry, [Visión general de la especificación](https://opentelemetry.io/docs/specs/otel/overview/):
+  señales y su estado.
+- OpenTelemetry, [Estado de madurez por lenguaje](https://opentelemetry.io/status/): tabla de trazas,
+  métricas y logs por SDK.
+- OpenTelemetry, [Trazas (concepto)](https://opentelemetry.io/docs/concepts/signals/traces/): tramos,
+  atributos, eventos y enlaces.
+- OpenTelemetry, [Propagación de contexto](https://opentelemetry.io/docs/concepts/context-propagation/).
+- OpenTelemetry, [Muestreo](https://opentelemetry.io/docs/concepts/sampling/): cabeza frente a cola y
+  sus compromisos.
+- OpenTelemetry, [Configuración del Collector](https://opentelemetry.io/docs/collector/configuration/):
+  receptores, procesadores, exportadores y pipelines.
+- OpenTelemetry, [Convenciones semánticas: nombres](https://opentelemetry.io/docs/specs/semconv/general/naming/).
+- OpenTelemetry, [API de Baggage](https://opentelemetry.io/docs/specs/otel/baggage/api/).
+- OpenTelemetry, [Graduación del proyecto (blog, 2026)](https://opentelemetry.io/blog/2026/otel-grad-now-what/index.md).

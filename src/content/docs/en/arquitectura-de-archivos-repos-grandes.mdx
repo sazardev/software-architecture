@@ -1,0 +1,303 @@
+---
+title: File architecture for large repositories
+description: 'How to organize a large repository tree so module boundaries are real: domain, public API, enforced dependency rules, ownership and build cost.'
+category: diseno
+tags:
+  - monorepo
+  - boundaries
+  - dependencies
+  - modularity
+  - codeowners
+order: 11
+roadmap:
+  id: sistemas
+  stage: dominio
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Each module hides its files: only its doors cross the boundary'
+---
+
+# File architecture for large repositories
+
+In a small repository, folder structure barely matters: anyone can find what they need. As it grows,
+the file tree becomes the real shape of the architecture. If folders say nothing about who depends on
+whom, module boundaries exist only in the documentation, and over time everything imports everything.
+
+The thesis of this article is simple: **a boundary is real when a tool can break it and the pipeline
+stops you**. File layout is what makes that possible. A well-named folder expresses a domain, an explicit
+entry point defines what is exposed, and an executable rule decides which dependencies are legal.
+Everything else (conventions, comments, good intentions) decays as the team changes.
+
+The article covers how to choose the organizing axis, what makes a boundary useful, how to measure it,
+who owns each part, and how to migrate a messy tree without stopping delivery. As a worked case it uses
+the structure of this repository, which already applies some of these ideas.
+
+<Callout tone="info" title="About the tools">
+  Versions and capabilities move fast: before adopting a tool, review its current documentation and
+  changelog.
+</Callout>
+
+## Two axes for organizing: by domain or by layer
+
+There are two classic ways to cut a tree, and most large projects mix both.
+
+- **By technical layer.** `controllers/`, `services/`, `repositories/`. Easy to understand at first and
+  it matches textbooks. The problem shows up when one business change (for example, "refundable
+  payments") touches five different folders. The code for one concept ends up scattered, and
+  dependencies cross whole folders.
+- **By domain or feature.** `orders/`, `payments/`, `catalog/`, each with its own layers inside. A
+  business change concentrates in one folder, and the boundary matches the team's conversation. Its risk
+  is the opposite: without discipline, each domain ends up importing the internals of the others, and the
+  root folder fills with shared code nobody owns.
+
+Neither is enough alone as the system grows. By domain protects business cohesion; by layer protects the
+technical dependency rule (the interface does not talk to the database). The common practice is **domain
+at the top level and layers inside each domain**, or layers at the top with a domain axis inside each
+layer when the application is a UI with many screens. What matters is choosing one primary axis and
+turning the other into a checkable rule, not a habit.
+
+This choice has tooling consequences. A domain axis lets each module have its own `package.json`, tests
+and owner. A layer axis makes a folder-level dependency rule easier to write, but rarely turns into
+independent build boundaries. The relationship with the monorepo shape is direct: if you are unsure what
+to decide there, the article on [monorepo or polyrepo](/docs/monorepo-o-polirepo#hidden-costs) describes
+the costs you carry.
+
+## What makes a boundary real
+
+A directory is not a module. As explained in
+[modular monolith before microservices](/docs/monolito-modular-primero#what-a-real-module-is), a module
+has three checkable properties:
+
+1. **A small public API.** Only what the module exposes explicitly is imported.
+2. **Owned data.** No other module reads or writes its tables or state.
+3. **Controlled dependencies.** The graph between modules has no cycles and can be verified.
+
+In the file tree, the first property translates into something concrete: **one entry point per module**,
+a file that decides what leaves. Everything that does not go through it is internal and must not be
+imported from outside. Tools do not know that intent, so it has to be visible in the shape of the tree:
+
+```text
+src/
+  orders/
+    index.ts          # public API: the only thing other modules may import
+    create-order.ts   # internal
+    repository.ts     # internal: nobody outside orders touches it
+  payments/
+    index.ts
+    ...
+```
+
+An explicit entry point has another use: it is where every contract change is reviewed. If adding an
+export means editing `index.ts`, the change shows up in the diff and in code review.
+
+### Barrels: convenient, with costs
+
+An `index.ts` that re-exports everything in a folder is called a **barrel**. It is convenient and shortens
+import paths, but it has costs worth knowing before you generalize it.
+
+- **They hide the real origin.** If `index.ts` re-exports everything, anyone can import an internal symbol
+  "through" the barrel, and the boundary stops being where it appears to be.
+- **They can worsen the build.** A barrel that re-exports many modules forces tools to process more files
+  and follow longer import chains. On tree shaking, webpack's documentation explains that `sideEffects` in
+  `package.json` marks which files can be pruned: a module without side effects whose exports are unused is
+  skipped, but code with side effects (for example CSS or polyfills) must be listed there or it is dropped in
+  production. So the effect depends on configuration, and I have not measured it in this repository.
+- **They create cycles.** If module A imports from `index.ts`, and that barrel re-exports something that
+  imports from A, you get a cycle that only shows up at runtime, sometimes in a different order depending on
+  who loads first.
+
+The practical rule: **barrels only at a module's edge, never inside it**, and internal imports go straight
+to the file. This repository takes the stricter version of the idea by having barrels per layer folder, so
+it is worth reviewing periodically whether any of them hides a cycle.
+
+## Dependency rules a tool enforces
+
+A boundary that is not checked is a suggestion. Several tools turn it into a rule in the pipeline. The most
+used today are:
+
+| Tool                                    | What it checks                                                                                | When it fits                                                      |
+| --------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `import-x/no-restricted-paths` (ESLint) | Folder zones that cannot import other folders                                                 | Layer rules inside one application                                |
+| `dependency-cruiser`                    | `from`/`to` rules over the whole graph, with severity `error`, `warn`, `info` or `ignore`     | Rules of any shape over TypeScript or JavaScript, with reports    |
+| Nx (`@nx/enforce-module-boundaries`)    | Tag-based restrictions between projects (`sourceTag`, `onlyDependOnLibsWithTags`…) and cycles | Nx monorepos with projects and tags                               |
+| Turborepo (`turbo boundaries`)          | Imports outside the package or undeclared, and tags with `allow`/`deny`                       | Turborepo monorepos; the feature is **experimental** per its docs |
+| Bazel (`visibility`, `package_group`)   | Who may depend on a target; private by default                                                | Large polyglot builds with strict visibility control              |
+
+Two caveats. First, Nx, Turborepo and Bazel are mainly **build boundaries**: they also prevent imports, but
+their real strength is declaring which project depends on which, so they can cache and parallelize well.
+Second, all of them check **the import graph**, not intent: a boundary that is not expressed as a rule
+erodes anyway, however good the tool is.
+
+An example of the shape of a rule in `dependency-cruiser` (structure only, not a full configuration):
+
+```js
+// .dependency-cruiser.cjs (shape, not a full configuration)
+forbidden: [
+  {
+    name: 'no-internals-of-another-module',
+    severity: 'error',
+    from: { path: '^src/orders/', pathNot: '^src/orders/index\\.ts$' },
+    to: { path: '^src/payments/', pathNot: '^src/payments/index\\.ts$' },
+  },
+],
+```
+
+The tool generates a starter configuration with `dependency-cruiser --init`, which creates a
+`.dependency-cruiser.js` with rules that make sense for most projects.
+
+## Cycles and graph measurement
+
+Dependency cycles are the most reliable sign that a boundary does not exist. If `orders` imports `payments`
+and `payments` imports `orders`, neither can change, be tested or deployed alone. The detection technique
+and why cycles matter are covered in
+[fitness functions and evolutionary architecture](/docs/fitness-functions#dependency-cycles).
+
+Three habits work in any project:
+
+- **Fail the pipeline on a new cycle**, but accept the existing ones in an explicit list that only shrinks.
+  That keeps the debt visible and stops it growing.
+- **Measure the graph, not just the rule.** Number of dependencies between modules, modules with the most
+  incoming dependents, and files with the most outgoing imports. These are the places where the boundary is
+  eroding.
+- **Treat the dependency count as an indicator, not a target.** A very stable module with many dependents
+  can be fine; what matters is a dependency running against the direction the architecture declares.
+
+## Size: thresholds per file and per module
+
+Huge files often hide two modules. A per-file threshold (for example, 300 lines) and a cognitive-complexity
+limit per function work as early alarms, not as law. They are **the author's judgment**: there is no
+universal standard for these numbers, and each team should calibrate them against its own change history.
+
+For modules, the useful threshold is not line count but the number of **files that change together**. If
+every business change always touches the same five modules, the boundary is in the wrong place, and no
+line-count figure will detect it. Git history answers that question better than any linter.
+
+## Ownership with CODEOWNERS
+
+A boundary without an owner rots. The `CODEOWNERS` file assigns owners by path and is checked on every pull
+request. According to GitHub's documentation, it can live in `.github/`, the root, or `docs/`, and GitHub
+uses the first one it finds in that order. **The last matching pattern takes precedence**, so general rules
+go at the top and specific ones below. Owners are users or teams (`@org/team`), and **they must have explicit
+write access** to the repository.
+
+Decisions worth making with it:
+
+- **Ownership per module, not per person.** A team owns `orders/` even when people change; the file stays
+  valid when the org chart changes.
+- **The entry point has the same owner as the module.** Contract changes then go through the people who know
+  their consumers.
+- **Shared code needs an explicit owner.** A `shared/` folder without one becomes the project's dumping ground.
+
+## Generated code versus hand-written code
+
+Generated files (autogenerated routes, API clients, content indexes) break ownership rules when edited by
+hand. The fix is a physical boundary: **separate folders for generated output**, marked as not editable, with
+a rule that stops hand-written code from depending on them except through an adapter. In this repository, for
+example, the content index and the route tree are committed and generated by tools, and the audit fails if the
+index is out of date instead of allowing a manual edit.
+
+The thing to verify is that **regeneration is reproducible**: if two people generate the same file and get
+different contents, the boundary is fictional. And when a generated file changes shape, the diff should show
+it so review can see it.
+
+## Why layout affects caching and incremental builds
+
+Build tools cache by **input fingerprints**. If a module's fingerprint includes files that do not affect it,
+any change invalidates the cache of everything that depends on them. And if a real dependency is not declared,
+the build reuses a stale result.
+
+In Turborepo, for example, a task's hash includes by default all files in the package tracked by Git; the
+`inputs` key lets you narrow them, but it **replaces the default behavior** and stops following changes that
+Git tracks. Nx and Bazel have similar models with different vocabulary. The consequences for tree design are
+clear:
+
+- A module with generated files mixed into hand-written code invalidates the whole cache every time it is
+  regenerated.
+- A giant `shared/` makes any change invalidate half the monorepo.
+- A well-bounded module has a small, predictable fingerprint, and that is what allows rebuilding only what
+  is needed.
+
+That is why folder structure is not an aesthetic matter: it decides what gets rebuilt on each change.
+
+## Migrating a messy tree without stopping delivery
+
+A tree is rarely redesigned in one go. The safe migration is incremental and reversible:
+
+1. **Measure first.** Dependency graph, cycles and files that change together. Without measurement you do not
+   know which boundary to create first.
+2. **Pick a module with low outgoing coupling** and create its entry point. At first, the entry point only
+   re-exports what is already imported from outside; change nothing else.
+3. **Move the importers to the entry point** in small, frequent changes, and add the rule that stops importing
+   internals. Start in warning mode and switch to error when violations reach zero.
+4. **Freeze the debt.** Existing cycles go to an explicit list; new ones fail the build.
+5. **Repeat module by module.** Each step should deliver value on its own.
+
+This is the **strangler fig** idea applied to a file tree: a facade progressively replaces an old part with a
+new one, and the migration can stop at any point without leaving the system half-done. Fowler's original
+article, on [martinfowler.com](https://www.martinfowler.com/bliki/StranglerFigApplication.html), describes the
+pattern at system level, and Microsoft's guidance summarizes it as a facade that routes requests between the
+old and the new. The same logic applies to a folder tree: the entry point is the facade.
+
+## How this repository does it
+
+The repository combines both axes. The application is organized in interface layers (atoms, molecules,
+organisms, templates) and a `lib/` core with no dependencies upward; content lives apart, in `content/`,
+generated by tools. The dependency rules between layers are written as zones in the ESLint configuration, and
+the file-size and complexity limits are also enforced in the linter, according to the repo standard.
+
+What is not perfect yet, and is worth saying:
+
+- Layers are a technical axis, so business boundaries depend more on discipline than on the shape of the
+  tree. The natural next step would be grouping by domain inside each layer.
+- Per-layer barrels are convenient, but they should be reviewed so none of them hides a cycle.
+- The separation between generated and hand-written code is expressed in the tree and in the audit, which
+  fails when a generated index is out of date.
+
+## When not to, and common mistakes
+
+A project of three people with one application does not need module architecture. Boundaries cost: they require
+entry points, rules and maintenance. Start with the ones that cost least and protect most, and grow when the
+pain is measurable.
+
+Recurring mistakes:
+
+- **Creating `shared/` and `common/` folders with no owner.** They become the place where everything is imported.
+- **Re-exporting everything from the barrel "just in case".** The public API disappears and the boundary with it.
+- **Adding a rule without measuring.** If the rule launches blocking 400 imports, the team turns it off. It is
+  better to start as a warning and bring the debt down.
+- **Confusing build boundaries with design boundaries.** A monorepo with separate packages can still have logical
+  circular dependencies that the build does not catch if the packages do not declare them.
+- **Migrating everything at once.** A redesign without intermediate deliveries is almost always abandoned halfway.
+
+## Checklist
+
+- [ ] The tree has one explicit primary axis (domain or layer), and the other is expressed as a rule.
+- [ ] Each module has an entry point, and what does not go through it is internal.
+- [ ] Barrels exist only at the module's edge; internal imports are direct.
+- [ ] A tool checks dependency rules in the pipeline, not in the team's memory.
+- [ ] Cycles fail the build; existing ones sit in a list that only shrinks.
+- [ ] There are per-file size thresholds, and you measure which files change together.
+- [ ] `CODEOWNERS` assigns every module, and shared code has an owner.
+- [ ] Generated code is separated from hand-written code, and regeneration is reproducible.
+- [ ] Cache fingerprints include what a module needs and nothing more.
+- [ ] Migration advances module by module, with intermediate deliveries.
+
+## Sources
+
+- [dependency-cruiser (repository)](https://github.com/sverweij/dependency-cruiser) and its [rules reference](https://github.com/sverweij/dependency-cruiser/blob/main/doc/rules-reference.md):
+  `dependency-cruiser --init`, `forbidden` rules with `from`/`to` and the severities `error`, `warn`, `info` and `ignore`.
+- [Nx: enforce-module-boundaries](https://nx.dev/docs/technologies/eslint/eslint-plugin/guides/enforce-module-boundaries):
+  `depConstraints`, tags (`sourceTag`, `onlyDependOnLibsWithTags`) and cycles.
+- [Turborepo: boundaries](https://turborepo.dev/docs/reference/boundaries): experimental feature, tags in
+  `turbo.json` and `allow`/`deny` rules.
+- [Turborepo: caching](https://turborepo.dev/docs/core-concepts/caching): hashes, the `inputs` key and its effect
+  on default behavior.
+- [Bazel: visibility](https://bazel.build/concepts/visibility): the `visibility` attribute, `package_group` and
+  private visibility by default.
+- [GitHub: About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners):
+  locations, search order, last-match precedence and write access.
+- [Martin Fowler: Strangler Fig Application](https://www.martinfowler.com/bliki/StranglerFigApplication.html).
+- [Microsoft Learn: Strangler Fig pattern](https://learn.microsoft.com/azure/architecture/patterns/strangler-fig).
+- On `sideEffects` and tree shaking: [webpack, Tree Shaking](https://webpack.js.org/guides/tree-shaking/).
+- This repository: `AGENTS.md` (§3 structure and dependency rules, §4 code rules) and `eslint.config.ts`.

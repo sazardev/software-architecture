@@ -1,0 +1,313 @@
+---
+title: Context engineering and agent memory
+description: "How to treat an agent's context as a scarce resource: what enters the window, when to compact, what to store as memory, and how to measure that it works."
+category: tendencias
+tags:
+  - context-engineering
+  - memoria
+  - agentes
+  - contexto
+  - ia
+order: 10
+roadmap:
+  id: ia
+  stage: produccion
+  step: 40
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: A context window with memory layers and a filter that decides what gets in
+---
+
+# Context engineering and agent memory
+
+For a while, improving an LLM system meant improving the prompt: changing wording, adding
+examples, asking more firmly. With agents that call tools across dozens of steps, the problem
+moves. What decides the outcome is **what sits in the context window on each call**: the
+instructions, the available tools, the history, the retrieved documents and the task state. That
+design is called _context engineering_, and agent memory is the part that decides what survives
+from one call to the next.
+
+This article treats context as a resource with a cost and with limits on attention. It goes
+through what enters the window, why more context does not always give better answers, how to
+compact without losing what matters, and how working memory, persistent memory and on-demand
+retrieval differ. At the end there are criteria for deciding what to store, how memory expires, and
+a way to measure whether the context works. The general architecture of an agent is covered in
+[LLM and agent application architecture](/docs/arquitectura-agentes-llm); here we go deeper into
+the piece that concentrates the most decisions.
+
+<Callout tone="info" title="Cut-off date">
+  References are from October 2026. The context-management features of the Anthropic API are in beta
+  and change: check field names and headers against the [official
+  documentation](https://platform.claude.com/docs/en/build-with-claude/context-editing) before using
+  them.
+</Callout>
+
+## Context is a scarce resource
+
+Anthropic frames it this way in its September 2025 article on context engineering: context is a
+"critical but finite" resource, with diminishing marginal returns. Every new token draws on what the
+article calls the model's _attention budget_. The same article describes _context rot_: as the
+window grows, the model's ability to accurately recall the information it contains decreases.
+
+This does not contradict the fact that windows keep getting bigger. A large window is capacity;
+attention is something else. A model can accept hundreds of thousands of tokens and still handle a
+fact in the middle of a crowded context worse. The paper by Liu et al. on
+[_lost in the middle_](https://arxiv.org/abs/2307.03172) (published in TACL in 2024) showed that
+models make better use of information at the beginning and end of a context than in the middle,
+and that performance drops as the input gets longer.
+
+There is also an operational nuance: the window is not a box where everything fits and is used
+equally. It is a space where every element competes with the others. So the design question is not
+"does it fit?" but "does it deserve its cost and its place in this call?"
+
+## What enters the window
+
+Before optimizing, inventory. In a typical agent, the window contains:
+
+- **System instructions:** role, rules, output format. The most stable part and the one repeated
+  on every call.
+- **Tool definitions:** names, descriptions and schemas. Each tool added costs tokens on every
+  call, whether it is used or not.
+- **Conversation history:** user turns and model replies.
+- **Tool results:** the part that grows fastest. A `grep`, an API response or a log can take
+  thousands of tokens that only matter for one step.
+- **Retrieved documents:** fragments returned by a search system, as in
+  [RAG in production](/docs/rag-y-evaluacion-continua).
+- **Task state:** what is done, what is pending, what was decided and why.
+
+The first four grow by default; the last two are the ones the design must look after. A common
+mistake is letting history grow without a policy and trusting that the model will "ignore what does
+not matter". It does not ignore it entirely: whatever is in the window influences the output, and
+old tool results tend to distract more than they help.
+
+A good starting point is to decide, for each source, three things: whether it always enters, only
+enters when the task calls for it, or gets summarized before it enters.
+
+## More context does not always give better results
+
+The Chroma study _Context Rot_, published in July 2025, tested 18 models from Anthropic, OpenAI,
+Google and Alibaba on simple tasks where only the input length varied. Its conclusions that matter
+for an architect are three:
+
+- Performance **gets worse with length**, even on trivial tasks, and across every model tested.
+- **Distractors** matter: adding one already lowers the result, and several lower it further. The
+  more a irrelevant fragment resembles the question, the more it confuses.
+- A **structured and coherent** filler text performed worse than the same text shuffled, consistently across
+  the models tested. That suggests the coherence of filler can compete with the question.
+
+The same report compares questions over conversation histories (LongMemEval) using focused inputs of
+about 300 tokens against full inputs of about 113,000 tokens, and finds significant differences in
+favor of the focused ones. The report attributes much of that gap to abstentions: faced with ambiguity, models prefer not to
+answer rather than risk it. Claude models had the lowest hallucination rates on the distractor tasks.
+
+The practical lesson is not "use small windows", but **trim before filling**. Retrieving five
+highly relevant fragments usually beats retrieving fifty just in case. And long instructions that
+contradict the rest of the context are noise dressed up as rules.
+
+## Compacting without losing what matters
+
+When a task grows beyond what should stay in the window, there are three options: **discard**
+(tool result clearing), **summarize** (compaction) or **externalize** (memory, next section). They are
+different tools and they complement each other.
+
+Anthropic's article recommends starting with tool result clearing, which it calls "one of the safest
+lightest touch" forms of compaction: once an agent has used a result and moved on, it rarely needs to
+see the raw content again. For summary-based compaction, the rule is to **maximize recall first** and
+then **improve precision** by removing what is superfluous. What must survive a summary are
+architectural decisions, unresolved bugs and implementation details that condition the next step.
+
+A lossy summary always loses something. So treat compaction as a change of state, not as an invisible
+chore:
+
+- Keep the summary **and** a reference to what it summarized (a file path, a decision identifier), so
+  you can recover it if needed.
+- Give the summary a fixed shape: goal, decisions made, pending items, constraints. A free-form
+  summary drifts with each compaction; one with fixed fields can be compared.
+- Measure the drift: on a long task, compare the original goal with the current state after several
+  compactions.
+
+In the Anthropic API, context management has two routes. **Context editing** (beta, with the header
+`context-management-2025-06-27`) clears old tool results or reasoning blocks when the context crosses
+a threshold; the client keeps its full history, and the server applies the clearing before the prompt
+reaches the model. **Compaction** on the server side summarizes the conversation as it approaches the
+limit, and the documentation presents it as the primary strategy for most use cases. Editing is for
+cases that need finer control over what gets removed. An example configuration:
+
+```json
+"context_management": {
+  "edits": [
+    {
+      "type": "clear_tool_uses_20250919",
+      "trigger": { "type": "input_tokens", "value": 50000 },
+      "keep": { "type": "tool_uses", "value": 5 }
+    }
+  ]
+}
+```
+
+Two details of that configuration deserve attention. The default threshold for tool result clearing
+is 100,000 input tokens, and `clear_at_least` prevents clearings that do not pay off: since clearing
+results invalidates the cached prefix, a tiny clearing can cost more than it saves. And `exclude_tools`
+protects tools whose results must never disappear.
+
+## Three kinds of memory, three policies
+
+"Memory" groups together things that behave differently. It is worth separating them, because each
+has its own expiry, its own cost and its own privacy risk.
+
+| Kind                    | What it stores                                             | Where it lives               | When it enters                        | Expiry                              |
+| ----------------------- | ---------------------------------------------------------- | ---------------------------- | ------------------------------------- | ----------------------------------- |
+| **Working**             | The context of the current call or task                    | The model's window           | Whenever it is in the window          | When the task ends or on compaction |
+| **Persistent per task** | State, decisions and progress of a long job                | A file or record you control | On resume: read at start or on demand | When the task closes                |
+| **Long-term**           | Preferences, facts about the user or domain learned so far | A store with access control  | Only when the task needs it           | Explicit: TTL or periodic review    |
+
+**On-demand retrieval** cuts across all three: instead of loading everything up front, the agent
+queries what it needs at the moment. That is how context stays small without losing access to what is
+known.
+
+A concrete example is the memory offered in the Anthropic API (tool `memory_20250818`). Claude does
+not keep anything by itself: it requests operations on a `/memories` directory (view, create,
+str_replace, insert, delete and rename), and **your application** executes them on the storage you
+choose. By design, when starting a task Claude checks that directory, and the system adds instructions
+to record progress, starting from the premise that its context window may be reset at any moment. The
+underlying idea is simple: whatever is not written to external memory is considered lost.
+
+```text
+/memories
+  progress.md        # task state: done, pending, blockers
+  decisions.md       # decisions with their reason and date
+  preferences.md     # user or team rules, with origin
+```
+
+How folders are organized is an architecture decision: if each file has a clear purpose, retrieval is
+precise; if everything ends up in one file, memory becomes a giant context under another name.
+
+## What to store and who writes it
+
+Not everything the agent learns deserves memory. Before writing, answer three questions:
+
+1. **Will it be needed again?** A one-off search result is not; a project convention is.
+2. **Is it verifiable?** A preference the user stated once is worth less than a confirmed rule. Also
+   store the origin: who said it and when.
+3. **Could it be false without anyone noticing?** What is written to memory is reread in future
+   sessions with the appearance of truth. A stored error spreads.
+
+Who writes matters as much as what. There are three patterns:
+
+- **The agent proposes, a person approves.** Suitable for long-term memory that affects other users
+  or business decisions.
+- **The agent writes, the system validates.** A validator rejects malformed entries, excessive sizes
+  or sensitive content before persisting.
+- **Only the system writes.** Task state (step counters, identifiers, test results) that must not
+  depend on the model remembering to record it.
+
+The [Claude Code harness guide](/docs/harness-engineering-claude-code) describes the same tension
+with instruction files: what must always hold belongs in a deterministic mechanism, and model memory
+works better as context than as a guarantee.
+
+## Privacy, security and expiry
+
+Persistent memory turns a context error into a data risk. Three fronts deserve explicit design.
+
+**Personal data.** The GDPR minimisation principle (article 5(1)(c)) requires data to be limited to
+what the purpose needs, and the storage limitation principle (article 5(1)(e)) requires it to be kept
+only as long as necessary. Applied to an agent, this means it should not store full conversations by
+default, each memory category needs a retention period, and the user should be able to see and delete
+what was stored about them. Anthropic's documentation recommends validating writes so that sensitive
+data is stripped before your handler saves it, and capping file sizes.
+
+**Memory injection.** Memory is an attack surface: content maliciously read once can be written and
+resurface in later sessions or for other users. OWASP lists this in its list for agentic applications
+as _Memory & Context Poisoning_ (ASI06). As mitigations, it helps to validate writes to persistent
+memory, keeping context ephemeral by default, scoping memory per user and task, and letting an operator
+inspect and clear it. Memory paths must also be validated: Anthropic's documentation warns that a path
+such as `/memories/../../` can escape the directory if the handler does not resolve and check it.
+
+**Expiry.** Memory without an expiry date accumulates contradictions. Define a retention period per
+category, delete what has not been used for a long time, and periodically review long-term rules. A
+small, current memory performs better than a large, old one.
+
+## The cost of each decision
+
+Every token in the window has a cost, but not all cost the same. A stable prefix (instructions and
+tools) can be cached; a history that changes on every turn cannot. That is why the order of the window
+matters: stable content goes first and volatile content last. The
+[inference cost guide](/docs/costo-de-inferencia) explains caching in more detail.
+
+One effect is easy to forget: **clearing context also has a cost**. If clearing invalidates the prefix
+cache, the token savings can be lost on the next call. Measure the combination rather than each
+measure on its own: how many tokens are saved, what the lost cache costs, and whether quality holds.
+
+Memory also has a retrieval cost. A system that queries memory on every turn pays latency and tokens to
+read what it may not need. On-demand retrieval only pays off if the agent knows when to query; if it
+queries every time, it is simply a loaded context in two steps.
+
+## How to measure that the context works
+
+A change to the context (a new instruction, a compaction, a shorter summary) can improve one case and
+break others. That is why it needs regression evaluation, like any other behavior change. The approach
+is the same as in [RAG and continuous evaluation](/docs/rag-y-evaluacion-continua), applied to the
+window:
+
+- **Golden set of long tasks.** Tasks that require 20 or 30 steps, with a verifiable result: a file
+  that must end up correct, a test that must pass, a decision that must be remembered after a
+  compaction.
+- **Recall tests.** After a compaction or a resume, ask about specific decisions made at the start. If
+  the summary loses them, the failure is in the context, not the model.
+- **Distractor tests.** Deliberately add similar but irrelevant fragments and check that the answer
+  does not change.
+- **Cost and quality metrics together.** Input tokens per task, cache hit rate, number of compactions
+  and the final result. A saving that lowers quality is not a saving.
+
+An important detail: the judge in these evaluations should not read only the final answer. If the goal
+is for the agent not to lose the thread, the intermediate state has to be checked too.
+
+## When it does not apply
+
+- **Short, closed tasks.** A question with a two-page document needs no compaction or memory; adding
+  them is complexity without benefit.
+- **When the data must be exact and stable.** A price table or a catalog is better queried from a
+  database with filters than held in a memory the model summarizes.
+- **Without evaluation.** If there is no way to measure whether the context improved or worsened, any
+  tweak is a guess. Build the test set before optimizing.
+
+## Common mistakes
+
+- **Treating the window as storage.** Pasting everything that might be useful "just in case". The result
+  is more cost and worse attention.
+- **Memory without origin.** Storing facts without recording who said them or when. When something goes
+  wrong, nobody can tell where it came from.
+- **Free-form summaries.** Compacting with "summarize the conversation" and no fixed fields. Every
+  summary drifts and important decisions vanish silently.
+- **Trusting the model to remember.** Letting a flow's state live only in the context. If the session
+  restarts, the state is lost; the [agent flow design guide](/docs/disenar-flujos-con-agentes) treats
+  state as a persistent record per case.
+- **Memory without expiry.** Preferences from two years ago that contradict current ones.
+- **Clearing without measuring.** Turning on result clearing without checking whether the lost cache
+  cancels the savings.
+
+## Checklist
+
+- [ ] You know what enters the window on each call and in what order: stable content first.
+- [ ] Each context source has a rule: always, on demand, or summarized.
+- [ ] Old tool results are discarded or summarized under an explicit policy.
+- [ ] The compaction summary has fixed fields and keeps decisions and pending items.
+- [ ] Persistent memory is split into categories, with origin, expiry and a deletion path.
+- [ ] Who writes to memory is decided, and what is written goes through validation.
+- [ ] Memory paths are validated and no sensitive data is stored without a filter.
+- [ ] A set of long tasks exists, with recall and distractor tests.
+- [ ] You measure cost and quality together, including the effect on the cache.
+
+## Sources
+
+Consulted in October 2026. The API's context-management features are in beta and should be checked
+against the current documentation.
+
+- [Effective context engineering for AI agents (Anthropic Engineering, September 29, 2025)](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- [Context Rot: How Increasing Input Tokens Impacts LLM Performance (Chroma, July 2025)](https://www.trychroma.com/research/context-rot)
+- [Lost in the Middle: How Language Models Use Long Contexts (Liu et al., arXiv:2307.03172; TACL, 2024)](https://arxiv.org/abs/2307.03172)
+- [Context editing (Claude API documentation)](https://platform.claude.com/docs/en/build-with-claude/context-editing)
+- [Memory tool (Claude API documentation)](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool)
+- [Compaction (Claude API documentation)](https://platform.claude.com/docs/en/build-with-claude/compaction)
+- [OWASP Top 10 for Agentic Applications (OWASP Gen AI Security Project)](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/)
+- [Regulation (EU) 2016/679 (GDPR), article 5 (EUR-Lex)](https://eur-lex.europa.eu/eli/reg/2016/679/oj)

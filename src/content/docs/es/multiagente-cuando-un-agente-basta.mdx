@@ -1,0 +1,264 @@
+---
+title: 'Multiagente: cuándo un agente basta'
+description: 'Cuándo un agente con buenas herramientas basta, qué cuesta cada enlace de un sistema multiagente y cómo diseñar contratos, trazas y límites entre agentes.'
+category: diseno
+tags:
+  - agentes
+  - multiagente
+  - coordinacion
+  - contratos
+  - trazas
+order: 10
+roadmap:
+  id: ia
+  stage: gobierno
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un supervisor reparte a agentes con contextos separados, y cada enlace cuesta'
+---
+
+# Multiagente: cuándo un agente basta
+
+Un equipo añade a su asistente de soporte cuatro agentes: uno clasifica la consulta, otro busca en
+la base de conocimiento, otro redacta la respuesta y un supervisor coordina a los demás. En la demo
+parece un equipo de verdad. En producción, una pregunta sencilla tarda varias veces más, el coste
+por conversación sube sin que nadie lo haya decidido y, cuando una respuesta sale mal, nadie sabe
+qué agente se equivocó, porque cada uno vio solo su fragmento. Un agente con las mismas
+herramientas, un buen prompt y dos comprobaciones en código habría costado menos, respondido antes
+y sido más fácil de depurar.
+
+La tesis de este artículo es sencilla: **un sistema multiagente es una decisión de coste, no una
+señal de madurez.** Cada agente nuevo añade un contexto que mantener, un enlace que pagar y una
+frontera donde la información se pierde. Se justifica cuando separa permisos o contextos, cuando
+hay trabajo realmente paralelo o cuando la especialización se puede medir. En los demás casos es
+complejidad accidental.
+
+Este texto se ocupa de la coordinación entre agentes. Qué pasos de un flujo son código y cuáles
+son agentes, y cómo validar, aprobar y parar, está en
+[diseñar flujos con agentes de IA](/docs/disenar-flujos-con-agentes); la arquitectura interna de un
+agente, en [arquitectura de aplicaciones con LLM y agentes](/docs/arquitectura-agentes-llm).
+
+<Callout tone="info" title="Fecha de corte">
+  Fuentes consultadas en octubre de 2026. Las cifras de terceros se citan tal como las publica cada
+  autor; el ejemplo trabajado usa valores ilustrativos, no mediciones.
+</Callout>
+
+## Un agente con buenas herramientas suele bastar
+
+Anthropic recomienda empezar por la solución más simple y subir en complejidad solo cuando la
+tarea lo pide ([Building effective agents](https://www.anthropic.com/engineering/building-effective-agents),
+diciembre de 2024). Su propio sistema multiagente de investigación, publicado en junio de 2025, lo
+muestra con números. Un lead agent con Claude Opus 4 y subagentes con Claude Sonnet 4 superó en un
+90,2 por ciento a un Opus 4 en solitario en su evaluación interna de investigación. El mismo artículo advierte del precio: según sus datos, un agente consume unas cuatro
+veces más tokens que un chat y un sistema multiagente unas quince veces más, y la cantidad de
+tokens explica por sí sola cerca del 80 por ciento de la variación del rendimiento. Y señala que
+los dominios en los que todos los agentes deben compartir el mismo contexto o tienen muchas
+dependencias entre sí no encajan bien hoy en un sistema multiagente.
+
+Un estudio de Google Research y Google DeepMind (enero de 2026) lo cuantifica en otro
+sentido. Con 180 configuraciones y cuatro benchmarks, encontró que en tareas secuenciales todas las
+variantes multiagente empeoraban el rendimiento entre un 39 y un 70 por ciento, mientras que la
+coordinación centralizada mejoraba un 80,9 por ciento en tareas paralelizables. Además, los agentes
+independientes amplificaban los errores 17,2 veces, frente a 4,4 con un orquestador central que
+valida antes de propagar.
+
+Antes de añadir un agente, pregunta qué falla con un agente y más contexto:
+
+- Si el problema es **que falta información**, un agente con la herramienta de búsqueda adecuada
+  suele resolverlo.
+- Si el problema es **que el contexto es demasiado grande para una sola ventana**, a veces un
+  subagente aislado resuelve una parte, pero no es el único remedio: un resumen bien diseñado o
+  una búsqueda más precisa también.
+- Si el problema es **que tareas distintas necesitan permisos distintos**, ahí sí hay un argumento
+  para separar agentes.
+- Si el problema es **que hay trabajo independiente que tarda demasiado en serie**, el paralelismo
+  puede justificarse, siempre que la fusión final sea barata.
+
+Si ninguna de las cuatro respuestas es un sí claro, el sistema multiagente todavía no se ha
+ganado su sitio.
+
+## Cinco patrones de coordinación
+
+Los nombres varían según el framework, pero la forma de la coordinación se repite. Lo que cambia es
+cómo fluye el control y dónde se pierde información.
+
+| Patrón              | Cómo fluye el control                                  | Cuándo encaja                                      | Riesgo principal                                                        |
+| ------------------- | ------------------------------------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------- |
+| Supervisor          | Un agente central asigna subtareas y recibe resultados | Tareas descomponibles con permisos distintos       | El supervisor es cuello de botella y reescribe la tarea en cada reparto |
+| Handoff             | Un agente pasa la conversación completa a otro         | Dominios que cambian a mitad (ventas, facturación) | Lo que se pierde en el pase; rebotes entre agentes                      |
+| Paralelo con fusión | Varios agentes trabajan a la vez y un paso une         | Búsquedas o análisis independientes                | Resultados contradictorios; coste multiplicado por ramas                |
+| Pizarra compartida  | Los agentes leen y escriben un estado común            | Trabajo acumulativo sobre un mismo artefacto       | Escrituras concurrentes y sobrescritura silenciosa                      |
+| Pipeline            | Cada agente transforma la salida del anterior          | Etapas secuenciales bien definidas                 | Un error temprano que se propaga a todas las etapas                     |
+
+Dos observaciones de la práctica. La primera es que compartir contexto es el problema difícil, no
+el reparto en sí. Criterio del autor: un subagente que no ve lo que decidieron los demás tiende a
+producir resultados incoherentes. Un estudio de Cemri et al. (2025) clasifica
+los fallos de varios frameworks multiagente populares en 14 modos agrupados en tres categorías, y
+atribuye buena parte de ellos al diseño del sistema y a la desalineación entre agentes, no solo al
+modelo. La segunda es que los patrones se combinan:
+un supervisor puede lanzar un paralelo con fusión y después pasar el resultado a un pipeline de
+revisión.
+
+## Lo que cuesta cada enlace
+
+Cada flecha entre dos agentes tiene un coste que no aparece en el diagrama de arquitectura. Es el
+que se paga en la factura, en el reloj y en la depuración.
+
+| Coste              | De dónde viene                                                                   | Cómo verlo                                                     |
+| ------------------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Tokens duplicados  | Cada agente recibe sus instrucciones, sus herramientas y parte del historial     | Tokens de entrada y salida por agente y por ejecución          |
+| Latencia           | Los pasos en serie suman; el paralelo solo ayuda si las ramas son independientes | Tiempo de reloj del camino crítico                             |
+| Contexto perdido   | Solo viaja lo que el emisor escribe en el mensaje; un resumen descarta matices   | Preguntas de aclaración y respuestas que contradicen la fuente |
+| Errores propagados | El siguiente agente acepta como hecho lo que dijo el anterior                    | Tasa de errores por etapa, no solo final                       |
+| Depuración difícil | La causa está entre dos agentes; sin traza común no hay historia que seguir      | Un identificador de ejecución que cruce todos los agentes      |
+| Coordinación       | Reparto, reintentos, plazos y conflictos son código que no pertenece al dominio  | Líneas de código y casos de prueba de la orquestación          |
+
+Los subagentes de Claude Code muestran el tipo de frontera que conviene dibujar a propósito. Según
+su documentación oficial, cada subagente arranca con una ventana de contexto nueva y no ve el
+historial de la conversación principal; solo devuelve su resumen. Por defecto, un subagente puede
+lanzar a su vez otros subagentes, hasta tres niveles por debajo de la conversación principal, y ese
+límite se puede cambiar con una variable de entorno (ver
+[el harness de Claude Code](/docs/harness-engineering-claude-code#capa-4-skills-subagentes-y-plugins)).
+Que el límite exista y sea explícito ya es una decisión de diseño; que sea el valor por defecto no
+lo convierte en una buena idea.
+
+## Cuándo sí se justifica
+
+Hay tres razones que justifican un enlace nuevo. Fuera de ellas, el criterio que recomiendo es
+quedarse con un agente.
+
+1. **Separación de permisos o de datos.** Un agente que lee facturas no debe poder ejecutar pagos,
+   y un agente que navega por la web no debería compartir contexto con uno que tiene acceso a datos
+   de clientes, porque el contenido web puede contener instrucciones maliciosas. Separar es un
+   control de seguridad, no solo una organización del trabajo. Los riesgos de dar herramientas a
+   un modelo se tratan en [controlar la IA](/docs/controlar-la-ia-gobierno-y-autonomia#guardrails).
+2. **Paralelismo real.** Subtareas independientes, cuyo tiempo de reloj importa, y un paso de
+   fusión barato. Si las ramas necesitan saber lo que decide la otra, no son independientes.
+3. **Especialización medible.** Un agente con instrucciones y herramientas propias supera al
+   general en un conjunto de evaluación que el equipo mantiene. Sin esa métrica, «especialista» es
+   solo un nombre distinto para el mismo prompt.
+
+Un caso que a menudo se olvida es el **revisor independiente**: un agente que evalúa el trabajo de
+otro debe ver el resultado y los criterios, pero no el razonamiento que lo produjo. Así no hereda
+los mismos sesgos. Es una separación de contexto deliberada, y justifica su coste.
+
+## Contratos entre agentes
+
+Cada enlace es una API. Si no tiene entrada y salida definidas, la frontera de contexto queda en
+manos de lo que el emisor decida escribir en cada mensaje. El contrato fija tres cosas: qué recibe
+el agente, qué devuelve y cuándo se considera aceptado el resultado.
+
+```ts
+type SolicitudBusqueda = {
+  pregunta: string;
+  restricciones: { idioma: 'es' | 'en'; fuentesPermitidas: string[] };
+  presupuesto: { maxPasos: number; maxTokens: number };
+};
+
+type ResultadoBusqueda = {
+  estado: 'aceptado' | 'rechazado' | 'sin_respuesta';
+  evidencias: { url: string; cita: string }[];
+  motivo?: string;
+};
+```
+
+La forma del contrato importa más que su sintaxis. Tres reglas que suelen funcionar:
+
+- **El receptor valida la entrada** antes de empezar. Si la solicitud no cumple el esquema, el
+  agente devuelve un error estructurado y no improvisa.
+- **El emisor valida la salida con código**, no con otro modelo. Un esquema, un campo obligatorio
+  o una cita que debe existir en la fuente son comprobaciones baratas y deterministas.
+- **El criterio de aceptación está escrito.** Por ejemplo: toda afirmación lleva una cita; si no
+  la hay, el estado es `rechazado`. Y el agente tiene permiso para responder `sin_respuesta` en
+  lugar de inventar, algo que hay que pedir explícitamente en sus instrucciones.
+
+El contrato es también la frontera de contexto. El supervisor no pasa el historial completo a cada
+subagente: pasa lo que el contrato dice que necesita. Eso reduce tokens, pero sobre todo hace que
+lo que cruza el enlace sea visible y revisable.
+
+## Trazas, límites y presupuesto
+
+Un sistema multiagente sin trazas no se puede depurar. Hacen falta tres cosas:
+
+- **Un identificador de ejecución** que atraviese todos los agentes, las llamadas al modelo y las
+  herramientas. Cada agente abre un tramo (span) hijo del de la ejecución, y cada llamada al
+  modelo, otro hijo. Usa la versión de las convenciones de OpenTelemetry para IA generativa que documente tu stack y no
+  asumas nombres de atributos de memoria.
+- **Límites por ejecución, no por agente.** Pasos, tokens, plazo total, número de agentes creados
+  y profundidad de delegación. Si cada agente tiene su propio presupuesto, el total se multiplica
+  sin que nadie lo vea. El supervisor reparte un presupuesto único y cada subagente recibe su
+  parte. El mecanismo de bucle con límites está descrito en
+  [arquitectura de aplicaciones con LLM y agentes](/docs/arquitectura-agentes-llm#orquestación).
+- **Parada con estado.** Un agente que agota su presupuesto devuelve un estado explícito
+  (`presupuesto_agotado`, `limite_de_profundidad`), no silencio. Lo que queda a medias pasa a una
+  cola con su traza, como ocurre con los flujos de negocio.
+
+Lo que más dolor evita es la combinación de traza compartida y límite por ejecución: con ella,
+una respuesta mala se reconstruye en minutos; sin ella, en días.
+
+## Ejemplo trabajado: un asistente de soporte
+
+Supongamos un asistente de soporte que responde preguntas sobre facturación. Las cifras son
+**ilustrativas**, no mediciones de ningún proveedor.
+
+Versión A: un agente con cuatro herramientas (buscar en la base de conocimiento, consultar el
+pedido, consultar la factura y redactar), un límite de seis pasos y una comprobación en código que
+exige una cita para cada afirmación. Coste relativo 1.
+
+Versión B: cuatro agentes especializados (clasificador, buscador, redactor y revisor) con un
+supervisor. Si cada agente recibe las instrucciones completas y el historial de la conversación,
+el coste relativo podría rondar 3 a 5 (cifra supuesta, según cuántas veces se repita el contexto),
+y la latencia suma los pasos en serie.
+
+Con esas cifras, la versión B solo se justifica si alguno de los tres criterios anteriores aplica.
+Si el buscador necesita un permiso que el resto de la conversación no debe tener, por ejemplo acceso
+a un índice con datos de otros clientes, la separación es un control de seguridad y el coste está
+pagado. Si el motivo es que «así queda más ordenado», la respuesta es la versión A con una
+comprobación más y una evaluación mejor. La prueba práctica: si quitas un agente y la evaluación no
+empeora, sobraba.
+
+## Cuándo no usar varios agentes
+
+- La tarea es secuencial y necesita el mismo contexto en cada paso: un agente con un buen plan
+  suele hacerlo mejor y más barato.
+- No hay evaluaciones que permitan comparar la versión con un solo agente y la multiagente.
+- La especialización es solo un prompt distinto con el mismo modelo, las mismas herramientas y
+  los mismos permisos.
+- El equipo no tiene trazas ni límites por ejecución. Un sistema multiagente sin ellos es más
+  difícil de operar que de construir.
+
+## Errores frecuentes
+
+- **Un agente por rol humano** (analista, revisor, redactor, jefe de proyecto) sin que haya una
+  frontera real de permisos o contexto. Copia el organigrama, no el problema.
+- **Pasar el historial completo** a cada agente «por si hace falta». Es el coste más alto y el que
+  menos se nota al principio.
+- **Presupuesto por agente** en lugar de por ejecución. Cada límite parece razonable y el total no
+  lo es.
+- **Dejar que el sistema cree agentes en tiempo de ejecución** sin un tope de número y de
+  profundidad.
+- **Medir solo la calidad final.** Sin latencia, coste por tarea y tasa de error por etapa, la
+  versión multiagente parece mejor de lo que es.
+- **Confiar en la salida de otro agente** sin validarla con código, porque «ya la revisó otro».
+
+## Checklist
+
+- Probaste primero un agente con buenas herramientas y una evaluación propia.
+- Cada enlace nuevo tiene una justificación explícita: permisos o datos, paralelismo real o
+  especialización medida.
+- Cada enlace tiene contrato de entrada y de salida, y criterios de aceptación escritos.
+- Hay un identificador de ejecución que cruza todos los agentes y llamadas al modelo.
+- Los límites de pasos, tokens, plazo y profundidad son por ejecución y devuelven un estado.
+- Coste, latencia y tasa de error por etapa se miden, no se estiman.
+- Puedes quitar un agente y comprobar en la evaluación si el resultado empeora.
+
+## Fuentes
+
+Consultadas en octubre de 2026. Contrasta las cifras con cada publicación antes de decidir.
+
+- [Building effective agents (Anthropic Engineering, 19 de diciembre de 2024)](https://www.anthropic.com/engineering/building-effective-agents)
+- [How we built our multi-agent research system (Anthropic Engineering, 13 de junio de 2025)](https://www.anthropic.com/engineering/multi-agent-research-system)
+- [Subagents en Claude Code (documentación oficial)](https://code.claude.com/docs/en/sub-agents)
+- [Towards a Science of Scaling Agent Systems (Google Research, 28 de enero de 2026; arXiv:2512.08296)](https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/)
+- [Why Do Multi-Agent LLM Systems Fail? (Cemri et al., arXiv:2503.13657)](https://arxiv.org/abs/2503.13657)

@@ -1,0 +1,289 @@
+---
+title: 'Infraestructura como código y GitOps'
+description: 'Infraestructura como código revisable: estado remoto con bloqueo, drift, módulos versionados, permisos mínimos y GitOps frente a un pipeline que empuja.'
+category: practicas
+tags:
+  - infraestructura-como-codigo
+  - gitops
+  - terraform
+  - drift
+  - estado
+order: 20
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un bucle compara el repositorio con el entorno y corrige la desviación'
+---
+
+# Infraestructura como código y GitOps
+
+Una base de datos, una red o un clúster que nadie puede reproducir es un riesgo. Si para
+recrearlo hay que recordar qué se hizo en una consola un martes por la noche, la infraestructura
+es un artefacto histórico, no un diseño. La infraestructura como código (IaC) corrige eso:
+la topología se declara en archivos, esos archivos se versionan, se revisan como cualquier
+cambio de software y se aplican siempre por el mismo camino.
+
+GitOps lleva la idea un paso más allá. En lugar de que un pipeline empuje cambios al entorno,
+un agente dentro del entorno compara continuamente lo que hay en el repositorio con lo que
+se está ejecutando y corrige las diferencias. Este artículo recorre lo que hace falta para que
+eso funcione de verdad: dónde vive el estado, cómo se separan los entornos, qué hacer con el
+drift, quién puede aplicar y cuándo no merece la pena montar nada de esto.
+
+## Qué significa tratar la infraestructura como código
+
+La idea central no es escribir YAML o HCL. Es que el repositorio sea la **fuente de verdad**
+del estado deseado y que todo cambio pase por él: una propuesta, una revisión, una aplicación
+trazable. Los principios de OpenGitOps (versión 1.0.0) lo expresan en cuatro frases: el sistema
+se describe de forma **declarativa**, el estado deseado se guarda **versionado e inmutable**, un
+agente lo **obtiene automáticamente** de su fuente y el agente **reconcilia** de forma continua el
+sistema real con ese estado.
+
+Conviene separar dos cosas que se confunden a menudo:
+
+- **IaC** describe el _cómo se aplica_: una herramienta como Terraform o OpenTofu calcula un plan
+  y lo ejecuta contra la nube. El impulso lo da una persona o un pipeline.
+- **GitOps** describe _quién mantiene el estado_: un controlador vigila el repositorio y el
+  entorno, y actúa sobre la diferencia. El impulso lo da la diferencia misma.
+
+Puedes tener IaC sin GitOps (un pipeline que ejecuta `apply` al hacer merge) y es una opción
+perfectamente sana. Lo que no es sano es tener archivos declarativos que nadie aplica o aplicar
+cambios que no están en ningún archivo.
+
+## El estado: dónde vive y quién puede tocarlo
+
+Herramientas como Terraform guardan un **archivo de estado** que relaciona cada recurso declarado
+con su identificador real en el proveedor. Sin ese archivo, la herramienta no sabe qué ya existe
+y qué debe crear. Es la pieza más delicada de cualquier flujo de IaC.
+
+### Almacenamiento remoto con bloqueo
+
+El estado local en el portátil de alguien no escala. Dos personas aplicando a la vez sobre el
+mismo estado lo corrompen. La solución habitual es un **backend remoto** con **bloqueo**: mientras
+una ejecución modifica el estado, ninguna otra puede hacerlo.
+
+En el backend S3 de Terraform el bloqueo es opcional y hay que activarlo con `use_lockfile`, que
+por defecto está en `false`. Terraform 1.10 lo introdujo como función opt-in y experimental, según su guía de actualización. La documentación oficial recomienda además activar el versionado del
+bucket, para poder recuperar un estado borrado o sobrescrito por error. El bloqueo por DynamoDB
+está marcado como obsoleto y se retirará en una versión menor futura; para proyectos nuevos, la
+documentación apunta a los archivos de bloqueo en el propio bucket.
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket       = "estado-plataforma" # bucket con versionado activo
+    key          = "prod/red/terraform.tfstate"
+    encrypt      = true
+    use_lockfile = true
+  }
+}
+```
+
+Un detalle que se pasa por alto: el bloqueo protege contra escrituras simultáneas, no contra
+decisiones malas. Un `apply` que se ejecuta con una versión antigua del código sigue siendo un
+problema aunque el bloqueo funcione.
+
+### El estado guarda secretos
+
+La documentación de Terraform es explícita: si un secreto aparece en la configuración, se guarda
+en el estado y en los archivos de plan. Marcar un valor como `sensitive` solo lo oculta en la
+salida de la consola y en la interfaz; el valor sigue en el estado. Hay dos consecuencias prácticas:
+
+- Quien puede **leer el estado** puede leer todos los secretos que pasaron por él. Restringe el
+  acceso al bucket con el mismo rigor que a la propia base de datos.
+- Un **archivo de plan** (`-out`) contiene la configuración y los valores de variables, también
+  en texto claro; la documentación lo trata como un artefacto potencialmente sensible.
+
+Los valores efímeros, que Terraform no escribe en el estado ni en el plan, son la solución para
+secretos que solo se necesitan durante la ejecución. Su alcance es limitado: lo que haya que
+conservar debe guardarse en otro recurso o en un gestor de secretos. Más detalle en
+[Secretos y claves: rotación sin sobresaltos](/docs/gestion-secretos-claves#por-qué-el-secreto-no-puede-vivir-en-el-repositorio).
+
+### Acoplar stacks por el estado es acoplar equipos
+
+Un stack puede leer las salidas de otro con el origen de datos `terraform_remote_state`. Es
+cómodo, pero la documentación advierte de que quien usa ese origen necesita acceso a **todo** el
+estado, con sus secretos, aunque solo quiera una salida. Además, solo se exponen las salidas del
+módulo raíz; los recursos de módulos anidados no son accesibles.
+
+Mi criterio: que un stack consuma **salidas explícitas** y, si es posible, a través de un
+almacén de parámetros o de un contrato publicado, no directamente el estado de otro. Así el
+equipo dueño puede cambiar su implementación sin romper a los demás, y el acceso se reduce a lo
+que se publica a propósito.
+
+## Separar entornos sin duplicar el código
+
+Hay dos formas habituales de separar desarrollo, preproducción y producción:
+
+| Enfoque                                      | Ventaja                           | Coste                                                       |
+| -------------------------------------------- | --------------------------------- | ----------------------------------------------------------- |
+| Directorios por entorno que llaman a módulos | Diferencias visibles y revisables | Riesgo de que divergen si no se comparten módulos           |
+| Un único código con variables por entorno    | Menos duplicación                 | Condicionales que crecen y dificultan leer qué se despliega |
+
+En ambos casos conviene que cada entorno tenga **su propio estado** y sus propias credenciales.
+Un error en un entorno de pruebas no debe poder escribir en el estado de producción, ni siquiera
+por accidente de nombres de workspace.
+
+## Módulos y su versionado
+
+Un módulo es la unidad reutilizable: una red, un clúster, una base de datos con sus valores por
+defecto. Sin versiones, un cambio en el módulo cambia todos los entornos a la vez en la siguiente
+ejecución. Con versiones, el cambio se propaga cuando alguien lo decide.
+
+- En módulos del registro, el argumento `version` fija el rango de versiones aceptadas. Un rango
+  amplio equivale a aceptar cambios sin revisar.
+- En fuentes Git, sin `ref` Terraform usa la rama por defecto. Fijar una etiqueta o un SHA de
+  commit evita cambios sorpresa; la documentación muestra ambos ejemplos.
+- Un módulo que cambia en cada commit y se consume desde todos los entornos es un acoplamiento
+  disfrazado de reutilización.
+
+El versionado de módulos tiene el mismo coste que el de cualquier librería interna: alguien debe
+publicar, comunicar y migrar. Por eso merece la pena solo cuando hay más de un consumidor.
+
+## Drift: lo declarado frente a lo real
+
+El **drift** es la diferencia entre el estado declarado y el real. Aparece cuando alguien cambia
+un recurso a mano en la consola, cuando un proveedor modifica algo por su cuenta (una versión
+gestionada que se actualiza, una etiqueta que añade una política) o cuando una herramienta falla
+a mitad de una aplicación.
+
+Detectarlo es barato; corregirlo, no siempre. Terraform ofrece dos caminos complementarios:
+
+- `terraform plan -refresh-only` crea un plan cuyo único objetivo es actualizar el estado y las
+  salidas del módulo raíz, para reconciliar lo que cambió fuera. Sirve para revisar la
+  desviación antes de aceptarla.
+- `terraform plan -detailed-exitcode` devuelve código `2` cuando hay cambios pendientes y `0`
+  cuando no los hay. Con un trabajo programado en CI, es una forma simple de avisar de drift.
+
+La decisión de **cuándo corregir** es de arquitectura, no solo de operaciones. Mi criterio:
+
+- Si el cambio manual fue un parche de emergencia, **acepta la desviación** en el estado con
+  `-refresh-only` y registra por qué: el repositorio debe reflejar la realidad que sobrevive.
+- Si el cambio no tenía razón de ser, **revierte** aplicando el código declarado.
+- Si ocurre con frecuencia, el problema no es el drift sino los permisos: alguien tiene acceso
+  de escritura que no debería tener.
+
+## Planificar antes de aplicar
+
+Un plan es un contrato: qué se va a crear, modificar o destruir. Revisarlo en la propuesta
+(un comentario en la PR con el resultado) convierte la aplicación en un trámite y evita la
+sorpresa de la destrucción de un recurso con datos. Los proveedores muestran los reemplazos
+como acciones distintas de una modificación; un reemplazo sobre una base de datos merece revisión
+expresa.
+
+Dos prácticas que compensan:
+
+- Aplicar **solo el plan revisado**, no uno nuevo generado en el momento de aplicar. Un plan
+  guardado y su archivo asociado garantizan que lo que se revisó es lo que se ejecuta.
+- Tratar los **archivos de plan como sensibles**, por lo que se dijo sobre secretos.
+
+Las reglas sobre el plan (por ejemplo, prohibir la destrucción de bases de datos sin una
+aprobación expresa) son comprobaciones de arquitectura como cualquier otra: pueden fallar el
+CI igual que una regla de dependencias. Ver [Tu arquitectura debería fallar en el CI](/docs/fitness-en-el-ci#del-diagrama-a-la-comprobación).
+
+## Permisos mínimos para quien aplica
+
+La cuenta que aplica infraestructura es la más poderosa del sistema. Por eso el diseño debe
+separar al menos dos identidades:
+
+- Una identidad de **lectura** que puede planificar y ver el estado, usada por revisiones y
+  por el detector de drift.
+- Una identidad de **escritura** que solo se usa tras una aprobación, para un entorno concreto,
+  durante una ventana de tiempo corta si el proveedor lo permite.
+
+Y, sobre todo, la identidad debe ser **de carga**, no una clave estática guardada en el CI. La
+forma de obtenerla (federación de identidad con el proveedor) es la misma que describe el
+artículo sobre secretos. Un pipeline con una clave de administrador en texto plano es, en
+la práctica, el mismo riesgo que el estado con secretos.
+
+## GitOps: el reconciliador frente al pipeline que empuja
+
+En un pipeline que empuja, el CI tiene credenciales del entorno y ejecuta `apply` cuando algo
+cambia en la rama principal. En un modelo GitOps, el entorno tiene un **controlador** que tiene
+acceso al repositorio (solo lectura) y a sí mismo, y que compara cada cierto tiempo lo declarado
+con lo real.
+
+| Aspecto                | Pipeline que empuja                       | Reconciliador (GitOps)                        |
+| ---------------------- | ----------------------------------------- | --------------------------------------------- |
+| Quién tiene acceso     | El CI, con permisos sobre el entorno      | El controlador, dentro del propio entorno     |
+| Cuándo actúa           | En el evento del pipeline                 | De forma continua y ante cualquier diferencia |
+| Cambios manuales       | Pasan inadvertidos hasta el siguiente run | Se detectan y pueden revertirse               |
+| Fallos de conectividad | El pipeline falla y hay que reintentar    | El controlador reintenta hasta converger      |
+
+Los controladores difieren en su modelo de sincronización. Argo CD, por ejemplo, no revierte
+cambios manuales por defecto: la sincronización automática está pensada para que el repositorio
+sea fuente de verdad, pero hay que activar `selfHeal` para que corrija lo que se cambió en el
+clúster; el borrado de recursos eliminados del repositorio (`prune`) también es opcional. Su
+intervalo de reconciliación por defecto es de 120 segundos, con un jitter adicional que por defecto llega a 60 segundos. Flux, por
+su parte, reconcilia cada `Kustomization` según su `interval`, cuyo mínimo recomendado es de
+60 segundos, y corrige el drift en cada ciclo mediante un dry-run de server-side apply.
+
+Lo que GitOps no resuelve por sí solo: el controlador solo reconcilia lo que puede ver. Los
+recursos fuera de su alcance (una base de datos gestionada creada en la consola, una cuenta
+de servicio con permisos excesivos) siguen siendo drift invisible. Es la misma limitación que
+el bucle de la figura: compara lo que el repositorio describe, no todo lo que existe.
+
+## Riesgos que conviene vigilar
+
+- **Secretos en el estado y en los planes.** Ya se ha dicho, pero es el fallo más común. Restringe
+  el acceso, cifra y no repitas el valor en salidas.
+- **Cambios manuales fuera del repositorio.** Son drift con un autor sin registro. Un proceso
+  de emergencia que deje constancia (una PR a posteriori) evita que el repositorio miente.
+- **Acoplamiento entre stacks.** Un stack que depende del estado de otro impide cambiar cualquiera
+  de los dos sin coordinar. Las salidas explícitas y los contratos reducen el radio de impacto.
+- **Módulos sin versión o con versión amplia.** Un cambio pequeño se convierte en una migración
+  de todos los entornos a la vez.
+- **Reconciliación sin alcance claro.** Un controlador con permisos de administrador sobre todo
+  el clúster amplifica cualquier error de configuración.
+
+## Cuándo no compensa
+
+- **Un único servicio, un único entorno, un equipo pequeño.** Un script versionado con los
+  comandos y un README (o la consola bien documentada) puede ser suficiente, y montar un
+  backend remoto, módulos y un controlador tiene un coste de mantenimiento real.
+- **Infraestructura efímera de pruebas.** Si se crea y destruye en cada ejecución, el valor del
+  estado persistente es menor; la reproducibilidad la da el propio código.
+- **Recursos que no se pueden declarar.** Algunas configuraciones del proveedor no tienen API
+  declarativa. Forzar la IaC sobre ellas produce más drift que orden.
+- **Cuando el problema es de procesos, no de herramientas.** Si no hay revisiones ni dueños claros,
+  un controlador GitOps solo automatiza el desorden. Antes conviene lo que describe el artículo
+  sobre [cultura DevOps](/docs/devops-cultura#medir-la-investigación-dora).
+
+## Errores frecuentes
+
+- **Estado local o compartido sin bloqueo**, con dos personas aplicando sobre el mismo archivo.
+- **Un único estado para toda la organización.** Cualquier cambio tiene un radio de impacto
+  enorme y el acceso al estado da acceso a todo.
+- **Aplicar un plan distinto del revisado**, porque se regeneró al aplicar.
+- **Ignorar el drift** durante meses hasta que la siguiente aplicación destruye algo que alguien
+  había cambiado a mano y no recordaba.
+- **Módulos consumidos desde la rama principal** sin ninguna versión ni rama de pruebas.
+- **Permisos de administrador en el CI** para «que funcione», sin identidad de carga ni
+  separación entre planificar y aplicar.
+
+## Checklist
+
+- [ ] El estado vive en un backend remoto con bloqueo activo y versionado del almacenamiento.
+- [ ] El acceso al estado y a los archivos de plan se restringe como al de un secreto.
+- [ ] Cada entorno tiene su estado y sus credenciales; ningún entorno escribe en otro.
+- [ ] Los módulos compartidos tienen versión fijada y un plan para migrar a la siguiente.
+- [ ] El drift se detecta de forma programada y cada desviación tiene una decisión registrada.
+- [ ] Lo que se aplica es el plan revisado, no uno regenerado.
+- [ ] Hay identidades separadas para planificar y aplicar, con permisos mínimos y de carga.
+- [ ] Si hay GitOps, el controlador tiene alcance explícito y se sabe qué recursos no vigila.
+- [ ] Hay una vía documentada para cambios de emergencia que termina en el repositorio.
+
+## Fuentes
+
+- [OpenGitOps: principios (v1.0.0)](https://opengitops.dev/), oficial.
+- [Terraform: backend S3 y bloqueo con `use_lockfile`](https://developer.hashicorp.com/terraform/language/backend/s3), oficial.
+- [Terraform: datos sensibles en el estado](https://developer.hashicorp.com/terraform/language/state/sensitive-data), oficial.
+- [Terraform: comando `plan` (`-refresh-only`, `-detailed-exitcode`, `-out`)](https://developer.hashicorp.com/terraform/cli/commands/plan), oficial.
+- [Terraform: origen de datos `terraform_remote_state`](https://developer.hashicorp.com/terraform/language/state/remote-state-data), oficial.
+- [Terraform: fuentes de módulos y versiones](https://developer.hashicorp.com/terraform/language/modules/sources), oficial.
+- [Argo CD: sincronización automática (auto sync)](https://argo-cd.readthedocs.io/en/latest/user-guide/auto_sync/), oficial.
+- [Argo CD: referencia de `argocd-cm` (timeout.reconciliation y timeout.reconciliation.jitter)](https://argo-cd.readthedocs.io/en/stable/operator-manual/argocd-cm-yaml/), oficial.
+- [Terraform 1.10: guía de actualización (bloqueo nativo en S3 con `use_lockfile`)](https://developer.hashicorp.com/terraform/language/v1.10.x/upgrade-guides), oficial.
+- [Flux: Kustomization](https://fluxcd.io/flux/components/kustomize/kustomizations/), oficial.

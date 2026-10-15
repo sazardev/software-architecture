@@ -1,0 +1,286 @@
+---
+title: 'MCP y A2A: integrar herramientas y agentes'
+description: 'Qué estandarizan MCP y A2A, qué ganas y qué pagas al adoptarlos, y cuándo exponer una herramienta por MCP en lugar de una API normal.'
+category: tendencias
+tags:
+  - mcp
+  - a2a
+  - agentes
+  - interoperabilidad
+  - seguridad
+order: 9
+roadmap:
+  id: ia
+  stage: panorama
+  step: 40
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un agente usa conectores MCP con herramientas y habla A2A con otro agente'
+---
+
+# MCP y A2A: integrar herramientas y agentes
+
+Un agente útil necesita dos tipos de conexión que antes se resolvían a medida: alcanzar datos y
+herramientas, y hablar con otros agentes. Durante 2025 cada equipo escribió su propio adaptador
+para cada sistema y su propio puente entre agentes. Hoy hay dos protocolos abiertos que intentan
+que esas integraciones se hagan una vez. **MCP** (Model Context Protocol) cubre la relación entre
+un agente y sus herramientas; **A2A** (Agent2Agent) cubre la relación entre agentes.
+
+La tesis de este artículo es sencilla. Un estándar abarata la integración, pero no vuelve segura
+la integración. Lo que cambia es dónde está el riesgo: pasa de la función que escribiste a la
+descripción que publica un servidor, a la identidad de un agente que no controlas y a los permisos
+que concedes por herramienta. Diseñar con MCP y A2A es, sobre todo, diseñar esos contratos.
+
+<Callout tone="info" title="Fecha de corte">
+  Datos de octubre de 2026. La última revisión de MCP es la `2026-07-28`, y A2A ha llegado a la
+  versión 1.0. Los protocolos cambian con frecuencia: contrasta cada detalle con la [especificación
+  de MCP](https://modelcontextprotocol.io/specification/2026-07-28) y con la [especificación de
+  A2A](https://a2a-protocol.org/latest/specification/) antes de decidir.
+</Callout>
+
+## Dos problemas distintos
+
+Conviene separarlos desde el principio, porque se confunden a menudo:
+
+| —                 | MCP                                                         | A2A                                                    |
+| ----------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
+| Conecta           | Un agente o aplicación con herramientas, datos y plantillas | Un agente con otro agente                              |
+| Unidad de trabajo | Una llamada a una herramienta o una lectura de recurso      | Una tarea con estado, que puede durar mucho tiempo     |
+| Quién decide      | El modelo elige la herramienta dentro del host              | Un agente delega y el otro acepta, rechaza o pide más  |
+| Lo que se publica | Herramientas, recursos y prompts del servidor               | Una tarjeta de agente (Agent Card) con sus capacidades |
+
+Una forma útil de recordarlo: MCP responde a la pregunta «¿con qué puedo actuar?» y A2A a «¿a quién
+le pido que actúe por mí?». Un sistema real puede necesitar los dos: un agente de soporte que usa
+MCP para consultar pedidos y A2A para delegar la devolución en el agente de logística de otro
+proveedor.
+
+## MCP: qué estandariza
+
+Las piezas básicas (host, cliente, servidor, herramientas, recursos, prompts y transportes) están
+explicadas en [arquitectura de aplicaciones con LLM](/docs/arquitectura-agentes-llm#herramientas-y-mcp).
+Aquí importa lo que ha cambiado y lo que implica para el diseño.
+
+### La revisión 2026-07-28
+
+La especificación vigente es la `2026-07-28`, publicada como versión final el 28 de julio de 2026 tras
+una candidata del 21 de mayo, según el [blog del proyecto](https://blog.modelcontextprotocol.io/tags/protocol/).
+Su texto normativo la describe con tres cambios que afectan a la arquitectura:
+
+- **Peticiones autocontenidas.** El núcleo ya no depende de una sesión establecida al inicio: cada
+  petición lleva sus propias capacidades. Eso permite escalarla sobre infraestructura HTTP ordinaria
+  (balanceadores, cachés, reintentos) sin un servidor que recuerde quién es el cliente.
+- **Núcleo más pequeño.** Entre las funciones del cliente, el núcleo solo lista ahora la
+  _elicitation_ (el servidor pide datos al usuario). _Sampling_ y _roots_ dejan de figurar en esa lista.
+- **Extensiones opcionales.** Lo nuevo se añade como extensión que cliente y servidor deben soportar
+  explícitamente. Las que la especificación nombra son **Tasks** (trabajo largo con sondeo, entrada a
+  mitad de ejecución e identificadores duraderos), **Skills over MCP** (instrucciones estructuradas
+  descubiertas a través de MCP) y **MCP Apps** (interfaces interactivas dentro de la conversación).
+
+El blog añade dos compromisos de gobierno: la autorización se alinea más con OAuth y OpenID Connect,
+y se introduce una política formal de deprecación para que el protocolo evolucione sin romper
+implementaciones existentes.
+
+Para el arquitecto, la lectura práctica es esta: un servidor MCP ya no es una sesión que hay que
+mantener viva, sino un conjunto de capacidades que se negocian en cada llamada. Eso simplifica el
+despliegue, pero obliga a que cada petición sea auditable por sí misma.
+
+### Un contrato que se ejecuta fuera de tu control
+
+La especificación lo dice sin rodeos: las herramientas representan ejecución de código arbitrario y
+sus descripciones, incluidas las anotaciones de comportamiento, deberían considerarse **no confiables**
+salvo que procedan de un servidor de confianza. El host debe obtener consentimiento explícito antes
+de invocar cualquier herramienta, y el propio protocolo reconoce que no puede imponer esos principios
+por sí mismo: la aplicación tiene que implementarlos.
+
+Ese matiz es el centro del artículo. Cuando conectas un servidor de terceros, estás incorporando
+texto que el modelo leerá como instrucciones. Una descripción manipulada puede empujar al agente a
+usar una herramienta de forma no prevista, y un resultado de herramienta puede contener órdenes
+(lo que se conoce como inyección de instrucciones, ampliada en
+[controlar la IA: gobierno y autonomía](/docs/controlar-la-ia-gobierno-y-autonomia#inyección-de-instrucciones-el-riesgo-que-cambia-al-dar-herramientas)).
+
+## A2A: delegación entre agentes
+
+A2A nace para que agentes de distintos proveedores, construidos con distintos frameworks, colaboren
+sin exponer su memoria, sus herramientas ni su lógica interna. Se describe como un protocolo de
+delegación: el agente cliente pide una tarea y el agente remoto decide cómo resolverla.
+
+Tres conceptos explican casi todo el protocolo, según la [especificación](https://a2a-protocol.org/latest/specification/):
+
+- **Agent Card.** Un documento JSON que el servidor publica en una URL conocida. Describe la
+  identidad del agente, sus capacidades (por ejemplo, si soporta streaming o notificaciones push),
+  sus habilidades, las interfaces por las que se le llama y los requisitos de autenticación. La
+  especificación también contempla firmar la tarjeta para que el cliente pueda verificar que la
+  emitió quien dice ser.
+- **Tarea.** La unidad de trabajo. Tiene identificador, estado, historial de mensajes y
+  **artefactos**, que son los resultados. La especificación pide que los resultados vayan en
+  artefactos y no en mensajes de chat.
+- **Mensaje y parte.** Cada intercambio es un mensaje con rol (usuario o agente) y partes de
+  contenido (texto, archivo o datos estructurados).
+
+Los estados de una tarea permiten ver la delegación como un proceso y no como una llamada:
+`SUBMITTED`, `WORKING`, `INPUT_REQUIRED` y `AUTH_REQUIRED` son estados activos o interrumpidos, y
+`COMPLETED`, `FAILED`, `CANCELED` y `REJECTED` son terminales. Un estado terminal bloquea nuevos
+mensajes, lo que evita que una tarea cerrada reabra la conversación por accidente.
+
+La especificación define tres enlaces equivalentes funcionalmente: JSON-RPC, gRPC y HTTP+JSON. Un
+mismo agente puede exponerse por varios a la vez, y la versión del protocolo viaja en una cabecera
+(`A2A-Version`).
+
+### Gobernanza y estado de adopción
+
+Google anunció A2A el 9 de abril de 2025 y lo donó a la Linux Foundation el 23 de junio de 2025,
+según la [entrada de Google Open Source](https://opensource.googleblog.com/2026/04/a-year-of-open-collaboration-celebrating-the-anniversary-of-a2a.html).
+La misma entrada sitúa la versión 1.0 en marzo de 2026.
+La Linux Foundation informó en abril de 2026 de [más de 150 organizaciones](https://linuxfoundation.org/press)
+que lo soportan; es una cifra de la propia fundación y mide apoyo declarado, no despliegues en
+producción.
+
+MCP sigue una ruta paralela: Anthropic lo donó en diciembre de 2025 a la Agentic AI Foundation,
+un fondo dirigido dentro de la Linux Foundation, según el
+[anuncio de Anthropic](https://anthropic.com/news/donating-the-model-context-protocol-and-establishing-of-the-agentic-ai-foundation).
+Que ambos protocolos vivan en gobernanza neutral reduce el riesgo de depender de un solo proveedor,
+que es, en la práctica, la razón principal para adoptarlos.
+
+## Qué ganas y qué pagas
+
+Adoptar estos protocolos tiene un beneficio claro y varios costes que suelen aparecer tarde.
+
+| Ganas                                                                            | Pagas                                                                                                |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Desacoplar modelo y herramientas: cambias de modelo sin reescribir integraciones | Superficie de ataque nueva: cada servidor es código y texto que el agente puede obedecer             |
+| Reutilizar un servidor en varios clientes y hosts                                | Dependencia de servidores de terceros cuya calidad y mantenimiento no controlas                      |
+| Descubrimiento de capacidades sin acoplar el código del cliente                  | Descripciones que consumen contexto en cada turno, aunque la herramienta no se use                   |
+| Delegación con estados explícitos entre agentes (A2A)                            | Más piezas que operar: autenticación, trazas, timeouts y reintentos a través de una red              |
+| Gobernanza neutral y ecosistema amplio                                           | Versiones que cambian: hay que seguir deprecaciones y extensiones que no todos los clientes soportan |
+
+El coste que más sorprende es el de contexto. Un servidor con decenas de herramientas carga
+descripciones en la ventana del modelo aunque nadie las use. La solución habitual es cargar nombres
+al inicio y esquemas bajo demanda, algo que el [mapa de Claude Code](/docs/harness-engineering-claude-code#el-mapa-de-claude-code)
+también aplica a sus propios mecanismos.
+
+## Exponer por MCP o usar una API normal
+
+La pregunta no es si MCP es mejor que una API, sino a quién sirve la integración. Una regla práctica:
+
+- **Expón por MCP** cuando el consumidor sea un agente o un host de IA, cuando quieras que el mismo
+  servicio sirva a varios clientes (IDE, asistente, flujo propio) y cuando la capacidad sea un
+  conjunto de acciones bien descritas más que un recurso que otros programas consumen de forma
+  masiva.
+- **Mantén la API normal** cuando el consumidor sea un sistema determinista (otro servicio, un
+  job, un frontend), cuando el rendimiento y la latencia sean críticos o cuando el contrato ya esté
+  bien resuelto con OpenAPI o gRPC y no aporte nada un agente.
+- **No envuelvas por defecto** cada endpoint. Una capa MCP sobre cincuenta rutas de CRUD produce
+  cincuenta herramientas que el modelo confunde entre sí. Diseña pocas acciones con intención clara,
+  como ya recomienda [la arquitectura con agentes](/docs/arquitectura-agentes-llm#herramientas-y-mcp).
+
+Una API sigue siendo la fuente de verdad en ambos casos. MCP o A2A son una fachada para un
+consumidor concreto, no un sustituto del diseño del dominio.
+
+## Contratos: descripción, versionado y permisos
+
+En un servidor MCP la descripción de cada herramienta es parte del contrato, y tiene el mismo peso
+que la firma. El modelo decide si usar una herramienta leyendo su nombre y su descripción, así que
+una descripción vaga produce llamadas incorrectas, y una descripción cambiada sin aviso produce
+comportamientos distintos sin que el código del cliente cambie.
+
+Esta es la forma que conviene fijar: qué campos existen y qué debe decir cada uno, sin implementación.
+
+```typescript
+type Herramienta = {
+  name: string; // con espacio de nombres por dominio: pedidos_buscar
+  description: string; // qué hace, cuándo usarla y cuándo no
+  inputSchema: unknown; // JSON Schema de la entrada; ejemplos en cada campo
+  annotations?: {
+    readOnlyHint?: boolean; // pista, no garantía: viene de un servidor no confiable
+    destructiveHint?: boolean;
+  };
+};
+```
+
+Las anotaciones son pistas. La especificación pide tratarlas como no confiables salvo que vengan de
+un servidor en el que confías, así que tu política de permisos no puede basarse solo en ellas. Decide
+tú qué es de solo lectura y qué exige confirmación.
+
+Tres decisiones de contrato que conviene tomar pronto:
+
+- **Versionado explícito.** Cuando una herramienta cambie de forma incompatible, crea otra con nombre
+  nuevo en lugar de alterar la firma. Así el agente que aún usa la versión anterior falla de forma
+  visible y no silenciosa.
+- **Permisos por herramienta.** Concede el conjunto mínimo: una lista de herramientas permitidas por
+  agente, no el servidor completo. Lo que tenga efectos irreversibles pide aprobación humana, algo
+  que detallan [los niveles de autonomía](/docs/autonomia-de-la-ia#niveles-de-autonomía).
+- **Credenciales con alcance.** El servidor debe usar tokens del usuario o del agente con el menor
+  alcance posible, nunca una credencial de administrador compartida, y la autorización debe seguir
+  el flujo OAuth que la especificación describe.
+
+## Seguridad: qué mirar antes de conectar un servidor
+
+Antes de conectar un servidor de terceros, revisa cuatro cosas:
+
+1. **Qué lee el agente.** Cualquier texto que llegue por una herramienta (una página, un ticket, un
+   correo) puede contener instrucciones. Trátalo como datos, no como órdenes.
+2. **Qué puede escribir.** Las herramientas con efectos externos (enviar, borrar, pagar) necesitan
+   confirmación humana o una regla de negocio independiente del modelo.
+3. **Qué cambia con el tiempo.** Fija la versión del servidor y revisa sus cambios como revisas una
+   dependencia. Una actualización puede alterar descripciones sin tocar el código de tu cliente.
+4. **Qué se registra.** Cada llamada debe quedar trazada con su argumento, su resultado y quién la
+   autorizó, para poder reconstruir la decisión.
+
+Para A2A el riesgo es de identidad: qué agente remoto es el que responde. Por eso la firma de la
+Agent Card y la verificación del dominio importan. Una tarjeta sin verificar equivale a confiar en
+un nombre.
+
+## Cuándo no conviene adoptarlos todavía
+
+Adoptar estos protocolos no siempre es la decisión correcta. Conviene esperar cuando:
+
+- **Hay una sola integración y un solo consumidor.** Una función bien tipada dentro de la aplicación
+  es más simple, más barata y más fácil de probar.
+- **La capacidad no es una acción del agente.** Si el modelo solo necesita leer un dato fijo, un
+  parámetro en el prompt o una consulta determinista bastan.
+- **No puedes operar un servidor más.** Cada servidor añade autenticación, despliegue, monitorización
+  y actualizaciones. Si nadie va a mantenerlo, la integración se convierte en deuda.
+- **La latencia o la fiabilidad estricta mandan.** Un flujo determinista que no necesita juicio
+  debería ser código, no una llamada de herramienta a un modelo.
+- **Tus clientes no soportan la versión que necesitas.** Revisa qué revisión y qué extensiones
+  implementa cada cliente antes de diseñar sobre una funcionalidad opcional.
+
+## Errores frecuentes
+
+- **Conectar servidores completos.** Dar al agente todo el servidor en lugar de las herramientas
+  necesarias multiplica la superficie y el contexto.
+- **Confiar en las anotaciones.** Una pista de «solo lectura» no es una garantía. Decide tú el
+  nivel de riesgo.
+- **Envolver la API sin rediseñarla.** Cincuenta endpoints se convierten en cincuenta herramientas
+  confusas. Diseña acciones con intención.
+- **Cambiar descripciones sin versionar.** El comportamiento del agente cambia aunque tu código no.
+- **Tratar A2A como una llamada HTTP.** Una tarea tiene estados, puede pedir entrada y puede quedar
+  pendiente de autorización. Modélala como proceso.
+- **Olvidar la trazabilidad.** Sin registro de llamadas no hay forma de explicar por qué el agente
+  hizo algo.
+
+## Checklist
+
+- [ ] Sabes si cada integración es de agente a herramienta (MCP) o de agente a agente (A2A).
+- [ ] Cada servidor o agente remoto está fijado a una versión y tiene un responsable.
+- [ ] Las herramientas tienen nombre con dominio, descripción de cuándo usarlas y esquema de entrada.
+- [ ] Ninguna decisión de seguridad depende solo de una anotación del servidor.
+- [ ] El agente recibe el conjunto mínimo de herramientas, con aprobación humana para lo irreversible.
+- [ ] Las credenciales tienen alcance acotado y no son compartidas.
+- [ ] Cada llamada queda registrada con argumentos, resultado y autorización.
+- [ ] En A2A, la Agent Card se verifica antes de delegar trabajo.
+- [ ] Revisas si una API normal o una función bastan antes de añadir un servidor.
+
+## Fuentes
+
+Consultadas en octubre de 2026. Los protocolos cambian con frecuencia: contrasta cada versión con la
+fuente oficial.
+
+- [Especificación de MCP, revisión 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28)
+- [Especificación de MCP, revisión 2025-11-25 (anterior)](https://modelcontextprotocol.io/specification/2025-11-25)
+- [Blog de MCP: entrada «The 2026-07-28 Specification» y anteriores](https://blog.modelcontextprotocol.io/tags/protocol/)
+- [Anthropic: donación de MCP y creación de la Agentic AI Foundation](https://anthropic.com/news/donating-the-model-context-protocol-and-establishing-of-the-agentic-ai-foundation)
+- [Especificación de A2A (Agent Card, tareas, mensajes y enlaces)](https://a2a-protocol.org/latest/specification/)
+- [Sitio del proyecto A2A](https://a2a-protocol.org/latest/)
+- [Google Open Source: un año de A2A (abril de 2026)](https://opensource.googleblog.com/2026/04/a-year-of-open-collaboration-celebrating-the-anniversary-of-a2a.html)
+- [Linux Foundation: prensa, incluido el comunicado de A2A de abril de 2026](https://linuxfoundation.org/press)

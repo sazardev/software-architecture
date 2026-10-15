@@ -1,0 +1,255 @@
+---
+title: 'Multi-agent systems: when one agent is enough'
+description: 'When one agent with good tools is enough, what each link in a multi-agent system costs, and how to design contracts, traces and limits between agents.'
+category: diseno
+tags:
+  - agents
+  - multi-agent
+  - coordination
+  - contracts
+  - tracing
+order: 10
+roadmap:
+  id: ia
+  stage: gobierno
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A supervisor hands work to agents with separate contexts, and every link costs'
+---
+
+# Multi-agent systems: when one agent is enough
+
+A team adds four agents to its support assistant: one classifies the request, another searches the
+knowledge base, a third drafts the answer, and a supervisor coordinates them. In the demo it looks
+like a real team. In production, a simple question takes several times longer, the cost per
+conversation climbs without anyone having decided it, and when an answer is wrong nobody knows which
+agent got it wrong, because each one saw only its own fragment. One agent with the same tools, a
+good prompt and two code checks would have cost less, answered sooner and been easier to debug.
+
+The thesis of this article is simple: **a multi-agent system is a cost decision, not a sign of
+maturity.** Every new agent adds a context to maintain, a link to pay for and a boundary where
+information gets lost. It is justified when it separates permissions or contexts, when there is
+genuinely parallel work, or when the specialization can be measured. Otherwise it is accidental
+complexity.
+
+This text covers coordination between agents. Which steps of a flow are code and which are agents,
+and how to validate, approve and stop, is in
+[designing flows with AI agents](/docs/disenar-flujos-con-agentes); the internal architecture of a
+single agent is in [LLM and agent application architecture](/docs/arquitectura-agentes-llm).
+
+<Callout tone="info" title="Cut-off date">
+  Sources consulted in October 2026. Third-party figures are quoted as each author publishes them;
+  the worked example uses illustrative values, not measurements.
+</Callout>
+
+## One agent with good tools is usually enough
+
+Anthropic recommends starting with the simplest solution and adding complexity only when the task
+demands it ([Building effective agents](https://www.anthropic.com/engineering/building-effective-agents),
+December 2024). Its own multi-agent research system, published in June 2025, shows the trade-off
+with numbers. A lead agent running Claude Opus 4 with Claude Sonnet 4 subagents outperformed a
+single Opus 4 agent by 90.2 percent on its internal research evaluation. The same article notes the
+price: in its data, an agent uses about four times the tokens of a chat, a multi-agent system about
+fifteen times, and token usage alone explains about 80 percent of the variance in performance. It
+also says that domains where all agents must share the same context, or where agents have many
+dependencies on each other, are not a good fit for multi-agent systems today.
+
+A study by Google Research and Google DeepMind (January 2026) quantifies this from another
+angle. Across 180 configurations and four benchmarks, every multi-agent variant degraded performance
+on sequential tasks by 39 to 70 percent, while centralized coordination improved performance by 80.9
+percent on a parallelizable financial task. Independent agents amplified errors 17.2 times, compared
+with 4.4 times when a central orchestrator validated results before they propagated.
+
+Before adding an agent, ask what would fail with one agent and more context:
+
+- If the problem is **missing information**, an agent with the right search tool usually solves it.
+- If the problem is **a context too large for one window**, an isolated subagent can sometimes take
+  one part, but it is not the only remedy: a well-designed summary or a more precise search can be
+  enough.
+- If the problem is **that different tasks need different permissions**, there is a real case for
+  separating agents.
+- If the problem is **independent work that takes too long in series**, parallelism can pay off,
+  provided the final merge is cheap.
+
+If none of those four answers is a clear yes, the multi-agent system has not earned its place yet.
+
+## Five coordination patterns
+
+Names vary between frameworks, but the shape of coordination repeats. What changes is how control
+flows and where information is lost.
+
+| Pattern             | How control flows                                        | When it fits                                          | Main risk                                                                 |
+| ------------------- | -------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| Supervisor          | A central agent assigns subtasks and collects results    | Decomposable tasks with different permissions         | The supervisor becomes a bottleneck and rewrites the task at each handoff |
+| Handoff             | One agent passes the whole conversation to another       | Domains that change mid-conversation (sales, billing) | What gets lost in the transfer; agents bouncing requests back and forth   |
+| Parallel with merge | Several agents work at once and a step joins the results | Independent searches or analyses                      | Contradictory results; cost multiplied by the number of branches          |
+| Shared blackboard   | Agents read and write a common state                     | Cumulative work on one artifact                       | Concurrent writes and silent overwrites                                   |
+| Pipeline            | Each agent transforms the previous agent's output        | Well-defined sequential stages                        | An early error that propagates through every stage                        |
+
+Two observations from practice. The first is that sharing context is the hard problem, not
+dispatching work. Author's view: a subagent that does not see what the others decided tends to
+produce inconsistent results. The second is that patterns combine: a supervisor can launch a parallel-with-merge
+step and then pass the result through a review pipeline. Cemri et al. (2025) classified the failures
+of several popular multi-agent frameworks into 14 modes grouped in three categories, and attribute
+much of them to system design and inter-agent misalignment rather than to the model alone.
+
+## What each link costs
+
+Every arrow between two agents has a cost that does not show up in the architecture diagram. It is
+paid in the invoice, on the clock and during debugging.
+
+| Cost              | Where it comes from                                                                   | How to see it                                                 |
+| ----------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Duplicated tokens | Each agent receives its instructions, its tools and part of the history               | Input and output tokens per agent and per run                 |
+| Latency           | Serial steps add up; parallel helps only when the branches are independent            | Wall-clock time of the critical path                          |
+| Lost context      | Only what the sender writes in the message travels; a summary drops nuance            | Clarification requests and answers that contradict the source |
+| Propagated errors | The next agent accepts as fact what the previous one said                             | Error rate per stage, not only the final one                  |
+| Hard debugging    | The cause sits between two agents; without a shared trace there is no story to follow | One run identifier that crosses every agent                   |
+| Coordination      | Dispatch, retries, timeouts and conflicts are code that does not belong to the domain | Lines of orchestration code and its test cases                |
+
+Claude Code subagents show the kind of boundary worth drawing on purpose. According to its official
+documentation, each subagent starts with a fresh context window and does not see the main
+conversation's history; it returns only its summary. By default, a subagent can itself spawn
+subagents, up to three layers below the main conversation, and that limit can be changed with an
+environment variable (see
+[the Claude Code harness](/docs/harness-engineering-claude-code#layer-4-skills-subagents-and-plugins)).
+That the limit exists and is explicit is already a design decision; that it is the default does not
+make it a good idea.
+
+## When it is justified
+
+Three reasons justify a new link. Outside them, the criterion I recommend is to keep one agent.
+
+1. **Separation of permissions or data.** An agent that reads invoices should not be able to
+   execute payments, and an agent browsing the web should not share context with one that has
+   access to customer data, because web content can contain malicious instructions. Separation is a
+   security control, not only a way to organize work. The risks of giving tools to a model are
+   covered in [controlling AI](/docs/controlar-la-ia-gobierno-y-autonomia#guardrails).
+2. **Real parallelism.** Independent subtasks whose wall-clock time matters, and a cheap merge step.
+   If the branches need to know what the other one decides, they are not independent.
+3. **Measurable specialization.** An agent with its own instructions and tools beats the general one
+   on an evaluation set the team maintains. Without that metric, "specialist" is just another name
+   for the same prompt.
+
+One case that is often overlooked is the **independent reviewer**: an agent that evaluates another
+agent's work should see the result and the criteria, but not the reasoning that produced it, so it
+does not inherit the same biases. That is a deliberate context separation, and it justifies its cost.
+
+## Contracts between agents
+
+Every link is an API. If it has no defined input and output, the context boundary is left to
+whatever the sender decides to write in each message. A contract fixes three things: what the agent
+receives, what it returns and when the result counts as accepted.
+
+```ts
+type SearchRequest = {
+  question: string;
+  constraints: { language: 'es' | 'en'; allowedSources: string[] };
+  budget: { maxSteps: number; maxTokens: number };
+};
+
+type SearchResult = {
+  status: 'accepted' | 'rejected' | 'no_answer';
+  evidence: { url: string; quote: string }[];
+  reason?: string;
+};
+```
+
+The shape of the contract matters more than its syntax. Three rules that tend to work:
+
+- **The receiver validates the input** before starting. If the request does not match the schema,
+  the agent returns a structured error instead of improvising.
+- **The sender validates the output with code**, not with another model. A schema, a required field
+  or a quote that must exist in the source are cheap, deterministic checks.
+- **The acceptance criterion is written down.** For example: every claim carries a quote; if it
+  does not, the status is `rejected`. The agent is explicitly allowed to answer `no_answer` instead
+  of inventing something, and that permission has to be stated in its instructions.
+
+The contract is also the context boundary. The supervisor does not pass the full history to each
+subagent; it passes what the contract says is needed. That reduces tokens, but more importantly it
+makes what crosses each link visible and reviewable.
+
+## Traces, limits and budget
+
+A multi-agent system without traces cannot be debugged. Three things are needed:
+
+- **A run identifier** that crosses every agent, model call and tool call. Each agent opens a span
+  under the run's span, and each model call a child span of its agent. Use the version of OpenTelemetry's
+  generative AI conventions that your stack documents, and do not assume attribute names from memory.
+- **Limits per run, not per agent.** Steps, tokens, total deadline, number of agents created and
+  delegation depth. If each agent has its own budget, the total multiplies without anyone seeing it.
+  The supervisor distributes a single budget and each subagent receives its share. The loop mechanics
+  with limits are described in
+  [LLM and agent application architecture](/docs/arquitectura-agentes-llm#orchestration).
+- **Stopping with a status.** An agent that runs out of budget returns an explicit state
+  (`budget_exhausted`, `depth_limit`), not silence. Whatever is left half done goes to a queue with
+  its trace, as in business flows.
+
+The pain this combination prevents is considerable: with a shared trace and per-run limits, a bad
+answer can be reconstructed in minutes; without them, in days.
+
+## Worked example: a support assistant
+
+Suppose a support assistant that answers billing questions. The figures are **illustrative**, not
+measurements from any provider.
+
+Version A: one agent with four tools (search the knowledge base, look up the order, look up the
+invoice, draft a reply), a limit of six steps, and a code check that requires a quote for every
+claim. Relative cost 1.
+
+Version B: four specialized agents (classifier, searcher, drafter and reviewer) under a supervisor.
+If each agent receives the full instructions and the conversation history, the relative cost could
+be around 3 to 5 (an assumed figure, depending on how many times the context is repeated), and
+latency adds up across the serial steps.
+
+With those numbers, version B only makes sense if one of the three criteria above applies. If the
+searcher needs a permission the rest of the conversation must not have, for example access to an
+index that contains other customers' data, the separation is a security control and its cost is
+justified. If the reason is that "it is tidier this way", the answer is version A with one more check
+and a better evaluation. The practical test: if you remove an agent and the evaluation does not get
+worse, it was not needed.
+
+## When not to use several agents
+
+- The task is sequential and each step needs the same context: one agent with a good plan usually
+  does it better and cheaper.
+- There are no evaluations that let you compare the single-agent and multi-agent versions.
+- The specialization is just a different prompt on the same model, with the same tools and the same
+  permissions.
+- The team has no traces and no per-run limits. A multi-agent system without them is harder to
+  operate than it was to build.
+
+## Common mistakes
+
+- **One agent per human role** (analyst, reviewer, writer, project manager) without a real boundary of
+  permissions or context. It copies the org chart, not the problem.
+- **Passing the full history** to every agent "just in case". It is the highest cost and the one
+  least noticed at first.
+- **A budget per agent** instead of per run. Each limit looks reasonable and the total is not.
+- **Letting the system create agents at runtime** without a cap on their number and depth.
+- **Measuring only final quality.** Without latency, cost per task and error rate per stage, the
+  multi-agent version looks better than it is.
+- **Trusting another agent's output** without checking it in code, because "another agent already
+  reviewed it".
+
+## Checklist
+
+- You tried one agent with good tools and its own evaluation first.
+- Each new link has an explicit justification: permissions or data, real parallelism, or measured
+  specialization.
+- Each link has an input and output contract, with written acceptance criteria.
+- A run identifier crosses every agent and model call.
+- Limits on steps, tokens, deadline and depth are per run and return a status.
+- Cost, latency and error rate per stage are measured, not estimated.
+- You can remove an agent and check in the evaluation whether the result gets worse.
+
+## Sources
+
+Consulted in October 2026. Check the figures against each publication before deciding.
+
+- [Building effective agents (Anthropic Engineering, 19 December 2024)](https://www.anthropic.com/engineering/building-effective-agents)
+- [How we built our multi-agent research system (Anthropic Engineering, 13 June 2025)](https://www.anthropic.com/engineering/multi-agent-research-system)
+- [Subagents in Claude Code (official documentation)](https://code.claude.com/docs/en/sub-agents)
+- [Towards a Science of Scaling Agent Systems (Google Research, 28 January 2026; arXiv:2512.08296)](https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/)
+- [Why Do Multi-Agent LLM Systems Fail? (Cemri et al., arXiv:2503.13657)](https://arxiv.org/abs/2503.13657)

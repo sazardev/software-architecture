@@ -1,0 +1,403 @@
+---
+title: 'Caso de estudio: un sistema de principio a fin'
+description: 'Caso ilustrativo de un sistema de reservas: requisitos, fronteras, datos, integración, seguridad y evolución, con cada decisión y su alternativa.'
+category: diseno
+tags:
+  - caso-de-estudio
+  - decisiones
+  - arquitectura-evolutiva
+  - sistemas-distribuidos
+  - adr
+order: 14
+roadmap:
+  id: sistemas
+  stage: escala
+  step: 90
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Mapa del sistema: fronteras, flujos y el primer servicio que se separa'
+---
+
+# Caso de estudio: un sistema de principio a fin
+
+Los artículos sueltos explican una decisión cada uno: cuándo un monolito modular, cómo
+guardar datos, qué hacer con una saga. En un proyecto real las decisiones se encadenan. La
+elección de la base de datos condiciona cómo se garantiza que no se venda una plaza dos veces;
+esa garantía condiciona la integración; la integración condiciona qué se puede desplegar por
+separado. Este caso recorre el orden en que conviene tomar esas decisiones y deja escrito por
+qué se toma cada una.
+
+<Callout tone="info" title="Caso ilustrativo, no un sistema real">
+  El sistema es inventado para explicar el razonamiento. Las cifras de requisitos son **supuestos**
+  y están marcadas como tales; no son mediciones de ningún proyecto. Sustitúyelas por las de tu
+  contexto antes de usar este recorrido como plantilla.
+</Callout>
+
+## El sistema y sus requisitos
+
+Una cadena de gimnasios quiere que sus socios reserven plaza en clases (yoga, spinning, sesiones
+de fuerza) desde una app móvil y desde la web. Cada clase tiene un aforo, algunas se cobran con
+un bono de sesiones y todas envían confirmación y recordatorio. El dominio es acotado a propósito:
+no hay tienda, ni entrenadores con nóminas, ni control de accesos con torno. Son las piezas que
+un lector esperaría ver y que aquí se dejan fuera para no dispersar el ejemplo.
+
+### Requisitos funcionales
+
+- Ver el horario de clases de un centro y reservar una plaza libre.
+- Cancelar una reserva dentro de plazo y recuperar la plaza.
+- Cobrar la reserva con un bono cuando el socio no tiene plaza incluida en su cuota.
+- Enviar confirmación y recordatorio por correo y notificación push.
+- Consultar el historial de reservas del socio.
+
+### Atributos de calidad
+
+Los requisitos no funcionales mandan más que los funcionales en las decisiones. La tabla
+distingue lo que viene del negocio de lo que son supuestos de diseño que el equipo debe validar.
+
+| Atributo                   | Objetivo                                        | Origen                |
+| -------------------------- | ----------------------------------------------- | --------------------- |
+| Sobreventa de plazas       | Cero                                            | Requisito del negocio |
+| Disponibilidad de reservar | 99,9 % mensual                                  | **Supuesto**          |
+| Latencia de reservar (p95) | Menos de 400 ms                                 | **Supuesto**          |
+| Confirmación de reserva    | Menos de 2 minutos (p95)                        | **Supuesto**          |
+| Volumen                    | 120 centros, 300 000 socios activos             | **Supuesto**          |
+| Pico                       | 1 500 reservas por minuto a las 7:00            | **Supuesto**          |
+| Crecimiento                | Tres veces el volumen en doce meses             | **Supuesto**          |
+| Tamaño del equipo          | Seis ingenieros y un arquitecto a media jornada | **Supuesto**          |
+
+La restricción de cero sobreventas es la que más pesa. Un fallo de disponibilidad molesta; una
+plaza vendida dos veces genera reclamaciones y pérdida de confianza. Por eso la integridad se
+trata como requisito duro y el rendimiento como objetivo a medir. Los criterios para elegir los
+atributos que mandan están en [atributos de calidad](/docs/atributos-de-calidad).
+
+## Dominio y fronteras
+
+Antes de elegir ningún estilo se dibujan los contextos. Un contexto delimitado es una zona donde
+un término significa una cosa concreta. En este sistema hay cuatro:
+
+- **Catálogo**: clases, horarios, aforo y reglas de cancelación.
+- **Reservas**: la plaza de un socio en una clase. Es el núcleo del sistema.
+- **Bonos y cobro**: saldos de sesiones, cargos y relación con la pasarela de pago.
+- **Notificaciones**: plantillas, canales y entregas. No sabe nada de plazas.
+
+Identidad (quién es el socio y qué puede hacer) se compra a un proveedor de identidad y no se
+construye. La frontera entre Reservas y Catálogo es la que más discusión genera: si el aforo vive
+en Catálogo, Reservas tiene que preguntarle en cada operación, y eso mete una llamada en la ruta
+crítica. La decisión es que Reservas guarde su propia copia del aforo, actualizada por eventos
+del catálogo, y acepte que la copia puede estar algo desfasada en segundos. El contexto de
+Reservas no contiene la lógica de cobro; solo sabe que una reserva necesita un bono válido.
+
+El método para llegar a estos contextos, con lenguaje ubicuo y mapas de contexto, está en
+[Domain-Driven Design](/docs/domain-driven-design).
+
+## Estilo inicial: monolito modular
+
+La primera decisión de estilo es la más fácil de tomar mal. Con un equipo de seis personas y un
+dominio que todavía cambia, un despliegue por servicio añade coste de red, de operación y de
+coordinación que no compra nada en la primera fase. Martin Fowler lo plantea en _MonolithFirst_
+(2015): casi todas las historias de éxito con microservicios empezaron como un monolito que creció
+hasta ser demasiado grande, y es difícil dibujar bien las fronteras antes de conocer el negocio.
+Es una opinión con evidencia limitada, y así conviene leerla.
+
+La decisión es un **monolito modular**: un solo proceso y una sola base de datos, con cada
+contexto como módulo con API pública y reglas que impiden importar internos de otro módulo. Las
+reglas se comprueban en CI, no con buena voluntad. El procedimiento está en
+[monolito modular primero](/docs/monolito-modular-primero#por-qué-empezar-por-el-monolito-modular) y
+las formas de hacer cumplir las fronteras en
+[monolito frente a microservicios](/docs/monolito-vs-microservicios#cómo-se-hacen-cumplir-las-fronteras-en-un-monolito-modular).
+
+Esta elección tiene una alternativa descartada: **microservicios desde el primer día**, con un
+servicio por contexto. Se descarta porque las fronteras todavía son hipótesis y cada error de
+frontera cuesta un contrato de red, no un refactor. El riesgo del monolito modular es el contrario:
+que los módulos se acoplen con el tiempo. Se mitiga con el control de dependencias y no con
+más servicios.
+
+```text
+src/
+  modules/
+    catalogo/   api.ts  internal/
+    reservas/   api.ts  internal/
+    bonos/      api.ts  internal/
+    notificaciones/  api.ts  internal/
+```
+
+### Cuándo se separa el primer servicio
+
+El monolito no es para siempre. Se extrae un módulo cuando la razón para separarlo se puede
+nombrar y medir. Aquí el candidato es **Notificaciones**, por motivos que no tienen nada que ver
+con el resto del negocio: tiene un perfil de carga distinto (picos de envíos masivos a las 19:00, supuesto),
+depende de proveedores externos que fallan de otra manera, y su consistencia es eventual por
+naturaleza. Si se queda dentro, un proveedor lento alarga las transacciones de reserva.
+
+La regla de disparo que el equipo se compromete a revisar cada trimestre es que se cumplan al
+menos dos de estas condiciones: el módulo necesita escalar de forma independiente, su ciclo de
+despliegue difiere del resto, o un fallo suyo ya ha afectado a reservas más de una vez. Las
+condiciones y el orden de extracción se discuten en
+[rutas de migración](/docs/monolito-vs-microservicios#rutas-de-migración).
+
+El primer servicio que sale es Notificaciones, en el mes cuatro. Es la única frontera que cruza
+la red en esta versión, y la figura del artículo la marca en el mapa.
+
+## Modelo de datos y almacenes
+
+En el monolito hay una base de datos relacional. La razón no es ideológica: reservar es una
+operación que necesita integridad, y un almacén relacional la da de serie. Las consultas que
+justifican el almacén se listan antes de elegirlo, siguiendo
+[la elección de base de datos según las consultas](/docs/persistencia-politica-elegir-bd#empezar-por-la-lista-de-consultas).
+
+Para evitar la sobreventa hay tres caminos. El primero es subir el nivel de aislamiento a
+serializable y reintentar las transacciones que fallen. El segundo es bloquear la fila de la clase
+con `SELECT ... FOR UPDATE`. El tercero es decrementar el aforo con una sola sentencia condicional:
+`UPDATE` sobre la clase con la condición de que quede al menos una plaza libre, y comprobar que
+afectó a una fila. Se elige el tercero. Es el más simple, y la base de datos garantiza la
+atomicidad de la sentencia sin que la aplicación tenga que razonar sobre concurrencia.
+
+Conviene precisar qué garantiza PostgreSQL por defecto, porque el ejemplo depende de ello. Según su
+documentación, **Read Committed** es el nivel por defecto, y **Repeatable Read** se implementa como
+_snapshot isolation_, que evita lecturas sucias, no repetibles y fantasma, pero permite anomalías de
+serialización como el _write skew_. Con la sentencia condicional no hace falta subir de nivel para
+este caso concreto, pero sí conviene saber que el nivel alto no es una garantía universal. El
+razonamiento de aislamiento está en
+[datos, ACID y aislamiento](/docs/datos-acid-y-aislamiento#transacciones-y-acid).
+
+Los datos de cada contexto viven en el mismo esquema, con tablas separadas por módulo y sin claves
+foráneas que crucen las fronteras de los contextos futuros. Esa disciplina es la que permitirá
+extraer Notificaciones sin migrar datos a ciegas. Para el histórico de reservas se usa una tabla
+normal con índice por socio y fecha. No hace falta un almacén especializado todavía, y se
+descarta un motor de documentos porque las consultas son pocas y relacionales.
+
+## Integración: llamadas, eventos y sagas
+
+Hay tres tipos de comunicación, y cada uno tiene su sitio:
+
+- **Llamada síncrona** desde la app a la API de Reservas, porque el socio espera una respuesta.
+- **Llamada síncrona** de Reservas a Bonos y de Bonos a la pasarela de pago, porque el cobro debe
+  resolverse antes de confirmar la plaza.
+- **Evento asíncrono** de Reservas a Notificaciones, porque el envío de un correo no debe retrasar
+  al socio ni hacerle fallar una reserva.
+
+### Reserva con cobro: saga orquestada
+
+Reservar con bono implica tres pasos que no están en la misma base de datos cuando el cobro sale
+a la pasarela: reservar plaza, cobrar bono y confirmar. Si el cobro falla después de reservar,
+hay que liberar la plaza. Eso es una **saga**: una secuencia de transacciones locales con
+compensaciones. La alternativa, un commit distribuido en dos fases entre la base de datos y la
+pasarela, se descarta porque la pasarela no participa en ese protocolo y porque bloquear recursos
+mientras espera al proveedor castiga la latencia.
+
+La saga es orquestada: el módulo de Reservas coordina los pasos y decide qué compensar. Se prefiere
+a la coreografía, en la que cada módulo reacciona a eventos de los demás, porque en este flujo
+hay solo tres pasos y la lógica de compensación debe estar en un único sitio para poder leerla. Los
+tipos de paso, la compensación y sus límites están en
+[sagas, outbox e idempotencia](/docs/sagas-outbox-idempotencia#sagas-transacciones-locales-con-compensación).
+
+La llamada a la pasarela lleva una clave de idempotencia. Stripe documenta el mismo mecanismo:
+la clave se envía en una cabecera, la plataforma guarda el resultado de la primera respuesta y lo
+devuelve en los reintentos, y las claves de la API v1 pueden caducar tras al menos 24 horas
+([documentación de Stripe](https://docs.stripe.com/api/idempotent_requests)). Aplicamos el mismo
+criterio a nuestra API de reservas: la app genera una clave por intento de reserva, de modo que un
+reintento tras un corte de red no genere dos plazas. El detalle de claves en APIs está en
+[idempotencia](/docs/sagas-outbox-idempotencia#claves-de-idempotencia-en-apis).
+
+### Outbox en la frontera
+
+Cuando Reservas confirma una plaza debe publicar el evento `ReservaConfirmada` para que
+Notificaciones envíe el correo. Si escribe en la base de datos y luego publica en el broker, un
+fallo entre ambos pasos deja datos sin evento o eventos sin datos. La solución es la **tabla
+outbox**: el evento se guarda en la misma transacción que la reserva, y un proceso aparte lo
+reenvía al broker. Microservices.io describe el patrón como respuesta al problema de la doble
+escritura, con dos formas de reenvío: seguir el registro de transacciones o sondear la tabla
+([transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html)).
+
+El reenvío puede repetir mensajes tras un reinicio, así que el consumidor debe ser idempotente. En
+este caso, Notificaciones guarda el identificador de cada evento ya procesado. El outbox se
+introduce en el momento de la extracción y no antes: dentro del monolito, Reservas y el envío
+pueden convivir con un evento en memoria, porque no cruzan red. El coste de añadir la tabla es
+bajo, así que se incorpora junto con la primera frontera real.
+
+## Caché y colas
+
+El catálogo de clases se lee mucho más de lo que cambia. Una caché con TTL corto (30 segundos, supuesto de diseño) en
+la lectura de horarios reduce la carga sobre la base de datos en la hora punta. La invalidación es
+el problema difícil: se invalida la clave **después** de confirmar la transacción que cambió el
+aforo, nunca antes, para que una lectura concurrente no vuelva a guardar el valor antiguo. El TTL
+corto es la red de seguridad para lo que se olvide invalidar. Las estrategias y sus trampas están
+en [caché, invalidación y estampida](/docs/caching-colas-streaming#caché-comprar-latencia-con-frescura).
+
+Las notificaciones pasan por una cola con consumidores competidores, una cola de mensajes
+fallidos y reintentos con espera creciente y variación aleatoria. El reintento sin variación
+produce tormentas cuando un proveedor vuelve. El mecanismo de reintentos y sus presupuestos está
+en [resiliencia en sistemas distribuidos](/docs/resiliencia-sistemas-distribuidos#reintentos-útiles-egoístas-y-peligrosos-en-cadena).
+
+No se usa un log particionado todavía. El volumen del evento de confirmación no justifica retener
+historial para reprocesar, y una cola basta. Si el equipo necesita reconstruir proyecciones o
+reprocesar un mes de eventos, la decisión se reabre; ese es uno de los cambios de la evolución
+que se describe más abajo.
+
+## Seguridad e identidad
+
+El socio se autentica con un proveedor de identidad que implementa OpenID Connect; la app usa el
+flujo de código de autorización con PKCE y no almacena contraseñas. La recomendación de buenas
+prácticas de seguridad de OAuth 2.0 (RFC 9700, publicada en 2025 como BCP 240) depreca
+algunos modos de operación considerados menos seguros, así que el equipo la toma como línea base de la configuración
+([RFC 9700](https://www.rfc-editor.org/rfc/rfc9700)). Los tokens de acceso son cortos y las
+sesiones de la app se revocan desde el proveedor.
+
+La autorización es más fina que un rol. Un socio solo puede reservar en un centro al que pertenece
+su cuota, y solo puede cancelar sus propias reservas. Un rol de «socio» no basta; la decisión
+combina rol con pertenencia. El modelo y sus variantes están en
+[RBAC, ABAC y ReBAC](/docs/autorizacion-rbac-abac-rebac#rbac-el-rol-como-fuente-de-verdad).
+
+Los datos personales (nombre, correo, historial de reservas) se minimizan: el módulo de
+Notificaciones solo recibe identificador y canal, y resuelve el nombre en el momento del envío a
+través de Identidad. Así, borrar a un socio no obliga a buscar copias en la cola de notificaciones.
+El criterio y las obligaciones del RGPD están en
+[privacidad por diseño](/docs/privacidad-por-diseno-gdpr).
+
+## Observabilidad y SLO
+
+La pregunta que el equipo debe poder responder es si una reserva de un socio fue rápida y
+correcta. Se mide con dos indicadores que salen del punto de vista del usuario, no de los
+servidores. El primero es el porcentaje de reservas que responden en menos de 400 ms. El
+segundo es el porcentaje de confirmaciones que llegan en menos de 2 minutos. Ambos son supuestos y
+se revisan con datos reales el primer mes.
+
+El SLO de disponibilidad de reservar es del 99,9 % mensual (supuesto), y de él sale el presupuesto
+de error. Google define el SLI como una medida cuantitativa y cuidadosamente definida, y el SLO
+como un valor objetivo sobre esa medida ([SRE, Service Level Objectives](https://sre.google/sre-book/service-level-objectives/)).
+La política del presupuesto la decide el equipo: mientras quede margen, se despliega; si se agota,
+se frena el trabajo de riesgo y se prioriza la fiabilidad. Esa política y las alertas por consumo
+de presupuesto están en
+[SLO y presupuesto de error](/docs/observabilidad-slo-presupuesto-error#slo-y-presupuesto-de-error).
+
+Las trazas atraviesan los módulos y la cola con el mismo identificador de correlación. Sin él, el
+caso de «la reserva se cobró pero no llegó el correo» requiere cruzar tres paneles a mano.
+
+## Despliegue y entrega progresiva
+
+El monolito se despliega como una unidad, pero cada cambio de comportamiento sale detrás de una
+bandera de funcionalidad. La nueva pantalla de horarios se activa primero para el equipo interno,
+luego para un centro piloto y después para todos. Esa separación entre desplegar y exponer es la
+base de la entrega progresiva. Para las reservas, que son la parte crítica, se usa un canary por
+escalones: 5 %, 25 % y 100 % del tráfico, con comprobaciones del SLI en cada escalón y reversión
+automática si cae por debajo del objetivo. El procedimiento está en
+[flags y canary](/docs/entrega-progresiva-flags-canary#canary-exponer-por-escalones).
+
+Los cambios de esquema siguen el patrón de expandir y contraer, con tres despliegues: añadir la
+columna nueva, copiar y leer en paralelo, y retirar la antigua cuando nadie la use. La migración de
+la tabla de plazas, que es la más sensible, se hace en ventanas de bajo tráfico con backfill por
+lotes. Las fases están en
+[migraciones sin downtime](/docs/migraciones-bd-sin-downtime#las-cuatro-fases).
+
+## Un año después: cuando cambian los requisitos
+
+La arquitectura inicial se evalúa contra la realidad a los doce meses. Suponemos tres cambios que
+el negocio pide de verdad:
+
+1. **Lista de espera por clase.** Aparece un módulo nuevo que reserva plazas liberadas. Se
+   implementa dentro de Reservas, porque comparte la misma regla de aforo. No se extrae: la regla
+   de integridad no debe cruzar la red.
+2. **Bonos por sede.** El cobro cambia de forma: un socio puede tener saldos distintos por centro.
+   Afecta al modelo de datos de Bonos, y el cambio se hace con expandir y contraer, sin tocar a los
+   consumidores de eventos.
+3. **Cambio de pasarela.** El proveedor de pagos se sustituye. La llamada se aísla detrás de un
+   adaptador dentro de Bonos, así que el cambio no llega a Reservas ni a la app.
+
+El evento `ReservaConfirmada` gana un campo nuevo, `canal`, que usa Notificaciones para elegir
+push o correo. Un cambio de este tipo es seguro si no rompe a los consumidores existentes, y el
+versionado de contratos marca qué cambios lo son
+([cambios seguros en contratos de eventos](/docs/contratos-de-eventos-versionados#qué-cambios-son-seguros)).
+
+Con tres veces el volumen, el pico de las 7:00 pasa de 1 500 a unas 4 500 reservas por minuto
+(supuesto). Ahí la caché de horarios ya no basta y el equipo decide si el log particionado merece
+su coste. La decisión no se toma por intuición: se mide el consumo de la cola en el primer pico
+real y se compara con el objetivo. Si no alcanza, el primer candidato a cambiar es la cola de
+notificaciones, no el núcleo de reservas.
+
+## Tabla de decisiones
+
+Cada fila es una decisión del recorrido, su alternativa descartada y el motivo principal. El
+artículo enlazado es el que justifica la decisión con más detalle.
+
+| Decisión                                         | Alternativa descartada          | Motivo principal                                                        | Lectura                                                                                         |
+| ------------------------------------------------ | ------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Monolito modular al inicio                       | Microservicios desde el día uno | Fronteras todavía son hipótesis; cada error cuesta un contrato de red   | [Monolito modular primero](/docs/monolito-modular-primero)                                      |
+| Notificaciones como primera frontera             | Extraer Reservas o Catálogo     | Perfil de carga y proveedores externos distintos; consistencia eventual | [Rutas de migración](/docs/monolito-vs-microservicios#rutas-de-migración)                       |
+| Sentencia condicional para el aforo              | Serializable con reintentos     | Atomicidad de una sentencia; sin razonar sobre concurrencia en la app   | [Datos, ACID y aislamiento](/docs/datos-acid-y-aislamiento#transacciones-y-acid)                |
+| Base de datos relacional                         | Almacén de documentos           | Consultas pocas y relacionales; integridad de serie                     | [Elegir base de datos](/docs/persistencia-politica-elegir-bd#empezar-por-la-lista-de-consultas) |
+| Saga orquestada para reservar y cobrar           | Commit distribuido (2PC)        | La pasarela no participa en 2PC; no bloquear recursos durante el cobro  | [Sagas](/docs/sagas-outbox-idempotencia#sagas-transacciones-locales-con-compensación)           |
+| Outbox para el evento de confirmación            | Publicar tras commit            | Evita pérdida o eventos huérfanos en la doble escritura                 | [Transactional outbox](/docs/sagas-outbox-idempotencia#transactional-outbox)                    |
+| Caché de horarios con TTL corto                  | Sin caché o caché sin TTL       | Reduce carga en la hora punta; el TTL acota la desactualización         | [Caché e invalidación](/docs/caching-colas-streaming#caché-comprar-latencia-con-frescura)       |
+| Reintentos con variación aleatoria               | Reintentos fijos                | Evita tormentas cuando un proveedor vuelve                              | [Reintentos con jitter](/docs/reintentos-con-jitter)                                            |
+| Identidad comprada, autorización por pertenencia | Autenticación propia            | Menos superficie que mantener; el rol solo no basta para reservar       | [RBAC, ABAC y ReBAC](/docs/autorizacion-rbac-abac-rebac#rbac-el-rol-como-fuente-de-verdad)      |
+| SLO 99,9 % y presupuesto de error                | Alertar por cada error          | Vincula el ritmo de despliegue con la fiabilidad medida                 | [SLO y presupuesto](/docs/observabilidad-slo-presupuesto-error#slo-y-presupuesto-de-error)      |
+| Canary por escalones para reservas               | Despliegue completo de una vez  | Limita el radio de un fallo en la parte crítica                         | [Canary](/docs/entrega-progresiva-flags-canary#canary-exponer-por-escalones)                    |
+
+## ADR resumido
+
+Las decisiones que cambian la forma del sistema se escriben como ADR. El formato de Nygard de 2011
+(título, contexto, decisión, estado y consecuencias) sigue siendo la base de la mayoría de
+plantillas ([Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)).
+Este es el ADR de la primera frontera, en su forma resumida:
+
+**ADR-007: Notificaciones se extrae como primer servicio en el mes cuatro**
+
+- **Estado:** aceptado. Revisión trimestral.
+- **Contexto:** los envíos masivos degradan las transacciones de reserva; el proveedor de correo
+  falla con más frecuencia que el resto del sistema.
+- **Decisión:** extraer Notificaciones con cola propia y outbox en Reservas. El resto del monolito
+  no cambia.
+- **Consecuencias:** aparece el primer contrato de red del sistema y su versionado. Se gana
+  aislamiento de fallos y escala independiente. Se añade un proceso de reenvío que hay que operar.
+- **Criterio de revisión:** si el consumo de la cola no cumple el objetivo en el primer pico, o si
+  Notificaciones deja de tener perfil de carga distinto, se reconsidera la frontera.
+
+El formato y el ciclo de vida de los ADR están en [ADR](/docs/adr#qué-es-un-adr-y-qué-problema-resuelve).
+
+## Cuándo sí y cuándo no
+
+Este recorrido no es una plantilla para cualquier sistema. Con un equipo de dos personas y un solo
+centro, casi todas las decisiones de distribución sobran: un monolito con una base de datos y una
+tabla de eventos resuelve el caso. Las piezas de integración (saga, outbox, cola, canary por
+escalones) se justifican cuando hay varias fronteras reales, cargas distintas o costes de fallo
+que el negocio puede nombrar. Antes de añadirlas, la pregunta es qué requisito concreto deja de
+cumplirse sin ellas.
+
+## Errores frecuentes
+
+- **Empezar por la tecnología.** Elegir colas, Kubernetes y bases distribuidas antes de tener la
+  lista de consultas y de requisitos. El resultado es complejidad sin requisito que la justifique.
+- **Cifras sin etiqueta.** Presentar un supuesto como si fuera un requisito del negocio. En una
+  decisión posterior nadie sabrá qué revisar.
+- **Fronteras por capas técnicas.** Separar «API», «lógica» y «datos» en servicios en vez de
+  contextos de negocio. Cada petición cruza tres redes y ninguna frontera protege nada.
+- **Saga sin compensación pensada.** Un flujo con pasos que no se pueden deshacer y ninguna
+  decisión sobre qué pasa si el cobro falla a mitad.
+- **Caché sin plan de invalidación.** Un TTL largo «para que vaya rápido» que muestra plazas
+  vendidas como libres durante minutos.
+- **Decisiones que no quedan escritas.** Dentro de un año nadie sabe por qué el monolito tiene
+  esas fronteras, y se reabren discusiones ya cerradas.
+
+## Checklist
+
+- [ ] Los requisitos de calidad tienen cifras y las cifras supuestas están marcadas como tales.
+- [ ] Cada contexto delimitado tiene dueño, lenguaje propio y reglas de frontera comprobadas en CI.
+- [ ] La primera extracción tiene una razón nombrable y un criterio de revisión.
+- [ ] La integridad crítica (aforo, cobro) se resuelve dentro de una transacción o una saga escrita.
+- [ ] Cada evento publicado sale por outbox y cada consumidor es idempotente.
+- [ ] Las cachés tienen TTL y una regla de invalidación posterior al commit.
+- [ ] Hay SLI, SLO y presupuesto de error antes del primer despliegue de producción.
+- [ ] Los cambios de esquema y de contrato siguen expandir y contraer, sin rupturas.
+- [ ] Cada decisión relevante tiene su ADR con alternativa descartada y criterio de revisión.
+
+## Fuentes
+
+- Martin Fowler, [MonolithFirst](https://martinfowler.com/bliki/MonolithFirst.html), 2015.
+- Microservices.io, [Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html).
+- Google, [Site Reliability Engineering: Service Level Objectives](https://sre.google/sre-book/service-level-objectives/).
+- PostgreSQL, [Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html),
+  documentación oficial.
+- IETF, [RFC 9700: OAuth 2.0 Security Best Current Practice](https://www.rfc-editor.org/rfc/rfc9700), 2025.
+- Stripe, [Idempotent requests](https://docs.stripe.com/api/idempotent_requests), documentación oficial.
+- Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions), 2011.
+- Cifras de requisitos, volumen y pico: supuestos del caso ilustrativo, no datos de un proyecto real.

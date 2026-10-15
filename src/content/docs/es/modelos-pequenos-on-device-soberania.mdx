@@ -1,0 +1,272 @@
+---
+title: 'Modelos pequeños, on-device y soberanía de datos'
+description: 'Cuándo un modelo pequeño en el dispositivo o en infraestructura propia gana a una API frontier: latencia, privacidad, coste, soberanía y lo que se pierde.'
+category: tendencias
+tags:
+  - slm
+  - on-device
+  - soberania-de-datos
+  - cuantizacion
+  - enrutamiento-de-modelos
+order: 12
+roadmap:
+  id: ia
+  stage: panorama
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un modelo pequeño procesa dentro de una frontera: los datos no salen de ella'
+---
+
+# Modelos pequeños, on-device y soberanía de datos
+
+Por defecto, la mayoría de equipos llama a una API de un modelo grande de frontera. Es la opción
+más cómoda: no hay infraestructura que operar y la calidad es alta. Pero no siempre es la
+correcta. Un modelo pequeño (SLM, _small language model_) que corre en el teléfono, en un
+servidor propio o en un entorno de la organización puede ser mejor para ciertas tareas, y
+además cambia dónde viven los datos. Este artículo trata de cuándo compensa esa decisión, qué
+se paga a cambio y cómo combinar ambos mundos sin perder el control.
+
+La tesis es sencilla: **el modelo pequeño no compite por inteligencia general, compite por
+frontera**. Gana cuando la tarea es acotada, el dato no debe salir de un perímetro o la
+respuesta tiene que llegar en milisegundos sin red. Pierde cuando hace falta razonamiento
+amplio o mantener calidad sin esfuerzo propio.
+
+<Callout tone="info" title="Fecha de corte">
+  Redactado en octubre de 2026. El ecosistema de modelos abiertos cambia cada pocos meses: los
+  nombres concretos de modelos se omiten a propósito y las afirmaciones sobre licencias, marcos
+  regulatorios y plataformas se han contrastado con las fuentes de la última sección.
+</Callout>
+
+## Qué entendemos por «pequeño» y «on-device»
+
+«Pequeño» es relativo y no tiene una frontera oficial: se mide en parámetros, pero lo que
+importa al arquitecto es si el modelo cabe en la memoria disponible y responde dentro del
+presupuesto de latencia. Conviene separar tres lugares de ejecución, porque cada uno tiene
+garantías distintas:
+
+- **API de frontera:** el modelo lo opera el proveedor. Tus datos viajan a su infraestructura
+  y dependes de su disponibilidad, precios y versiones.
+- **Infraestructura propia:** el modelo corre en tus servidores, en nube privada o en un
+  proveedor con residencia controlada. Tú decides región, retención y logs.
+- **En el dispositivo:** el modelo corre en el móvil, el portátil o el navegador. El dato
+  nunca sale del aparato, salvo que la app lo envíe a propósito.
+
+No son excluyentes. Un mismo producto puede usar los tres según la tarea. La pregunta de
+arquitectura es qué tarea va en cada sitio y por qué.
+
+## Los criterios de decisión
+
+Antes de elegir un modelo pequeño hay que poder explicar qué problema resuelve que la API no
+resuelve. Son seis criterios y conviene evaluarlos en ese orden.
+
+**Latencia.** Una respuesta local no depende de la red ni de la cola del proveedor. Para
+autocompletado, clasificación de una pulsación o correcciones en vivo, esa diferencia decide
+la experiencia. Ojo: la latencia total incluye la carga del modelo en memoria, que en un
+dispositivo puede ser la parte más lenta del primer uso.
+
+**Privacidad y residencia.** Si el dato no sale del perímetro, desaparecen varias
+preguntas de contrato y de transferencia. No desaparecen las obligaciones: el dato sigue
+siendo personal, sigue necesitando base legal y retención, y el modelo local también puede
+registrarlo en logs o caché. Véase [privacidad por diseño](/docs/privacidad-por-diseno-gdpr).
+
+**Coste a volumen.** Con poco tráfico, la API casi siempre sale más barata porque no pagas
+infraestructura ociosa. Con mucho tráfico y tareas repetitivas, el cálculo puede girar: el coste
+pasa a ser de cómputo y operación, y deja de ser por token. El desglose de qué compone ese
+coste está en [costo de inferencia](/docs/costo-de-inferencia). Lo importante es medir con tu
+propio volumen, no con cifras de catálogo.
+
+**Disponibilidad sin red.** Una app que debe funcionar en el metro, en una planta industrial o
+en un barco no puede depender de una llamada HTTP en cada paso. Es el mismo problema que
+[offline-first](/docs/movil-offline-first-sincronizacion) en datos: el modelo viaja con la app
+y la sincronización, si la hay, va después.
+
+**Control de versiones.** Con un modelo propio fijas la versión y decides cuándo cambiar. Un
+proveedor puede retirar un modelo o cambiar su comportamiento. Para procesos regulados, poder
+reproducir una respuesta de hace seis meses es un requisito, no una comodidad.
+
+**Calidad medible.** Solo sabes si el modelo pequeño basta si tienes evaluaciones propias. Sin
+ellas, cualquier elección es fe. Ver [evaluación continua](/docs/controlar-la-ia-gobierno-y-autonomia#evaluación-continua).
+
+## Lo que se pierde
+
+Elegir un modelo pequeño es aceptar costes que la API esconde. Conviene escribirlos en la
+decisión:
+
+- **Capacidad de razonamiento.** Tareas abiertas, cadenas de pasos largas o instrucciones
+  ambiguas suelen degradarse antes en modelos pequeños. El fallo no siempre es obvio: la
+  respuesta sale bien escrita y equivocada.
+- **Mantenimiento.** Tú cargas el modelo, lo actualizas, vigilas la memoria, gestionas la
+  aceleración por hardware y resuelves los errores de compatibilidad. Ese trabajo tiene dueño.
+- **Actualizaciones.** Los avances llegan a los modelos grandes antes. Un modelo fijado es
+  estable, pero envejece; hay que planificar cuándo reevaluarlo.
+- **Evals propias.** Sin un conjunto de casos reales, etiquetados y ejecutados en cada cambio,
+  no hay forma de saber si una actualización empeoró algo.
+
+## Hardware como restricción real
+
+La arquitectura de un modelo local empieza por el hardware, no por el modelo. Tres límites
+dominan casi todas las decisiones:
+
+1. **Memoria.** Los pesos y la caché de contexto deben caber en la RAM o la memoria de
+   aceleración. Si no caben, el sistema se degrada o se cae. Es la restricción que más pesa
+   en un teléfono compartido con otras apps.
+2. **Energía y calor.** Una inferencia sostenida agota batería y limita el rendimiento del
+   aparato tras unos minutos. Una tarea de fondo debe medirse en consumo, no solo en latencia.
+3. **Aceleradores.** La NPU, la GPU o el acelerador de un equipo cambian mucho el resultado,
+   y no todos los dispositivos los tienen. Un diseño que solo funciona en el último modelo de
+   teléfono deja fuera a una parte de los usuarios.
+
+La **cuantización** es la palanca habitual para reducir memoria: guardar los pesos con menos
+bits. Es un trade-off, no una mejora gratuita. Menos bits reducen la memoria y a veces la
+velocidad, pero degradan la calidad de forma no uniforme: algunas tareas aguantan bien y otras
+no. La única forma de elegir el nivel de cuantización es medir la calidad en tu tarea con tus
+datos. Los formatos y niveles dependen de la herramienta de inferencia que uses, así que la
+documentación de esa herramienta manda sobre cualquier tabla genérica.
+
+Las plataformas móviles y de sistema ya traen modelos integrados y marcos para usarlos. Apple
+documenta su framework de modelos de sistema en
+[developer.apple.com](https://developer.apple.com/documentation/foundationmodels), con sus
+límites de contexto y de uso. Antes de diseñar sobre uno de estos modelos, revisa la
+documentación vigente: las capacidades cambian con cada versión del sistema.
+
+## Modelos abiertos: qué significa «abierto»
+
+«Modelo abierto» se usa para cosas distintas, y la diferencia afecta a lo que puedes hacer
+legalmente.
+
+La Open Source Initiative publicó en 2024 la **Open Source AI Definition 1.0**. Según ella, un
+sistema de IA es abierto cuando se publican los parámetros con términos aprobados por la OSI,
+el código de entrenamiento y de ejecución con una licencia aprobada y suficiente información
+sobre los datos para reconstruir un sistema equivalente. Un modelo que solo publica sus pesos
+con una licencia propia no cumple esa definición, aunque se llame «open» en el catálogo
+([OSI](https://opensource.org/press-mentions/osi-officially-releases-its-definition-for-open-source-ai)).
+
+En la práctica hay tres situaciones:
+
+- **Pesos con licencia permisiva** (por ejemplo, Apache 2.0 o MIT): puedes usarlo, modificarlo
+  y distribuirlo casi sin condiciones. Revisa aun así la licencia exacta de cada versión.
+- **Pesos con licencia comunitaria restringida.** Algunas licencias de familias conocidas
+  incluyen cláusulas de uso aceptable y umbrales de tamaño. La licencia Llama 3, por ejemplo,
+  exige pedir una licencia a Meta si los productos o servicios del licenciatario y sus filiales
+  superaban los 700 millones de usuarios activos mensuales en el mes natural anterior a la fecha
+  de publicación de la versión (18 de abril de 2024 en Llama 3), y sujeta el uso a su política de
+  uso aceptable (lee el texto oficial de la versión que uses). Para una empresa pequeña el umbral no importa; para otra puede ser decisivo.
+- **Sin licencia clara o solo para investigación.** No es un modelo para producto, aunque
+  funcione bien en una demo.
+
+Para el arquitecto, la pregunta concreta es: ¿puedo servir este modelo en mi producto, a mis
+clientes, en mi país, con las obligaciones que exige su licencia? Esa respuesta debe quedar
+por escrito junto a la versión elegida. Y un modelo abierto también tiene procedencia: saber
+qué datos lo entrenaron es parte de la evaluación de riesgo, aunque su licencia lo permita.
+
+## Soberanía de datos: dónde se procesa y dónde se guarda
+
+La soberanía de datos es la capacidad de decir, con precisión, en qué jurisdicción se procesan
+y almacenan los datos, quién puede acceder a ellos y bajo qué ley. Con un modelo en la API,
+esa respuesta la da el contrato y la documentación del proveedor. Con un modelo local, la
+respuesta la das tú.
+
+Hay al menos cuatro puntos donde se pierde el control sin que nadie lo note:
+
+- **Logs y trazas.** La observabilidad de un LLM suele guardar prompts y respuestas. Si el
+  dato personal llega al log, el perímetro se amplía a la plataforma de logs.
+- **Caché.** Una caché semántica o de prompts puede conservar datos fuera del sitio previsto.
+- **Telemetría del cliente.** Algunas herramientas envían métricas o fragmentos de uso al
+  proveedor del software, aunque el modelo sea local.
+- **Respaldos y réplicas.** Lo que se copia para recuperación también es un tratamiento.
+
+En Europa, las transferencias de datos personales fuera del Espacio Económico Europeo se rigen
+por el capítulo V del [RGPD](https://eur-lex.europa.eu/eli/reg/2016/679/oj). El marco UE-EE. UU.
+(Data Privacy Framework), adoptado por la Comisión como decisión de adecuación en 2023
+(Decisión de Ejecución (UE) 2023/1795), es una de las bases para esas transferencias. Las
+decisiones de adecuación se revisan periódicamente y su continuidad depende del marco jurídico
+del país receptor, así que no conviene darla por vigente de forma permanente: consulta su estado
+actual en la Comisión Europea antes de decidir. No es motivo para cambiar de proveedor sin más,
+pero sí para no construir todo el sistema sobre una sola base de transferencia y para tener un
+plan de salida. Algunos sectores tienen
+además reglas propias de residencia o de supervisión, que pueden exigir infraestructura local
+con independencia de lo que diga el RGPD.
+
+Una regla práctica: si no puedes responder en una frase dónde está cada copia del dato que
+envía tu modelo, tu soberanía es teórica.
+
+## Enrutamiento: lo simple local, lo difícil fuera
+
+Muchos sistemas no eligen entre un modelo pequeño y uno grande, sino que los combinan. Un
+**enrutador** decide por petición: lo sencillo lo resuelve el modelo local y lo difícil va a la
+API de frontera. El patrón reduce coste y latencia y, bien hecho, protege los datos más
+sensibles.
+
+El trabajo académico lo ha medido. RouteLLM (Ong et al., ICLR 2025) entrena enrutadores con
+datos de preferencia humana entre un modelo fuerte y otro débil, y reporta ahorros de más de
+2× sin pérdida de calidad en sus evaluaciones, con cierta capacidad de generalizar a modelos no
+vistos en el entrenamiento ([arXiv](https://arxiv.org/abs/2406.18665),
+[ICLR 2025](https://iclr.cc/virtual/2025/poster/30737)). Son resultados sobre sus benchmarks;
+tu tráfico puede dar otra cifra.
+
+El patrón tiene riesgos concretos:
+
+- **El enrutador también procesa datos.** Si el clasificador de dificultad se apoya en un
+  modelo externo, ya has enviado el dato fuera antes de decidir. El enrutador debe vivir en el
+  mismo perímetro que el dato más sensible.
+- **Errores de clasificación.** Una tarea difícil enviada al modelo pequeño produce respuestas
+  plausibles y erróneas. Hay que medir los falsos negativos, no solo el ahorro.
+- **Dos comportamientos.** Usuarios distintos reciben respuestas de calidad distinta según la
+  ruta. Eso complica soporte, pruebas y explicaciones.
+- **Coste oculto.** Mantener dos modelos, dos sets de evals y una lógica de ruta cuesta
+  trabajo. En un sistema pequeño, puede no compensar.
+
+## Cuándo sí y cuándo no
+
+Conviene un modelo pequeño cuando:
+
+- la tarea es acotada (clasificar, extraer campos, reescribir, resumir un texto corto) y tienes
+  casos reales para medirla;
+- el dato personal o confidencial no debe salir de un perímetro concreto;
+- la latencia o la operación sin red son requisitos del producto;
+- el volumen es alto y repetitivo, y ya tienes capacidad de operar infraestructura;
+- necesitas fijar una versión y reproducir resultados.
+
+Conviene quedarse en la API de frontera cuando:
+
+- la tarea exige razonamiento amplio o trabajo de varios pasos con herramientas;
+- el volumen es bajo y no quieres operar nada;
+- no tienes evaluaciones propias y no vas a construirlas;
+- la licencia del modelo local no cubre tu uso o tu escala.
+
+## Errores frecuentes
+
+- **Elegir por tamaño.** «Es pequeño, será barato y rápido» sin medir la calidad en tu tarea ni
+  la latencia real en el dispositivo objetivo.
+- **Confundir local con privado.** El modelo en el móvil no protege un dato que luego se envía a
+  analítica, a logs o a un servicio externo.
+- **Ignorar la licencia.** Descubrirla al escalar, cuando ya hay clientes en un mercado
+  concreto.
+- **Cuantizar sin medir.** Aplicar el nivel más bajo que cabe en memoria sin comprobar qué
+  tareas empeoran.
+- **Enrutar sin evaluar el enrutador.** Asumir que el clasificador acierta y no medir los casos
+  difíciles que se quedan en el modelo pequeño.
+- **Fijar el modelo para siempre.** No planificar cuándo reevaluarlo ni qué cambiaría la
+  decisión.
+
+## Checklist
+
+- [ ] La tarea está acotada y tiene un conjunto de casos reales para evaluarla.
+- [ ] Hay una razón explícita (latencia, residencia, coste, sin red, versión) para no usar la API.
+- [ ] Sabes en qué dispositivos o servidores corre y qué memoria y aceleración exige.
+- [ ] La licencia del modelo permite tu uso, tu escala y tus mercados, y queda documentada.
+- [ ] Mapeas dónde viven los datos: entrada, caché, logs, telemetría, respaldos.
+- [ ] Si hay transferencia internacional, tienes base legal y un plan alternativo.
+- [ ] Si enrutas, el enrutador vive dentro del perímetro y mides los falsos negativos.
+- [ ] Fijas la versión del modelo y tienes un calendario para reevaluarla.
+
+## Fuentes
+
+- [Open Source AI Definition 1.0, OSI](https://opensource.org/press-mentions/osi-officially-releases-its-definition-for-open-source-ai).
+- [Reglamento (UE) 2016/679 (RGPD), EUR-Lex](https://eur-lex.europa.eu/eli/reg/2016/679/oj), capítulo V.
+- [FoundationModels, documentación de Apple Developer](https://developer.apple.com/documentation/foundationmodels).
+- [RouteLLM: Learning to Route LLMs with Preference Data, arXiv](https://arxiv.org/abs/2406.18665) y
+  [ICLR 2025](https://iclr.cc/virtual/2025/poster/30737).
+- [Licencia Llama 3 de Meta, texto oficial en GitHub](https://github.com/meta-llama/llama3/blob/main/LICENSE), sección 2 (versión de 18 de abril de 2024). Consulta la licencia de la versión concreta que uses.
+- [Decisión de adecuación UE-EE. UU. (Data Privacy Framework), Comisión Europea](https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/eu-us-data-transfers_en). Confirma su adopción; el estado vigente hay que consultarlo en esa fuente.

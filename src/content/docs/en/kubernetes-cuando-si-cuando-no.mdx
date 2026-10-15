@@ -1,0 +1,233 @@
+---
+title: 'Kubernetes: when yes and when no'
+description: 'What Kubernetes actually solves, what operational cost it brings, and when a managed service, a PaaS or a well-run VM is the cheaper decision.'
+category: nube
+tags:
+  - kubernetes
+  - contenedores
+  - plataforma
+  - operacion
+  - nube
+order: 15
+roadmap:
+  id: nube
+  stage: servicios
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A workload on a control plane, with a shorter route for the simple case'
+---
+
+# Kubernetes: when yes and when no
+
+Kubernetes solves real problems: placing containers across many machines, replacing the ones that
+fail, scaling, and deploying without downtime. It does not solve them for free. You pay in
+operations: upgrading the cluster, understanding its networking, monitoring it and keeping its
+configuration secure. The thesis of this article is simple: Kubernetes is justified when your
+problems match its problems, and it is complexity paid up front when they do not.
+
+<Callout tone="info" title="Cut-off date">
+  The version data is as of 15 October 2026, according to the [official releases
+  page](https://kubernetes.io/releases/). Versions and their dates change over time: check before
+  planning an upgrade.
+</Callout>
+
+## What it actually solves
+
+Kubernetes describes itself as an open source platform for managing containerized workloads and
+services through declarative configuration and automation. Its core idea is not a list of
+commands but a **reconciliation** loop: control processes that compare the current state with the
+desired state you declare and push the former towards the latter. When a pod dies, you do not
+write a script to detect it; the loop detects it and creates another.
+
+The capabilities listed in the official documentation, translated into what you no longer have to
+do yourself:
+
+| Capability                | What you no longer do by hand                                               |
+| ------------------------- | --------------------------------------------------------------------------- |
+| Resource scheduling       | Deciding which machine fits each container based on declared CPU and memory |
+| Self-healing              | Restarting or replacing containers that fail or do not answer their probes  |
+| Horizontal scaling        | Adding or removing replicas manually or with your own scripts               |
+| Discovery and balancing   | Managing IPs, DNS names and traffic split across replicas                   |
+| Rollouts and rollbacks    | Replacing versions in a controlled way and going back                       |
+| Secrets and configuration | Injecting configuration without rebuilding the image                        |
+
+If your system has few parts that change rarely, almost none of these hurt. If you have dozens of
+services scaling at different rates, deploying several times a day, and a node failure must not
+become an incident, each of them saves recurring work.
+
+## What it does not do
+
+The official documentation is explicit about what it does **not** include. Kubernetes is not a
+traditional, all-inclusive PaaS. It does not build your application or decide your CI/CD pipeline.
+It does not ship databases, queues, caches or cluster storage as built-in services. It does not
+dictate a logging, monitoring or alerting solution. And it does not manage the operating system of
+the nodes or their maintenance.
+
+This changes the question. You do not buy "a Kubernetes" that solves your platform: you buy a set
+of pieces that you must choose, integrate and operate. That is why the real cost often sits
+outside the cluster, in the decisions around it.
+
+## The operational cost
+
+### Learning curve
+
+The model has many interdependent concepts: pods, deployments, services, ingress or Gateway,
+configuration, probes, quotas, network policies, custom controllers. The hard part is not
+memorizing them but diagnosing why something does not converge. A team that does not know the
+model turns every incident into an investigation of the tool itself.
+
+### Cluster upgrades
+
+Every minor version has an end-of-support date. According to the releases page, the following
+minor versions are supported as of 15 October 2026:
+
+| Minor version | End of life      |
+| ------------- | ---------------- |
+| 1.34          | 27 October 2026  |
+| 1.35          | 28 February 2027 |
+| 1.36          | 28 June 2027     |
+| 1.37          | 28 October 2027  |
+
+Version 1.34 reaches end of life in twelve days. If your cluster is on it, the upgrade is no longer
+a pending improvement but a dated obligation.
+
+Upgrading requires respecting the **version skew** rules that Kubernetes documents: a node's
+`kubelet` may be up to three minor versions behind the API server (two if it is older than 1.25),
+but never ahead of it; `kubectl` supports one minor version of difference in either direction. In
+practice, upgrades happen in stages, and a cluster with nodes persistently three versions behind
+must upgrade those nodes before the control plane can move on.
+
+Beta APIs are no longer served nine months or three minor releases after deprecation, whichever is
+longer. Old manifests break without visible warning if nobody reviews them. GA APIs can be marked
+as deprecated, but they must not be removed within the same major version.
+
+### Networking and storage
+
+Networking is where most teams get stuck: services, load balancers, traffic policies between pods,
+internal DNS resolution and integration with the provider's network. Each layer can fail on its
+own, and diagnosis means understanding several at once. Persistent storage has its own history of
+classes, claims and backups, which the platform does not solve for you; your design does.
+
+### Observability and security
+
+Kubernetes exposes metrics and lets you integrate logs and traces, but it does not choose your
+stack. You will have to select, deploy and maintain that stack alongside the application. On
+security, the most common risk is not in the control plane but in configuration: overly broad RBAC
+permissions, poorly managed secrets and containers running with more privilege than they need.
+These are configuration mistakes the cluster accepts without complaint.
+
+## Alternatives that solve the same problem
+
+Before choosing Kubernetes, compare with what you already know. These options cover many cases with
+a smaller operational surface:
+
+| Option                                  | What you get                                                  | What remains yours                                |
+| --------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------- |
+| Serverless containers                   | Deploying images without creating a cluster or managing nodes | Stateless design and platform limits              |
+| Managed Kubernetes (e.g. EKS, AKS, GKE) | The control plane is operated by the provider                 | Nodes, networking, upgrades and the runtime stack |
+| PaaS                                    | Deploying the application with minimal configuration          | Language, runtime and customization limits        |
+| VMs with autoscaling groups             | A simple mental model and control of the operating system     | Patching, images and deployment orchestration     |
+
+Google summarizes the choice between its two services in its documentation: GKE is meant for when
+you need control over nodes and networking, and Cloud Run for stateless services driven by requests
+or events, without creating or managing a cluster. It is a good general rule: the more control you
+need, the more operations you take on in return.
+
+If your workload is a function reacting to events, the reasoning in
+[serverless and managed compute](/docs/serverless-y-computacion-gestionada) is more direct. If the
+question is where each workload lives, see
+[cloud deployment models](/docs/modelos-de-despliegue-nube).
+
+## Decision criteria
+
+These criteria are the author's judgment, not survey data. They are meant to be discussed with your
+own numbers:
+
+1. **Number of services and pace of change.** With one or two services that change slowly, the
+   fixed cost of a cluster never amortizes. With many teams deploying at once, it does.
+2. **Real need for control.** Do you need network policies between services, specific topologies,
+   stateful workloads or particular hardware? If the answer is "maybe", not yet.
+3. **Team capacity.** Someone has to be on call for the cluster, know its upgrades and have time for
+   them. If nobody has that time, the cluster degrades.
+4. **Portability versus dependency.** Kubernetes offers a common API across providers, but the
+   surrounding pieces (load balancers, storage, identity) belong to each cloud. Read
+   [locked in to a provider](/docs/casado-a-un-proveedor#portability-layer-by-layer) before assuming
+   it is portable.
+5. **Cost of complexity.** Measure the engineering time you spend on the cluster against the time
+   you would spend on the product. That number, not the machine bill, is the main cost.
+
+## Signs it is premature
+
+- One team deploys an application with two or three services.
+- Nobody can explain what happens when a pod does not start.
+- The main motivation is "because it is the standard", with no concrete scaling, isolation or
+  deployment problem.
+- You spend more time on the platform than on the product for a whole quarter.
+
+## Signs it is no longer enough
+
+- Several teams need to deploy independently on the same infrastructure.
+- Workloads scale at very different rates and manual or per-machine scaling no longer keeps up.
+- You need network or identity policies between services that the current platform does not offer.
+- The cost of maintaining custom deployment processes exceeds the cost of adopting a standard.
+
+When several of these signs appear together, the natural next step is an
+[internal platform](/docs/plataforma-interna-idp), not just more YAML.
+
+## A worked example
+
+A shop with three services (catalogue, orders and payments), a team of six and peaks on specific
+dates. With serverless containers or a PaaS, each service is deployed with its configuration and the
+peaks scale on their own. The team spends its time on the product. Kubernetes would add a cluster to
+operate, upgrade and monitor, without a problem it solves better than those options. The decision
+changes if the shop grows to twenty services with their own teams and needs network isolation
+between domains: then the cluster pays for its cost.
+
+A declarative deployment in Kubernetes describes the desired state, not the steps to reach it:
+
+```yaml
+# Shape of a deployment: you declare how many replicas you want and the control loop keeps them running
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: orders }
+  template: # …image, ports, health probes and container resources
+```
+
+## Common mistakes
+
+- **Adopting it because it is fashionable.** The standard is not a requirement. Start from the
+  problem you want to solve and check whether the cluster is the cheapest way to solve it.
+- **Underestimating upgrades.** Without a version calendar and a test plan, the cluster ends up
+  out of support.
+- **Building a platform without an owner.** A cluster with no accountable team degrades quietly.
+- **Leaving security at the defaults.** Broad permissions and poorly managed secrets are the
+  failures that repeat most.
+- **Confusing portability with independence.** The API is common; the pieces around it are not.
+
+## Checklist
+
+- [ ] You have a concrete scaling, isolation or deployment problem that the cluster solves.
+- [ ] You have compared with serverless containers, PaaS and managed Kubernetes.
+- [ ] A team has the time and responsibility to operate the cluster.
+- [ ] You know the end-of-support date of the version you run and have an upgrade plan.
+- [ ] You know which observability and secrets stack you will use before deploying to production.
+- [ ] You have measured the engineering cost, not only the machine bill.
+- [ ] You periodically review deprecated APIs in your manifests.
+
+## Sources
+
+Consulted on 15 October 2026.
+
+- [Kubernetes: Releases (supported versions and end-of-life dates)](https://kubernetes.io/releases/)
+- [Kubernetes: Overview (what it is and what it is not)](https://kubernetes.io/docs/concepts/overview/)
+- [Kubernetes: Version Skew Policy](https://kubernetes.io/releases/version-skew-policy/)
+- [Kubernetes: API deprecation policy](https://kubernetes.io/docs/reference/using-api/deprecation-policy/)
+- [AWS: Amazon EKS, what it is](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html)
+- [Microsoft Learn: Azure Kubernetes Service (AKS), what it is](https://learn.microsoft.com/en-us/azure/aks/what-is-aks)
+- [Google Cloud: GKE and Cloud Run, how to choose](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/gke-and-cloud-run)

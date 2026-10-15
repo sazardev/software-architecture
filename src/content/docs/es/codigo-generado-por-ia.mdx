@@ -1,0 +1,262 @@
+---
+title: 'Código generado por IA: revisión, propiedad y deuda'
+description: 'Cuando un modelo escribe el código, cambian la revisión, la propiedad y la deuda: qué medir, quién responde por un cambio y cómo dejar criterio.'
+category: practicas
+tags:
+  - codigo-generado-ia
+  - revision-de-codigo
+  - deuda-tecnica
+  - propiedad-del-codigo
+  - pull-requests
+order: 12
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Lo generado cruza la revisión o se acumula como deuda'
+---
+
+# Código generado por IA: revisión, propiedad y deuda
+
+Generar código ya no es el cuello de botella. Un modelo escribe una función, un módulo o un
+PR entero en minutos. Lo caro sigue siendo lo mismo de siempre: **revisar** que el cambio hace
+lo que debe, **entenderlo** lo bastante para mantenerlo y **decidir** quién responde si falla.
+Cuando el volumen de cambios sube y la capacidad de revisión no, el código sale a producción
+sin que nadie lo haya leído con atención. Eso es deuda, aunque el pipeline esté en verde.
+
+Este artículo trata de esas tres palancas: la revisión, la propiedad y la deuda. No propone
+una herramienta concreta. Recoge qué dicen los datos disponibles (con sus límites), qué
+criterio conviene adoptar y qué señales permiten saber si el equipo lo está cumpliendo. Para la
+parte de legibilidad del código en sí, mira [clean code para arquitectos](/docs/clean-code); para
+el arnés que controla al agente, [harness engineering con Claude Code](/docs/harness-engineering-claude-code).
+
+<Callout tone="info" title="Fecha de corte">
+  Las cifras son de octubre de 2026 y proceden de estudios con metodología distinta. Ninguna mide tu
+  equipo. Úsalas para formular hipótesis, no como objetivos.
+</Callout>
+
+## Cuando el volumen supera la revisión
+
+Revisar es un trabajo humano con capacidad limitada. La guía de revisión de código de Google
+(_eng-practices_) lo dice sin rodeos: «100 líneas suele ser un tamaño razonable para un CL, y
+1000 suele ser demasiado». Un CL es su unidad de cambio, equivalente a un PR. La misma guía
+recomienda escribir cambios «más pequeños de lo que crees que necesitas», porque se revisan más
+rápido, con más atención y son más fáciles de revertir.
+
+El estudio de Cisco de 2006, publicado por SmartBear, encontró que la densidad de defectos detectados
+cae al revisar más de unas 200 líneas de una vez, y su guía recomienda no pasar de 200 a 400. Es una
+referencia antigua y el umbral es una recomendación, no una medición exacta, pero la intuición se sostiene: **un PR de 1.500 líneas
+generadas en diez minutos no se revisa en cuarenta**. Se aprueba por cansancio o por confianza
+en el modelo, y ambas cosas son fallos de proceso, no de personas.
+
+## Qué dicen los datos (y qué no)
+
+Estas son las fuentes que conviene tener a mano. Cada una mide algo distinto y ninguna prueba
+que la IA «escriba peor código» en general.
+
+| Fuente               | Hallazgo verificado                                                                                                                                                                                      | Límite                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| METR (julio de 2025) | 16 desarrolladores experimentados, 246 tareas reales: con IA tardaron un 19% más. Antes creían ir un 24% más rápidos; después, un 20% más rápidos.                                                       | Muestra pequeña, herramientas de principios de 2025 y un tipo de tarea concreto.                       |
+| GitClear (2025)      | En 211 millones de líneas cambiadas (2020-2024), el código copiado o clonado pasó del 8,3% al 12,3%. Las líneas cambiadas asociadas a refactorización bajaron de un 25% (2021) a menos de un 10% (2024). | Proveedor de analítica de desarrollo; la página no define _churn_, clonado ni refactorización.         |
+| Veracode (2025)      | Según su resumen público, el código generado por IA introdujo fallos de seguridad de riesgo en el 45% de las pruebas, con más de 100 modelos en Java, JavaScript, Python y C#.                           | Resumen del proveedor; el informe completo no se pudo consultar y el resumen no define el denominador. |
+| Google DORA (2025)   | Un 90% de los encuestados usa IA (76% en 2024). La IA ya no frena el ritmo de entrega, pero sigue afectando a la estabilidad y amplifica los problemas que ya tiene cada organización.                   | Encuesta de autoinforme; la fuerza del efecto depende de la madurez del equipo.                        |
+
+Lo que sí se puede afirmar con razonable seguridad: el código generado tiende a **duplicarse**
+más, se revisa peor cuando llega en bloques grandes y, si nadie lo gobierna, acumula riesgo de
+seguridad. Lo que **no** se puede afirmar es que cualquier PR generado sea peor que uno escrito
+a mano. Ese matiz separa un dato de una opinión.
+
+_Criterio del autor:_ la mayor parte del daño no viene del modelo, sino de un proceso que trata
+el volumen de código como si fuera progreso.
+
+## Propiedad: quién responde por un cambio generado
+
+La pregunta de propiedad es sencilla de formular y difícil de aplicar: **cuando un cambio
+generado falla en producción, ¿quién responde?** La respuesta debe ser una persona concreta, y
+es el humano que abre o aprueba el PR, no la herramienta. Un agente no firma, no asume un
+incidente y no aprende de un postmortem en sentido organizativo.
+
+Tres reglas que hacen operativa esa idea:
+
+- **El autor humano entiende lo que sube.** Si no puede explicar qué cambia, por qué y cómo se
+  verificó, no debe abrir el PR. Pedir a la herramienta que lo explique en la descripción es
+  una comprobación válida: si la explicación no encaja con el diff, el problema está en el
+  diff.
+- **El aprobador revisa el cambio, no la descripción.** Una prosa convincente no sustituye a
+  leer el código. Los revisores deben poder decir qué comportamiento han comprobado, no solo
+  que el texto parece correcto.
+- **La trazabilidad apunta a personas.** Los trailers de coautoría que indican que un modelo
+  ayudó son útiles para auditar, pero no trasladan responsabilidad. El historial debe seguir
+  atribuyendo cada decisión a quien la tomó.
+
+El riesgo de fondo es la **deuda de conocimiento**: código que funciona, pasa los tests y nadie
+del equipo sabría modificar sin volver a generarlo. Esa deuda no aparece en ningún linter y se
+paga en el peor momento, cuando hay un incidente y nadie entiende el módulo.
+
+## Tests y contratos como criterio de aceptación
+
+Si la revisión humana no escala, el criterio de aceptación tiene que ser **automático y
+explícito**. Un cambio generado se acepta porque cumple un contrato verificable, no porque
+parezca razonable.
+
+- **Tests escritos antes o junto con el cambio.** Si el modelo escribe la implementación y sus
+  propios tests, los tests suelen repetir la implementación y no protegen nada. Conviene que
+  el autor humano defina los casos de borde y los comportamientos esperados.
+- **Contratos de API y de datos.** Los tipos, los esquemas y los tests de contrato fijan lo que
+  otros equipos dependen de que siga siendo cierto. Son el sensor más barato contra cambios que
+  rompen consumidores. La [estrategia de pruebas con contratos](/docs/estrategia-de-pruebas-contratos)
+  desarrolla esa idea.
+- **Pruebas que fallen si el cambio viola una regla de arquitectura.** Una regla de capas o de
+  dependencias que rompe el CI convierte una convención en algo que no depende de la memoria de
+  nadie. Es lo que tratan las [fitness functions](/docs/fitness-functions) y su versión en el
+  pipeline, [tu arquitectura debería fallar en el CI](/docs/fitness-en-el-ci).
+
+## Tamaño del PR: la unidad de revisión
+
+El tamaño no es un detalle de higiene; es el parámetro que decide cuánta revisión real recibe
+un cambio. Con código generado, la tentación es el PR gigante: el agente terminó la tarea y se
+sube todo junto. La alternativa es trocear el trabajo antes de generarlo:
+
+1. Define el resultado en pasos que se puedan revertir por separado.
+2. Genera y revisa cada paso, con sus tests, antes de pedir el siguiente.
+3. Separa en PR distintos los cambios de comportamiento y los de estructura (renombrados,
+   movimiento de archivos, formato).
+
+Ningún número universal sustituye al criterio. Como referencia de partida, un rango entre las
+100 líneas de la guía de Google y las 200 a 400 de la guía de SmartBear es un punto razonable. Si un PR supera ese tamaño, la
+pregunta correcta no es «¿lo aprobamos?», sino «¿por qué no está partido?».
+
+## Señales medibles
+
+Medir el código generado sin caer en métricas de vanidad (líneas escritas, PR abiertos) exige
+elegir pocas señales y seguir su tendencia por equipo. Estas son las que conviene vigilar:
+
+| Señal                              | Qué indica                                            | Cómo obtenerla                                                       |
+| ---------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------- |
+| Tasa de reversión o parche urgente | Cambios que hubo que deshacer o corregir poco después | Historial de Git: reversiones y correcciones en menos de dos semanas |
+| Defectos por cambio                | Si el volumen sube sin que suba la calidad            | Incidencias enlazadas a los PR que las originaron                    |
+| Tamaño mediano de PR               | Si el trabajo se trocea o se acumula                  | Herramienta de PR o script sobre el historial                        |
+| Tiempo de revisión por PR          | Si el revisor dedica atención real o solo sella       | Tiempo entre apertura y primera revisión sustantiva                  |
+| Clones y duplicación               | Si el modelo reescribe en lugar de reutilizar         | Detector de duplicados en el CI, con tendencia                       |
+
+_Criterio del autor:_ la señal más útil suele ser la combinación de las dos primeras. Si el
+volumen de cambios sube y la tasa de reversión también, el proceso de revisión no está
+funcionando, sin importar lo que diga cada PR.
+
+La deuda que estas métricas revelan se trata con la misma disciplina que cualquier otra. Mira
+[deuda técnica y evolución arquitectónica](/docs/deuda-tecnica-evolucion) para su medición y
+priorización.
+
+## Duplicación y abstracciones prematuras
+
+El modelo tiende a resolver cada tarea en su contexto inmediato. Si una utilidad existe en otro
+módulo, a menudo la reescribe en lugar de importarla. El resultado es la duplicación que
+muestran los datos de GitClear. El error opuesto también aparece: el modelo introduce una capa
+de interfaces y fábricas que el problema no pedía.
+
+Dos hábitos ayudan:
+
+- **Buscar antes de generar.** Pedir al agente que localice implementaciones existentes y las
+  reutilice es más barato que deshacer una duplicación después. Un documento de convenciones
+  en el repositorio, leído en cada sesión, reduce este problema.
+- **Esperar a la tercera aparición.** Una abstracción debe nacer de casos repetidos, no de una
+  previsión del modelo. Duplicar dos veces es aceptable; abstraer sin datos suele dejar código
+  más difícil de cambiar. El [catálogo de olores de código](/docs/clean-code#duplicación-y-abstracción-prematura)
+  de clean code sirve para revisar ambos extremos.
+
+## Dejar criterio escrito: ADR y convenciones
+
+Un revisor humano aprende del equipo; un agente, solo de lo que se le da en contexto. Si el
+criterio de un cambio vive solo en la cabeza de quien revisó, el siguiente cambio generado lo
+volverá a violar. Hay dos lugares donde dejarlo:
+
+- **Decisiones con su porqué.** Un [ADR](/docs/adr) registra el contexto, la decisión y sus
+  consecuencias. Un ADR bien escrito explica por qué se eligió una forma de hacer las cosas y
+  evita que un agente la «mejore» sin saberlo. El formato original de Michael Nygard, de 2011,
+  sigue siendo un punto de partida válido: título, contexto, decisión, estado y consecuencias.
+- **Convenciones que el agente lee.** `AGENTS.md`, que su proyecto describe como «un formato abierto y sencillo» para guiar agentes de programación (sin especificación formal publicada),
+  y `CLAUDE.md` en Claude Code cumplen esa función. El
+  [harness de Claude Code](/docs/harness-engineering-claude-code) explica cómo se cargan y qué
+  diferencia hay entre una sugerencia y algo que se impone de forma determinista.
+
+Una plantilla mínima para una decisión que afecta a cambios generados puede ser tan corta como
+esta:
+
+```markdown
+# ADR-0051: Los cambios generados pasan la misma revisión que los manuales
+
+## Contexto
+
+...
+
+## Decisión
+
+...
+
+## Consecuencias
+
+...
+```
+
+Lo importante es que la decisión sobreviva al PR que la motivó. Si cada revisión repite la
+misma objeción, falta un ADR o una regla en el documento de convenciones.
+
+## Cuándo sí y cuándo no aceptar código generado
+
+Generar código es razonable en muchos casos. El criterio es el riesgo y la capacidad de
+comprobarlo, no el origen del texto.
+
+**Sí, con revisión normal:**
+
+- Código repetitivo que sigue un patrón ya existente en el repositorio (adaptadores, DTOs,
+  tests de regresión que el autor puede explicar).
+- Migraciones mecánicas (renombrados, cambios de API) cubiertas por tests de contrato.
+- Prototipos desechables con fecha de caducidad escrita, que nunca llegan a la rama principal.
+
+**No, o solo con un autor que entienda cada línea:**
+
+- Lógica de dominio crítica (pagos, permisos, cálculos regulados) que nadie del equipo puede
+  explicar sin releerla.
+- Seguridad y autenticación: los datos de Veracode justifican una revisión específica.
+- Cambios transversales grandes sin plan de troceado ni tests que los protejan.
+- Código sin contratos ni tests, donde la única comprobación es que compila.
+
+## Errores frecuentes
+
+- **Aprobar por tamaño o por cansancio.** Un PR enorme con tests en verde no es una señal de
+  calidad; es una señal de que la revisión no ha sido posible.
+- **Revisar la prosa y no el diff.** La descripción generada puede describir un cambio distinto
+  del que se sube.
+- **Tratar la herramienta como responsable.** Cuando «lo hizo la IA» aparece en un postmortem
+  como causa, el proceso ha fallado: alguien aprobó el cambio.
+- **Medir productividad en líneas.** Más código generado no es más valor entregado. Mide
+  reversiones, incidentes y tiempo de revisión.
+- **Abstraer antes de tiempo.** Una capa creada por el modelo para un caso sin repetición
+  añade coste de mantenimiento sin beneficio.
+- **Dejar el criterio en un chat.** Si la decisión no está en un ADR o en las convenciones,
+  volverá a discutirse en el siguiente PR.
+
+## Checklist
+
+- [ ] El autor humano puede explicar qué cambia, por qué y cómo se verificó.
+- [ ] El PR tiene un tamaño revisable; si no, está partido en pasos revertibles.
+- [ ] Hay tests o contratos que definen el comportamiento esperado, escritos o validados por una persona.
+- [ ] El revisor ha comprobado el diff, no solo la descripción.
+- [ ] Se ha buscado código existente antes de duplicar o crear una abstracción nueva.
+- [ ] Las reglas de arquitectura relevantes se comprueban en el CI.
+- [ ] Las decisiones con porqué están en un ADR o en las convenciones del repositorio.
+- [ ] Las señales de reversión, defectos y duplicación se revisan por tendencia.
+
+## Fuentes
+
+- Google, [guía de revisión de código: CLs pequeños](https://google.github.io/eng-practices/review/developer/small-cls.html) (_eng-practices_).
+- SmartBear, [buenas prácticas de revisión de código](https://smartbear.com/learn/code-review/best-practices-for-peer-code-review/), que resume el estudio sobre Cisco; [artículo sobre el estudio de 2006 (republicado en CM Crossroads)](https://cmcrossroads.com/article/largest-case-study-code-reviews-ever).
+- METR, [medición del impacto de la IA de principios de 2025 en la productividad de desarrolladores de código abierto](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) (julio de 2025).
+- GitClear, [investigación 2025 sobre calidad del código con IA](https://www.gitclear.com/ai_assistant_code_quality_2025_research).
+- Veracode, [informe de seguridad del código generado con IA 2025](https://www.veracode.com/press-release/ai-generated-code-poses-major-security-risks-in-nearly-half-of-all-development-tasks-veracode-research-reveals/) (2025).
+- AGENTS.md, [proyecto y descripción del formato](https://github.com/agentsmd/agents.md).
+- Google Cloud, [informe DORA 2025](https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report).
+- Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) (2011).
+- Anthropic, [documentación de memoria de Claude Code (CLAUDE.md)](https://code.claude.com/docs/en/memory).

@@ -1,0 +1,241 @@
+---
+title: 'Software supply chain: SBOM, signatures and SLSA'
+description: "Architect's guide: which inventory, signatures and provenance to require, how to pin dependencies and which SLSA level to target, as of October 2026."
+category: practicas
+tags:
+  - sbom
+  - cadena-de-suministro
+  - slsa
+  - dependencias
+  - firmas
+order: 15
+roadmap:
+  id: entrega
+  stage: seguridad
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Each link signs what it produces; everything is checked before deploy'
+---
+
+# Software supply chain: SBOM, signatures and SLSA
+
+The software you deploy was not written by your team alone. It is made of your own code, of direct
+and transitive dependencies, of build tools (the CI, the actions, the compiler plugins) and of
+artifacts that other people publish. Each of those links can be the door an attacker uses, and
+reviewing your own code covers none of them.
+
+OWASP Top 10 2025 ranks «Software Supply Chain Failures» (A03) in third place. OWASP describes
+it as a risk that, since 2013, has grown to cover every supply chain failure, not only components with
+known vulnerabilities. The
+[secure-by-design article](/docs/seguridad-por-diseno#the-supply-chain) already gives the
+general map. Here we go into operations: which inventory to keep, how to pin and review
+dependencies, what each signature proves, which SLSA level to aim for and what to do when a
+vulnerability advisory arrives.
+
+## Five links, five surfaces
+
+| Link         | What can fail                                           | Main control                         |
+| ------------ | ------------------------------------------------------- | ------------------------------------ |
+| Own code     | Unreviewed or malicious change, leaked secrets          | Mandatory review, protected branches |
+| Dependencies | Compromised version, abandoned package, look-alike name | Lockfile, reviewed updates           |
+| Build        | Altered tools, environment polluted by an earlier run   | Ephemeral, reproducible builds       |
+| Artifact     | Binary or image changed between build and deployment    | Signature and provenance             |
+| Deployment   | Something nobody verified goes to production            | Check before deploying               |
+
+## SBOM: an inventory, not a guarantee
+
+An SBOM (_Software Bill of Materials_) is a structured list of the components that make up an
+artifact, with their versions and relationships. It answers an operational question: when a
+vulnerability appears in a library, which products carry it, at which version and since when?
+
+Two formats have standards behind them. SPDX is, according to its official site, an open
+specification that corresponds to the ISO/IEC 5962:2021 standard. CycloneDX 1.7 was published on 21
+October 2025, and its version 1.6 was ratified as ECMA-424 in June 2024. Either format works. What
+matters is that your tooling generates it and your scanner consumes it.
+
+In the US, CISA published on 22 August 2025 a draft of the minimum elements for an SBOM, with public
+comments open until 3 October 2025. Before making it a requirement, check the current document: we
+have not confirmed its final status or its fields.
+
+An SBOM does not guarantee that its components can be trusted. A perfect inventory of a malicious
+package is still an inventory of malicious code. Nor does it tell you whether that code runs:
+reachability analysis, covered in the vulnerability section, answers that.
+
+**Author's view:** generate the SBOM in CI from the artifact you deploy, not by hand and not from the
+manifest. The manifest declares intent; the artifact shows what actually went in.
+
+## Dependencies: pin, review, distrust
+
+**Pinning.** The manifest declares ranges (`^2.3.0`); the lockfile records the version that was
+installed. Version the lockfile and install in CI from it, without resolving again. A lockfile does
+not protect you from a compromised version you already pinned, but it stops anything from changing
+without someone deciding it.
+
+**Cooldown window.** A freshly published version can be compromised and pulled afterwards, so waiting before
+adopting it reduces exposure. pnpm has the `minimumReleaseAge` option, in minutes, which also applies
+to transitive dependencies. Its default is 1440 minutes since pnpm 11 and was 0 before, so set it
+explicitly:
+
+```yaml
+# pnpm-workspace.yaml
+minimumReleaseAge: 1440 # minutes: ignore versions published in the last 24 h
+```
+
+**Operational lesson.** An install script is code that runs with your permissions, and a legitimate
+package can turn malicious through a single compromised account. So review what each new dependency
+runs, and disable install scripts when your package manager allows it.
+
+Two other common threats are typosquatting (a name almost identical to a popular one) and abandoned
+packages that nobody patches. OWASP recommends watching unmaintained components and, when they cannot
+be patched, migrating them.
+
+**Author's view:** every new dependency is a decision. Check who maintains it, which scripts it runs
+on install (disable them in your package manager when you can) and that the name is exactly the one
+you meant.
+
+**Updates.** Bots that open update pull requests are useful, but a PR is not a review. Group updates
+by type, read the changelog of major versions and roll out gradually. OWASP recommends staged rollouts
+or canaries rather than updating everything at once.
+
+## Reproducible and ephemeral builds
+
+According to reproducible-builds.org, a build is reproducible when, given the same source code, build
+environment and build instructions, any party can recreate bit-for-bit identical copies of the
+artifacts. If you can rebuild the binary, you can check that the published one matches the reviewed
+code.
+
+Full reproducibility is costly, but two properties are worth requiring early:
+
+- **Ephemeral.** Each run starts in a fresh environment with no state from earlier runs. A shared
+  runner that keeps caches or tools from other jobs is an attack vector.
+- **Least privilege.** Permissions are declared per job, and the publishing token exists only where
+  publishing happens:
+
+```yaml
+jobs:
+  publish:
+    permissions:
+      contents: read
+      id-token: write # only this job requests an OIDC identity to publish
+```
+
+And **promote, do not rebuild**. OWASP recommends promoting artifacts instead of recompiling them per
+environment. A single signed build travels from tests to production: the staging binary must be the
+production binary.
+
+## Signatures and provenance: what each one proves
+
+A signature answers who signed and whether the artifact changed afterwards. It does not say whether
+the signer could be trusted. Sigstore lets you sign with short-lived certificates bound to an identity, without managing
+long-lived keys: Cosign signs, Fulcio issues that certificate and Rekor records each signing event in
+a public transparency log.
+
+Provenance (an _attestation_) is a signed statement about how an artifact was built: from which
+repository, with which workflow, at which commit. The usual format is in-toto, which wraps a typed
+«predicate» in a «Statement»; SLSA's provenance predicate describes the build.
+
+In npm, _trusted publishing_ (OIDC) has been generally available since July 31, 2025 and requires npm
+CLI 11.5.1 or later. With GitHub Actions or GitLab CI/CD it generates provenance automatically when
+the repository and the package are public. It does not support self-hosted runners yet, and each
+package can have up to 10 trusted publishers.
+
+| Proof      | Answers                                        | Does not answer                               |
+| ---------- | ---------------------------------------------- | --------------------------------------------- |
+| Signature  | Who signed it? Did it change afterwards?       | Can the signer be trusted? Was the code good? |
+| Provenance | Where, how and from which commit was it built? | Were the dependencies safe?                   |
+| SBOM       | Which components does it contain?              | Is any of them malicious?                     |
+
+The usual trap is the first row: a valid signature is not enough if verification accepts any identity.
+At deployment you must require a specific repository, workflow and issuer. Here the build's identity
+replaces a static key, the same idea behind
+[secrets and key management](/docs/gestion-secretos-claves). And like any architecture rule, it must fail the CI when it is not met, as in [architecture fitness checks in CI](/docs/fitness-en-el-ci).
+
+## SLSA: levels and how to choose one
+
+SLSA (_Supply-chain Levels for Software Artifacts_) is a maturity framework. Its build track, in
+version 1.2 of the specification, defines:
+
+- **L0**: no guarantees.
+- **L1**: provenance exists. It helps prevent release mistakes, but it is trivial to bypass or forge.
+- **L2**: the build runs on a hosted platform that generates and signs the provenance. It protects
+  against tampering after the build.
+- **L3**: hardened builds. Runs cannot influence each other, even within the same project, and the
+  signing secret is out of reach of user-defined build steps. It protects against tampering during
+  the build.
+
+Version 1.2 also describes a source track, about change control in the code; we do not develop it
+here.
+
+**Author's view, without bureaucracy:** set a target per artifact type, not one level for the whole
+organization. For most services, L2 with verification at deployment is a reasonable goal. For
+artifacts you distribute to third parties (libraries, base images, client binaries) or that touch
+credentials, aim at L3. And start by measuring: is provenance generated? Is it verified before
+deploying? Is the build platform isolated? Each yes moves you up a step. What helps nobody is a
+paper L3 that no one verifies.
+
+## When a dependency has a vulnerability
+
+An advisory is not a patch order. Before acting, answer four questions:
+
+1. **Are we on the affected version, and is it in production?** With the SBOM and the lockfile the
+   answer takes minutes.
+2. **Is the vulnerable code reachable?** govulncheck, for Go, analyzes the call graph and reports only
+   the vulnerable functions your code calls, directly or transitively. It is far less noisy than
+   flagging any affected version. Other ecosystems offer more limited analysis, so check what your
+   tool does before trusting a «not affected».
+3. **What does the VEX say?** A VEX document states the status of a vulnerability for a product:
+   `not_affected`, `affected`, `fixed` or `under_investigation`. A `not_affected` needs a justification
+   (for example, `vulnerable_code_not_in_execute_path`), according to the OpenVEX specification v0.2.0.
+   Without that justification, the scanner becomes a list of false positives with no owner.
+4. **Do we patch or grant an exception?** An exception without an expiry date and an owner becomes
+   permanent debt.
+
+## When yes and when not
+
+The full package is worth it if you publish artifacts that others consume, if you deploy automatically
+to production, or if compromising one dependency would hit customers.
+
+You do not need it on day one for an internal prototype without data or a single-developer project
+with no deployment: a versioned lockfile and a generated SBOM are enough there. And do not start with
+L3. Lockfile, ephemeral builds and minimal permissions cover most real incidents before signed
+provenance adds anything.
+
+## Common mistakes
+
+- Confusing a signature with trust: verifying without restricting repository, workflow or issuer.
+- Generating the SBOM from the manifest instead of the deployed artifact.
+- Bulk updates with no review of what changed.
+- Vulnerability exceptions with no expiry date.
+- Long-lived publishing tokens in CI when OIDC is available.
+- Rebuilding the artifact in each environment: what you test is not what you deploy.
+
+## Checklist
+
+- [ ] Versioned lockfile; CI installs from it.
+- [ ] SBOM generated in CI, from the deployed artifact, in a standard format.
+- [ ] Cooldown window for newly published dependency versions.
+- [ ] New dependencies reviewed: maintenance, install scripts, exact name.
+- [ ] Ephemeral builds, minimal permissions per job and OIDC instead of static tokens.
+- [ ] Signed artifact with provenance, promoted without rebuilding.
+- [ ] Pre-deployment verification that restricts repository, workflow and issuer.
+- [ ] SLSA target per artifact type, with a measurement.
+- [ ] Vulnerabilities handled with reachability, VEX and exceptions that expire.
+
+## Sources
+
+- OWASP, [Top 10 2025](https://top10.owasp.org/2025)
+- OWASP, [A03:2025 Software Supply Chain Failures](https://top10.owasp.org/2025/A03_2025-Software_Supply_Chain_Failures)
+- CISA, [2025 Minimum Elements for a Software Bill of Materials (draft)](https://www.cisa.gov/resources-tools/resources/2025-minimum-elements-software-bill-materials-sbom)
+- SLSA, [Build track basics (v1.2)](https://slsa.dev/spec/v1.2/build-track-basics)
+- npm, [Trusted publishers](https://docs.npmjs.com/trusted-publishers)
+- GitHub Changelog, [npm trusted publishing with OIDC is generally available (July 31, 2025)](https://github.blog/changelog/2025-07-31-npm-trusted-publishing-with-oidc-is-generally-available/)
+- pnpm, [Dependency resolution (minimumReleaseAge)](https://pnpm.io/settings/dependency-resolution)
+- Go, [Managing Go vulnerabilities (govulncheck)](https://go.dev/doc/security/vuln/)
+- Reproducible Builds, [Definition of a reproducible build](https://reproducible-builds.org/docs/definition/)
+- CycloneDX, [CycloneDX 1.7 release announcement](https://cyclonedx.org/news/cyclonedx-v1.7-released/)
+- OpenVEX, [Specification v0.2.0](https://github.com/openvex/spec/blob/main/OPENVEX-SPEC.md)
+- SLSA, [Build requirements (v1.2)](https://slsa.dev/spec/v1.2/build-requirements)
+- SLSA, [in-toto and SLSA](https://slsa.dev/blog/2023/05/in-toto-and-slsa)
+- Sigstore, [Documentation](https://docs.sigstore.dev/)
+- SPDX, [Official site](https://spdx.dev/)

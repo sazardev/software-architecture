@@ -1,0 +1,288 @@
+---
+title: 'Evaluar agentes: trayectorias, regresiones y jueces'
+description: 'Cómo evaluar un agente que actúa: trayectorias frente a resultado final, tareas con criterios verificables, jueces basados en modelos, varianza y evals en CI.'
+category: practicas
+tags:
+  - agentes
+  - evaluacion
+  - llm-as-judge
+  - regresiones
+  - trayectorias
+order: 10
+roadmap:
+  id: ia
+  stage: gobierno
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Una trayectoria atraviesa una compuerta y un juez puntúa la traza completa'
+---
+
+# Evaluar agentes: trayectorias, regresiones y jueces
+
+Evaluar una respuesta es comparar un texto con una referencia. Evaluar un agente es otra cosa:
+hay que juzgar **qué hizo** para llegar a la respuesta, con qué herramientas, en cuántos pasos y
+en qué estado dejó el sistema. Dos ejecuciones pueden terminar con el mismo texto y una de ellas
+haber borrado datos por el camino. Si solo miras la salida final, no ves ese problema.
+
+Este artículo trata de cómo diseñar las evaluaciones de un agente: qué registrar, cómo puntuar,
+cuándo usar otro modelo como juez y cómo convertir las evals en una puerta de calidad que frene
+las regresiones. Va después de la visión general de [aplicaciones con LLM y agentes](/docs/arquitectura-agentes-llm#evaluaciones-evals)
+y del gobierno de la [autonomía](/docs/controlar-la-ia-gobierno-y-autonomia#evaluación-continua),
+y se centra en la parte de medición.
+
+## Por qué no basta con evaluar la respuesta
+
+Un agente toma decisiones en bucle: elige una herramienta, lee el resultado, decide el siguiente
+paso y, a veces, pide ayuda. Cada paso puede ser razonable y el conjunto acabar mal, o al revés:
+un camino torpe que llega a un resultado correcto con un coste de tokens cinco veces mayor.
+
+Anthropic describe en su guía de evals para agentes una distinción útil entre la **transcripción**
+(la traza completa: mensajes, llamadas a herramientas, resultados intermedios) y el **resultado**
+(el estado final del entorno al terminar). En una reserva, por ejemplo, lo que importa es
+que la reserva exista en la base de datos, no que el agente diga «reservado». Un agente puede
+afirmar un éxito que no ocurrió, y solo el estado del sistema lo revela.
+
+La consecuencia de diseño es que una eval de agente tiene al menos dos capas: una comprueba el
+**resultado** (¿el estado final es el correcto?) y otra, la **trayectoria**, detecta cómo se llegó
+(¿hubo acciones prohibidas, pasos innecesarios, reintentos en bucle?).
+
+## Vocabulario mínimo
+
+Antes de montar nada conviene fijar cuatro términos, porque se confunden con frecuencia:
+
+| Término             | Qué es                                                    | Ejemplo                                                            |
+| ------------------- | --------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Tarea**           | Un caso de prueba con entradas y criterios de éxito       | «Cancela el pedido 4471 y reembolsa el importe»                    |
+| **Intento**         | Una ejecución de la tarea (un _trial_)                    | La ejecución número 3 de esa misma tarea                           |
+| **Calificador**     | Lógica que puntúa un aspecto del intento (un _grader_)    | Comprobar que existe el reembolso; puntuar el tono de la respuesta |
+| **Harness de eval** | La infraestructura que ejecuta, registra, puntúa y agrega | El script que lanza las tareas en sandbox y guarda las trazas      |
+
+Una tarea puede tener varios calificadores, y cada uno con varias comprobaciones. Evaluar un
+agente incluye evaluar el **harness del agente** (el andamiaje que le permite actuar: prompts,
+herramientas, memoria) junto con el modelo. Si cambias una herramienta y el resultado empeora, el
+culpable puede ser el andamiaje y no el modelo.
+
+## Tipos de calificador
+
+Hay tres familias, con costes y garantías distintas:
+
+- **Basados en código:** comparaciones exactas, validación de esquemas, consultas al estado final,
+  análisis estático. Son rápidos, baratos, reproducibles y objetivos, pero frágiles ante variaciones
+  válidas: una respuesta correcta redactada de otro modo puede fallar.
+- **Basados en modelos:** un LLM aplica una rúbrica o compara dos salidas. Captan matices, escalan
+  bien y son no deterministas; necesitan calibración con personas.
+- **Humanos:** fijan el criterio de referencia. Son caros y lentos, así que se usan para calibrar
+  los otros dos y para muestras periódicas, no para cada ejecución.
+
+La regla práctica es empezar por lo que se puede comprobar con código y dejar el juicio de modelo
+para lo que no tiene una comprobación sencilla. Un resultado en base de datos se comprueba con una
+consulta; la calidad de una explicación, no.
+
+## Trayectoria frente a resultado final
+
+Es tentador exigir que el agente siga exactamente la secuencia de pasos esperada. Casi siempre es
+un error: hay muchos caminos válidos y una comprobación estricta de secuencia rompe cuando el
+agente encuentra una vía mejor. Anthropic recomienda calificar el resultado en lugar del camino
+exacto, y reservar la inspección de la trayectoria para propiedades que sí importan:
+
+- **Restricciones duras:** nunca llamar a una herramienta de borrado sin confirmación; nunca
+  consultar datos de otro cliente. Son fallos aunque el resultado sea correcto.
+- **Eficiencia:** número de llamadas, tokens y tiempo por tarea, comparados con una línea base.
+- **Bucles y estancamiento:** la misma herramienta con los mismos argumentos repetida, o un agente
+  que da por terminado el trabajo antes de tiempo.
+
+Leer trazas no es opcional. Revisar transcripciones con regularidad es la forma de comprobar que
+los calificadores miden lo que crees que miden: muchas «regresiones» son tareas mal escritas o
+comprobaciones que fallan por una diferencia de formato.
+
+## Dataset de tareas con criterios verificables
+
+El conjunto de tareas es el activo más valioso de la evaluación. Una tarea buena tiene entrada
+realista, criterio de éxito escrito antes de ejecutar nada y una forma de verificarlo. Un ejemplo
+de la forma (no de la implementación) de una tarea:
+
+```yaml
+task: reembolso-pedido-cancelado-07
+input: 'Cancela el pedido 4471 y reembolsa el importe completo.'
+graders:
+  - type: code # el estado final, comprobado en la base de datos
+    check: reembolso existe para pedido 4471
+  - type: model # tono y claridad de la respuesta, con rúbrica
+    rubric: rubrics/atencion-cliente.md
+trials: 5
+isolation: sandbox-limpio
+```
+
+Tres criterios para construir el conjunto:
+
+1. **Cubrir lo habitual, los casos límite y lo adversario.** Las tareas normales miden utilidad;
+   los casos límite (datos incompletos, ambigüedad) miden robustez; los intentos de inyección de
+   instrucciones miden seguridad.
+2. **Convertir cada incidente en una tarea fija.** Un fallo real que llega a producción se añade al
+   conjunto de regresiones y no se borra después.
+3. **Separar un conjunto de prueba.** Si ajustas prompts mirando siempre las mismas tareas, acabas
+   optimizando para ellas. Un conjunto reservado que no se usa para ajustar protege contra eso.
+
+Empezar pronto con una muestra pequeña de 20 a 50 tareas sencillas tomadas de fallos reales, como recomienda Anthropic, en lugar de esperar a un gran conjunto. Lo importante es que sea representativo y que se
+amplíe con los errores que aparezcan.
+
+## Métricas: tarea completada, coste, pasos y seguridad
+
+Un informe de evaluación de agente que solo muestra «tasa de acierto» oculta casi todo. Conviene
+reportar al menos cuatro familias:
+
+| Métrica                  | Pregunta que responde                               | Cómo se obtiene                          |
+| ------------------------ | --------------------------------------------------- | ---------------------------------------- |
+| **Tarea completada**     | ¿El estado final cumple el criterio?                | Calificadores de resultado               |
+| **Coste y latencia**     | ¿Cuánto cuesta y tarda cada tarea completada?       | Tokens, llamadas y tiempo por intento    |
+| **Pasos y herramientas** | ¿El camino fue razonable?                           | Trayectoria: número de pasos, reintentos |
+| **Seguridad**            | ¿Hubo acciones prohibidas o datos fuera de alcance? | Restricciones duras sobre la traza       |
+
+Dos cifras merecen atención propia. La **tasa de escalado** (cuántas tareas acaban en una persona)
+indica si el agente es útil o solo traslada el trabajo. Y el **coste por tarea completada**, no por
+intento, evita premiar a un agente barato que casi nunca termina. Un fallo de seguridad cuenta
+como fallo aunque la tarea salga bien: se trata como una puerta, no como un punto más.
+
+## Jueces basados en modelos: cuándo sirven
+
+Un LLM como juez es útil cuando el criterio es subjetivo o tiene muchas formas válidas: si una
+explicación es clara, si el tono es adecuado, si un resumen omite lo importante. No sirve para
+comprobar hechos que una consulta puede verificar; ahí el código siempre gana.
+
+Para que el juez sea fiable:
+
+- **Rúbrica explícita y concreta.** Anthropic observa que las rúbricas vagas producen juicios
+  inconsistentes. Una rúbrica útil describe cada nivel de la escala con ejemplos.
+- **Un criterio por juez.** Evalúa cada dimensión con su propia llamada en lugar de pedir una
+  puntuación global. Así los fallos se localizan y los sesgos se aíslan.
+- **Permitir «no lo sé».** Dar una salida explícita para la falta de información reduce las
+  respuestas inventadas del juez.
+- **Comparaciones por pares cuando sea posible.** Elegir entre dos salidas suele ser más estable
+  que asignar una nota absoluta.
+
+### Sesgos conocidos
+
+El artículo de Zheng et al. sobre MT-Bench examinó con GPT-4 como juez tres sesgos que conviene
+asumir desde el diseño:
+
+- **Sesgo de posición.** Al intercambiar el orden de las respuestas, GPT-4 dio resultados coherentes
+  en más del 60 % de los casos, y favoreció la primera posición en el 30 %. Mitigación habitual:
+  evaluar en los dos órdenes y contar como empate los veredictos que no coinciden.
+- **Sesgo de longitud.** Los jueces tienden a premiar respuestas más largas aunque sean menos
+  claras. Mitigación: instruir al juez para que no premie la extensión y limitar la longitud de la
+  salida cuando se compara.
+- **Autopreferencia.** El estudio reporta que GPT-4 y Claude-v1 obtenían una tasa de victoria propia
+  un 10 % y un 25 % superior, aunque sus autores no pueden concluir que exista este sesgo con los
+  datos disponibles. Como precaución, no usar el modelo evaluado como su propio juez.
+
+### Calibrar con anotación humana
+
+Un juez no es fiable por defecto. Hay que medir su acuerdo con personas. El procedimiento es
+sencillo: una muestra de salidas puntuadas por personas expertas, las mismas salidas puntuadas por
+el juez, y la tasa de coincidencia. En el mismo estudio de Zheng et al., el acuerdo entre GPT-4 y
+personas alcanzó el 85 % en la configuración sin empates, comparable al acuerdo entre personas.
+Ese dato no es un permiso: cada rúbrica y cada modelo de juez deben calibrarse en tu caso, y
+recalibrarse cuando cambien.
+
+Un juez que no coincide con las personas mide otra cosa. Esa desviación es, en sí, una señal de que
+la rúbrica está mal escrita o de que el juez no entiende el dominio.
+
+## No determinismo: repeticiones y varianza
+
+Un mismo agente, con la misma tarea, puede acertar en una ejecución y fallar en la siguiente. Por
+eso una eval de una sola ejecución no mide nada fiable. Hay que repetir cada tarea varias veces y
+medir la **varianza**. Dos métricas describen dos propiedades distintas:
+
+- **pass@k:** la probabilidad de conseguir al menos un éxito en k intentos. Sube con k. Sirve
+  cuando basta un resultado correcto, por ejemplo al generar candidatos que luego revisa una
+  persona.
+- **pass^k:** la probabilidad de acertar en los k intentos. Baja con k. Es la métrica para agentes
+  que actúan sin supervisión, donde la consistencia importa.
+
+Anthropic da un ejemplo: con un 75 % de éxito por intento en tres intentos, pass^3 cae a unos 42 %,
+mientras pass@k se acerca a 1 al aumentar k. Un agente que acierta tres de cuatro veces parece muy bueno con pass@k y es poco fiable
+con pass^k. El artículo de τ-bench (Yao et al., 2024) introdujo pass^k precisamente para agentes de
+atención al cliente, donde la consistencia es el requisito real, y reportó que los agentes de su
+evaluación, con GPT-4o, resolvían menos de la mitad de las tareas y eran inconsistentes al repetirlas.
+
+Una tarea que pasa en unas ejecuciones y falla en otras no es un «fallo aleatorio» que se ignora.
+Es una propiedad del sistema que hay que reportar, con su tasa por tarea, y que a veces indica una
+instrucción ambigua o una herramienta frágil.
+
+## Entornos de prueba aislados
+
+Cada intento debe empezar desde un entorno limpio. Si los archivos, las cachés o el estado de una
+base de datos sobreviven de una ejecución a otra, los fallos se correlacionan y parecen un problema
+del agente cuando en realidad son de infraestructura. También puede ocurrir lo contrario: un agente
+que encuentra restos de intentos anteriores (por ejemplo, el historial de Git) puede parecer más
+capaz de lo que es. Anthropic reporta un caso así en sus propias evals.
+
+Para la práctica basta con dos reglas: cada intento se ejecuta en un entorno reconstruido desde una
+imagen o un volcado conocido, y el harness registra la traza completa de cada intento para poder
+reproducir un fallo. Un 0 % de éxito repetido en una tarea suele indicar una tarea rota, no un agente
+incapaz; conviene revisarla antes de tocar el modelo.
+
+## Evals como puerta en CI y regresiones entre versiones
+
+El valor de una eval está en que bloquea. Cambiar el modelo, la versión del prompt, una herramienta
+o la política de reintentos es un despliegue y debe pasar por el mismo umbral. Un esquema práctico:
+
+- **Antes de fusionar:** un subconjunto rápido de tareas de regresión y de seguridad, con pocas
+  repeticiones, que bloquea si baja de un umbral.
+- **Antes de desplegar:** el conjunto completo, con repeticiones suficientes para estimar pass^k.
+- **En producción:** una muestra de tráfico real, revisada periódicamente, para detectar deriva
+  cuando el proveedor cambia el modelo o cambia el uso.
+
+Dos reglas evitan que el conjunto pierda valor. Las tareas de regresión no se borran aunque el
+agente ya las pase. Y cuando un conjunto de capacidades se satura (el agente pasa casi todas), esas
+tareas se gradúan a conjunto de regresión y se escriben tareas nuevas más difíciles. Lo que se
+compara entre versiones son las tasas, no las anécdotas: una diferencia de dos puntos con cinco
+repeticiones por tarea puede ser ruido, y conviene decirlo en el informe.
+
+## Cuándo no vale la pena un eval complejo
+
+No todo agente necesita un harness de evaluación sofisticado. Si el agente hace una tarea acotada,
+de bajo riesgo, con salida fácil de revisar por una persona, un conjunto pequeño de casos (del orden de veinte, criterio del autor) y revisión
+humana de los cambios basta. Montar un juez calibrado, repeticiones masivas y entornos aislados
+tiene coste de ingeniería y mantenimiento que solo se justifica cuando hay volumen, riesgo o cambios
+frecuentes de modelo.
+
+El criterio es el mismo que para cualquier medición: la evaluación debe poder cambiar una decisión.
+Si ninguna conclusión de la eval llevaría a retrasar un despliegue o a restringir una herramienta,
+probablemente es un ejercicio de métricas sin función. Lo mismo ocurre al revés: un agente con
+permisos de escritura en sistemas de negocio sin ninguna eval de seguridad es una deuda que crece
+en silencio.
+
+## Errores frecuentes
+
+- **Evaluar solo la respuesta final.** El agente puede decir «hecho» sin haber hecho nada, o llegar
+  bien por un camino que no debía tomar.
+- **Exigir una secuencia exacta de pasos.** Penaliza caminos válidos y produce falsos fallos.
+- **Un intento por tarea.** Con agentes no deterministas, una ejecución no dice nada fiable.
+- **Juez sin calibrar.** Mide sus propios sesgos y los presenta como calidad.
+- **Usar el modelo evaluado como juez.** Introduce autopreferencia.
+- **Entornos compartidos entre intentos.** Crea fallos correlacionados y puntuaciones infladas.
+- **Ajustar sobre el conjunto de prueba.** El número sube, la capacidad real no.
+- **Tratar las evals como un informe y no como una puerta.** Si nada se bloquea, nadie las lee.
+
+## Checklist
+
+- [ ] Cada tarea tiene entrada realista, criterio de éxito escrito y forma de verificarlo.
+- [ ] El estado final se comprueba con código siempre que sea posible.
+- [ ] La trayectoria se revisa solo en restricciones duras, eficiencia y bucles.
+- [ ] Cada intento corre en un entorno limpio y se guarda su traza completa.
+- [ ] Cada tarea se repite varias veces y se reporta pass^k para lo que actúa sin supervisión.
+- [ ] Los jueces tienen rúbrica concreta, un criterio por juez y una calibración documentada con personas.
+- [ ] El modelo evaluado no es su propio juez y se mitiga el sesgo de posición y de longitud.
+- [ ] Hay un subconjunto de regresión que bloquea en CI y un conjunto completo antes de desplegar.
+- [ ] Cada incidente real se convierte en tarea fija y las tareas de regresión no se borran.
+- [ ] Se revisan transcripciones periódicamente para confirmar que los calificadores miden lo correcto.
+
+## Fuentes
+
+- Anthropic, [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) (ingeniería). Definiciones de tarea, intento, calificador y transcripción; pass@k frente a pass^k; calibración de jueces y entornos limpios. Recomienda entre 20 y 50 tareas sencillas tomadas de fallos reales.
+- Yao et al., [τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains](https://arxiv.org/abs/2406.12045), arXiv:2406.12045 (2024). Definición de pass^k.
+- Zheng et al., [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685), arXiv:2306.05685 (2023). Sesgos de posición, longitud y autopreferencia; acuerdo con personas.
+- OpenTelemetry, [GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai). Convenciones para trazas de IA generativa; su estado de estabilidad debe comprobarse en el repositorio antes de adoptarlas.
+- Para el criterio del autor (no verificado como fuente externa): la proporción de tareas por tipo y el umbral de escalado son recomendaciones prácticas, no cifras normativas.

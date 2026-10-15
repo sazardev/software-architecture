@@ -1,0 +1,270 @@
+---
+title: 'Renderizado web: SSR, SSG, ISR e islands'
+description: 'Dónde se genera el HTML y cuándo: CSR, SSR, SSG, ISR, streaming e islands, con sus costes, criterios de elección y errores frecuentes.'
+category: diseno
+tags:
+  - renderizado
+  - ssr
+  - isr
+  - islands
+  - hidratacion
+order: 13
+roadmap:
+  id: sistemas
+  stage: escala
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Una misma página en tres momentos: construida, en servidor y en el navegador'
+---
+
+# Renderizado web: SSR, SSG, ISR e islands
+
+Cada página se construye en algún momento: en el build, en cada petición o en el navegador. Esa
+elección decide qué ve el usuario primero, cuánto cuesta servir la página, cuánto puede tardar en
+reflejar un cambio y cuánto JavaScript hay que descargar y ejecutar antes de que un botón responda.
+Los nombres (CSR, SSR, SSG, ISR, islands) son formas de repartir esas decisiones. No son categorías
+que se eligen una vez para todo el sitio.
+
+La tesis de este artículo es simple: se decide por página o por tipo de página, midiendo qué cambia
+y con qué frecuencia, y cada modo se paga en un punto distinto del sistema. Al final hay un caso
+real, el de este propio sitio, que se genera por completo en el build.
+
+## Tres preguntas antes de elegir
+
+Antes de elegir una estrategia conviene responder a tres preguntas:
+
+1. **¿Cuándo se genera el HTML?** En el build, en cada petición, en el navegador o en una mezcla.
+2. **¿Cuánto tiempo es válida una copia?** Desde «hasta el próximo despliegue» hasta «nunca
+   caduca», pasando por ventanas de segundos o minutos.
+3. **¿Cuánto JavaScript llega para hacerla interactiva?** Es lo que determina el tiempo hasta que la
+   página responde, no solo hasta que se ve.
+
+Las cuatro estrategias clásicas responden de forma distinta a esas tres preguntas.
+
+## Las estrategias y sus costes
+
+### CSR: el navegador construye la página
+
+En renderizado en cliente, el servidor entrega una plantilla casi vacía y el navegador descarga el
+JavaScript, pide los datos y monta la vista. Es barato de servir, porque es un conjunto de ficheros
+estáticos, y la navegación posterior es rápida. El coste está en el arranque: el contenido llega
+tarde y depende de descargar y ejecutar el código. Los previsualizadores de enlaces y otros
+rastreadores que no ejecutan JavaScript ven muy poco.
+
+Encaja en paneles internos, aplicaciones detrás de un login o pantallas donde el SEO no importa.
+
+### SSR: el servidor genera cada respuesta
+
+En renderizado en servidor, cada petición produce el HTML en el momento. Según el artículo de
+referencia de web.dev, _Rendering on the Web_ (Addy Osmani y Jason Miller), el navegador recibe
+marcado en lugar de JavaScript que lo construya. El precio es el servidor: cada visita ejecuta
+código, y el tiempo hasta el primer byte (TTFB) depende de él. Además, una respuesta personalizada
+no se puede compartir entre usuarios, así que la caché intermedia apenas sirve.
+
+### SSG: el HTML sale del build
+
+En generación estática, el HTML se produce durante el build, con un fichero por URL. Servirlo es
+trivial y cualquier CDN lo sostiene. El coste aparece en dos sitios: cada cambio de contenido exige
+reconstruir y redesplegar, y el tiempo de build crece con el número de páginas. Para contenido que
+cambia por publicación, es de las opciones más baratas de servir.
+
+### ISR: regenerar en segundo plano
+
+La regeneración incremental mezcla las dos anteriores: la página se genera estáticamente y, pasado
+un plazo, la copia se considera vieja. Next.js describe el comportamiento en su guía oficial: el
+siguiente visitante recibe la copia en caché, mientras se regenera una nueva en segundo plano, y las
+siguientes peticiones reciben esa versión. El concepto es el de _stale-while-revalidate_ de la
+[RFC 5861](https://www.rfc-editor.org/rfc/rfc5861), que el artículo sobre [edge y CDN](/docs/edge-computing-cdn#la-caché-quién-decide-cuánto-dura-una-copia)
+explica para cachés HTTP.
+
+En Next.js conviven dos modelos según la configuración, y conviene no mezclarlos:
+
+- **Sin Cache Components**, la guía de ISR sigue usando `revalidate` a nivel de ruta. Por ejemplo,
+  un valor de 3600 regenera la página como mucho cada hora.
+- **Con `cacheComponents`**, el caché se declara con la directiva `'use cache'` y la duración con
+  `cacheLife`. Según la referencia oficial, `cacheLife` se estabilizó en la versión 16.0.0. El perfil
+  por defecto, `default`, tiene `stale` de 5 minutos, `revalidate` de 15 minutos y `expire` nunca.
+
+La invalidación bajo demanda también tiene dos niveles. `revalidatePath` invalida las entradas de una
+ruta, pero la regeneración ocurre en la siguiente petición, no de forma inmediata. `revalidateTag`
+permite apuntar a datos concretos etiquetados. La guía recomienda revalidar rutas en la mayoría de
+casos y reservar las etiquetas para cuando haga falta precisión.
+
+Si la regeneración falla, Next.js sigue sirviendo la última versión correcta y reintenta en la
+siguiente petición. Esto es útil, pero conviene saber lo que la guía advierte sobre despliegues con
+varias instancias: con la caché por defecto en disco, una invalidación bajo demanda solo afecta a la
+instancia que recibe la llamada, y para coordinar instancias hace falta un _cache handler_
+compartido. Además, la regeneración en segundo plano se ejecuta en la instancia que recibe la
+petición, y en plataformas que cobran por petición cuenta como cómputo adicional.
+
+Otros frameworks llaman a esto de otra manera o no lo ofrecen. Al evaluarlo, lo importante no es el
+nombre sino tres datos: quién regenera, cuándo se invalida y qué ocurre cuando la regeneración falla.
+
+### Streaming: el HTML en trozos
+
+En streaming SSR, el servidor envía el HTML en fragmentos que el navegador pinta según llegan. Web.dev
+lo describe como una mejora del _First Contentful Paint_. El beneficio práctico es que una parte lenta
+de la página, por ejemplo una lista que depende de una consulta cara, no bloquea la cabecera ni el
+resto. En frameworks de React se suele apoyar en los límites de `Suspense` para decidir qué esperar y
+qué enviar antes (criterio del autor; no he verificado el mecanismo de cada framework).
+
+## Hidratación: la parte que se paga dos veces
+
+Hidratar es adjuntar estado e interactividad al HTML que ya está en pantalla. Web.dev señala tres
+problemas que conviene tener presentes:
+
+- Una página puede parecer lista y no responder a la entrada hasta que termina de ejecutarse el
+  JavaScript. En móviles, ese intervalo puede ser largo.
+- Se repite trabajo. El HTML, los datos serializados y el paquete de cliente viajan juntos, y el
+  cliente vuelve a construir lo que el servidor ya construyó.
+- La rehidratación penaliza el _Total Blocking Time_ y el _Interaction to Next Paint_ (INP), aunque el
+  FCP mejore. Medir solo la primera pintura engaña.
+
+Por eso la pregunta útil no es «SSR o CSR», sino **cuánto JavaScript necesita cada parte de la
+página**. Esa pregunta es la que responden las islands.
+
+## Islands y Server Components
+
+### Islands: HTML por defecto, interactividad donde haga falta
+
+En el modelo de islands, la página es HTML estático salvo las zonas que necesitan interactividad, y
+cada una de esas zonas se hidrata por separado. Astro es el ejemplo más conocido. Según su
+documentación, los componentes se renderizan a HTML sin JavaScript de cliente salvo que se marquen
+con una directiva `client:*`:
+
+| Directiva        | Cuándo se hidrata                                                 |
+| ---------------- | ----------------------------------------------------------------- |
+| `client:load`    | Inmediatamente al cargar la página.                               |
+| `client:idle`    | Cuando el navegador queda inactivo, con un `timeout` opcional.    |
+| `client:visible` | Cuando el componente entra en el viewport (IntersectionObserver). |
+| `client:media`   | Cuando se cumple una media query, por ejemplo un menú móvil.      |
+| `client:only`    | Nunca se renderiza en servidor; solo en el cliente.               |
+
+Las islas dinámicas del lado servidor se marcan con `server:defer` y muestran un contenido de
+reserva mientras se resuelven. La ventaja es que el JavaScript de las partes no interactivas no se
+envía, y que las islas se cargan en paralelo sin bloquearse unas a otras.
+
+El riesgo es el contrario al de hidratar todo: un botón que parece simple y lleva un _framework_
+completo, o una isla `client:load` en la parte inferior de la página, donde `client:visible` habría
+bastado.
+
+### Server Components: código que nunca llega al cliente
+
+Los Server Components de React son otra cosa. Según la documentación de React, se renderizan antes de
+empaquetar, en un paso de build o en un servidor por petición, y pueden leer ficheros o consultar la
+base de datos sin una API intermedia. Su código y sus dependencias no llegan al navegador, que recibe
+solo la salida renderizada. No pueden usar `useState` porque nunca se ejecutan en el cliente. Para la
+interactividad se componen con Client Components marcados con `'use client'`, que sí se empaquetan.
+
+La diferencia con SSR es de eje. SSR describe **cuándo y dónde se genera el HTML inicial**. Los
+Server Components describen **qué código se empaqueta para el cliente**. Se pueden combinar: el árbol
+de Server Components se renderiza y el resultado puede servirse además como SSR. La documentación de
+React no fija qué framework o bundler usar para ello, y advierte que las APIs para implementar un
+bundler de Server Components no siguen versionado semántico y pueden cambiar entre versiones menores.
+En la práctica, quien decide la estrategia de renderizado es el framework.
+
+| Enfoque | Dónde se genera el HTML    | JavaScript que llega al navegador | Frescura típica             |
+| ------- | -------------------------- | --------------------------------- | --------------------------- |
+| CSR     | Navegador                  | Todo el de la vista               | En vivo                     |
+| SSR     | Servidor, por petición     | El necesario para hidratar        | En vivo                     |
+| SSG     | Build                      | El de hidratación, o ninguno      | Hasta el siguiente build    |
+| ISR     | Servidor, en segundo plano | Según la configuración            | Ventana de revalidación     |
+| Islands | Build o servidor           | Solo el de cada isla              | Según el modo de cada parte |
+
+## Caché en el borde e invalidación
+
+El HTML generado se puede cachear en un CDN, y la mayoría de los problemas de frescura aparecen ahí.
+Hay dos decisiones. La primera es el TTL: cuánto tiempo puede servirse una copia sin preguntar. La
+segunda es la invalidación: qué evento borra la copia antes de que caduque. El artículo sobre
+[edge y CDN](/docs/edge-computing-cdn#un-caso-personalizar-la-portada-sin-perder-la-caché) trabaja el
+caso de una portada personalizada sin perder la caché; aquí solo conviene retener la regla general:
+**lo personal no se cachea en la copia compartida**, se resuelve en el borde o en una isla del
+cliente.
+
+Regenerar en masa también tiene un riesgo. Si muchas copias caducan a la vez, el origen recibe una
+avalancha de regeneraciones. El artículo sobre [caché, colas y streaming](/docs/caching-colas-streaming#estampida-de-caché)
+describe la estampida de caché y sus remedios, que se aplican igual a la regeneración de páginas.
+
+## Criterios de decisión
+
+- **Contenido que cambia.** Si cambia con cada publicación y tolera minutos de retraso, SSG con
+  reconstrucción o ISR. Si cambia por segundo, SSR o una isla dinámica para ese dato.
+- **Personalización.** Si cada usuario ve algo distinto, el HTML compartido no puede contenerlo. Se
+  resuelve con SSR, con islas del cliente o en el borde.
+- **SEO y compartir en redes.** El contenido importante debe estar en el HTML inicial. Los
+  previsualizadores sociales no ejecutan JavaScript, así que las etiquetas _Open Graph_ deben estar
+  ya en la respuesta.
+- **Coste de servidor frente a coste de caché.** SSR paga por petición o por instancia. SSG paga en el
+  build y en el CDN. ISR traslada parte del cómputo a la regeneración, que también cuesta.
+- **TTFB frente a interactividad.** SSR y SSG entregan HTML pronto, pero el INP depende de cuánto
+  JavaScript se ejecuta después. Hay que medir los dos.
+- **Complejidad operativa.** Cada modo añade piezas: un servidor, una cola o un proceso de
+  revalidación, una estrategia de invalidación y, con varias instancias, un caché compartido.
+
+Cuando el contenido es casi siempre el mismo, cambia en publicaciones discretas y no hay
+personalización, la opción más simple, SSG, suele ser también la más barata y la más robusta.
+
+## Un caso: este sitio
+
+Este repositorio es un buen ejemplo de SSG puro, con matices que conviene conocer:
+
+- Se publica en GitHub Pages, sin servidor de renderizado. Cualquier petición es un fichero estático.
+- Es una SPA con Vite y React. `src/main.tsx` monta la aplicación con `createRoot` y no con
+  `hydrateRoot`: no hay hidratación del HTML prerenderizado. Antes de montar, retira las etiquetas
+  `data-prerender` para que el router no duplique el `<head>`.
+- El postbuild (`tools/seo/prerender.ts`) escribe un `index.html` por ruta y por idioma con el
+  `<head>` SEO ya puesto. Los artículos añaden su texto completo dentro de `<noscript>`, para que los
+  rastreadores sin JavaScript lean el contenido. Las tarjetas sociales 1200×630 y los feeds RSS también
+  se generan en el build.
+- La lista de rutas sale del índice de contenido generado (`src/content/index.gen.json`). Es el
+  equivalente de `generateStaticParams`: cada artículo existente tiene su ruta. Como no hay servidor,
+  una ruta que no existe en el build no puede generarse después.
+
+Las consecuencias son las esperables. Un cambio de contenido exige reconstruir y desplegar: un push a
+`main` ejecuta el workflow de despliegue, que corre `bun run check` y después el build. No hay
+revalidación ni personalización en servidor. A cambio, el sitio no tiene nada que escalar y el HTML es
+idéntico para todos. El límite aparece cuando el número de páginas crece o cuando alguna parte
+necesita frescura de minutos: ahí habría que separar el dato dinámico, por ejemplo con una isla
+cargada desde una API, en lugar de regenerar todo.
+
+No he verificado las cabeceras de caché que GitHub Pages aplica a estos ficheros, así que este
+artículo no afirma ningún valor concreto.
+
+## Errores frecuentes
+
+- **Hidratar todo por defecto.** Un componente interactivo dentro de una página de texto envía
+  JavaScript que nadie necesita en esa zona. Empieza con HTML y añade interactividad solo donde la
+  haya.
+- **Datos desfasados sin dueño.** Un `revalidate` de una hora en un dato que cambia cada minuto, o
+  una invalidación que solo borra la ruta cuando el mismo dato aparece en otras. Cada dato necesita una
+  respuesta explícita a «¿quién lo invalida y cuándo?».
+- **Invalidar en una instancia.** Con caché local por instancia, una invalidación bajo demanda llega
+  solo a la instancia que la recibe. Sin un caché compartido, el resto sigue sirviendo copias viejas.
+- **Rutas dinámicas sin plan de generación.** Sin una lista de parámetros, cada primera visita paga el
+  render o termina en 404. En Next.js, `dynamicParams` decide si las rutas no generadas se renderizan al
+  vuelo o devuelven 404.
+- **Tratar SSR como caché.** Una respuesta SSR sin cabeceras de caché se calcula en cada visita. Si
+  el contenido es compartido, conviene cachearlo en el borde.
+- **Medir solo la primera pintura.** Un FCP rápido con un INP alto significa que la página se ve lista
+  y no responde. Mide las dos cosas en móvil.
+
+## Checklist
+
+- [ ] Cada tipo de página declara cuándo se genera su HTML y cuánto dura una copia.
+- [ ] Lo personalizado no vive en la copia compartida.
+- [ ] Cada isla tiene una directiva `client:*` justificada; ninguna es `client:load` por costumbre.
+- [ ] Cada caché tiene una invalidación explícita, incluida la de varias instancias.
+- [ ] Las rutas dinámicas tienen lista de generación y política para lo desconocido.
+- [ ] El contenido importante y las etiquetas sociales están en el HTML inicial.
+- [ ] INP y TTFB se miden en móvil, no solo el FCP.
+
+## Fuentes
+
+- [Rendering on the Web](https://web.dev/articles/rendering-on-the-web), Addy Osmani y Jason Miller, web.dev. Publicado en 2019 y actualizado el 5 de enero de 2026.
+- [Next.js: Incremental Static Regeneration](https://nextjs.org/docs/app/guides/incremental-static-regeneration), documentación oficial de Next.js (consultada el 15 de octubre de 2026).
+- [Next.js: cacheLife](https://nextjs.org/docs/app/api-reference/functions/cacheLife), referencia oficial, con los valores del perfil `default` y la historia de versiones.
+- [React: Server Components](https://react.dev/reference/rsc/server-components), documentación oficial de React.
+- [Astro: Directives reference](https://docs.astro.build/en/reference/directives-reference/) y [Astro: Islands](https://docs.astro.build/en/concepts/islands/), documentación oficial de Astro.
+- [RFC 5861: HTTP Cache-Control Extensions for Stale Content](https://www.rfc-editor.org/rfc/rfc5861), M. Nottingham, mayo de 2010, informativa.
+- Repositorio: `src/main.tsx`, `tools/seo/prerender.ts` y `AGENTS.md` §8.

@@ -1,0 +1,259 @@
+---
+title: 'Internal libraries: extract, version or copy'
+description: 'When to turn shared code into an internal library, when copying is better, and how to version and retire it so that every change is not an incident.'
+category: decisiones
+tags:
+  - librerias-internas
+  - versionado
+  - monorepo
+  - deuda-tecnica
+  - gobierno
+order: 11
+roadmap:
+  id: liderazgo
+  stage: equipos
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'One shared core forks into apps, and one fork drifts away without an owner'
+---
+
+# Internal libraries: extract, version or copy
+
+Two teams write the same date-formatting function. A third one copies it and adds a time zone.
+A year later there are five versions, none identical, and nobody knows which one is correct. The
+problem is not duplication as such. It is that nobody decided where the code lived or who was
+responsible for it.
+
+Extracting it into an internal library solves that case but creates another one: every change now
+goes through a version, each consumer decides when to upgrade, and a bug in the library reaches all
+of them at once. Copying avoids that coordination and, in exchange, lets every copy drift. Neither
+option is free.
+
+This article treats the decision as what it is: a split of costs. What you pay when you extract,
+what you pay when you copy, how to version without turning every release into a negotiation, and
+how to retire a library when it stops serving its purpose. It builds on [monorepo or polyrepo](/docs/monorepo-o-polirepo),
+which decides where packages live, and on [extensible architecture with plugins](/docs/arquitectura-extensible-plugins),
+which deals with public contracts. Here the focus is smaller: one piece of code shared across
+several consumers in your organization.
+
+## Three options for shared code
+
+When two consumers need the same logic there are three reasonable options:
+
+- **Copy.** Each consumer has its own version. There is no coordination, but also no single place
+  to fix a bug for everyone.
+- **Reference inside the same repository.** The code lives in a package of the monorepo and the
+  consumers import it through workspace links. A change is tested together with its consumers in
+  the same commit.
+- **Publish to a registry.** The package has its own version and is installed from a private
+  registry. It is the option that looks most like a third-party library and the one that demands
+  the most discipline.
+
+The table summarizes what each one costs:
+
+| Option                | Main cost                                 | Main risk                           |
+| --------------------- | ----------------------------------------- | ----------------------------------- |
+| Copy                  | Fixing the same bug N times               | Silent drift between copies         |
+| Workspace in monorepo | CI infrastructure and cross-package tests | One change breaks everyone at once  |
+| Package in a registry | Versioning, publishing and upgrading      | Consumers that stay on old versions |
+
+## What each option costs
+
+Four costs are worth naming before you decide, because each one shows up in a different place in
+the team.
+
+**Version coupling.** If the library publishes versions, two consumers can be on different
+versions. That is normal, but it means the same function may behave differently depending on the
+application. If you do not want that, you will pay with coordination.
+
+**Upgrade coordination.** A contract change requires every consumer to respond, when it has time,
+and someone has to track who already upgraded. With three consumers it is a chat thread; with thirty
+it is a project.
+
+**Cascade risk.** A shared library is a common point of failure. A bug in a published version reaches
+every consumer that upgrades, and a consumer that pins an old version out of fear carries security
+debt. A monorepo does not remove this risk; it only changes how visible it is.
+
+**Duplication with drift.** Copying is cheap at first and expensive later. Each copy receives
+different fixes, or none, and after a while the code looks similar but is not the same. Sandi Metz
+summarized the trade-off in her 2016 post «The Wrong Abstraction»: duplication is far cheaper than
+the wrong abstraction, but duplication also accumulates cost when the copies diverge unnoticed.
+
+The key point is that duplication and a wrong abstraction fail in different ways. The first fails
+slowly and silently. The second fails fast and loudly, and forces a redesign. Choosing well means
+knowing which failure you can better afford at that moment.
+
+## When to extract: three criteria
+
+Before creating a library, check three things. If the three are not met, it is most likely too
+early to extract.
+
+1. **Two or three real consumers.** Hypothetical consumers and «someday» do not count. The rule of
+   three, attributed to Don Roberts and recorded by Martin Fowler in _Refactoring_ (1999), suggests that
+   with two copies you can wait and with three it is worth extracting. It is a heuristic, not a law:
+   what matters is that the consumers exist today and need the same thing.
+2. **A stable API.** The signature and observable behavior are clear and rarely change. If each
+   consumer needs a different variant, you have not found the concept yet; extracting now freezes
+   the wrong shape and forces you to version mistakes.
+3. **A clear owner.** A person or team answers for the library: it reviews changes, publishes fixes
+   and decides what goes in. Without an owner the library becomes a graveyard with a life of its own.
+
+If only one or two of the criteria hold, copying for a while and watching the drift is usually the
+better decision. Revisit the case after a few months: code that looks like three copies of the same
+idea is a stronger signal than any prediction.
+
+## Versioning: real semver or per-change versions
+
+There are two common ways to version an internal library, and you should pick one before publishing
+the first version.
+
+**Real semver.** The [Semantic Versioning 2.0.0 specification](https://semver.org/) states that a
+change that breaks the API raises the major number, a backward-compatible addition raises the minor
+number and a fix raises the patch number. Its value is that the number communicates something to
+whoever consumes the library. Its cost is that the author must classify each change correctly, and
+that fails when the team has not defined what the public API is. The specification requires
+declaring that API, even if only in documentation.
+
+**Per-change versions.** Each pull request declares what kind of change it is, and the number is
+computed at publish time. [Changesets](https://github.com/changesets/changesets) works this way: each
+change includes a file with the bump type and a summary; the version command collects those files,
+calculates the new version and writes the changelog; the publish step creates the git tags. In CI,
+the tool can open a «Version Packages» pull request that the team reviews before publishing. It is
+lighter than writing semver by hand and leaves a trace for every change.
+
+Either one works. What does not work is mixing them: a number that goes up without criteria or
+record informs nobody.
+
+### Ranges and pinning
+
+The second axis is how consumers declare the version. A range (`^2.4.0`) receives fixes
+automatically and reduces coordination, but it relies on the author's discipline: a minor release
+that breaks something reaches everyone on the next install. A pinned version (`2.4.0`) is
+predictable, but requires an explicit upgrade step in every consumer, which is exactly the
+coordination cost you wanted to avoid. For an internal library with a few consumers, a range bounded
+to the major version plus a regular upgrade cadence usually balances both risks. This is the
+article's judgment, not a rule of any tool.
+
+## Monorepo workspace links or a private registry
+
+If the consumers live in the same repository, workspace links remove almost all of the friction. In
+Bun, a consumer declares the dependency as `workspace:*` and, when the package is published, the tool
+replaces it with the real version. [Bun's documentation](https://bun.com/docs/pm/workspaces)
+describes the behavior for `workspace:*`, `workspace:^` and `workspace:~`. In pnpm, versions can be
+declared once in `pnpm-workspace.yaml` and referenced with the `catalog:` protocol, which
+[centralizes a dependency's version](https://pnpm.io/catalogs) for the whole repository.
+
+```json
+{
+  "name": "@acme/ui-kit",
+  "version": "2.4.0",
+  "dependencies": {
+    "@acme/tokens": "workspace:*"
+  }
+}
+```
+
+With workspace links the library does not need a registry: the change lands together with its
+consumers and CI tests both. The price is that a breaking change forces you to update everyone in
+the same commit, and that CI must scale with the repository.
+
+Publishing to a private registry makes sense when the consumers live in different repositories,
+when the library crosses a team or security boundary, or when you need a specific version to be
+auditable. GitHub Packages, for example, [publishes Node.js packages under a scope](https://docs.github.com/en/actions/tutorials/publish-packages/publish-nodejs-packages)
+configured in `.npmrc` through `setup-node`. The cost of that option is operational: permissions,
+publishing tokens and the lifecycle of every version have to be managed.
+
+## Governance: who maintains and how changes happen
+
+An internal library without governance ends up belonging to nobody. Four written decisions prevent
+most of the problems.
+
+- **Owner.** A team, not a person. It answers incidents, reviews proposals and publishes fixes. Its
+  name appears in the README and in the repository's code-ownership file.
+- **How a change is proposed.** A pull request with its change file and, if it breaks the contract,
+  a migration note. For large changes a short RFC is enough, in the spirit of
+  [trade-offs and decisions](/docs/trade-offs-y-decisiones): what problem it solves, which options
+  exist and what is given up.
+- **What goes in and what does not.** An explicit rule about the public API. Anything not documented
+  may change without notice; if a consumer depends on something undocumented, the problem is the
+  consumer's, not the library's.
+- **Deprecation policy.** A minimum period, a warning message and a named replacement from day one.
+  If the registry supports it, `npm deprecate` marks a version or a range with a message visible to
+  whoever installs it; according to [the npm documentation](https://docs.npmjs.com/cli/v11/commands/npm-deprecate),
+  only the package owner can do it, it accepts ranges and an empty message reverts it.
+
+The deprecation period is an organizational decision, not a technical one. A reasonable criterion for
+an internal library is that consumers have at least one full release cycle to migrate, and that the
+owning team tracks on its board who still uses the old version.
+
+## When to retire a library
+
+Retiring is harder than creating, which is why almost nobody does it. Three signals justify it:
+
+- Only one real consumer remains. Keeping a library for a single application is a module with another
+  name; it is better to move the code back to its consumer.
+- The concept no longer exists in the domain, or the library has become a container of exceptions.
+- The owner has changed and nobody can explain what each exported function does.
+
+The procedure is the same as any deprecation: notice, deadline, replacement and removal. The
+difference is that you must decide beforehand what happens to the code: whether it returns to the
+consumers as a copy, or is deleted because nobody needs it anymore.
+
+## A worked example
+
+A product team has three applications that use the same address validation. All three copied it six
+months ago. In the last quarter, a bug in the postal code logic was fixed in one application, and
+in the other two it stayed alive for weeks because each team found it separately.
+
+A reasonable analysis: the three applications are real consumers, the logic has been stable over the
+period, and there is a team willing to own it. All three criteria hold. The team creates a package in
+the monorepo, consumes it through workspace links, uses per-change versions and publishes to a
+registry only when an application outside the monorepo needs it. The application that changes the
+most becomes the first to test every change.
+
+If, instead, address validation differed by country and the three applications only shared the shape
+of the form, the sensible choice would be to copy and extract nothing: what is shared is a pattern,
+not a function.
+
+## Common mistakes
+
+- **Extracting before having the second consumer.** The library is born with a shape that only fits
+  the first one and forces you to version mistakes from the start.
+- **Publishing without defining the public API.** Everything exported becomes a contract, even when
+  nobody meant it that way.
+- **Using wide ranges and breaking silently.** A breaking change inside a range reaches everyone on the
+  next install.
+- **Leaving the library without an owner.** When the only author leaves, the library freezes or changes
+  without criteria.
+- **Keeping copies and the library at the same time.** You pay the coordination cost and the drift cost
+  together.
+- **Never retiring.** Old libraries accumulate dependencies and consumers that nobody wants to touch.
+
+## When this does not apply
+
+If you have a single consumer there is nothing to extract. If the shared piece is a specification or a
+data contract, what you may need is a versioned schema, not a library with code. And if the team is very
+small and everything deploys together, copying for a while may be the cheapest and most honest decision.
+
+## Checklist
+
+- [ ] Are there at least two real consumers that need the same logic today?
+- [ ] Is the public API defined and documented, and does it change rarely?
+- [ ] Does it have a named owning team?
+- [ ] Is it decided whether to version with semver, per change or with workspace links?
+- [ ] Do consumers use bounded ranges or pinned versions, and who upgrades them?
+- [ ] Is there a written deprecation policy with a period and a replacement?
+- [ ] Do you know when to retire it and what happens to its code?
+- [ ] Is the decision recorded in an [ADR](/docs/adr) with its review criterion?
+
+## Sources
+
+- Semantic Versioning 2.0.0, [semver.org](https://semver.org/). Official versioning specification.
+- pnpm, [Catalogs](https://pnpm.io/catalogs). The `catalog:` protocol and versions centralized in `pnpm-workspace.yaml`.
+- Bun, [Workspaces](https://bun.com/docs/pm/workspaces). `workspace:*` links and replacement on publish.
+- Changesets, [official repository](https://github.com/changesets/changesets). Change files, versioning and publishing.
+- npm, [Deprecating and undeprecating packages or package versions](https://docs.npmjs.com/deprecating-and-undeprecating-packages-or-package-versions) and [npm deprecate](https://docs.npmjs.com/cli/v11/commands/npm-deprecate).
+- GitHub Docs, [Publishing Node.js packages](https://docs.github.com/en/actions/tutorials/publish-packages/publish-nodejs-packages). Publishing to GitHub Packages with a scope.
+- Martin Fowler, [_Refactoring_](https://martinfowler.com/books/refactoring.html) (1999). Rule of three attributed to Don Roberts.
+- Sandi Metz, «The Wrong Abstraction» (January 20, 2016), [sandimetz.com/blog/2016/1/20/the-wrong-abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction). Origin of the duplication-versus-wrong-abstraction remark.

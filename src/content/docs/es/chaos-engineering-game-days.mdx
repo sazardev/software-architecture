@@ -1,0 +1,214 @@
+---
+title: 'Chaos engineering y game days: fallar a propósito'
+description: 'Cómo probar la resiliencia con fallos inyectados de forma controlada: hipótesis, radio de impacto, condición de parada y game days con los equipos.'
+category: practicas
+tags:
+  - chaos-engineering
+  - game-days
+  - resiliencia
+  - slo
+  - sre
+order: 17
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un fallo inyectado en un solo componente, dentro de un radio acotado y con parada'
+---
+
+# Chaos engineering y game days: fallar a propósito
+
+Un mecanismo de resiliencia no está probado hasta que falla algo de verdad. Un timeout escrito pero
+nunca medido, un reintento que nadie ha visto en acción o una conmutación a otra zona que solo
+existe en un diagrama son hipótesis. La forma más cara de comprobarlas es esperar a que llegue un
+incidente real. El **chaos engineering** adelanta ese momento: provoca fallos pequeños, controlados
+y observados, para aprender cómo reacciona el sistema antes de que lo haga el mercado.
+
+Este artículo se centra en la práctica: cómo se diseña un experimento, qué fallos merecen la pena,
+cómo se relaciona con los SLO y qué son los **game days**, los ejercicios planificados con los
+equipos. Los patrones de diseño que se someten a prueba (timeouts, reintentos, aislamiento) están
+en [resiliencia en sistemas distribuidos](/docs/resiliencia-sistemas-distribuidos).
+
+<Callout tone="info" title="Fecha de corte">
+  Los datos son de octubre de 2026. Las herramientas cambian de madurez y de nombre con frecuencia:
+  contrasta siempre con su documentación oficial antes de adoptarlas.
+</Callout>
+
+## Qué es y qué no es
+
+Chaos engineering no es romper cosas al azar en producción. Es experimentar sobre un sistema
+para ganar confianza en su capacidad de aguantar condiciones turbulentas. Un ingeniero formula
+qué debería pasar, introduce una perturbación realista y compara lo que ocurre con lo que
+predijo. Si coincide, la confianza sube. Si no coincide, ha encontrado un defecto en un momento
+elegido por él.
+
+El término lo popularizó Netflix. El artículo «Chaos Engineering» de Basiri y colaboradores, en
+_IEEE Software_ (2016), recoge sus principios.
+
+## Los principios, en la práctica
+
+El sitio _Principles of Chaos Engineering_ enumera cinco principios avanzados. Son una buena lista
+de control para decidir si un experimento está bien planteado:
+
+| Principio                         | Qué exige en la práctica                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------------- |
+| Hipótesis sobre el estado estable | Definir una salida medible del sistema (tasa de errores, latencia, pedidos completados).    |
+| Variar eventos del mundo real     | Inyectar lo que de verdad ocurre: un nodo que muere, una dependencia lenta, una zona caída. |
+| Experimentar en producción        | Idealmente, en producción o en algo lo más parecido posible.                                |
+| Automatizar                       | Repetir los experimentos de forma continua, no como evento aislado.                         |
+| Minimizar el radio de impacto     | Acotar a quién afecta el experimento y poder detenerlo al instante.                         |
+
+El orden importa. Sin hipótesis sobre el estado estable no hay experimento, solo un destrozo. Y
+el radio de impacto no es opcional: empezar pequeño, con un botón de parada a mano, es lo que
+permite pedir permiso para hacer más.
+
+## Estado estable, SLI, SLO y presupuesto de error
+
+El estado estable no es una sensación de que «todo va bien». Se expresa con los mismos indicadores
+que usa la operación: un SLI, como la proporción de pedidos completados en menos de dos segundos.
+El [SLO y el presupuesto de error](/docs/observabilidad-slo-presupuesto-error#slo-y-presupuesto-de-error)
+convierten ese indicador en un umbral y en una cantidad de fallo tolerable en un periodo.
+
+Esa cantidad es la que da sentido a los experimentos. Si el servicio tiene presupuesto de sobra,
+hay margen para inyectar un fallo en producción con poco riesgo. Si el presupuesto está agotado,
+el experimento se traslada a un entorno de pruebas o se aplaza. Esta regla es un criterio del
+autor, no una norma de ningún proveedor: lo importante es acordarla antes, no discutirla durante
+el incidente.
+
+Sin observabilidad no hay experimento posible. Si no puedes ver la tasa de errores del servicio
+durante la inyección, no sabrás si la hipótesis se cumplió ni cuándo parar.
+
+## Tipos de fallo que merece la pena inyectar
+
+Los fallos más útiles son los que el sistema recibe en la vida real. Cada uno responde a una
+pregunta distinta:
+
+- **Latencia.** Una dependencia responde, pero tarde. Es el fallo más revelador: el sistema sigue
+  «arriba» y, sin embargo, los hilos, las colas y los reintentos se acumulan. Ver
+  [lento es peor que caído](/docs/reintentos-con-jitter#lento-es-peor-que-caído).
+- **Caída de dependencia.** ¿El servicio degrada con elegancia cuando el proveedor de pagos,
+  de correo o de búsqueda no responde, o devuelve errores en cadena?
+- **Pérdida o partición de red.** Paquetes perdidos o un corte entre dos servicios. Pone a prueba
+  los timeouts y la lógica de reconexión.
+- **Agotamiento de recursos.** Memoria, CPU, descriptores de fichero, conexiones de base de datos
+  o disco. Suele desvelar límites que nadie configuró.
+- **Fallo de zona.** Se pierde una zona de disponibilidad entera. Es el experimento más cercano a
+  un incidente grave y, por eso, el que más preparación exige.
+
+Empieza por los dos primeros. Son los que más se parecen a lo que ocurre a diario y los que menos
+riesgo tienen si el radio de impacto está bien acotado.
+
+## Diseñar un experimento
+
+Un experimento bien escrito cabe en una tabla. Si no puedes rellenar cada fila, todavía no es un
+experimento:
+
+| Campo                | Pregunta que responde                                                  |
+| -------------------- | ---------------------------------------------------------------------- |
+| Hipótesis            | ¿Qué debe seguir siendo cierto durante el fallo, y en qué métrica?     |
+| Métrica              | ¿Con qué indicador lo comprobaremos y con qué umbral?                  |
+| Radio de impacto     | ¿Qué porcentaje de tráfico, qué servicios y qué clientes se exponen?   |
+| Condición de parada  | ¿Qué valor de la métrica detiene el experimento automáticamente?       |
+| Plan de reversión    | ¿Cómo se quita el fallo y qué pasos hay que dar si la reversión falla? |
+| Quién avisa y decide | ¿Qué dueños están informados, quién puede parar y dónde se anuncia?    |
+| Ventana y momento    | ¿Cuándo se ejecuta, con quién de guardia y con qué carga esperada?     |
+
+Un ejemplo ilustrativo: «Si el proveedor de pagos responde con 800 ms adicionales en el 5 % de las
+peticiones, el pedido sigue completándose en menos de dos segundos para el 99 % de los usuarios.
+Se para si la tasa de errores del checkout supera el 0,5 % durante dos minutos». La hipótesis es
+concreta, la métrica existe, la parada es automática y el radio es una fracción del tráfico.
+
+Las condiciones de parada deben ser alarmas reales, no una recomendación en la documentación. AWS
+Fault Injection Service, por ejemplo, usa alarmas de CloudWatch como condiciones de parada y
+detiene el experimento cuando se disparan; una vez detenido, no se puede reanudar. Esa propiedad es una buena medida de diseño: parar debe ser barato y seguro.
+
+## Game days: ensayar a las personas
+
+Un game day es un ejercicio planificado en el que los equipos reales practican cómo responden a un
+escenario. Mientras el chaos engineering busca comprobar el sistema con experimentos pequeños y
+continuos, el game day comprueba **a las personas y a los procedimientos**: la detección, la
+comunicación, los roles, los runbooks y la decisión de mitigar.
+
+Las buenas prácticas de AWS para los game days (REL12-BP05, _Conduct game days regularly_) son
+útiles como lista de comprobación:
+
+- Involucrar a los equipos que responderían en producción, y también a perfiles de negocio.
+- Avisar con antelación a todos los participantes y stakeholders sobre fecha, hora y escenario,
+  sobre todo en el primero.
+- Ensayar en réplicas del entorno de producción, definidas con infraestructura como código, cuando
+  sea posible.
+- Si el impacto negativo aparece, revertir el ejercicio y documentar la corrección.
+- Hacer una revisión posterior y convertir los hallazgos en acciones con dueño y fecha.
+
+Conviene repartir los papeles: alguien controla la inyección y puede pararla, alguien observa las
+métricas, el equipo de respuesta trabaja como si fuera real y un observador anota lo que se hace y
+en qué orden. Los roles de un incidente real son los mismos; su tratamiento detallado está en
+[gestión de incidentes y postmortems](/docs/gestion-incidentes-postmortems#roles-quién-hace-qué-durante-el-incidente).
+
+### Game day frente a simulacro de recuperación
+
+Son ejercicios parecidos con objetivos distintos. Un **simulacro de recuperación ante desastres**
+mide si se puede recuperar un servicio o una región dentro de un RTO y un RPO, y suele ser menos
+frecuente y de mayor alcance (ver [pruebas de recuperación](/docs/regiones-zonas-y-recuperacion#pruebas-de-recuperación)).
+Un game day ensaya la respuesta organizativa a un escenario, de duración corta y con objetivos de
+comunicación y de decisión. El chaos engineering continuo, por su parte, no pretende ser un
+evento: son experimentos pequeños que corren en paralelo al trabajo normal.
+
+## Herramientas
+
+Conviene elegir la herramienta según dónde corre la carga, no por popularidad:
+
+- **AWS Fault Injection Service** es un servicio gestionado para cargas en AWS, con condiciones de
+  parada basadas en CloudWatch, como se ha descrito antes.
+- **LitmusChaos** y **Chaos Mesh** son proyectos de código abierto para Kubernetes. LitmusChaos pasó a
+  _incubating_ en la CNCF en enero de 2022. El estado actual de ambos cambia: consulta
+  cncf.io/projects antes de adoptarlos.
+
+Ninguna herramienta sustituye a la disciplina de hipótesis, radio de impacto y parada. Una
+herramienta sin esas tres cosas solo produce incidentes con más pasos.
+
+## Cuándo sí y cuándo no
+
+**Tiene sentido** cuando el estado estable se puede medir, la observabilidad permite ver el impacto
+en tiempo casi real, existen procedimientos de reversión y los dueños de los servicios afectados
+han dado su consentimiento informado.
+
+**No tiene sentido** cuando el sistema no tiene timeouts ni reintentos razonables. Inyectar un fallo
+para descubrir que no hay timeout es una revisión de diseño disfrazada de experimento: el arreglo
+debe llegar antes. Tampoco sustituye a las pruebas de carga, a las pruebas de contrato ni a la
+revisión de arquitectura. Y no se hace sin observabilidad: un experimento a ciegas no enseña nada.
+
+## Errores frecuentes
+
+- **Experimentar sin hipótesis.** «A ver qué pasa» produce ruido y ninguna conclusión.
+- **Empezar con todo el tráfico.** El primer experimento debe acotar el impacto a una fracción
+  pequeña y a un servicio, no a la plataforma entera.
+- **Parada manual sin probar.** Si nadie ha comprobado que el botón de parada funciona en un
+  escenario ensayado, no existe.
+- **Game days sin los dueños.** Ejecutarlos a espaldas de los equipos genera desconfianza y, con
+  razón, rechazo.
+- **Buscar culpables.** Un hallazgo que se castiga deja de reportarse. El objetivo es el sistema y
+  el proceso, en línea con la cultura sin culpa del [postmortem](/docs/gestion-incidentes-postmortems#culpa-error-humano-y-cultura-sin-culpa).
+- **No cerrar el ciclo.** Un hallazgo sin acción con dueño y fecha se repite en el siguiente
+  incidente. Ver [de las acciones a la mejora real](/docs/gestion-incidentes-postmortems#de-las-acciones-a-la-mejora-real).
+
+## Checklist
+
+- [ ] Cada experimento tiene hipótesis sobre una métrica de estado estable y un umbral.
+- [ ] La métrica y el SLI asociado están instrumentados antes de inyectar nada.
+- [ ] El radio de impacto está acotado y documentado, empezando por una fracción pequeña.
+- [ ] Existe una condición de parada automática y alguien puede detener el experimento a mano.
+- [ ] El plan de reversión se ha ensayado y los dueños de los servicios están informados.
+- [ ] El presupuesto de error permite el experimento; si no, se traslada a un entorno de pruebas.
+- [ ] Los game days tienen escenario, roles, observador y revisión posterior con acciones.
+- [ ] Los hallazgos se registran y se convierten en mejoras de diseño, no solo en avisos.
+
+## Fuentes
+
+- [Principles of Chaos Engineering](https://principlesofchaos.org/): principios avanzados del experimento.
+- [AWS Well-Architected, Reliability Pillar: REL12-BP05 Conduct game days regularly](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_testing_resiliency_game_days_resiliency.html).
+- [AWS Fault Injection Service: stop conditions](https://docs.aws.amazon.com/fis/latest/userguide/stop-conditions.html).
+- [CNCF: LitmusChaos, paso a incubating (CNCF, 2022)](https://www.cncf.io/blog/2022/01/11/litmuschaos-becomes-a-cncf-incubating-project/).
+- Basiri, A. y otros, «Chaos Engineering», _IEEE Software_, 33(3), 2016: [IEEE Xplore](https://ieeexplore.ieee.org/document/7436642).

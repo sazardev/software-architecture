@@ -1,0 +1,320 @@
+---
+title: Arquitectura de archivos para repos grandes
+description: 'Cómo organizar el árbol de un repositorio grande para que los límites entre módulos sean reales: dominio, API pública, reglas de dependencia y propiedad.'
+category: diseno
+tags:
+  - monorepo
+  - boundaries
+  - dependencies
+  - modularity
+  - codeowners
+order: 11
+roadmap:
+  id: sistemas
+  stage: dominio
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Cada módulo oculta lo suyo: solo sus puertas cruzan la frontera'
+---
+
+# Arquitectura de archivos para repos grandes
+
+En un repositorio pequeño, la estructura de carpetas casi no importa: cualquiera encuentra lo que
+busca. Al crecer, el árbol de archivos se convierte en la forma real de la arquitectura. Si las
+carpetas no dicen nada sobre quién depende de quién, los límites entre módulos existen solo en la
+documentación, y con el tiempo todo importa todo.
+
+La tesis de este artículo es sencilla: **un límite es real cuando una herramienta puede
+romperlo y el pipeline lo impide**. La disposición de los archivos es lo que hace posible eso. Una
+carpeta bien nombrada expresa un dominio, un punto de entrada explícito define qué se expone, y una
+regla ejecutable decide qué dependencias son legales. Lo demás (convenciones, comentarios, buenas
+intenciones) se degrada en cuanto cambia el equipo.
+
+El artículo recorre cómo elegir el eje de organización, qué hace una frontera útil, cómo medirla,
+quién es responsable de cada parte y cómo migrar un árbol desordenado sin detener la entrega. Como
+caso práctico usa la estructura de este propio repositorio, que ya aplica algunas de estas ideas.
+
+<Callout tone="info" title="Sobre las herramientas">
+  Las versiones y capacidades citadas cambian rápido: antes de adoptar una herramienta, revisa su
+  documentación vigente y su changelog.
+</Callout>
+
+## Dos ejes para organizar: por dominio o por capa
+
+Hay dos formas clásicas de cortar un árbol, y casi todos los proyectos grandes mezclan ambas.
+
+- **Por capa técnica.** `controllers/`, `services/`, `repositories/`. Es fácil de entender al
+  principio y coincide con los libros de texto. Su problema aparece cuando un cambio de negocio
+  (por ejemplo, «los pagos reembolsables») toca cinco carpetas distintas. El código de un mismo
+  concepto queda disperso y las dependencias se cruzan entre carpetas enteras.
+- **Por dominio o funcionalidad.** `pedidos/`, `pagos/`, `catálogo/`, cada una con sus capas dentro.
+  Un cambio de negocio se concentra en una carpeta, y la frontera coincide con la conversación del
+  equipo. Su riesgo es el contrario: sin disciplina, cada dominio acaba importando internals de los
+  demás y la carpeta raíz se llena de cosas compartidas sin dueño.
+
+Ninguno basta solo al crecer. Por dominio protege la cohesión del negocio; por capa protege la regla
+de dependencia técnica (la interfaz no habla con la base de datos). La práctica habitual es **dominio
+en el nivel superior y capas dentro de cada dominio**, o capas en el nivel superior con un eje de
+dominio dentro de cada capa, cuando la aplicación es un sistema de interfaz con muchas pantallas. Lo
+que importa es elegir un eje primario y que el otro se vuelva una regla comprobable, no una costumbre.
+
+Esta elección tiene consecuencias de herramienta. Un eje por dominio hace que cada módulo pueda tener
+su propio `package.json`, sus pruebas y su propietario. Un eje por capa hace más sencillo escribir una
+regla de dependencias entre carpetas, pero casi nunca se traduce en límites de build independientes.
+La relación con la forma del monorepo es directa: si no sabes qué decidir allí, el artículo sobre
+[monorepo o polirepo](/docs/monorepo-o-polirepo#costos-ocultos) describe los costos que se
+arrastran.
+
+## Qué hace que una frontera sea real
+
+Un directorio no es un módulo. Como se explica en
+[monolito modular antes que microservicios](/docs/monolito-modular-primero#qué-es-un-módulo-de-verdad),
+un módulo tiene tres propiedades comprobables:
+
+1. **Una API pública pequeña.** Solo se importa lo que el módulo expone de forma explícita.
+2. **Datos con dueño.** Ningún otro módulo lee ni escribe sus tablas o su estado.
+3. **Dependencias controladas.** El grafo entre módulos no tiene ciclos y se puede verificar.
+
+En el árbol de archivos, la primera propiedad se traduce en algo muy concreto: **un punto de entrada
+por módulo**, un archivo que decide qué sale. Todo lo que no pasa por él es interno y no debe
+importarse desde fuera. Las herramientas no conocen esa intención, así que hay que hacerla visible en
+la forma del árbol:
+
+```text
+src/
+  pedidos/
+    index.ts          # API pública: lo único que otros módulos pueden importar
+    crear-pedido.ts   # interno
+    repositorio.ts    # interno: nadie fuera de pedidos lo toca
+  pagos/
+    index.ts
+    ...
+```
+
+Un punto de entrada explícito tiene además otra utilidad: es el lugar donde se revisa cada cambio de
+contrato. Si añadir una exportación exige editar `index.ts`, el cambio aparece en el diff y en la
+revisión de código.
+
+### Barriles: cómodos, pero con costos
+
+El `index.ts` que reexporta todo lo de una carpeta se llama **barril**. Es cómodo y reduce las rutas
+de importación, pero tiene costos que conviene conocer antes de generalizarlo.
+
+- **Ocultan el origen real.** Si `index.ts` reexporta todo, cualquiera puede importar un símbolo
+  interno «a través» del barril, y la frontera deja de estar donde parece.
+- **Pueden empeorar el build.** Un barril que reexporta muchos módulos obliga a las herramientas a
+  procesar más archivos y a seguir más cadenas de importación. Sobre el tree shaking, la documentación
+  de webpack explica que `sideEffects` en `package.json` indica qué archivos pueden podarse: un módulo
+  sin efectos laterales cuyas exportaciones no se usan se omite, pero el código con efectos (por
+  ejemplo, CSS o polyfills) hay que declararlo en esa lista o se pierde en producción. Por eso el efecto
+  depende de la configuración, y no lo he medido en este repositorio.
+- **Crean ciclos.** Un módulo A que importa de `index.ts` y ese barril reexporta algo que importa de
+  A forma un ciclo que solo aparece en tiempo de ejecución, a veces en orden distinto según quién
+  cargue primero.
+
+La regla práctica: **barril solo en el borde del módulo, nunca dentro de él**, y los imports internos
+van directos al archivo. Este repositorio sigue la versión más estricta de la idea al tener barriles
+por carpeta de capa, así que conviene revisar periódicamente si alguno esconde un ciclo.
+
+## Reglas de dependencia que una herramienta hace cumplir
+
+Una frontera que no se comprueba es una sugerencia. Hay varias herramientas que la convierten en regla
+del pipeline. Las más usadas hoy son:
+
+| Herramienta                             | Qué comprueba                                                                                   | Cuándo encaja                                                         |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `import-x/no-restricted-paths` (ESLint) | Zonas de carpetas que no pueden importar otras carpetas                                         | Reglas por capa dentro de una aplicación                              |
+| `dependency-cruiser`                    | Reglas `from`/`to` sobre el grafo completo, con severidad `error`, `warn`, `info` o `ignore`    | Reglas de cualquier forma sobre TypeScript o JavaScript, con informes |
+| Nx (`@nx/enforce-module-boundaries`)    | Restricciones por etiquetas entre proyectos (`sourceTag`, `onlyDependOnLibsWithTags`…) y ciclos | Monorepos Nx con proyectos y etiquetas                                |
+| Turborepo (`turbo boundaries`)          | Importaciones fuera del paquete o no declaradas, y etiquetas con `allow`/`deny`                 | Monorepos Turborepo; la función es **experimental** según su docs     |
+| Bazel (`visibility`, `package_group`)   | Quién puede depender de un target, por defecto privado                                          | Builds grandes y políglotas con control de visibilidad estricto       |
+
+Dos matices importantes. Primero, Nx, Turborepo y Bazel son sobre todo **límites de build**: también
+impiden importar, pero su fuerza real está en declarar qué proyecto depende de cuál para cachear y
+paralelizar bien. Segundo, todas comprueban **el grafo de importaciones**, no la intención: una
+frontera que no está expresada como regla se diluye igual aunque la herramienta sea excelente.
+
+Un ejemplo de la forma de una regla en `dependency-cruiser` (solo la estructura, no la configuración
+completa):
+
+```js
+// .dependency-cruiser.cjs (forma, no configuración completa)
+forbidden: [
+  {
+    name: 'no-internos-de-otro-modulo',
+    severity: 'error',
+    from: { path: '^src/pedidos/', pathNot: '^src/pedidos/index\\.ts$' },
+    to: { path: '^src/pagos/', pathNot: '^src/pagos/index\\.ts$' },
+  },
+],
+```
+
+La herramienta genera una configuración inicial con `dependency-cruiser --init`, que crea un
+`.dependency-cruiser.js` con reglas pensadas para la mayoría de proyectos.
+
+## Ciclos y medición del grafo
+
+Los ciclos de dependencias son la señal más fiable de que una frontera no existe. Si `pedidos`
+importa `pagos` y `pagos` importa `pedidos`, ninguno puede cambiar, probarse o desplegarse solo. La
+técnica para detectarlos y el porqué de su gravedad están en
+[fitness functions y arquitectura evolutiva](/docs/fitness-functions#ciclos-de-dependencias).
+
+Tres hábitos que sirven en cualquier proyecto:
+
+- **Falla el pipeline ante un ciclo nuevo**, pero acepta los existentes en una lista explícita que solo
+  se reduce. Así la deuda queda visible y no crece.
+- **Mide el grafo, no solo la regla.** Número de dependencias entre módulos, módulos con más
+  dependientes entrantes y archivos con más importaciones salientes. Son los puntos donde la frontera
+  se está erosionando.
+- **Trata el número de dependencias como indicador, no como objetivo.** Un módulo muy estable con
+  muchos dependientes puede estar bien; lo que preocupa es la dependencia que cruza en sentido contrario
+  al que la arquitectura dice.
+
+## Tamaño: umbrales por archivo y por módulo
+
+Los archivos enormes suelen esconder dos módulos. Un umbral por archivo (por ejemplo, 300 líneas) y
+otro de complejidad cognitiva por función sirven como alarma temprana, no como ley. Son **criterio del
+autor**: no hay un estándar universal de cifras, y cada equipo debe calibrarlos con su historial de
+cambios.
+
+Para el módulo, el umbral útil no es el número de líneas sino el número de **archivos que cambian
+juntos**. Si cada cambio de negocio toca siempre los mismos cinco módulos, el límite está en el lugar
+equivocado, y ninguna cifra de líneas lo detecta. El historial de Git responde a esa pregunta mejor que
+cualquier linter.
+
+## Propiedad con CODEOWNERS
+
+Una frontera sin dueño se pudre. El archivo `CODEOWNERS` asigna responsables por ruta y se revisa en
+cada pull request. Según la documentación de GitHub, puede colocarse en `.github/`, en la raíz o en
+`docs/`, y GitHub usa el primero que encuentra en ese orden. **La última regla que coincide es la que
+manda**, así que las reglas generales van arriba y las específicas abajo. Los propietarios son usuarios
+o equipos (`@org/equipo`), y **deben tener acceso de escritura explícito** al repositorio.
+
+Algunas decisiones que conviene tomar con él:
+
+- **Propiedad por módulo, no por persona.** Un equipo es dueño de `pedidos/` aunque las personas
+  cambien; el archivo se mantiene solo cuando el organigrama cambia.
+- **El punto de entrada tiene el mismo dueño que el módulo.** Así los cambios de contrato pasan por
+  quien conoce sus consumidores.
+- **Lo compartido necesita un dueño explícito.** Una carpeta `shared/` sin propietario acaba siendo el
+  basurero del proyecto.
+
+## Código generado frente a código escrito a mano
+
+Los archivos generados (rutas autogeneradas, clientes de API, índices de contenido) rompen las reglas
+de propiedad si se editan a mano. La solución es una frontera física: **carpetas separadas para lo
+generado**, marcadas como no editables, con una regla que impide que el código escrito dependa de
+ellas salvo a través de un adaptador. En este repositorio, por ejemplo, el índice de contenido y el
+árbol de rutas están commiteados y generados por herramientas, y la auditoría falla si el índice
+queda desactualizado en lugar de permitir una edición manual.
+
+El punto a comprobar es que la **regeneración sea reproducible**: si dos personas generan el mismo
+archivo y obtienen contenidos distintos, la frontera es ficticia. Y cuando un generado cambia de forma,
+el diff debe mostrarlo para que la revisión lo vea.
+
+## Por qué la disposición afecta a la caché y al build incremental
+
+Las herramientas de build cachean por **huellas de entrada**. Si la huella de un módulo incluye
+archivos que no le afectan, cualquier cambio invalida la caché de todo lo que depende de ellos. Y si
+una dependencia real no está declarada, el build reutiliza un resultado obsoleto.
+
+En Turborepo, por ejemplo, la huella de una tarea incluye por defecto todos los archivos del paquete
+rastreados por Git; la clave `inputs` permite acotarlos, pero **sustituye el comportamiento por
+defecto** y deja de seguir los cambios que Git rastrea. Nx y Bazel tienen modelos parecidos con otras
+palabras. Las consecuencias para el diseño del árbol son claras:
+
+- Un módulo con archivos generados mezclados con código escrito invalida toda la caché cada vez que
+  se regenera.
+- Un `shared/` gigante hace que cualquier cambio invalide medio monorepo.
+- Un módulo bien delimitado tiene una huella pequeña y predecible, y eso es lo que permite
+  reconstruir solo lo necesario.
+
+Por eso la estructura de carpetas no es un asunto estético: decide qué se reconstruye en cada cambio.
+
+## Migrar un árbol desordenado sin parar la entrega
+
+Pocas veces se puede rediseñar un árbol de golpe. La migración segura es incremental y reversible:
+
+1. **Mide primero.** Grafo de dependencias, ciclos y archivos que cambian juntos. Sin medición no sabes
+   qué frontera crear primero.
+2. **Elige un módulo con poco acoplamiento de salida** y crea su punto de entrada. Al principio, el
+   punto de entrada solo reexporta lo que ya se importa de fuera; no cambies nada más.
+3. **Mueve los importadores al punto de entrada** con cambios pequeños y frecuentes, y añade la regla
+   que impide importar internals. Empieza en modo advertencia y pasa a error cuando el número de
+   infracciones llegue a cero.
+4. **Congela la deuda.** Los ciclos existentes van a una lista explícita; los nuevos fallan el build.
+5. **Repite módulo a módulo.** Cada paso debe entregar valor por sí mismo.
+
+Es la idea de **higuera estrangulada** (Strangler Fig) aplicada al árbol de archivos: una fachada
+reemplaza progresivamente una parte antigua por una nueva, y la migración puede detenerse en cualquier
+punto sin dejar el sistema a medias. La versión original de Fowler, en
+[martinfowler.com](https://www.martinfowler.com/bliki/StranglerFigApplication.html), describe el patrón
+a nivel de sistema, y la guía de Azure lo resume como un enrutador que reparte peticiones entre lo
+antiguo y lo nuevo. La lógica se aplica igual a un árbol de carpetas: el punto de entrada es la fachada.
+
+## Cómo lo hace este repositorio
+
+El repositorio combina los dos ejes. La aplicación se organiza en capas de interfaz (átomos, moléculas,
+organismos, plantillas) y en un núcleo `lib/` sin dependencias hacia arriba; el contenido vive aparte, en
+`content/`, generado por herramientas. Las reglas de dependencia entre capas están escritas como zonas
+en la configuración de ESLint, y las reglas de tamaño de archivo y complejidad también se aplican en el
+linter, según el estándar del repo.
+
+Lo que aún no es perfecto, y conviene decir:
+
+- Las capas son un eje técnico, así que los límites de negocio dependen más de la disciplina que de la
+  forma del árbol. El siguiente paso natural sería agrupar por dominio dentro de cada capa.
+- Los barriles por carpeta de capa son cómodos, pero deben revisarse para que ninguno esconda un ciclo.
+- La separación entre código generado y escrito a mano sí está expresada en el árbol y en la auditoría,
+  que falla si un índice generado queda desactualizado.
+
+## Cuándo no y errores frecuentes
+
+No hace falta una arquitectura de módulos para un proyecto de tres personas con una sola aplicación. Las
+fronteras cuestan: exigen puntos de entrada, reglas y mantenimiento. Empieza por las que cuestan menos y
+protegen más, y crece cuando el dolor sea medible.
+
+Errores que se repiten:
+
+- **Crear carpetas `shared/` y `common/` sin dueño.** Se convierten en el lugar donde todo se importa.
+- **Reexportar todo desde el barril «por si acaso».** Desaparece la API pública y se pierde la frontera.
+- **Poner una regla sin medir.** Si la regla nace bloqueando 400 importaciones, el equipo la desactiva. Es
+  mejor empezar en advertencia y bajar la deuda.
+- **Confundir frontera de build con frontera de diseño.** Un monorepo con paquetes separados puede tener
+  dependencias circulares lógicas que el build no detecta si los paquetes no las declaran.
+- **Migrar todo a la vez.** Un rediseño sin entregas intermedias casi siempre se abandona a medias.
+
+## Checklist
+
+- [ ] El árbol tiene un eje primario explícito (dominio o capa) y el otro está expresado como regla.
+- [ ] Cada módulo tiene un punto de entrada, y lo que no pasa por él es interno.
+- [ ] Los barriles están solo en el borde del módulo; los imports internos son directos.
+- [ ] Una herramienta comprueba las reglas de dependencia en el pipeline, no en la memoria del equipo.
+- [ ] Los ciclos fallan el build; los existentes están en una lista que solo se reduce.
+- [ ] Hay umbrales de tamaño por archivo y se mide qué archivos cambian juntos.
+- [ ] `CODEOWNERS` asigna cada módulo y lo compartido tiene dueño.
+- [ ] Lo generado está separado de lo escrito a mano y su regeneración es reproducible.
+- [ ] Las huellas de caché incluyen lo que el módulo necesita y nada más.
+- [ ] La migración avanza módulo a módulo, con entregas intermedias.
+
+## Fuentes
+
+- [dependency-cruiser (repositorio)](https://github.com/sverweij/dependency-cruiser) y su
+  [referencia de reglas](https://github.com/sverweij/dependency-cruiser/blob/main/doc/rules-reference.md):
+  `dependency-cruiser --init`, reglas `forbidden` con `from`/`to` y severidades `error`, `warn`, `info` e `ignore`.
+- [Nx: enforce-module-boundaries](https://nx.dev/docs/technologies/eslint/eslint-plugin/guides/enforce-module-boundaries):
+  `depConstraints`, etiquetas (`sourceTag`, `onlyDependOnLibsWithTags`) y ciclos.
+- [Turborepo: boundaries](https://turborepo.dev/docs/reference/boundaries): función experimental,
+  etiquetas en `turbo.json` y reglas `allow`/`deny`.
+- [Turborepo: caching](https://turborepo.dev/docs/core-concepts/caching): huellas, clave `inputs` y su
+  efecto sobre el comportamiento por defecto.
+- [Bazel: visibility](https://bazel.build/concepts/visibility): atributo `visibility`, `package_group` y
+  visibilidad privada por defecto.
+- [GitHub: About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners):
+  ubicaciones, orden de búsqueda, precedencia de la última regla y acceso de escritura.
+- [Martin Fowler: Strangler Fig Application](https://www.martinfowler.com/bliki/StranglerFigApplication.html).
+- [Microsoft Learn: Strangler Fig pattern](https://learn.microsoft.com/azure/architecture/patterns/strangler-fig).
+- Sobre `sideEffects` y tree shaking: [webpack, Tree Shaking](https://webpack.js.org/guides/tree-shaking/).
+- Este repositorio: `AGENTS.md` (§3 estructura y reglas de dependencia, §4 reglas de código) y
+  `eslint.config.ts`.

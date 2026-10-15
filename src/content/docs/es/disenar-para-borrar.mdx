@@ -1,0 +1,264 @@
+---
+title: 'Diseñar para borrar: retirar código sin miedo'
+description: 'Por qué el código que no se puede borrar acumula coste, y cómo diseñar límites, flags con caducidad y retiradas por fases que se pueden revertir.'
+category: practicas
+tags:
+  - retirada
+  - deuda-tecnica
+  - codigo-muerto
+  - feature-flags
+  - deprecacion
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+order: 13
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 70
+figureCaption: 'Un módulo se retira en tres fases; el registro de uso confirma que nadie lo lee'
+---
+
+# Diseñar para borrar: retirar código sin miedo
+
+Un sistema crece por adición: se añade una función, un endpoint, una bandera, una tabla. Quitar
+algo cuesta más, porque hay que averiguar quién lo usa, arriesgarse a romper a alguien y, a menudo,
+renunciar a una tranquilidad que nadie sabía que tenía. El resultado es un código que nadie se
+atreve a tocar y que, aun así, se paga en cada cambio: más tests que mantener, más ramas en la
+lógica, más cosas que explicar a cada persona nueva.
+
+La tesis de este artículo es que el miedo a borrar no es falta de disciplina personal. Es una
+propiedad de la arquitectura. Si un módulo no tiene dueño, si sus dependencias no están escritas
+en ningún sitio, si no sabes cuánta gente lo lee, borrarlo es una apuesta. Si esas cosas están
+diseñadas, borrarlo es un paso más del flujo normal.
+
+## Por qué borrar cuesta más de lo que parece
+
+Software Engineering at Google dedica su capítulo 15 a la retirada de sistemas y la presenta como
+un proceso ordenado de migración y eliminación. Su argumento central es que una retirada bien
+planificada reduce costes y elimina la redundancia que se acumula con el tiempo, y que una mal
+hecha puede costar más que dejar el sistema como estaba. El libro también recuerda la Ley de
+Hyrum: con suficientes usuarios, todo comportamiento observable de una API acaba dependido por
+alguien, aunque el contrato no lo prometa.
+
+Esa ley explica por qué borrar es difícil. El consumidor no depende solo de lo que documentaste,
+sino de lo que tu sistema hace por casualidad: el orden de los resultados, un campo que siempre
+llega relleno, un tiempo de respuesta que alguien usa como temporizador. Cuando el código lleva
+años en producción, la lista de dependientes reales no es la que aparece en el repositorio.
+
+Ya hablamos de este coste al tratar la [deuda técnica](/docs/deuda-tecnica-evolucion#cómo-medirla-sin-métricas-de-vanidad)
+como interés. Aquí el foco es distinto: no cómo pagar la deuda, sino cómo hacer que una pieza
+pueda desaparecer sin tener que negociar su muerte.
+
+## Diseñar para retirar desde el principio
+
+La forma barata de poder borrar algo mañana es haberlo diseñado para ser borrado. Tres decisiones
+ayudan más que cualquier herramienta.
+
+**Límites pequeños y dueños claros.** Un módulo que tiene un equipo responsable, una frontera
+explícita y un tamaño que cabe en la cabeza de alguien se puede retirar con una conversación. Un
+módulo «de todos» no se retira nunca, porque nadie tiene autoridad para decir que ya no sirve.
+Escribe el dueño donde se pueda consultar, no en la memoria de alguien que quizá ya se fue.
+
+**Dependencias explícitas.** Lo que solo se puede saber leyendo el código de otros no se puede
+retirar sin leerlo todo. Las reglas de capas, los puertos y los contratos hacen visible quién
+depende de qué. El capítulo sobre [fitness functions en el CI](/docs/fitness-en-el-ci#del-diagrama-a-la-comprobación)
+explica cómo convertir esas reglas en comprobaciones automáticas, y la
+[capa anticorrupción](/docs/legado-strangler-anticorrupcion#la-capa-anticorrupción) aísla un modelo nuevo de los detalles del antiguo.
+
+**Retirada prevista desde el inicio.** Un módulo nuevo puede declarar, como parte de su
+documentación, cuándo se espera que deje de existir y qué lo sustituye. No hace falta que la
+fecha sea exacta; hace falta que exista y que alguien la revise. Un fichero de metadatos con la
+forma siguiente basta para que la pregunta «¿quién responde por esto y cuándo caduca?» tenga
+respuesta:
+
+```yaml
+# modules/facturacion/MODULE.yaml (forma, no implementación)
+name: facturacion
+owner: equipo-pagos
+retirement:
+  plannedBy: 2027-03-31
+  replacedBy: facturacion-v2
+```
+
+Este fichero no borra nada por sí solo. Su valor está en que un proceso periódico puede leerlo y
+avisar cuando la fecha pasa con el módulo todavía en uso.
+
+## Señales de código muerto y cómo medirlo
+
+Antes de borrar hay que saber qué está muerto. Ninguna señal sola basta, y cada una se equivoca de
+una forma distinta.
+
+| Señal                      | Qué detecta                                           | Falso positivo típico                                              |
+| -------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
+| Análisis estático          | Archivos y exports que el grafo de imports no alcanza | Imports dinámicos, reflexión, carga por nombre desde configuración |
+| Cobertura de tests         | Líneas que ningún test ejecuta                        | Caminos que solo se activan en producción o en cierres periódicos  |
+| Registro de uso en runtime | Qué módulo, ruta o función se ejecutó y cuántas veces | Ventana de observación demasiado corta para el ciclo del negocio   |
+
+El análisis estático es el punto de partida. Herramientas como [Knip](https://smashingmagazine.com/2023/08/knip-automated-tool-find-unused-files-exports-dependencies/)
+en el ecosistema JavaScript y TypeScript parten de los archivos de entrada, construyen el grafo de
+dependencias y marcan lo que no alcanzan. Sus propios límites son los de cualquier análisis
+estático: lo que se referencia por cadena o se carga dinámicamente no aparece en el grafo, y hay
+que declararlo como excepción.
+
+La cobertura de tests tiene el sesgo contrario. Un test que no toca una función no demuestra que
+la función sea inútil; solo dice que ningún test la toca. La herramienta
+[ember-dead-code](https://github.com/buschtoens/ember-dead-code), por ejemplo, advierte de que si los tests no cubren todo el código, marcará como muerto algo que sí se usa en producción.
+
+Por eso la señal fuerte viene del registro de uso en producción. Un contador por módulo o por
+ruta, que se incrementa cada vez que se ejecuta, responde a la pregunta que importa: ¿alguien lo
+ha usado en los últimos meses? La ventana de observación debe cubrir un ciclo completo del
+negocio. Un módulo de facturación que solo se ejecuta el día de cierre parecerá muerto durante
+29 días de cada 30 (ejemplo ilustrativo). Combinar ambas fuentes es un enfoque razonable (criterio de
+este artículo): el análisis estático genera candidatos y la traza de ejecución los confirma o descarta.
+
+Criterio del autor: un candidato se considera muerto cuando el análisis estático lo marca, el
+registro de uso no ha visto ninguna ejecución en una ventana que cubre el ciclo del negocio, y
+un responsable lo confirma. Ese último paso es el que más se salta y el que más evita sustos.
+
+## Flags que caducan
+
+Las banderas de funcionalidad son la deuda que más se acumula, porque cada una nace con una buena
+razón y muere sin que nadie la quite. El [capítulo sobre entrega progresiva](/docs/entrega-progresiva-flags-canary#feature-flags-liberar-sin-desplegar)
+explica para qué sirven. Aquí interesa cómo hacerlas caducar.
+
+Martin Fowler distingue tipos de flags con vidas muy diferentes. En su artículo sobre
+[feature toggles](https://martinfowler.com/articles/feature-toggles.html), los _release toggles_
+no deberían durar mucho más de una o dos semanas (en el original, «a week or two»), salvo los que
+responden a decisiones de producto, que pueden quedarse más. Describe como práctica del equipo añadir
+la tarea de retirada al backlog al crear cada uno. Los flags de experimento
+y de permisos son dinámicos por naturaleza y no caducan igual. Mezclarlos en un mismo registro
+sin distinguirlos es la forma más rápida de que nadie sepa cuáles se pueden borrar.
+
+Unleash, una plataforma de flags, aplica una idea parecida: marca automáticamente como potencialmente
+obsoletos los flags que superan su vida esperada, y esa vida se configura por tipo de flag.
+
+Lo que sí puedes hacer en tu propio código es que cada flag declare, como mínimo, su tipo, su
+responsable y la fecha en la que debe desaparecer:
+
+```ts
+// Forma de la metadata, no implementación
+type FlagMeta = {
+  name: string;
+  owner: string;
+  kind: 'release' | 'ops' | 'experiment' | 'permission';
+  removeBy: string; // YYYY-MM-DD
+};
+```
+
+Con eso, un job periódico puede listar los flags vencidos y avisar a su dueño. El aviso es lo
+importante: un flag vencido que nadie reclama es una decisión tomada por omisión.
+
+## Retirada por fases: dejar de escribir, dejar de leer, borrar
+
+Borrar un módulo de una sola vez concentra todo el riesgo en un solo paso. Dividir la retirada en
+tres fases reparte el riesgo y deja un punto de reversión en cada una. El orden importa: primero
+se detienen las escrituras, luego las lecturas y solo al final se borra.
+
+**Fase 1: dejar de escribir.** El módulo sigue funcionando, pero no admite datos nuevos. Las
+entradas se redirigen al sustituto o se marcan como solo lectura. Si el módulo tiene datos
+propios, esta fase obliga a decidir qué pasa con lo que ya existe. Es el momento de descubrir
+quién escribe en realidad: a menudo aparece un proceso por lotes que nadie recordaba.
+
+**Fase 2: dejar de leer.** Los lectores se migran al sustituto, uno a uno, y el registro de uso
+confirma que el módulo ya no se consulta. Esta fase es la más delicada por la Ley de Hyrum: un
+lector desconocido puede depender de algo que nunca documentaste. Por eso conviene mantener la
+fase durante una ventana que cubra un ciclo completo y avisar a quien aún aparezca en el
+registro antes de seguir.
+
+**Fase 3: borrar.** Solo ahora se elimina el código. El cambio debe ser un commit o un conjunto
+pequeño de commits que se pueda revertir sin deshacer otros cambios. Si hay datos asociados, la
+eliminación de la tabla o columna sigue el patrón de fases de las
+[migraciones sin downtime](/docs/migraciones-bd-sin-downtime#las-cuatro-fases): primero se deja de
+usar y luego se contrae el esquema.
+
+La reversión tiene una forma distinta en cada fase. En la primera se vuelve a activar la escritura
+con un flag. En la segunda se devuelve la lectura al módulo original, que sigue desplegado. En la
+tercera la vuelta atrás es un _revert_ del commit y, si hubo datos, la restauración desde copia.
+Por eso conviene no borrar en la misma semana que se detienen las lecturas: deja pasar un tiempo
+suficiente para que una dependencia desconocida aparezca mientras todavía puedes recuperarla
+barato.
+
+## Servicios y APIs: deprecar con métricas antes de apagar
+
+Con una API el problema es el mismo, pero los consumidores no están bajo tu control. La forma
+sana de retirar un endpoint es avisar con antelación, medir quién lo usa y apagarlo cuando el uso
+llegue a cero o a un umbral que hayas acordado con los clientes que quedan.
+
+Hay dos cabeceras HTTP normalizadas para comunicarlo. La [cabecera Deprecation](https://www.rfc-editor.org/rfc/rfc9745.html),
+publicada como RFC 9745 en marzo de 2025, indica la fecha en la que el recurso queda o quedó
+deprecado. No cambia el comportamiento: el cliente puede seguir usándolo como antes. La
+[cabecera Sunset](https://www.rfc-editor.org/rfc/rfc8594), definida en la RFC 8594 de 2019, indica una
+fecha futura en la que el recurso probablemente dejará de responder. La RFC la trata como una
+pista y no como una garantía, así que no conviene que sea la única comunicación. Ambas admiten un
+enlace a la documentación de la retirada, que es donde debe ir la alternativa.
+
+Las métricas para decidir cuándo apagar deben separar clientes, no solo volumen. Un endpoint con
+un 2 % de las peticiones puede ser un único cliente crítico que aún no ha migrado. Mide por
+cliente o por credencial, identifica a los dueños de los que siguen llamando y negocia la fecha
+con ellos. Un periodo de deprecación de meses, con métricas visibles en un panel, es una inversión
+pequeña comparada con una caída en producción.
+
+## Por qué el miedo a borrar es un problema de arquitectura
+
+Si cada vez que alguien propone borrar algo hay una discusión larga, el problema no es que el
+equipo sea temeroso. Es que el sistema no le da las respuestas necesarias: no sabe quién depende
+de qué, no mide el uso, no tiene fechas, y no tiene un camino de vuelta. En ese contexto, no
+borrar es la decisión racional.
+
+Las decisiones que cambian eso son arquitectónicas: fronteras claras, dueños escritos, dependencias
+visibles, medición de uso de serie y retiradas que se pueden revertir por pasos. Con ellas, borrar
+deja de ser un acto de valor y se convierte en una tarea más, con criterios y responsable. Pedir
+más valor a la gente sin cambiar nada de eso no funciona, y tampoco se arregla con una norma de
+«borrar más».
+
+## Cuándo sí y cuándo no
+
+Borrar siempre compensa cuando el código está muerto con evidencia, tiene dueño que lo confirma y
+tiene una ruta de vuelta. No siempre compensa retirar de inmediato:
+
+- **Cuando hay obligación de retención.** Datos o registros que una norma exige conservar no se
+  borran por limpieza; se archivan con su política de acceso.
+- **Cuando el coste de migrar supera el de mantener.** Un módulo pequeño, estable y sin cambios
+  puede costar menos dejado en su sitio que una migración con riesgo. Es una decisión que debe
+  quedar escrita, no un olvido.
+- **Cuando no hay sustituto todavía.** Retirar antes de tener alternativa convierte la retirada en
+  una caída. Primero se construye el sustituto y después se retira.
+- **Cuando no tienes ventana para observar.** Si no puedes medir uso durante un ciclo completo, no
+  tienes evidencia suficiente para borrar. Espera o instrumenta antes.
+
+## Errores frecuentes
+
+- **Borrar sin medir.** Eliminar porque «parece que nadie lo usa» es la receta para la incidencia
+  de los viernes. Sin registro de uso, la intuición sobre lo muerto suele estar equivocada.
+- **Flags sin fecha.** Un flag sin responsable ni caducidad es deuda con etiqueta de experimento.
+  Cada flag debe nacer con su final escrito.
+- **Retirar todo a la vez.** Una sola operación de borrado concentra el riesgo y no deja punto de
+  reversión. Separa escritura, lectura y borrado en pasos distintos.
+- **Confiar en la cobertura.** Que los tests no toquen algo no lo convierte en muerto. Los caminos
+  de cierre, los reintentos y los errores raros se activan fuera de la suite.
+- **Deprecar sin avisar a nadie.** Una cabecera que nadie lee no es un aviso. Quien sigue usando la
+  API necesita un contacto, una alternativa y una fecha concreta.
+- **Olvidar la deuda de la propia retirada.** Un módulo «en retirada» que lleva dos años así es
+  el mismo código muerto con otro nombre. La fase de borrado también necesita fecha.
+
+## Checklist
+
+- Cada módulo, servicio y endpoint tiene un dueño escrito y una fecha prevista de retirada.
+- Las dependencias entre módulos se pueden listar con una herramienta, no solo con la memoria del equipo.
+- El análisis estático genera candidatos a retirar, con sus excepciones documentadas.
+- Hay un registro de uso en producción que cubre un ciclo completo del negocio antes de borrar.
+- Los flags declaran tipo, responsable y fecha de retirada, y un proceso avisa cuando vencen.
+- Cada retirada se hace en fases: primero dejar de escribir, luego dejar de leer, por último borrar.
+- Cada fase tiene una vuelta atrás concreta, sin depender de una restauración manual.
+- Las APIs publican cabeceras de deprecación y enlazan a la alternativa antes de apagar.
+- Quedan decisiones escritas para los casos en que no conviene borrar.
+
+## Fuentes
+
+- Titus Winters, Tom Manshreck y Hyrum Wright, _Software Engineering at Google_ (O'Reilly, 2020), capítulo 15 (Deprecation): [índice oficial del libro](https://abseil.io/resources/swe-book/html/toc.html), [capítulo 15](https://abseil.io/resources/swe-book/html/ch15.html) y [entrada de Hyrum's Law](https://lawsofsoftwareengineering.com/laws/hyrums-law/).
+- Martin Fowler, [Feature Toggles](https://martinfowler.com/articles/feature-toggles.html).
+- Documentación de Unleash, [feature flags y estado obsoleto](https://docs.getunleash.io/concepts/feature-flags).
+- S. Dalal y E. Wilde, [RFC 9745: The Deprecation HTTP Response Header Field](https://www.rfc-editor.org/rfc/rfc9745.html) (marzo de 2025).
+- E. Wilde, [RFC 8594: The Sunset HTTP Header Field](https://www.rfc-editor.org/rfc/rfc8594) (mayo de 2019).
+- Knip, [descripción y funcionamiento del análisis de archivos y exports no usados](https://smashingmagazine.com/2023/08/knip-automated-tool-find-unused-files-exports-dependencies/) (artículo de Smashing Magazine, agosto de 2023).
+- Proyecto ember-dead-code, [documentación sobre falsos positivos por cobertura](https://github.com/buschtoens/ember-dead-code).

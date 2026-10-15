@@ -1,0 +1,277 @@
+---
+title: 'MCP and A2A: connecting tools and agents'
+description: 'What MCP and A2A standardize, what you gain and pay when adopting them, and when to expose a tool via MCP instead of a plain API.'
+category: tendencias
+tags:
+  - mcp
+  - a2a
+  - agents
+  - interoperability
+  - security
+order: 9
+roadmap:
+  id: ia
+  stage: panorama
+  step: 40
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'One agent uses MCP connectors to tools and speaks A2A with another agent'
+---
+
+# MCP and A2A: connecting tools and agents
+
+A useful agent needs two kinds of connection that used to be built by hand: reaching data and tools,
+and talking to other agents. During 2025 every team wrote its own adapter for each system and its
+own bridge between agents. Today there are two open protocols that aim to make those integrations
+happen once. **MCP** (Model Context Protocol) covers the relationship between an agent and its
+tools; **A2A** (Agent2Agent) covers the relationship between agents.
+
+The thesis of this article is simple. A standard makes integration cheaper, but it does not make
+integration safe. What changes is where the risk sits: it moves from the function you wrote to the
+description a server publishes, to the identity of an agent you do not control, and to the
+permissions you grant per tool. Designing with MCP and A2A is, above all, designing those contracts.
+
+<Callout tone="info" title="Cutoff date">
+  Data as of October 2026. The latest MCP revision is `2026-07-28`, and A2A has reached version 1.0.
+  Protocols change often: check each detail against the [MCP
+  specification](https://modelcontextprotocol.io/specification/2026-07-28) and the [A2A
+  specification](https://a2a-protocol.org/latest/specification/) before deciding.
+</Callout>
+
+## Two different problems
+
+It helps to separate them from the start, because they are often confused:
+
+| —                 | MCP                                                  | A2A                                                                 |
+| ----------------- | ---------------------------------------------------- | ------------------------------------------------------------------- |
+| Connects          | An agent or application to tools, data and templates | An agent to another agent                                           |
+| Unit of work      | A tool call or a resource read                       | A stateful task, which can last a long time                         |
+| Who decides       | The model picks the tool inside the host             | One agent delegates and the other accepts, rejects or asks for more |
+| What is published | The server's tools, resources and prompts            | An Agent Card describing its capabilities                           |
+
+A useful way to remember it: MCP answers "what can I act on?" and A2A answers "who do I ask to act
+for me?". A real system may need both: a support agent that uses MCP to look up orders and A2A to
+delegate a return to another vendor's logistics agent.
+
+## MCP: what it standardizes
+
+The basic pieces (host, client, server, tools, resources, prompts and transports) are explained in
+[architecture of LLM applications](/docs/arquitectura-agentes-llm#tools-and-mcp). Here what
+matters is what has changed and what it implies for design.
+
+### The 2026-07-28 revision
+
+The current specification is `2026-07-28`, published as the final version on July 28, 2026 after a
+release candidate on May 21, according to the [project blog](https://blog.modelcontextprotocol.io/tags/protocol/).
+Its normative text describes three changes that affect architecture:
+
+- **Self-contained requests.** The core no longer depends on a session established at the start:
+  each request carries its own capabilities. That lets it scale on ordinary HTTP infrastructure
+  (load balancers, caches, retries) without a server remembering who the client is.
+- **A smaller core.** Among the client features, the core now lists only _elicitation_ (the server
+  asks the user for data). _Sampling_ and _roots_ no longer appear in that list.
+- **Optional extensions.** New capabilities are added as extensions that client and server must
+  explicitly support. The specification names **Tasks** (long-running work with polling, mid-flight
+  input and durable handles), **Skills over MCP** (structured instructions discovered through MCP)
+  and **MCP Apps** (interactive interfaces inside the conversation).
+
+The blog adds two governance commitments: authorization is aligned more closely with OAuth and
+OpenID Connect, and a formal deprecation policy is introduced so the protocol can evolve without
+breaking existing implementations.
+
+For the architect, the practical reading is this: an MCP server is no longer a session you must keep
+alive, but a set of capabilities negotiated on every call. That simplifies deployment, but it
+requires every request to be auditable on its own.
+
+### A contract that runs outside your control
+
+The specification is blunt: tools represent arbitrary code execution, and their descriptions,
+including behavior annotations, should be considered **untrusted** unless they come from a trusted
+server. The host must obtain explicit consent before invoking any tool, and the protocol itself
+acknowledges that it cannot enforce these principles on its own: the application has to implement
+them.
+
+That nuance is the center of this article. When you connect a third-party server, you are bringing
+in text that the model will read as instructions. A tampered description can push the agent to use a
+tool in an unintended way, and a tool result can contain orders (the instruction-injection risk
+expanded in
+[controlling AI: governance and autonomy](/docs/controlar-la-ia-gobierno-y-autonomia#prompt-injection-the-risk-that-changes-once-you-add-tools)).
+
+## A2A: delegation between agents
+
+A2A was created so that agents from different vendors, built with different frameworks, can
+collaborate without exposing their memory, tools or internal logic. It is described as a delegation
+protocol: the client agent asks for a task and the remote agent decides how to resolve it.
+
+Three concepts explain most of the protocol, according to the [specification](https://a2a-protocol.org/latest/specification/):
+
+- **Agent Card.** A JSON document the server publishes at a well-known URL. It describes the agent's
+  identity, its capabilities (for example, whether it supports streaming or push notifications), its
+  skills, the interfaces through which it can be called and its authentication requirements. The
+  specification also contemplates signing the card so the client can verify who issued it.
+- **Task.** The unit of work. It has an identifier, a status, a message history and **artifacts**,
+  which are the results. The specification asks that results go in artifacts rather than in chat
+  messages.
+- **Message and part.** Each exchange is a message with a role (user or agent) and content parts
+  (text, file or structured data).
+
+Task states let you see delegation as a process rather than a single call: `SUBMITTED`, `WORKING`,
+`INPUT_REQUIRED` and `AUTH_REQUIRED` are active or interrupted states, while `COMPLETED`, `FAILED`,
+`CANCELED` and `REJECTED` are terminal. A terminal state blocks further messages, which prevents a
+closed task from reopening the conversation by accident.
+
+The specification defines three functionally equivalent bindings: JSON-RPC, gRPC and HTTP+JSON. One
+agent can expose several at once, and the protocol version travels in a header (`A2A-Version`).
+
+### Governance and adoption status
+
+Google announced A2A on April 9, 2025 and donated it to the Linux Foundation on June 23, 2025,
+according to the [Google Open Source entry](https://opensource.googleblog.com/2026/04/a-year-of-open-collaboration-celebrating-the-anniversary-of-a2a.html).
+The same entry places version 1.0 in March 2026.
+In April 2026 the Linux Foundation reported [more than 150 organizations](https://linuxfoundation.org/press)
+supporting it; that is the foundation's own figure and measures declared support, not production
+deployments.
+
+MCP follows a parallel path: Anthropic donated it in December 2025 to the Agentic AI Foundation, a
+directed fund within the Linux Foundation, according to the
+[Anthropic announcement](https://anthropic.com/news/donating-the-model-context-protocol-and-establishing-of-the-agentic-ai-foundation).
+Having both protocols under neutral governance reduces the risk of depending on a single vendor,
+which in practice is the main reason to adopt them.
+
+## What you gain and what you pay
+
+Adopting these protocols has a clear benefit and several costs that tend to show up late.
+
+| You gain                                                                   | You pay                                                                                          |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Decoupled model and tools: you change model without rewriting integrations | A new attack surface: every server is code and text the agent may obey                           |
+| Reuse one server across several clients and hosts                          | Dependence on third-party servers whose quality and maintenance you do not control               |
+| Capability discovery without coupling the client's code                    | Descriptions that consume context on every turn, even when the tool is not used                  |
+| Explicit delegation states between agents (A2A)                            | More moving parts to operate: authentication, traces, timeouts and retries across a network      |
+| Neutral governance and a broad ecosystem                                   | Versions that change: you must follow deprecations and extensions that not every client supports |
+
+The cost that surprises most teams is context. A server with dozens of tools loads descriptions into
+the model's window even when nobody uses them. The usual fix is to load names up front and schemas
+on demand, something the [Claude Code map](/docs/harness-engineering-claude-code#the-claude-code-map)
+also applies to its own mechanisms.
+
+## Expose via MCP or use a plain API
+
+The question is not whether MCP is better than an API, but who the integration serves. A practical rule:
+
+- **Expose via MCP** when the consumer is an agent or an AI host, when the same service should serve
+  several clients (IDE, assistant, your own flow) and when the capability is a set of well-described
+  actions rather than a resource other programs consume at scale.
+- **Keep the plain API** when the consumer is a deterministic system (another service, a job, a
+  frontend), when performance and latency are critical, or when the contract is already well solved
+  with OpenAPI or gRPC and an agent adds nothing.
+- **Do not wrap every endpoint by default.** An MCP layer over fifty CRUD routes yields fifty tools
+  the model confuses with one another. Design a few actions with a clear intent, as
+  [the agent architecture article](/docs/arquitectura-agentes-llm#tools-and-mcp) already recommends.
+
+The API remains the source of truth in both cases. MCP or A2A are a facade for a specific consumer,
+not a substitute for domain design.
+
+## Contracts: description, versioning and permissions
+
+In an MCP server, each tool's description is part of the contract, with the same weight as its
+signature. The model decides whether to use a tool by reading its name and description, so a vague
+description produces wrong calls, and a description changed without notice produces different
+behavior without any change in the client's code.
+
+This is the shape worth fixing: which fields exist and what each one must say, without implementation.
+
+```typescript
+type Tool = {
+  name: string; // namespaced by domain: orders_search
+  description: string; // what it does, when to use it and when not to
+  inputSchema: unknown; // JSON Schema for the input; examples in each field
+  annotations?: {
+    readOnlyHint?: boolean; // a hint, not a guarantee: it comes from an untrusted server
+    destructiveHint?: boolean;
+  };
+};
+```
+
+Annotations are hints. The specification asks that they be treated as untrusted unless they come from
+a server you trust, so your permission policy cannot rely on them alone. You decide which tools are
+read-only and which require confirmation.
+
+Three contract decisions are worth making early:
+
+- **Explicit versioning.** When a tool changes incompatibly, create a new one with a new name instead
+  of altering the signature. An agent still using the old version then fails visibly, not silently.
+- **Permissions per tool.** Grant the minimum: an allowlist of tools per agent, not the whole server.
+  Anything with irreversible effects requires human approval, as detailed in
+  [levels of autonomy](/docs/autonomia-de-la-ia#autonomy-levels).
+- **Scoped credentials.** The server should use user or agent tokens with the smallest possible scope,
+  never a shared administrator credential, and authorization should follow the OAuth flow the
+  specification describes.
+
+## Security: what to check before connecting a server
+
+Before connecting a third-party server, review four things:
+
+1. **What the agent reads.** Any text that arrives through a tool (a page, a ticket, an email) may
+   contain instructions. Treat it as data, not as orders.
+2. **What it can write.** Tools with external effects (send, delete, pay) need human confirmation or
+   a business rule that does not depend on the model.
+3. **What changes over time.** Pin the server version and review its changes as you would review a
+   dependency. An update can alter descriptions without touching your client's code.
+4. **What gets logged.** Every call should be traced with its arguments, its result and who authorized
+   it, so you can reconstruct the decision.
+
+For A2A the risk is identity: which remote agent is actually answering. That is why verifying the
+Agent Card's signature and the domain matters. An unverified card amounts to trusting a name.
+
+## When not to adopt them yet
+
+Adopting these protocols is not always the right decision. Wait when:
+
+- **There is one integration and one consumer.** A well-typed function inside the application is
+  simpler, cheaper and easier to test.
+- **The capability is not an action of the agent.** If the model only needs to read a fixed value, a
+  parameter in the prompt or a deterministic query is enough.
+- **You cannot operate one more server.** Each server adds authentication, deployment, monitoring and
+  updates. If nobody will maintain it, the integration becomes debt.
+- **Latency or strict reliability dominate.** A deterministic flow that needs no judgment should be
+  code, not a tool call to a model.
+- **Your clients do not support the version you need.** Check which revision and which extensions each
+  client implements before designing around an optional feature.
+
+## Common mistakes
+
+- **Connecting whole servers.** Giving the agent an entire server instead of the tools it needs
+  multiplies the surface and the context.
+- **Trusting annotations.** A "read-only" hint is not a guarantee. You decide the level of risk.
+- **Wrapping the API without redesigning it.** Fifty endpoints become fifty confusing tools. Design
+  actions with intent.
+- **Changing descriptions without versioning.** The agent's behavior changes even though your code does not.
+- **Treating A2A as a plain HTTP call.** A task has states, can ask for input and can wait for
+  authorization. Model it as a process.
+- **Forgetting traceability.** Without a log of calls there is no way to explain why the agent did something.
+
+## Checklist
+
+- [ ] You know whether each integration is agent-to-tool (MCP) or agent-to-agent (A2A).
+- [ ] Each remote server or agent is pinned to a version and has an owner.
+- [ ] Tools have a domain-namespaced name, a description of when to use them and an input schema.
+- [ ] No security decision depends only on a server's annotation.
+- [ ] The agent receives the minimum set of tools, with human approval for anything irreversible.
+- [ ] Credentials are narrowly scoped and not shared.
+- [ ] Every call is logged with its arguments, result and authorization.
+- [ ] In A2A, the Agent Card is verified before delegating work.
+- [ ] You checked whether a plain API or a function is enough before adding a server.
+
+## Sources
+
+Consulted in October 2026. The protocols change often: check each version against the official source.
+
+- [MCP specification, revision 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28)
+- [MCP specification, revision 2025-11-25 (previous)](https://modelcontextprotocol.io/specification/2025-11-25)
+- [MCP blog: the "The 2026-07-28 Specification" entry and earlier posts](https://blog.modelcontextprotocol.io/tags/protocol/)
+- [Anthropic: donating MCP and establishing the Agentic AI Foundation](https://anthropic.com/news/donating-the-model-context-protocol-and-establishing-of-the-agentic-ai-foundation)
+- [A2A specification (Agent Card, tasks, messages and bindings)](https://a2a-protocol.org/latest/specification/)
+- [A2A project site](https://a2a-protocol.org/latest/)
+- [Google Open Source: one year of A2A (April 2026)](https://opensource.googleblog.com/2026/04/a-year-of-open-collaboration-celebrating-the-anniversary-of-a2a.html)
+- [Linux Foundation: press, including the April 2026 A2A release](https://linuxfoundation.org/press)

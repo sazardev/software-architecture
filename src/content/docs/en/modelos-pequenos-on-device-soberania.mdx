@@ -1,0 +1,269 @@
+---
+title: 'Small models, on-device and data sovereignty'
+description: 'When a small model on the device or in your own infrastructure beats a frontier API: latency, privacy, cost, sovereignty and what you give up.'
+category: tendencias
+tags:
+  - slm
+  - on-device
+  - soberania-de-datos
+  - cuantizacion
+  - enrutamiento-de-modelos
+order: 12
+roadmap:
+  id: ia
+  stage: panorama
+  step: 50
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A small model works inside a boundary: the data never leaves it'
+---
+
+# Small models, on-device and data sovereignty
+
+By default, most teams call the API of a large frontier model. It is the most convenient
+option: there is no infrastructure to run and quality is high. It is not always the right one.
+A small language model (SLM) that runs on a phone, on your own server or inside the
+organization's environment can be better for certain tasks, and it also changes where the data
+lives. This article covers when that choice pays off, what it costs, and how to combine both
+worlds without losing control.
+
+The thesis is simple: **a small model does not compete on general intelligence, it competes on
+boundaries**. It wins when the task is narrow, the data must stay inside a perimeter, or the
+answer has to arrive in milliseconds without a network. It loses when the task needs broad
+reasoning or when you want quality without maintenance effort.
+
+<Callout tone="info" title="Cut-off date">
+  Written in October 2026. The open model ecosystem changes every few months: specific model names
+  are left out on purpose, and the claims about licenses, regulatory frameworks and platforms were
+  checked against the sources in the last section.
+</Callout>
+
+## What we mean by "small" and "on-device"
+
+"Small" is relative and has no official threshold. It is measured in parameters, but what
+matters to the architect is whether the model fits in the available memory and answers within
+the latency budget. It helps to separate three places where a model can run, because each gives
+different guarantees:
+
+- **Frontier API:** the provider operates the model. Your data travels to their infrastructure,
+  and you depend on their availability, prices and versions.
+- **Your own infrastructure:** the model runs on your servers, in a private cloud or with a
+  provider that offers controlled residency. You decide region, retention and logs.
+- **On the device:** the model runs on the phone, the laptop or the browser. The data never
+  leaves the device, unless the app sends it on purpose.
+
+They are not mutually exclusive. One product can use all three depending on the task. The
+architecture question is which task goes where, and why.
+
+## The decision criteria
+
+Before choosing a small model, you should be able to explain which problem it solves that the
+API does not. There are six criteria, and it is worth evaluating them in this order.
+
+**Latency.** A local answer does not depend on the network or on the provider's queue. For
+autocomplete, per-keystroke classification or live corrections, that difference decides the
+experience. Note that total latency includes loading the model into memory, which on a device
+can be the slowest part of the first use.
+
+**Privacy and residency.** If the data does not leave the perimeter, several contract and
+transfer questions disappear. The obligations do not: the data is still personal, it still
+needs a legal basis and retention, and the local model can also write the data to logs or
+caches. See [privacy by design](/docs/privacidad-por-diseno-gdpr).
+
+**Cost at volume.** With little traffic, the API is almost always cheaper because you pay for no
+idle infrastructure. With heavy traffic and repetitive tasks, the calculation can flip: the cost
+becomes compute and operations instead of per-token billing. The breakdown of what makes up
+that cost is in [inference cost](/docs/costo-de-inferencia). What matters is measuring with your
+own volume, not with catalogue figures.
+
+**Offline availability.** An app that must work on the subway, on a factory floor or on a ship
+cannot depend on an HTTP call at every step. It is the same problem as
+[offline-first](/docs/movil-offline-first-sincronizacion) for data: the model ships with the app
+and synchronization, if any, happens afterwards.
+
+**Version control.** With your own model you fix the version and decide when to change it. A
+provider can retire a model or change its behavior. In regulated processes, being able to
+reproduce an answer from six months ago is a requirement, not a convenience.
+
+**Measurable quality.** You only know whether the small model is enough if you have your own
+evaluations. Without them, any choice is a matter of faith. See
+[continuous evaluation](/docs/controlar-la-ia-gobierno-y-autonomia#continuous-evaluation).
+
+## What you give up
+
+Choosing a small model means accepting costs that the API hides. Write them down in the
+decision:
+
+- **Reasoning capacity.** Open-ended tasks, long multi-step chains and ambiguous instructions
+  usually degrade first in small models. The failure is not always obvious: the answer reads
+  well and is wrong.
+- **Maintenance.** You load the model, update it, watch memory, manage hardware acceleration and
+  fix compatibility errors. That work needs an owner.
+- **Updates.** Advances reach the large models first. A pinned model is stable, but it ages; you
+  need to plan when to re-evaluate it.
+- **Your own evals.** Without a set of real, labeled cases run on every change, you cannot tell
+  whether an update made something worse.
+
+## Hardware as a real constraint
+
+The architecture of a local model starts with the hardware, not the model. Three limits dominate
+almost every decision:
+
+1. **Memory.** The weights and the context cache must fit in RAM or accelerator memory. If they
+   do not, the system degrades or crashes. It is the constraint that weighs most on a phone
+   shared with other apps.
+2. **Energy and heat.** Sustained inference drains the battery and throttles the device after a
+   few minutes. A background task must be measured in consumption, not only in latency.
+3. **Accelerators.** The NPU, GPU or accelerator of a machine changes the result a lot, and not
+   every device has one. A design that only works on the latest phone model leaves part of your
+   users out.
+
+**Quantization** is the usual lever to reduce memory: storing weights with fewer bits. It is a
+trade-off, not a free improvement. Fewer bits reduce memory and sometimes speed, but they degrade
+quality unevenly: some tasks hold up and others do not. The only way to choose the quantization
+level is to measure quality on your task with your data. Formats and levels depend on the
+inference tool you use, so that tool's documentation takes precedence over any generic table.
+
+Mobile and system platforms already ship built-in models and frameworks to use them. Apple
+documents its system model framework at
+[developer.apple.com](https://developer.apple.com/documentation/foundationmodels), including its
+context and usage limits. Before designing on top of one of these models, check the current
+documentation: capabilities change with each system release.
+
+## Open models: what "open" means
+
+"Open model" is used for different things, and the difference affects what you can legally do.
+
+In 2024 the Open Source Initiative published the **Open Source AI Definition 1.0**. Under it, an
+AI system is open when its parameters are released under OSI-approved terms, its training and
+running code under an approved license, and there is enough information about the data to build
+a substantially equivalent system. A model that only publishes its weights under a custom license
+does not meet that definition, even if the catalogue calls it "open"
+([OSI](https://opensource.org/press-mentions/osi-officially-releases-its-definition-for-open-source-ai)).
+
+In practice there are three situations:
+
+- **Weights under a permissive license** (for example Apache 2.0 or MIT): you can use, modify and
+  distribute them with few conditions. Still check the exact license of each version.
+- **Weights under a restricted community license.** Some licenses from well-known families
+  include acceptable-use clauses and size thresholds. The Llama 3 license, for example, requires
+  asking Meta for a license if the products or services of the licensee and its affiliates had more
+  than 700 million monthly active users in the preceding calendar month, measured at the Llama 3
+  release date (18 April 2024), and subjects use to Meta's acceptable use policy (read the official
+  text for the version you use). For a
+  small company the threshold is irrelevant; for another it may be decisive.
+- **No clear license or research-only terms.** It is not a production model, however well it
+  performs in a demo.
+
+For the architect, the concrete question is: can I serve this model in my product, to my
+customers, in my country, with the obligations its license imposes? That answer should be written
+down next to the version you chose. An open model also has provenance: knowing what data trained
+it is part of the risk assessment, even when its license allows use.
+
+## Data sovereignty: where it is processed and where it is stored
+
+Data sovereignty is the ability to say, precisely, which jurisdiction processes and stores the
+data, who can access it and under which law. With a model behind an API, the contract and the
+provider's documentation give that answer. With a local model, you give it.
+
+There are at least four places where control is lost without anyone noticing:
+
+- **Logs and traces.** LLM observability tools often store prompts and answers. If personal data
+  reaches the logs, the perimeter extends to the logging platform.
+- **Caches.** A semantic or prompt cache can keep data outside the intended location.
+- **Client telemetry.** Some tools send metrics or usage fragments to the software vendor, even
+  when the model is local.
+- **Backups and replicas.** What is copied for recovery is also processing.
+
+In Europe, transfers of personal data outside the European Economic Area are governed by
+Chapter V of the [GDPR](https://eur-lex.europa.eu/eli/reg/2016/679/oj). The EU-US Data Privacy
+Framework, adopted by the Commission as an adequacy decision in 2023 (Implementing Decision (EU)
+2023/1795), is one of the bases for those transfers. Adequacy decisions are reviewed periodically
+and their continuity depends on the legal framework of the receiving country, so do not assume it
+is in force indefinitely: check its current status with the European Commission before deciding.
+That is not a reason to change provider outright, but it is a reason not to build the whole system
+on a single transfer basis and to have an exit plan. Some sectors also have their own residency or
+supervision rules, which may require local infrastructure regardless of what the GDPR says.
+
+A practical rule: if you cannot say in one sentence where each copy of the data your model
+receives lives, your sovereignty is only theoretical.
+
+## Routing: simple locally, hard elsewhere
+
+Many systems do not choose between a small and a large model; they combine them. A **router**
+decides per request: the simple cases are solved by the local model and the hard ones go to the
+frontier API. The pattern reduces cost and latency and, done well, protects the most sensitive
+data.
+
+Academic work has measured it. RouteLLM (Ong et al., ICLR 2025) trains routers on human
+preference data between a strong and a weak model, and reports cost savings of more than 2x with
+no loss in quality on its evaluations, with some ability to generalize to models not seen in
+training ([arXiv](https://arxiv.org/abs/2406.18665),
+[ICLR 2025](https://iclr.cc/virtual/2025/poster/30737)). These are results on their benchmarks;
+your traffic may give a different figure.
+
+The pattern has concrete risks:
+
+- **The router also processes data.** If the difficulty classifier relies on an external model,
+  you have already sent the data out before deciding. The router must live inside the same
+  perimeter as the most sensitive data.
+- **Classification errors.** A hard task sent to the small model produces plausible but wrong
+  answers. Measure false negatives, not only the savings.
+- **Two behaviors.** Different users get answers of different quality depending on the route.
+  That complicates support, testing and explanations.
+- **Hidden cost.** Maintaining two models, two sets of evals and routing logic takes work. In a
+  small system it may not pay off.
+
+## When yes and when no
+
+A small model makes sense when:
+
+- the task is narrow (classify, extract fields, rewrite, summarize a short text) and you have
+  real cases to measure it;
+- personal or confidential data must not leave a specific perimeter;
+- latency or offline operation are product requirements;
+- volume is high and repetitive, and you already have the capacity to operate infrastructure;
+- you need to pin a version and reproduce results.
+
+Staying with a frontier API makes sense when:
+
+- the task requires broad reasoning or multi-step work with tools;
+- volume is low and you do not want to operate anything;
+- you have no evaluations of your own and do not plan to build them;
+- the license of the local model does not cover your use or your scale.
+
+## Common mistakes
+
+- **Choosing by size.** "It is small, so it will be cheap and fast" without measuring quality on
+  your task or real latency on the target device.
+- **Confusing local with private.** A model on the phone does not protect data that is later sent
+  to analytics, logs or an external service.
+- **Ignoring the license.** Discovering it when scaling, once there are customers in a specific
+  market.
+- **Quantizing without measuring.** Applying the lowest level that fits in memory without checking
+  which tasks get worse.
+- **Routing without evaluating the router.** Assuming the classifier is right and not measuring the
+  hard cases that stay on the small model.
+- **Pinning the model forever.** Not planning when to re-evaluate it or what would change the
+  decision.
+
+## Checklist
+
+- [ ] The task is narrow and has a set of real cases to evaluate it.
+- [ ] There is an explicit reason (latency, residency, cost, offline, version) not to use the API.
+- [ ] You know on which devices or servers it runs and what memory and acceleration it needs.
+- [ ] The model license allows your use, your scale and your markets, and it is documented.
+- [ ] You have mapped where the data lives: input, cache, logs, telemetry, backups.
+- [ ] If there is an international transfer, you have a legal basis and a fallback plan.
+- [ ] If you route, the router lives inside the perimeter and you measure false negatives.
+- [ ] You pin the model version and have a schedule to re-evaluate it.
+
+## Sources
+
+- [Open Source AI Definition 1.0, OSI](https://opensource.org/press-mentions/osi-officially-releases-its-definition-for-open-source-ai).
+- [Regulation (EU) 2016/679 (GDPR), EUR-Lex](https://eur-lex.europa.eu/eli/reg/2016/679/oj), Chapter V.
+- [FoundationModels, Apple Developer documentation](https://developer.apple.com/documentation/foundationmodels).
+- [RouteLLM: Learning to Route LLMs with Preference Data, arXiv](https://arxiv.org/abs/2406.18665) and
+  [ICLR 2025](https://iclr.cc/virtual/2025/poster/30737).
+- [Meta's Llama 3 license, official text on GitHub](https://github.com/meta-llama/llama3/blob/main/LICENSE), section 2 (version dated 18 April 2024). Check the license of the exact version you use.
+- [EU-US Data Privacy Framework adequacy decision, European Commission](https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/eu-us-data-transfers_en). Confirms its adoption; check that page for its current status.

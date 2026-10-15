@@ -1,0 +1,265 @@
+---
+title: 'Datos para IA: calidad, sintéticos y licencias'
+description: 'Calidad de datos para modelos y RAG, datos sintéticos con sus riesgos y el marco de licencias y consentimiento que cambia según la jurisdicción.'
+category: tendencias
+tags:
+  - datos
+  - calidad-de-datos
+  - datos-sinteticos
+  - licencias
+  - ia
+order: 13
+roadmap:
+  id: ia
+  stage: panorama
+  step: 60
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Tubería de datos con filtros de calidad, rama sintética y compuerta de licencia'
+---
+
+# Datos para IA: calidad, sintéticos y licencias
+
+Un modelo o un RAG solo son tan buenos como los datos que reciben. Cuando una respuesta sale
+mal, la causa suele estar aguas arriba: un campo que dejó de actualizarse, un duplicado que
+infla una fuente, una etiqueta puesta con prisa o un corpus que no tiene ningún documento de un
+colectivo. Ningún cambio de modelo arregla eso, y tampoco lo arregla un prompt.
+
+Este artículo trata los datos como un componente de arquitectura con tres preguntas: si son
+**buenos** para el uso que les damos, si podemos **generar más** sin engañarnos (datos
+sintéticos) y si tenemos **derecho** a usarlos (licencias, consentimiento y jurisdicción). Las
+cifras normativas y los hechos del estado de la regulación están verificados a octubre de 2026;
+las recomendaciones son criterio del autor y se marcan como tales.
+
+## Calidad: el fallo que no da error
+
+Un pipeline de datos rara vez falla con una excepción cuando los datos son malos. Entrena, indexa
+y responde igual, solo que peor. Por eso la calidad hay que medirla como una propiedad más, con
+umbrales y dueños, igual que la latencia o el coste. Las dimensiones que más pesan en IA son estas:
+
+| Dimensión         | Pregunta que responde                                     | Síntoma en IA                                          |
+| ----------------- | --------------------------------------------------------- | ------------------------------------------------------ |
+| Completitud       | ¿Están todos los campos y todos los segmentos?            | El modelo funciona peor en un idioma o región concreta |
+| Vigencia          | ¿Sigue siendo cierto el dato?                             | El RAG cita tarifas o políticas que ya no existen      |
+| Duplicados        | ¿Cuántas veces aparece el mismo contenido?                | Una fuente domina los resultados sin ser la más fiable |
+| Etiquetas fiables | ¿Coinciden dos anotadores en lo mismo?                    | La métrica de evaluación sube y la práctica no mejora  |
+| Sesgo de muestreo | ¿Representa la muestra la población en la que se usará?   | Errores concentrados en el grupo menos representado    |
+| Trazabilidad      | ¿De dónde viene cada registro y con qué transformaciones? | Nadie puede explicar por qué una respuesta cambió      |
+
+La forma más barata de medir esto es un conjunto de comprobaciones que corren en cada carga, como
+pruebas unitarias para datos. No hace falta una herramienta concreta para empezar: basta con que
+las reglas estén escritas, versionadas y que un fallo bloquee la publicación del conjunto.
+
+## Contratos de datos y linaje
+
+Un contrato de datos declara qué espera un consumidor de un productor: esquema, frescura,
+unicidad, propietario y qué significa cada campo. Sin contrato, el equipo de IA descubre los
+cambios cuando el modelo empieza a fallar. Con contrato, el cambio se rompe en el productor, que
+es quien puede arreglarlo.
+
+Un contrato mínimo cabe en pocas líneas. Lo importante no es el formato, sino que sea legible
+para humanos y comprobable por máquinas:
+
+```yaml
+dataset: incidencias-soporte
+owner: equipo-soporte
+freshness: 24h # el dato más reciente no puede tener más de 24 h
+primary_key: [ticket_id]
+columns:
+  ticket_id: { type: string, unique: true, nullable: false }
+  resolved_at: { type: timestamp, nullable: true }
+  body_text: { type: string, pii: true }
+```
+
+El **linaje** responde a la pregunta inversa: de qué fuentes y transformaciones sale cada
+registro. Es lo que permite, cuando aparece una mala respuesta, retroceder hasta la fuente y
+saber qué más se ha contaminado. El lakehouse, con versiones de tabla y registro de cambios, lo
+facilita; el detalle de esa capa está en [arquitectura de datos: lakehouse y data mesh](/docs/arquitectura-de-datos-lakehouse).
+
+## Evaluar la calidad antes de indexar
+
+En un RAG, el momento barato para detectar un problema es antes de indexar. Un documento
+duplicado, vacío o desactualizado que entra en el índice contamina todas las respuestas que lo
+recuperen. Criterio del autor: tres puertas mínimas antes de publicar un lote en el índice.
+
+- **Formato:** el documento se puede leer, tiene texto y su idioma es el esperado.
+- **Vigencia:** tiene fecha de origen y no está marcado como retirado o caducado.
+- **Unicidad:** no hay un duplicado exacto ni casi exacto ya indexado (huella de contenido o similitud).
+
+Estas puertas no sustituyen a la evaluación de la recuperación y la generación. Miden la entrada;
+la [evaluación continua de RAG](/docs/rag-y-evaluacion-continua#evaluación-continua-un-conjunto-dorado)
+mide la salida. Conviene tener las dos, porque un índice limpio también puede responder mal.
+
+## Datos sintéticos: para qué sirven
+
+Un dato sintético es uno generado por un modelo o por un simulador, no recogido del mundo. Sirven
+para tres cosas bien concretas:
+
+- **Cubrir casos raros.** Un detector de fraude necesita ejemplos de un tipo de ataque que casi no
+  aparece. Generar variantes controladas amplía la cobertura, siempre que se valide contra casos reales.
+- **Probar sin exponer.** Un entorno de pruebas con datos sintéticos que imitan la forma de los
+  reales evita copiar datos personales a sitios donde no deberían estar. No es anonimización
+  automática: un sintético puede reproducir patrones que identifiquen a alguien.
+- **Preparar un dominio nuevo.** Antes de tener clientes, un equipo puede construir un conjunto de
+  pruebas plausible para validar la arquitectura.
+
+### El colapso por entrenar con la propia salida
+
+El riesgo más citado es el **colapso del modelo**. Shumailov y colaboradores publicaron en _Nature_
+(julio de 2024) que entrenar de forma recursiva con contenido generado por modelos produce defectos
+irreversibles: la cola de la distribución original desaparece y el modelo se vuelve progresivamente
+más estrecho. El mecanismo es estadístico: cada generación pierde los casos poco frecuentes que la
+anterior no reprodujo.
+
+El matiz importante llega después. Gerstgrasser y colaboradores (arXiv:2404.01413, abril de 2024) encontraron que reemplazar los datos
+reales por los sintéticos de cada generación tiende hacia el colapso, mientras que **acumular** las
+generaciones sintéticas junto a los datos reales originales lo evita. Dicho de otra forma: el sintético es un complemento, no un sustituto de lo real.
+
+### Sesgo heredado y falsa confianza
+
+Un sintético hereda los sesgos del modelo que lo generó y no ve lo que el modelo no sabe. Por eso
+el riesgo más peligroso no es que el dato sea malo, sino que **parezca bueno**: un conjunto
+perfectamente formateado y con métricas altas puede estar centrado en lo que el generador ya sabía
+hacer. La señal de alarma es una evaluación que mejora mientras los usuarios reales no notan nada.
+
+## Etiquetado con modelos y verificación humana
+
+Etiquetar con un modelo es barato y rápido, y para muchas tareas sirve como primera pasada. El
+error habitual es darlo por bueno sin medirlo. Criterio del autor: tratar la etiqueta del modelo
+como una propuesta y verificarla de forma sistemática.
+
+- Muestrear cada lote (por ejemplo, un porcentaje fijo más todo lo que el modelo marca con baja confianza).
+- Medir el acuerdo entre revisores humanos y entre humano y modelo, y guardar ambas cifras.
+- Revisar más a fondo las clases raras, porque son las que el muestreo aleatorio deja escapar.
+- Registrar qué modelo y qué versión de instrucciones etiquetaron cada registro: si cambian, las etiquetas antiguas dejan de ser comparables.
+
+## Licencias y derechos: datos y modelo
+
+Hay dos licencias distintas que conviene no confundir. La **licencia de los datos** dice qué se
+puede hacer con el corpus. La **licencia del modelo** dice qué se puede hacer con los pesos o con
+el servicio. Una puede permitir algo que la otra prohíbe, y ninguna responde por ti si el origen
+de los datos no era claro.
+
+Algunas distinciones que suelen pasar desapercibidas:
+
+- Una licencia no comercial (como algunas variantes de Creative Commons con cláusula NC) limita el
+  uso comercial del material. Entrenar un producto de pago con ella es una decisión legal, no técnica.
+- Una licencia abierta de datos puede exigir atribución o compartir igual, y eso se traslada a las
+  salidas o al modelo según cómo se redacte.
+- Los términos de un proveedor de API no son los de un dataset: pueden prohibir entrenar con las
+  salidas del servicio aunque la salida parezca tuya.
+- En la Unión Europea, la excepción de minería de textos y datos tiene un mecanismo de reserva de
+  derechos (opt-out) que los titulares pueden activar; respetarlo es una obligación, no una cortesía.
+
+### Por qué el texto legal cambia según la jurisdicción
+
+El mismo entrenamiento puede ser legal en un país y discutible en otro. Dos ejemplos verificados:
+
+- En el Reino Unido, el Tribunal Superior dio la razón a Stability AI en _Getty Images v. Stability AI_
+  (noviembre de 2025) en la infracción secundaria: no consideró que el modelo fuera una «copia
+  infractora». Getty obtuvo solo una victoria limitada en marcas comerciales. Getty obtuvo permiso
+  para recurrir la infracción secundaria (diciembre de 2025); a la fecha de redacción no hemos
+  encontrado sentencia de apelación.
+- En Alemania, el Tribunal Regional de Múnich I falló a favor de GEMA en _GEMA v. OpenAI_ (11 de
+  noviembre de 2025, en primera instancia): consideró que las letras de canciones memorizadas en los
+  parámetros del modelo constituyen reproducción. No es una sentencia firme.
+
+La lección no es qué caso gana, sino que el argumento depende de hechos técnicos: qué se memoriza,
+dónde se entrenó y qué se distribuye. Por eso la documentación técnica del dataset es también
+documentación legal.
+
+### Qué exige la regulación de la UE hoy
+
+El Reglamento de IA (Reglamento (UE) 2024/1689) tiene calendario escalonado. Según la página de la Comisión Europea sobre el marco regulatorio de la IA, que es la fuente consultada para estas fechas:
+
+- **Modelos de IA de propósito general:** desde el 2 de agosto de 2025 se aplican sus obligaciones,
+  entre ellas publicar un resumen del contenido usado para entrenar, según una plantilla de la
+  Comisión, y tener una política de cumplimiento de derechos de autor. Desde el 2 de agosto de
+  2026, la Ley es aplicable en su conjunto y la Oficina de IA y las autoridades nacionales asumen
+  su ejecución.
+- **Sistemas de alto riesgo:** el artículo 10 exige que los conjuntos de entrenamiento, validación y
+  prueba sean pertinentes, suficientemente representativos, lo más libres de errores y completos
+  posible, y que se examine el sesgo. El Reglamento (UE) 2026/1744 (Digital Omnibus sobre IA, en
+  vigor desde el 27 de julio de 2026 según la Comisión) traslada las obligaciones de alto riesgo del
+  anexo III al 2 de diciembre de 2027 y las del anexo I al 2 de agosto de 2028.
+- **Transparencia (artículo 50):** la Comisión indica que sus reglas se aplican desde agosto de 2026.
+
+Las fechas cambian con frecuencia y dependen de la publicación oficial. Antes de fijar un plazo en
+un plan, contrasta el texto del Reglamento y sus modificaciones en EUR-Lex y la página de la
+Comisión sobre el Reglamento de IA. Fuera de la UE, el marco es otro: no lo asumas por analogía.
+
+## Consentimiento, personas y retirada
+
+Si el corpus contiene datos personales, el RGPD se aplica al entrenamiento y al uso, no solo a la
+base de datos. El Comité Europeo de Protección de Datos (dictamen 28/2024) dejó tres ideas que
+conviene llevar a diseño: un modelo entrenado con datos personales no puede presumirse anónimo;
+hay que demostrarlo caso a caso, con un nivel de riesgo de extracción despreciable; y la base
+jurídica de interés legítimo no sirve por defecto. El dictamen también deja abiertas preguntas sobre
+modelos entrenados con datos tratados de forma ilícita. Eso lo decide un juez o una autoridad, no
+un equipo de ingeniería.
+
+Para la retirada hay una tensión técnica real. Borrar un registro del corpus es sencillo; borrar su
+influencia en un modelo ya entrenado es, hoy por hoy, difícil de garantizar. Criterio del autor:
+
+- Mantener la **procedencia** de cada registro (fuente, base jurídica, fecha) para saber qué borrar.
+- Propagar la supresión a los datasets derivados, los índices RAG, las etiquetas y las copias de prueba. El
+  detalle del borrado en todas las copias está en [privacidad por diseño](/docs/privacidad-por-diseno-gdpr#borrado-que-llega-a-todas-las-copias).
+- Definir una política de reentrenamiento: cada cuánto se reentrena sin los datos retirados y qué se
+  documenta si no se hace de inmediato.
+- No prometer en la política de privacidad un borrado «del modelo» que el equipo no puede ejecutar.
+
+## Cómo encaja con el resto de la arquitectura
+
+Los datos de calidad no son un proyecto aparte; son el punto de contacto entre tres piezas que ya
+tienen su propio artículo. El almacenamiento y el linaje viven en el lakehouse. La versión de cada
+conjunto de datos, código y modelo va por separado en el ciclo de vida de [MLOps](/docs/mlops-modelo-a-produccion#versionar-datos-código-y-modelo-por-separado),
+y la vigilancia de la deriva ([MLOps](/docs/mlops-modelo-a-produccion#vigilar-la-deriva)) detecta cuando los datos de producción ya no se parecen a los de entrenamiento.
+La evaluación del RAG mide el efecto de todo lo anterior en la respuesta final.
+
+## Cuándo no aplica
+
+No hace falta un programa formal de calidad, contratos y licencias para un prototipo con datos
+propios que nunca salen del equipo. Tampoco tiene sentido generar datos sintéticos si el problema
+es que faltan casos reales y la fuente existe: hay que pedirla, no fabricarla. Y si el dato no
+tiene propietario claro, la decisión correcta es no usarlo hasta aclararlo, no documentar la duda
+y seguir.
+
+## Errores frecuentes
+
+- **Medir solo el modelo.** Una mejora en la métrica de evaluación puede venir de un conjunto de
+  prueba que se parece demasiado al de entrenamiento.
+- **Sustituir lo real por lo sintético.** Es la ruta más corta al colapso descrito arriba.
+- **Confiar en la etiqueta automática sin muestreo.** El error sistemático es el más caro de detectar.
+- **Tratar «público» como «libre».** Que un dato esté en la web no dice nada de sus derechos.
+- **Mezclar licencias sin registrarlo.** Al combinar fuentes, la restricción más estricta gana, y
+  eso debe quedar escrito en el dataset.
+- **Prometer un borrado que no se puede hacer.** Es peor que no prometer nada.
+
+## Checklist
+
+- Cada dataset tiene propietario, contrato de datos y umbrales de calidad versionados.
+- Cada registro se puede trazar hasta su fuente y su transformación.
+- Los lotes pasan las puertas de formato, vigencia y unicidad antes de indexarse o entrenar.
+- Los datos sintéticos se mezclan con datos reales, se validan y se etiquetan como tales.
+- Las etiquetas automáticas tienen muestreo humano y se mide el acuerdo.
+- Cada fuente tiene licencia registrada, restricciones de uso y, si aplica, reserva de derechos respetada.
+- La base jurídica y la jurisdicción de los datos personales están documentadas.
+- Existe un procedimiento de retirada que llega al índice, a las copias y a la política de reentrenamiento.
+- Los plazos regulatorios se contrastan con la fuente oficial antes de planificarlos.
+
+## Fuentes
+
+Consultadas en octubre de 2026. Las fechas del Reglamento y del Omnibus proceden de la página de la
+Comisión Europea; el texto de EUR-Lex no pudo abrirse en esta verificación, así que conviene
+contrastarlo con él.
+
+- [Shumailov et al., «AI models collapse when trained on recursively generated data», _Nature_ (2024)](https://doi.org/10.1038/s41586-024-07566-y)
+- [Gerstgrasser et al., «Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data» (arXiv:2404.01413)](https://arxiv.org/abs/2404.01413)
+- [Reglamento (UE) 2024/1689 (Reglamento de IA), EUR-Lex](https://eur-lex.europa.eu/eli/reg/2024/1689/oj)
+- [Explicación y plantilla de la Comisión para el resumen del contenido de entrenamiento (comentario de Mayer Brown, agosto de 2025)](https://www.mayerbrown.com/en/insights/publications/2025/08/eu-ai-act-news-rules-on-general-purpose-ai-start-applying-guidelines-and-template-for-summary-of-training-data-finalized)
+- [Comisión Europea: marco regulatorio de la IA (calendario del Reglamento y Omnibus digital, Reglamento (UE) 2026/1744)](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai)
+- [Artículo 10 del Reglamento de IA, EU AI Act Service Desk](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-10)
+- [Comité Europeo de Protección de Datos, Dictamen 28/2024 sobre modelos de IA y datos personales](https://www.edpb.europa.eu/system/files/2024-12/edpb_opinion_202428_ai-models_en.pdf)
+- [Getty Images v. Stability AI, resumen de la sentencia del Tribunal Superior de Inglaterra (noviembre de 2025), firma Latham & Watkins](https://www.lw.com/en/insights/getty-images-v-stability-ai-english-high-court-rejects-secondary-copyright-claim)
+- [Getty Images v. Stability AI: permiso para recurrir (Burges Salmon)](https://www.burges-salmon.com/articles/102lydc/getty-images-v-stability-ai-getty-granted-permission-to-appeal)
+- [GEMA v. OpenAI, Tribunal Regional de Múnich I, 11 de noviembre de 2025 (42 O 14139/24), resumen de Taylor Wessing](https://www.taylorwessing.com/de/insights-and-events/insights/2025/11/gema-v-openai)
