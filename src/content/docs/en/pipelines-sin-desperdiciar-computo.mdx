@@ -1,0 +1,280 @@
+---
+title: 'Pipelines that do not waste compute'
+description: 'How to stop CI cost from growing unnoticed: cancel obsolete runs, limit concurrency, right-size runners, filter paths and expire caches.'
+category: practicas
+tags:
+  - ci-cd
+  - ci-costs
+  - runners
+  - run-cancellation
+  - cache
+order: 27
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 120
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Several runs stacked on one branch: only the newest one keeps running'
+---
+
+# Pipelines that do not waste compute
+
+Nobody decides that the pipeline should cost more each month. It happens through accumulation: a
+duplicated job for every push, a test suite nobody has reviewed in a year, a large runner copied
+from another project and a cache that is never cleaned. Each piece is cheap. The sum shows up on
+the invoice when it is already hard to explain.
+
+The thesis of this article is simple: **CI cost is a design attribute of the pipeline, not a
+billing detail.** Every default (when it runs, what it runs, on which machine and how long it
+keeps data) is a decision, and it is better to make it explicitly. The measures below are cheap
+to apply and usually pay for themselves.
+
+## Where the compute goes
+
+Before optimizing, find out what is being wasted. There are five common sources:
+
+| Source                                 | Symptom                                                      |
+| -------------------------------------- | ------------------------------------------------------------ |
+| Obsolete runs                          | Full runs for commits that nobody will review                |
+| Irrelevant tests                       | The whole suite runs for a documentation-only change         |
+| Jobs waiting in line                   | Long queues caused by poorly defined concurrency limits      |
+| Oversized runners                      | Large machines for tasks that fit in a small one             |
+| Caches and artifacts that never expire | Storage costs and slow restores of data nobody needs anymore |
+
+A simple calculation helps size the problem. Suppose, **as an illustrative assumption**, a
+20-minute pipeline runs 1,000 times a month on a standard Linux runner. At GitHub Actions' public
+rate for that runner, 0.006 USD per minute, the monthly cost of that pipeline would be 120 USD.
+If half of those runs are obsolete or unnecessary, half of that figure buys nothing. The exact
+number depends on your plan and provider; what matters is the method: **multiply minutes by rate
+and by number of runs**, and repeat it for each pipeline.
+
+## Cancel what is obsolete
+
+A run for a commit that already has a successor on the same branch is only valuable if someone
+reads its result. That rarely happens. Cancelling it frees the runner for what matters and
+shortens the queue for everyone else.
+
+In **GitHub Actions**, the `concurrency` key groups runs. By default, a pending run in the same
+group is cancelled when another one arrives, but a run already in progress is **not** cancelled
+unless `cancel-in-progress` is enabled
+([concurrency docs](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)).
+The usual form for pull requests looks like this:
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+```
+
+Two details matter. `github.head_ref` is only populated for pull request events. On a `push` to
+the main branch the key falls back to `github.run_id`, which is unique per run, so each run is
+independent and the previous one is not cancelled. That is what we want: **a run that is already
+deploying must not be cancelled halfway.** Cancellation also applies to validation (building,
+testing, analyzing), not to stages with side effects such as migrating a database or deploying.
+
+In **GitLab CI**, the same behavior is controlled with `workflow:auto_cancel` and the
+`interruptible` keyword of each job. The default, `conservative`, cancels the pipeline only if no
+non-interruptible job has started
+([GitLab CI/CD YAML reference](https://docs.gitlab.com/ci/yaml/#workflowauto_cancelon_new_commit)):
+
+```yaml
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+```
+
+The criterion is the same in both tools: **mark as cancellable only what has no effects outside
+the runner.** A badly placed cancellation leaves a deployment half done, which is worse than
+paying for one extra minute.
+
+## Concurrency and limits
+
+Concurrency has two levels, and it is worth deciding both:
+
+- **Per branch or per change.** The case above: one live run per pull request.
+- **Per shared resource.** A deployment to an environment, a test database or a cloud account with
+  a quota. Here you want serialization, not cancellation: the new job should wait rather than kill
+  the one in progress.
+
+In GitHub, `queue: max` lets up to 100 runs wait in the same group; when the queue is full, extra
+runs are cancelled. This option cannot be combined with `cancel-in-progress: true`, which causes a
+workflow validation error
+([concurrency docs](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)).
+In short: it suits serial deployments, while for per-change validation cancellation is the right
+choice.
+
+A per-team limit is a governance decision more than a technical one: how many simultaneous jobs a
+team may consume at peak hours. Without it, one team's massive task blocks the others. With it,
+cost and waiting time are shared explicitly.
+
+## Runner size according to the job
+
+A larger runner costs more per minute. That is not bad in itself: if a job takes half the time on a
+machine that costs twice as much, the cost is the same and the feedback arrives sooner. What is bad
+is an unreviewed default size.
+
+The public rates for GitHub Actions standard runners with two cores are 0.006 USD per minute on
+Linux, 0.010 USD on Windows and 0.062 USD on macOS
+([Actions pricing reference](https://docs.github.com/en/billing/reference/actions-minute-multipliers)).
+The gap between operating systems is large: a job that does not need macOS should not run on
+macOS. I have not verified the rates for larger runners here, so I do not quote them.
+
+The practical criterion is to measure before changing: time per step and machine utilization. Static
+analysis rarely needs more capacity than a compilation. Moving only the jobs that saturate the
+machine to a bigger size is usually cheaper than enlarging the whole pipeline.
+
+## Path filters without breaking the merge
+
+Not running what did not change is the most tempting measure and the most dangerous. GitHub
+documents it clearly: if a workflow is skipped by a `paths` filter, its checks remain in a
+«Pending» state, and a required check that stays pending **blocks the merge**
+([workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)).
+A workflow-level filter therefore breaks the merge exactly when it is needed most.
+
+The healthiest pattern separates three things:
+
+1. A light job that decides what changed, based on the paths in the commit.
+2. The heavy tests, conditioned on that decision, inside the same workflow.
+3. A final check, always present, which is the one required for merging.
+
+The risk lies in the path map. If it forgets a shared dependency, a lockfile or the CI
+configuration itself, the result is a false green: the merge passes without anyone having tested the
+change. For that reason the map should be reviewed as code, and changes to it should trigger the
+full suite.
+
+## Expensive work, outside the path of every change
+
+Load tests, full security scans and mutation tests are expensive and rarely fail because of one
+specific change. Running them on every commit pays that cost a thousand times to detect a problem
+once.
+
+A reasonable alternative is to schedule them:
+
+- **After merging** into the main branch, to detect problems in minutes rather than weeks.
+- **Nightly or weekly**, for full sweeps.
+- **Before a release candidate**, as a release gate.
+
+GitHub Actions runs `schedule` triggers only on the default branch, with a minimum interval of
+five minutes. During periods of high load they can be delayed, and queued jobs may be dropped; in
+public repositories, scheduled workflows are disabled after 60 days without repository activity
+([events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)).
+A nightly sweep is useful, but it should not be the only defense: its delay is the window of
+exposure the team accepts.
+
+## Caches and artifacts with expiry
+
+Dependency caches speed up the pipeline and also consume storage. GitHub documents a default
+limit of 10 GB per repository, removes entries not accessed for more than 7 days and, when the
+limit is exceeded, deletes the least recently accessed ones first
+([dependency caching](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching)).
+That sets two design rules:
+
+- **The cache key should change only when the dependencies change**, for example with a hash of the
+  lockfile. A key that includes the run number is never reused.
+- **Artifacts need an explicit retention.** What was kept to debug a recent failure should not
+  survive for months out of inertia.
+
+One side effect is worth watching: if the limit is tight, the main branch cache can evict a
+feature branch cache, and the reverse. When that happens, the symptom is a cold cache and irregular
+times, not an error. Measuring the hit rate is enough to see it.
+
+## How to measure
+
+Without metrics, every optimization is an opinion. Three indicators are enough to start:
+
+- **Compute minutes per merge.** The sum of the minutes of all jobs from the moment a pull request
+  opens until it merges. It is the figure that best relates cost to delivered work.
+- **Percentage of cancelled runs.** It shows whether cancellation works. A very low figure in teams
+  with many commits suggests the configuration is not applied. A very high figure may point to
+  changes arriving too fragmented, not to a CI problem.
+- **Queue time.** The difference between a job being requested and it starting. If it grows, the
+  problem is concurrency or capacity, not code.
+
+I would add a fourth metric that measures experience rather than cost: **time to the first useful
+failure.** If an optimization saves minutes but delays the signal the developer needs, it has made
+the system worse.
+
+## What saving too much breaks
+
+Every saving has a cost in guarantees. It is worth writing them down before applying one:
+
+- **Security blind spots.** A path filter that skips dependency analysis for «documentation-only»
+  changes can let a vulnerable dependency through when it arrives in another file.
+- **Quality blind spots.** Cancelling obsolete runs hides failures in intermediate commits. That is
+  acceptable as long as the last run is the one that gates the merge, and a cancelled run must never
+  be treated as if it had passed.
+- **Retries that mask failures.** Re-running until a flaky test passes lowers the immediate cost and
+  erodes trust in the suite.
+
+The rule is that **every reduction must state which check is weakened and who accepts it.** If the
+answer is «nobody», the reduction is not applied.
+
+## Relation to cloud cost
+
+CI minutes are part of the platform bill, alongside self-hosted runners that consume cloud compute.
+That is why the tagging and attribution practices from the cost section apply here too. CI spend
+without an owner is as opaque as an untagged resource. See
+[FinOps: cost as an architecture attribute](/docs/finops-costo-como-atributo) for the unit economics
+framework and [Costs per team and feature](/docs/costes-por-equipo-y-funcionalidad) for allocation by
+team and budget alerts.
+
+This practice also aligns with branching strategy: integrating early reduces duplicated runs,
+because there are fewer commits to cancel. See [Branches and continuous delivery](/docs/ramas-y-entrega-continua)
+and, for the checks that should run on every change, [Fitness functions in CI](/docs/fitness-en-el-ci).
+
+## When yes and when not
+
+**Apply these measures when:**
+
+- The pipeline exceeds the minutes the team can explain, or the CI bill grows faster than the number
+  of merges.
+- There are long queues at peak hours and runs nobody consults.
+- Expensive jobs run on every commit without need.
+
+**Do not prioritize them when:**
+
+- The pipeline is fast and cheap relative to the value it protects. Optimizing here has a small
+  return and a risk of weakening guarantees.
+- There are no metrics yet. Measure first, then decide.
+- The optimization requires reducing tests without an alternative that covers them elsewhere.
+
+## Common mistakes
+
+- **Cancelling deployments.** Cancellation applies to validation, not to stages with side effects.
+- **Filtering paths at workflow level on a required check.** It leaves the merge blocked.
+- **Incomplete path maps.** A forgotten shared dependency produces false greens.
+- **Large runners by default.** They are copied from one project and never reviewed.
+- **Cache keys that are never reused.** They pay for storage without speeding anything up.
+- **Saving without recording which guarantee is lost.** In six months nobody will know why the
+  security scan only runs at night.
+
+## Checklist
+
+- [ ] Each workflow cancels obsolete validation runs, never deployment runs.
+- [ ] Shared resources use queued concurrency, not cancellation.
+- [ ] No path filter skips a check that is required for merging.
+- [ ] The path map includes shared dependencies, lockfiles and the CI configuration itself.
+- [ ] Expensive tests are scheduled after merge, nightly or before a release.
+- [ ] Runner sizes are justified by measurement, not by default.
+- [ ] Caches use keys that change with the dependencies and have an expiry.
+- [ ] Artifacts have an explicit retention.
+- [ ] Compute minutes per merge, cancellation percentage and queue time are measured.
+- [ ] Every reduction of guarantees has an owner who accepts it in writing.
+
+## Sources
+
+- GitHub Docs, «Control concurrency of workflows and jobs»:
+  <https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency>
+- GitHub Docs, «Workflow syntax for GitHub Actions»:
+  <https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax>
+- GitHub Docs, «Events that trigger workflows»:
+  <https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows>
+- GitHub Docs, «Contexts» (`github.head_ref` and `github.run_id`):
+  <https://docs.github.com/en/actions/reference/workflows-and-actions/contexts>
+- GitHub Docs, «Dependency caching»:
+  <https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching>
+- GitHub Docs, Actions pricing reference (per-minute rates for standard runners):
+  <https://docs.github.com/en/billing/reference/actions-minute-multipliers>
+- GitLab Docs, «CI/CD YAML syntax reference» (`workflow:auto_cancel` and `interruptible`):
+  <https://docs.gitlab.com/ci/yaml/>

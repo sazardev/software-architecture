@@ -1,0 +1,219 @@
+---
+title: 'Anunciar cambios para no chocar entre equipos'
+description: 'Propiedad clara, avisos de intención con caducidad y reservas cortas: tres herramientas baratas para que dos equipos no pisen el mismo módulo.'
+category: decisiones
+tags:
+  - coordinacion
+  - propiedad-del-codigo
+  - contratos
+  - cambios-compatibles
+  - equipos
+order: 12
+roadmap:
+  id: liderazgo
+  stage: equipos
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Dos trayectos sobre un mismo módulo: el aviso y la reserva evitan que se crucen'
+---
+
+# Anunciar cambios para no chocar entre equipos
+
+Imagina dos equipos que tocan el mismo módulo en la misma semana, sin saber el uno del otro. El
+primero descubre el choque al fusionar: conflictos en líneas que no escribió y que nadie entiende
+del todo. El segundo lo descubre después, cuando su arreglo deshace un cambio que no conocía. El
+coste no está en el código. Está en el tiempo que alguien dedica a reconstruir qué pasó y a quién
+le toca decidir.
+
+La tesis de este artículo es sencilla: la mayoría de estos choques se evitan con tres herramientas
+muy baratas. La primera es una **propiedad clara**: cada zona del sistema tiene un equipo dueño
+visible en el repositorio. La segunda es un **anuncio de intención**: un aviso breve, con fecha de
+caducidad, antes de tocar una zona compartida. La tercera son **bloqueos ligeros y explícitos**:
+reservas de corta duración, nunca indefinidas. A ellas se suman dos reglas: cambiar los contratos
+«añadiendo antes de quitar» y mantener un canal de coordinación pequeño y con reglas.
+
+## Dónde sale el choque
+
+El choque es de coordinación, no técnico. Aparece cuando la frontera entre equipos no coincide con
+la frontera del código: cada cambio cruza límites que nadie anuncia. La [ley de
+Conway](/docs/ley-de-conway-team-topologies#la-maniobra-inversa-de-conway) describe por qué ocurre
+esa coincidencia; aquí interesa el coste diario, que suele aparecer de tres formas:
+
+- **Conflictos de fusión.** Dos ramas editan las mismas líneas. Se resuelven a mano, con poco
+  contexto, y es fácil equivocarse al elegir qué versión se queda.
+- **Cambios que se pisan.** Uno asume un comportamiento que el otro acaba de cambiar. El error
+  aparece lejos del cambio que lo causó, y tarda en localizarse.
+- **Arreglos a ciegas.** Alguien corrige un fallo sin saber si el comportamiento era intencionado.
+  El «arreglo» deshace una decisión ajena y el problema vuelve con otra forma.
+
+La asimetría de costes justifica el enfoque. Un aviso de dos líneas cuesta minutos; el choque que
+evita puede costar días de reconstrucción. Por eso las herramientas de este artículo son ligeras:
+no pretenden impedir el trabajo, sino hacerlo visible a tiempo.
+
+## Propiedad clara
+
+Un módulo con dueño responde a una pregunta básica: quién decide. Sin esa respuesta, cualquier
+cambio parece permitido y, en la práctica, la revisión se la reparten todos y no la hace nadie.
+
+Tres elementos bastan para empezar:
+
+- **Un fichero de propietarios** versionado con el código, que asigne cada ruta a un equipo. En
+  GitHub se llama `CODEOWNERS`; otras plataformas tienen equivalentes. La forma importa más que la
+  herramienta:
+
+```text
+/src/pagos/           equipo-pagos
+/src/catalogo/        equipo-catalogo
+/contratos/eventos/   equipo-pedidos  arquitectura
+```
+
+- **Revisión obligatoria de los dueños** para los cambios en sus rutas. Así el aviso llega a quien
+  puede decidir, no solo a quien está cerca.
+- **Dueño explícito para los contratos compartidos** (esquemas, APIs, formatos de fichero). Es
+  donde el choque es más caro, porque el cambio afecta a consumidores que ni siquiera están en la
+  conversación. Lo desarrolla el artículo sobre la [propiedad de un evento](/docs/contratos-de-eventos-versionados#propiedad-del-evento).
+
+Un criterio de diseño: el dueño es un **equipo**, no una persona. Las personas cambian de puesto y
+una propiedad asignada a alguien que se ha ido deja la zona sin responsable.
+
+## Anuncio de intención
+
+El anuncio es un aviso breve y visible que se publica **antes** de empezar un cambio que toca una
+zona compartida. Su función es que el otro equipo pueda reaccionar cuando todavía es barato hacerlo.
+Responde a cinco preguntas:
+
+| Campo          | Pregunta que responde                               |
+| -------------- | --------------------------------------------------- |
+| Qué            | ¿Qué cambia: comportamiento, contrato o estructura? |
+| Dónde          | ¿Qué rutas, tablas o contratos se tocan?            |
+| Cuánto dura    | ¿Durante cuánto tiempo la zona estará en cambio?    |
+| A quién afecta | ¿Qué equipos o consumidores deben reaccionar?       |
+| Caduca         | ¿Hasta cuándo es válido el aviso?                   |
+
+Los dos últimos campos son los que suelen faltar, y son los que evitan el problema más típico: un
+aviso antiguo que sigue en el canal bloqueando una zona que ya está libre. Un aviso con caducidad
+puede ignorarse sin culpa cuando vence, y el equipo que lo publicó tiene la obligación de
+retirarlo o renovarlo.
+
+Ejemplo ilustrativo (supuesto, no un caso real): el equipo de pagos avisa de que va a cambiar el
+redondeo de importes en `/src/pagos/`, que tardará dos días, que afecta a facturación y que el
+aviso caduca el viernes. Con esa información, facturación puede planificar su trabajo en lugar de
+descubrir el cambio en la próxima fusión.
+
+El aviso va a un sitio que todos los implicados puedan leer: un canal o una incidencia etiquetada
+por zona, no un mensaje privado. Un mensaje privado no sirve para coordinar, porque nadie más se
+entera.
+
+## Bloqueos ligeros y explícitos
+
+Una reserva declara que una zona está en uso durante un periodo corto. No es un candado técnico ni
+impide el acceso al repositorio: es un acuerdo visible que la organización respeta. Sus reglas son
+pocas y deliberadas:
+
+- **Siempre con fecha de fin.** Una reserva indefinida se convierte en un cuello de botella, y
+  como nadie la libera, acaba siendo más dañina que el problema que resolvía.
+- **Con dueño y motivo.** Cualquiera puede preguntar por ella y el dueño responde. Sin motivo no
+  hay forma de juzgar si sigue siendo necesaria.
+- **Se libera al terminar.** Y, si caduca, la zona vuelve a estar libre sin pedir permiso.
+- **Solo cuando hace falta.** Reservar es la herramienta más fuerte de las tres. Úsala para lo que
+  no admite mezclarse, como una migración de datos o la reescritura de un contrato. Para el resto,
+  el anuncio basta.
+
+La palabra «ligeros» importa. Un bloqueo impide; una reserva coordina. Si la reserva se usa para
+impedir, empieza a sustituir a la conversación entre equipos, y eso ya es un problema de
+organización que una regla no arregla.
+
+## Cuándo anunciar y cuándo no
+
+Anuncia cuando se cumpla al menos una de estas condiciones:
+
+- El cambio cruza una frontera de propiedad, es decir, toca rutas de otro equipo.
+- Cambia un contrato: una API, un evento, un esquema o un formato de fichero.
+- Ocupa una zona compartida durante más de un día (umbral ilustrativo, criterio propio).
+- Es difícil de revertir.
+
+No anuncies cuando el cambio queda dentro de tu módulo, cuando es un arreglo de una línea sin
+efectos en otros equipos, o cuando ya pasa por una revisión que notifica a los dueños, como un
+[RFC](/docs/rfc-y-revisiones-de-arquitectura#criterios-para-decidir-que-pasa-por-revision). Un
+cambio que pasa por RFC ya se anuncia en el RFC.
+
+El exceso de avisos es ruido, y el ruido tiene un efecto concreto: si todo se anuncia, nadie lee el
+canal, y el día que importa el aviso se pierde entre los demás. Una regla de trabajo que ayuda: si
+el aviso no cambiaría lo que el otro equipo hace esa semana, no hace falta publicarlo.
+
+## Cambios que rompen contratos
+
+Cuando un cambio es incompatible, el aviso no basta: hay que cambiar la forma de hacerlo. La
+técnica más usada es el **cambio paralelo**, también llamado «expandir y contraer». Martin Fowler la
+describe en 2014 con tres fases ([Fowler, «ParallelChange»](https://martinfowler.com/bliki/ParallelChange.html)):
+
+| Fase     | Qué se hace                                                                      |
+| -------- | -------------------------------------------------------------------------------- |
+| Expandir | Se añade la forma nueva junto a la antigua. Ambas funcionan durante un tiempo.   |
+| Migrar   | Los consumidores pasan a la forma nueva, uno a uno. Suele ser la fase más larga. |
+| Contraer | Cuando nadie usa la forma antigua, se retira.                                    |
+
+La clave es el orden: primero se añade, después se mueve el consumo y al final se quita. Quitar
+antes de migrar rompe a quien todavía lee la forma antigua, y ese es el choque más grave de todos.
+
+La fase de migración necesita un **aviso de deprecación**, que anuncia que la forma antigua va a
+retirarse. En APIs HTTP existe una cabecera estándar: `Deprecation`, definida en la RFC 9745, indica
+desde cuándo el recurso está obsoleto sin cambiar su comportamiento. La cabecera `Sunset`, citada
+en esa misma RFC, indica el momento en que dejará de responder. Para eventos no hay un equivalente
+estándar, y el aviso se hace por el canal y por una métrica de consumo, como describe el artículo
+sobre [contratos de eventos versionados](/docs/contratos-de-eventos-versionados#deprecacion-doble-publicacion-y-retirada-medida).
+
+## Un canal pequeño y con reglas
+
+La coordinación necesita un lugar, pero no tiene por qué ser una reunión permanente. Un canal
+pequeño con reglas suele bastar:
+
+- **Un canal por dominio o por contrato**, no uno general para toda la empresa. Un canal que lo lee
+  todo acaba sin que nadie lo lea.
+- **Formato fijo para los avisos**, con los cinco campos de la tabla anterior.
+- **Quién responde por cada zona** y en qué plazo, acordado por escrito.
+- **Reuniones solo cuando hace falta.** Se convocan si dos avisos chocan y no se resuelven por
+  escrito. No son el mecanismo por defecto, porque cada reunión tiene un coste que se paga en
+  tiempo de todos. Esto encaja con los [modos de interacción](/docs/ley-de-conway-team-topologies#tres-modos-de-interaccion)
+  de Team Topologies: la colaboración intensa se reserva para lo que la necesita.
+
+## Señales de que falta coordinación
+
+Hay síntomas recurrentes que indican que las herramientas anteriores no están funcionando:
+
+- Conflictos de fusión repetidos en las mismas rutas.
+- Dos equipos construyendo lo mismo, porque ninguno sabía que el otro lo hacía.
+- Reversiones de cambios ajenos hechas sin hablar con el dueño de la zona.
+- Nadie sabe a quién preguntar por un contrato compartido.
+
+Criterio propio, no una norma: si una de estas señales aparece con regularidad durante un trimestre,
+revisa primero las fronteras de propiedad. Muchas veces el problema no es la falta de avisos, sino
+que el dueño de la zona no coincide con quien la cambia.
+
+## Errores frecuentes
+
+- **Propiedad por persona, no por equipo.** Cuando la persona cambia de puesto, la zona queda sin
+  responsable y aparecen los cambios sin revisión.
+- **Avisos sin caducidad.** Se acumulan, bloquean zonas libres y acaban ignorándose.
+- **Reservas indefinidas.** Crean cuellos de botella que nadie se atreve a liberar.
+- **Anunciar después de cambiar.** El aviso ya no coordina nada; solo informa de lo que ocurrió.
+- **Quitar antes de migrar.** Rompe a los consumidores que todavía dependen de la forma antigua.
+- **Convertir todo en reunión.** Los equipos dejan de escribir sus decisiones y la coordinación
+  depende de quien esté en la sala.
+
+## Checklist
+
+- [ ] Cada ruta compartida tiene un equipo dueño, versionado en el repositorio.
+- [ ] Los cambios en rutas de otro equipo requieren la revisión de su dueño.
+- [ ] Los contratos compartidos tienen un dueño explícito y un historial.
+- [ ] Cada aviso indica qué cambia, dónde, cuánto dura, a quién afecta y cuándo caduca.
+- [ ] Toda reserva tiene dueño, motivo y fecha de fin.
+- [ ] Los contratos cambian por expansión y contracción, con aviso de deprecación.
+- [ ] Existe un canal por dominio con formato de aviso y plazo de respuesta.
+- [ ] Se revisan periódicamente las señales de falta de coordinación.
+
+## Fuentes
+
+- Martin Fowler, [«ParallelChange»](https://martinfowler.com/bliki/ParallelChange.html), 13 de mayo de 2014. Describe el patrón de expandir, migrar y contraer.
+- RFC 9745, [«The Deprecation HTTP Response Header Field»](https://www.rfc-editor.org/rfc/rfc9745). Define la cabecera `Deprecation` y referencia la cabecera `Sunset` (RFC 8594).

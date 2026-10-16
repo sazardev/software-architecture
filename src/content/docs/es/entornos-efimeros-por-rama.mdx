@@ -1,0 +1,199 @@
+---
+title: 'Entornos efímeros por rama: cuándo y cuánto'
+description: 'Cuándo compensa un entorno efímero por rama, qué cuesta en cómputo, datos y mantenimiento, y cómo caducarlo para que no quede huérfano.'
+category: practicas
+tags:
+  - entornos-efimeros
+  - revision-por-rama
+  - ci-cd
+  - costes
+  - datos-de-prueba
+order: 26
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 110
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Una plantilla por rama, cada entorno con su caducidad y su destrucción'
+---
+
+# Entornos efímeros por rama: cuándo y cuánto
+
+Un equipo quiere probar un cambio de pagos en algo parecido a producción. El entorno de pruebas
+compartido está ocupado por otro cambio, y el de preproducción tiene datos de hace semanas. La
+solución habitual es crear un entorno propio para esa rama, validar allí y destruirlo al terminar.
+Eso es un **entorno efímero**: uno que nace para un cambio, se usa para validarlo y desaparece.
+
+La idea es sencilla y su coste no lo es. Este artículo explica qué aporta, qué cuesta de verdad
+(cómputo, datos de prueba, secretos, configuración y mantenimiento), cómo diseñarlo para que
+no se convierta en basura en la nube y cuándo es mejor no hacerlo. Los costes se tratan como
+criterios de diseño; las cifras concretas dependen de cada proveedor y se miden en cada caso.
+
+## Qué aporta y qué cuesta
+
+El valor está en validar **en un entorno real** sin esperar un turno. Revisar una interfaz,
+probar una integración con un proveedor externo en modo sandbox o comprobar una migración de base
+de datos son cosas que las pruebas unitarias no cubren bien, y un entorno compartido hace que
+los cambios se pisen entre sí.
+
+El precio tiene cinco partes, y conviene conocerlas antes de decidir:
+
+- **Tiempo de aprovisionamiento.** Un entorno que tarda una hora en levantarse frena la revisión
+  más de lo que la acelera. Lo que se mide es el tiempo desde que se abre la rama hasta que el
+  entorno responde.
+- **Cómputo y almacenamiento.** Cada entorno consume recursos aunque nadie lo mire. Multiplicado
+  por ramas abiertas, es una partida que crece sin que nadie la decida.
+- **Datos de prueba.** Un entorno sin datos no sirve para validar nada. Cargar datos realistas
+  es el coste que más se subestima (ver la sección sobre datos).
+- **Secretos y configuración por entorno.** Cada entorno necesita credenciales propias o de
+  sandbox, URLs, colas y dominios. Si esto se gestiona a mano, aparecen errores y entornos que
+  apuntan a sistemas que no deberían tocar.
+- **Mantenimiento.** Un entorno que no se actualiza con la plantilla se desvía de producción y
+  deja de ser representativo. Es el coste que más cuesta ver, porque no aparece en la factura.
+
+## Diseño: descrito como código, con caducidad y sin datos reales
+
+Un entorno efímero bien diseñado tiene tres propiedades. Si falta una, suele acabar mal.
+
+### Descrito como código
+
+El entorno no se crea a mano ni con clics. Se instancia a partir de una **plantilla** que reutiliza
+los mismos módulos que producción, con parámetros distintos (nombre, tamaño, dominio). Así, lo que
+se valida en la rama es lo que después irá a producción, y el entorno puede reproducirse o
+destruirse sin acordarse de nada.
+
+Esto encaja con lo que ya se decidió sobre [infraestructura como código y GitOps](/docs/infraestructura-como-codigo-gitops#gitops-el-reconciliador-frente-al-pipeline-que-empuja):
+si el entorno es un artefacto declarado, la rama es el único punto de entrada. Una forma
+razonable, sin implementación, es esta:
+
+```yaml
+# Forma de la instancia por rama: nombres y parámetros, no la plantilla completa
+entorno:
+  nombre: 'pagos-{rama}'
+  plantilla: 'servicio-estandar'
+  dominio: '{rama}.preview.ejemplo.dev'
+  caducidad: 3d # TTL: se destruye aunque nadie lo cierre
+  etiquetas:
+    equipo: pagos
+    rama: '{rama}'
+```
+
+### Vida limitada
+
+La caducidad es la propiedad más importante. Un entorno sin fecha de fin acaba olvidado: la rama
+se cierra, el entorno sigue corriendo y nadie sabe de quién es. Heroku, por ejemplo, permite
+destruir automáticamente sus review apps tras 1, 2, 5, 14 o 30 días de inactividad, además de
+eliminarlas al cerrar el pull request cuando fueron creadas automáticamente
+([documentación de review apps de Heroku](https://devcenter.heroku.com/articles/github-integration-review-apps)).
+
+El patrón es el mismo en cualquier plataforma: el entorno vive mientras exista su rama o su PR, y
+una caducidad por inactividad lo recoge si la rama queda parada. En Argo CD, un generador de
+ApplicationSet crea una aplicación por cada pull request que cumple un criterio y la elimina
+cuando deja de cumplirlo ([documentación del generador Pull Request](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Pull-Request/)).
+La caducidad, en este caso, depende del ciclo de vida del PR, no de un temporizador.
+
+### Sin datos reales
+
+Un entorno efímero no debe contener datos personales de producción. Hay tres motivos. El primero
+es de principio: los datos que no hacen falta para probar no deberían copiarse. Es el criterio
+de minimización habitual en protección de datos, y conviene aplicarlo aquí. El segundo es de
+superficie: un entorno temporal suele tener controles de acceso más laxos que producción, y
+una copia de datos reales en él amplía el daño de cualquier fuga. El tercero es práctico: los
+datos sintéticos o anonimizados se pueden regenerar, versionar y compartir sin miedo.
+
+La alternativa es un **conjunto de datos de prueba** pequeño, generado a partir de esquemas y con
+casos límite conocidos, que se carga al crear el entorno. Su mantenimiento es un coste real y
+debe asignarse a un equipo, o el conjunto se queda obsoleto.
+
+## Cuándo compensa y cuándo no
+
+Compensa cuando el cambio **depende de algo que no se simula bien** en local o en pruebas
+automáticas: una base de datos con comportamiento propio, una cola con reintentos, una integración
+con un tercero en sandbox o una configuración de red o de identidad. También cuando **varios
+equipos necesitan validar la integración** entre sus servicios antes de fusionar, y el entorno
+compartido no da abasto.
+
+No compensa en los casos contrarios:
+
+- **Servicios puros** sin estado externo, cuyo comportamiento cubren pruebas unitarias y de
+  integración con dobles bien hechos.
+- **Cambios cubiertos por pruebas de contrato.** Si el contrato entre servicios está verificado
+  en el CI, levantar un entorno completo para comprobar lo mismo es gasto sin información nueva
+  (ver [estrategia de pruebas: pirámide y contratos](/docs/estrategia-de-pruebas-contratos)).
+- **Equipos pequeños con un único servicio.** El coste de mantener la plantilla supera al de
+  esperar un entorno compartido.
+
+## Control de costes
+
+Un entorno por rama multiplica el gasto por el número de ramas abiertas. Para que no sea una
+sorpresa conviene fijar reglas desde el principio:
+
+- **Apagado por inactividad.** Un entorno sin peticiones durante un periodo se suspende o se
+  reduce, y se vuelve a levantar bajo demanda. Es distinto de destruirlo: conserva la rama lista
+  para retomarla.
+- **Límites por equipo.** Un tope de entornos activos y de cómputo por equipo evita que una
+  rama olvidada consuma el presupuesto de todos. En Kubernetes, por ejemplo, una ResourceQuota
+  limita el consumo y el número de objetos por namespace, según la
+  [documentación oficial](https://kubernetes.io/docs/concepts/policy/resource-quotas/).
+- **Tamaños pequeños por defecto.** Un entorno de validación rara vez necesita la capacidad de
+  producción. Se escala solo si la prueba lo exige.
+- **Atribución.** Cada entorno lleva etiquetas de equipo y rama para que su coste aparezca en el
+  reparto de [costes por equipo y funcionalidad](/docs/costes-por-equipo-y-funcionalidad#presupuestos-por-equipo-y-alertas-que-avisan-antes).
+
+## Seguridad y aislamiento
+
+Un namespace o una cuenta por entorno ayuda a separar recursos, pero no es una frontera completa.
+La documentación de Kubernetes indica que los namespaces aíslan **grupos de recursos** dentro de
+un clúster; los objetos de todo el clúster, como los nodos, no pertenecen a ninguno, y los servicios
+de un namespace son alcanzables desde otros mediante su nombre completo (FQDN). Es decir, el
+aislamiento de red hay que diseñarlo aparte, y el de permisos también.
+
+Reglas que se pueden verificar:
+
+- Las credenciales de un entorno son **de sandbox o de alcance mínimo**; nunca las de producción.
+- El acceso al entorno se restringe a quien revisa la rama, no a toda la organización.
+- Los secretos se inyectan al crear el entorno y se destruyen con él.
+- Un entorno no puede escribir en colas, buckets o bases de datos de otro entorno ni de producción.
+
+## Métricas que dicen si funciona
+
+Tres métricas bastan para saber si el mecanismo se sostiene:
+
+- **Tiempo de aprovisionamiento:** desde que se abre la rama hasta que el entorno responde. Si
+  crece, la plantilla se ha vuelto demasiado pesada.
+- **Coste por entorno y por equipo:** el gasto de cada entorno y su vida media. Sirve para
+  decidir qué plantillas reducir.
+- **Entornos huérfanos:** entornos activos cuya rama ya no existe o que superan su caducidad. Un
+  número que sube indica que la destrucción automática no funciona.
+
+Un cuarto indicador, menos técnico, es cuántas ramas llegan a validarse en el entorno efímero.
+Si casi nadie lo usa, el coste no se justifica.
+
+## Errores frecuentes
+
+- **Entornos sin caducidad.** Se crean con buena intención y acaban siendo la parte más cara de la
+  factura. La caducidad va en la plantilla, no en la memoria de alguien.
+- **Plantilla que diverge de producción.** Un entorno que usa otra versión de un módulo valida
+  algo que no se va a desplegar.
+- **Datos copiados de producción «solo para probar».** Es el atajo que más riesgo añade.
+- **Secretos compartidos entre entornos.** Una credencial comprometida en una rama afecta a todas.
+- **Medir solo la creación.** El coste real aparece en la operación y en la caducidad.
+
+## Checklist
+
+- [ ] El entorno se describe con la misma plantilla que producción, con parámetros por rama.
+- [ ] Cada entorno tiene caducidad automática y una vía para destruirlo a mano.
+- [ ] Los datos son sintéticos o anonimizados; no hay datos personales de producción.
+- [ ] Las credenciales son de sandbox o de alcance mínimo y se destruyen con el entorno.
+- [ ] Existe un tope de entornos activos y de cómputo por equipo.
+- [ ] Cada entorno lleva etiquetas de equipo y rama para atribuir su coste.
+- [ ] Se miden el tiempo de aprovisionamiento, el coste por entorno y los huérfanos.
+- [ ] Hay un criterio escrito para cuándo **no** levantar un entorno.
+
+## Fuentes
+
+- [Heroku: review apps, destrucción al cerrar el PR y caducidad por inactividad](https://devcenter.heroku.com/articles/github-integration-review-apps), documentación oficial.
+- [Argo CD: generador Pull Request de ApplicationSet](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Pull-Request/), documentación oficial.
+- [Kubernetes: namespaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/), documentación oficial.
+- [Kubernetes: ResourceQuota](https://kubernetes.io/docs/concepts/policy/resource-quotas/), documentación oficial.

@@ -1,0 +1,135 @@
+---
+title: 'Flaky tests: quarantine and cost'
+description: 'How to detect flaky tests, when to quarantine them without hiding them, and when to rerun them. The real cost is that the team stops trusting red builds.'
+category: practicas
+tags:
+  - pruebas
+  - cuarentena
+  - fiabilidad
+  - integracion-continua
+  - mantenimiento
+order: 28
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 130
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A test that flips without code changes moves to a visible quarantine with owner and date'
+---
+
+# Flaky tests: quarantine and cost
+
+A flaky test fails some of the time even though the code has not changed. It looks like a minor problem: you rerun it, it passes, and the team moves on. The deeper problem is not the time lost to reruns but the habit they create. When a failure is treated as noise, the day a real failure appears, nobody can tell it apart from the noise. This article explains how to detect flaky tests, what to do with them while they are being fixed, and when not to rerun them.
+
+## What a flaky test is
+
+A test is flaky when it gives different results on the same code in the same environment. The definition matters for what it excludes. A failure that repeats every time, however inconvenient, is a defect. A test that passes and fails without changes is a test that does not measure reliably.
+
+The distinction changes the response. A defect is fixed in the code. Flakiness is fixed in the test, in the environment, or in the way the test waits for something to happen.
+
+## The cost that does not show on the dashboard
+
+The cost is twofold. The direct cost is time: every rerun consumes runner minutes, delays the merge, and forces someone to read the log to decide whether the failure is real. The indirect cost is larger. A team that has rerun a test dozens of times learns that red means nothing. It then starts merging on red, or rerunning without looking.
+
+In 2016, the Google Testing Blog team acknowledged in the comments of its article on flaky tests that it does not keep an accurate count of how often flaky tests mask real bugs. What is lost in silence cannot be measured, which is why the management policy matters more than the tool.
+
+## Typical causes
+
+The causes repeat more than one might expect. Almost all share the same shape: the test depends on something it does not control.
+
+- **Time and order.** Comparisons against the system clock, fixed waits ("wait 500 ms"), and tests that only pass when run in a certain order.
+- **Shared state.** Two tests that write to the same database or temporary file and overwrite each other when they run in parallel.
+- **Network and external services.** Real calls to third-party APIs, DNS or queues that occasionally respond slowly.
+- **Concurrency.** Threads or processes that arrive in an order the author did not anticipate.
+- **Runner resources.** A CI agent with little memory, little CPU or a full disk, which slows the test until it exceeds a time limit.
+
+For each flaky test, ask which input it does not control: the clock, the execution order, another test, the network or the machine's load. The answer usually points to the fix.
+
+## How to detect them
+
+Detection requires data, not intuition. Three practices are enough to start.
+
+1. **Per-test result history.** Store each verdict with its name, commit, agent and duration, not only the global pipeline result. Without that history you cannot tell which test fails sometimes.
+2. **Controlled reruns.** Run the suspect test several times on the same commit in a clean environment. If the verdict changes without touching the code, the test is flaky. Do this in a separate job, not in the one that decides the merge.
+3. **Failure rate without changes.** Measure how often each test fails on commits that do not touch its code. A test that fails in branches unrelated to it is suspicious. A test that fails only when its module changes probably detects a real defect.
+
+## Quarantine: take it out without hiding it
+
+A quarantine removes a flaky test from the merge gate without deleting or hiding it. It has three conditions.
+
+- **Out of the gate.** Its failure does not block a merge. The team stops paying for its noise while it is fixed.
+- **Visible.** It keeps running and its result appears on a dashboard or report. An invisible quarantine is a deletion with another name.
+- **Owned and dated.** Each test has an owner and a deadline to fix, rewrite or remove it. Without a date, the quarantine becomes a graveyard.
+
+The metadata can be as simple as this. The shape is illustrative, not a specific tool.
+
+```yaml
+# tests/quarantine.yaml (illustrative shape)
+- test: orders.checkout.spec
+  owner: payments-team
+  since: 2026-10-01
+  due: 2026-10-29
+  reason: fixed wait against the stock service
+```
+
+The `reason` field is the one that gets forgotten most and helps most. It records why the test is suspected and makes the fix easier.
+
+## Rerunning: when yes and when no
+
+Automatically rerunning a failed test is a tool, not a solution. A rerun hides the cause: the test passes on the third attempt and the problem disappears from the record.
+
+It makes sense when the failure comes from something external and transient that the team does not control, such as a failed download of a dependency, and when the rerun is recorded. It makes no sense to hide tests that fail because of their own design, or to turn red into green without a trace. In its 2016 article's comments, the Google Testing Blog team explains that its rerun mechanism applies only to tests marked as flaky or when someone explicitly asks for it. A rerun should be a visible decision, not a reflex.
+
+Practical rule: if a rerun changes the verdict, the team must know, and the test must be annotated.
+
+## Fix, rewrite or delete
+
+A test that has been in quarantine for a while needs a decision. Three criteria guide the choice.
+
+- **Fix** if it protects behaviour that matters and the failure has an identifiable cause, such as a fixed wait that should become an observable condition.
+- **Rewrite** if it protects something important but is built on shared state, real network calls or timing. It is usually more stable to test the business rule in a unit test and the boundary between services in a contract, as described in [testing strategy: pyramid and contracts](/docs/estrategia-de-pruebas-contratos).
+- **Delete** if nobody knows what it protects, if the behaviour no longer exists, or if a more stable test covers the same check. Deleting a test is a legitimate decision and should be recorded in the history.
+
+## Metrics
+
+Three metrics are enough to govern the quarantine.
+
+- **Number of quarantined tests.** A figure that rises unchecked means the quarantine is being used as a dumping ground.
+- **Age.** How many days each test has been quarantined. Anything past its deadline should be escalated.
+- **Time lost to reruns.** Runner minutes and waiting time consumed by reruns, per week.
+
+These metrics are not for assigning blame. They help decide how much effort to put into fixes and whether the problem is isolated or structural.
+
+## Pipeline quality and trust
+
+A pipeline is only useful if the team believes its verdict. Each flaky test erodes that trust a little. First it gets rerun, then the red from one specific test is ignored and, over time, red in general is ignored.
+
+This erosion also depends on how the pipeline layers are organised. Fast, deterministic tests should block merges. Slow or fragile tests can report without blocking, but they should never be left without an owner.
+
+## When yes and when no
+
+Quarantine is appropriate when the test is flaky, its cause is not obvious, and the blocking costs more than the risk of not seeing it for a few days.
+
+It is not appropriate when the test fails consistently. That is a defect and must block. Nor does quarantine replace the fix: a quarantine without a deadline is the same problem with a better appearance.
+
+## Common mistakes
+
+- **Rerunning until it passes.** A green obtained that way proves nothing if the earlier red is not kept.
+- **Quarantine without an owner.** Nobody reviews it and it grows.
+- **Fixed waits as the fix.** They replace one race with another, slower one.
+- **Tests with shared data.** They produce failures that get blamed on the network or on chance.
+- **Measuring only the global result.** Without per-test records, instability is invisible.
+
+## Checklist
+
+- [ ] Does each test have its own result history?
+- [ ] Are flaky tests out of the merge gate but still visible?
+- [ ] Does each quarantined test have an owner, a reason and a deadline?
+- [ ] Does automatic rerunning keep a trace of the first result?
+- [ ] Are the age and number of quarantined tests reviewed every week?
+- [ ] Do consistently failing tests block merges?
+
+## Sources
+
+- Google Testing Blog, "Flaky Tests at Google and How We Mitigate Them", 27 May 2016. https://testing.googleblog.com/2016/05/flaky-tests-at-google-and-how-we.html (consulted; the article body was not readable in this review, so the statements are taken from the team's replies in the comments).

@@ -1,0 +1,241 @@
+---
+title: 'Revisión de código sin cuello de botella'
+description: 'Cómo revisar código sin que la cola de revisión frene la entrega: tamaño del cambio, qué mirar a fondo, acuerdos de equipo y comentarios accionables.'
+category: practicas
+tags:
+  - revision-de-codigo
+  - cuellos-de-botella
+  - tamano-de-cambios
+  - pull-requests
+  - acuerdos-de-equipo
+order: 25
+roadmap:
+  id: liderazgo
+  stage: equipos
+  step: 80
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Un cambio grande se parte; los pequeños avanzan por una cola de revisión rápida'
+---
+
+# Revisión de código sin cuello de botella
+
+La revisión de código es una cola. Un cambio llega, espera a que alguien lo mire, recibe
+comentarios, se corrige y vuelve a esperar. Cada vuelta cuesta tiempo, y el tiempo de espera
+crece cuanto más grande es el cambio y cuantos más cambios hay abiertos. Por eso una revisión
+lenta no se arregla con más disciplina individual, sino con **tamaños, acuerdos y prioridades**
+que mantengan la cola corta.
+
+Este artículo trata de cómo revisar rápido sin perder calidad. La tesis es sencilla: la calidad
+de una revisión depende de **qué se mira a fondo**, no de cuántas líneas se leen. Todo lo que una
+máquina puede comprobar debe salir de la conversación humana, y la atención de la persona debe
+ir a las decisiones que ninguna herramienta puede juzgar.
+
+<figure>
+  <img src="/figures/revision-de-codigo-sin-cuello-de-botella.svg" alt="" />
+</figure>
+
+## Por qué la cola se vuelve cuello de botella
+
+Un cuello de botella es la etapa que limita todo el flujo. En la revisión suele pasar algo
+parecido a esto: el autor termina el cambio y lo sube; el revisor está ocupado; el autor empieza
+otra tarea; cuando llega el comentario, el contexto ya se ha perdido y la corrección tarda más.
+Mientras tanto, el cambio sigue vivo, las ramas se separan del tronco y el siguiente cambio se
+apoya en el anterior, que todavía no ha entrado.
+
+Google describe la práctica con dos ideas que conviene tener presentes. La primera es que los
+cambios pequeños se revisan más rápido: es más fácil que un revisor encuentre varios ratos de
+cinco minutos que un bloque largo para uno solo cambio grande. La segunda es que la respuesta
+tiene un plazo: su guía del revisor fija como máximo **un día laborable** para contestar a una
+petición de revisión, y pide revisar en cuanto llega salvo que la persona esté en una tarea
+concentrada, caso en el que debe esperar a un punto de pausa. Son referencias de partida, no
+una medida del rendimiento de cada equipo.
+
+Como observación de práctica, el autor de este artículo ve que la espera de revisión suele ser
+una de las etapas donde el trabajo pasa más tiempo sin avanzar. Por eso conviene medirla antes de
+decidir qué cambiar (ver la sección de señales).
+
+## El tamaño del cambio es la primera palanca
+
+El tamaño no es una preferencia estética: es lo que decide cuánta revisión real puede recibir un
+cambio. Hay tres reglas que tienen buen respaldo y que el equipo puede adoptar sin herramientas
+nuevas.
+
+- **Un cambio, un propósito.** Google señala que suele ser buena idea hacer los refactores en un
+  cambio separado de las funcionalidades o las correcciones de errores. Así el revisor puede
+  leer el movimiento mecánico con menos atención y el cambio de comportamiento con toda la
+  atención que pide.
+- **Un tamaño de referencia.** La guía de Google indica que unas 100 líneas suelen ser un tamaño
+  razonable y que 1000 suelen ser demasiadas, con el juicio del revisor como último criterio.
+  Un estudio de SmartBear sobre revisiones (una serie de datos de 2006 que la empresa resume)
+  recomienda revisar no más de 200 a 400 líneas de código a la vez, y observa que por encima de
+  400 la capacidad de encontrar defectos disminuye. Son datos de un contexto concreto; úsalos
+  como límite orientativo, no como ley.
+- **Un ritmo sostenible.** El mismo resumen de SmartBear recomienda no superar unos 500 líneas
+  por hora y no revisar más de 60 minutos seguidos. Si una revisión exige más, el problema es el
+  tamaño, no la persona.
+
+Supuesto ilustrativo: un cambio de 1.200 líneas mezcla el renombrado de un módulo, una migración
+de tipos y una regla nueva de cálculo. Ninguna de esas partes es difícil, pero juntas no caben en
+una lectura atenta. La respuesta correcta no es aprobar más deprisa, sino partirlo en tres
+cambios que se puedan revertir por separado.
+
+Partir no siempre es fácil. Cuando el trabajo es grande, conviene pensar en pasos que dejen el
+tronco funcionando, como describe el artículo sobre [ramas y entrega continua](/docs/ramas-y-entrega-continua).
+
+## Qué revisar a fondo y qué dejar a las herramientas
+
+Una revisión útil no repite lo que el compilador, el formateador o la batería de pruebas ya
+comprueban. La división práctica es esta:
+
+| Lo comprueba una máquina                                 | Lo decide una persona                                                |
+| -------------------------------------------------------- | -------------------------------------------------------------------- |
+| Formato, estilo y orden de imports                       | Si el diseño resuelve el problema del negocio                        |
+| Tipos y errores de compilación                           | Si el cambio añade complejidad que no hace falta                     |
+| Pruebas que pasan y cobertura de los caminos principales | Si las pruebas prueban lo importante, no solo lo fácil               |
+| Dependencias prohibidas y reglas de capas                | Nombres del dominio y claridad de los comentarios                    |
+| Patrones de seguridad que tienen regla automática        | Contratos públicos, seguridad, datos personales y migraciones        |
+| Enlaces rotos, documentación generada                    | Qué pasa si el cambio sale mal y cómo se revierte                    |
+
+La guía de Google para revisores enumera qué debe comprobarse: diseño, funcionalidad, complejidad,
+pruebas, nombres, comentarios, documentación y conformidad con las guías de estilo. Esa lista
+sirve de recordatorio, pero no obliga a que una persona revise a mano lo que una herramienta
+puede verificar. Si el formato lo corrige el CI, la revisión humana gana sitio para lo que
+importa.
+
+Una regla práctica: si un comentario de revisión podría haberlo hecho una regla automática, la
+regla debe existir y el comentario debe desaparecer.
+
+## Acuerdos de equipo
+
+La velocidad de la revisión no depende de la buena voluntad de cada persona, sino de acuerdos
+explícitos. Estos son los que suelen tener más efecto:
+
+- **Tiempo de respuesta objetivo.** Escribe el plazo que el equipo se compromete a cumplir,
+  partiendo de la referencia de un día laborable de Google y ajustándolo a la realidad del equipo.
+  Lo que no tiene plazo no se cumple.
+- **Rotación de revisores.** Si siempre revisan las mismas personas, esas personas se convierten en
+  el cuello de botella y el resto pierde contexto del código. Una rotación simple, o un revisor
+  por área, reparte la carga.
+- **Límite de revisiones pendientes por persona.** Limita cuántas revisiones puede tener abiertas
+  alguien a la vez. Es la misma idea que los límites de trabajo en curso del artículo sobre
+  [flujo de valor y cuellos de botella](/docs/flujo-de-valor-y-cuellos-de-botella): el trabajo que
+  se acumula delante de una persona alarga la espera de todos.
+- **Límite de cambios abiertos por autor.** Un autor con cinco cambios esperando debería empezar a
+  cerrar antes de abrir más.
+- **Criterio de aprobación.** Google pide aprobar un cambio cuando mejora de forma clara la salud
+  general del código, aunque no sea perfecto. Esta frase evita tanto el perfeccionismo que bloquea
+  como la aprobación sin leer.
+
+## Comentarios claros, accionables y con prioridad
+
+Un comentario de revisión tiene un trabajo: que el autor sepa qué hacer y en qué orden. La forma
+más simple de conseguirlo es decir **qué tipo de comentario es** y si **bloquea** la fusión.
+
+[Conventional Comments](https://conventionalcomments.org/) propone etiquetas como `suggestion`
+(una propuesta de mejora), `issue` (un problema concreto), `question` (una duda que puede no ser
+relevante), `nitpick` (una preferencia trivial) o `praise` (algo bien hecho). Y decoraciones como
+`(blocking)`, que impide aceptar el cambio hasta resolverlo, o `(non-blocking)`, que no lo impide.
+
+```text
+issue (blocking): el cálculo no contempla el redondeo de la moneda del cliente.
+suggestion (non-blocking): esta función podría llamarse calcularImpuesto.
+```
+
+Tres criterios evitan la mayoría de fricciones:
+
+- **Bloquear solo por lo que importa.** Si un comentario no es un defecto, un riesgo o una
+  violación de un acuerdo, no debe bloquear el cambio.
+- **Explicar el porqué.** La guía de Google pide comentarios que expliquen el porqué y no solo el
+  qué. «Este bucle es O(n²) y la lista puede crecer» ayuda más que «cambia esto».
+- **Decir qué se espera.** Si no está claro si el autor debe aplicar una sugerencia o solo
+  considerarla, el revisor debe indicarlo. La guía de Google lo recoge para los aprobados con
+  comentarios menores.
+
+## Señales de cuello de botella
+
+Antes de cambiar nada, mira la cola. Estas señales suelen indicar que la revisión limita el flujo:
+
+- **Cambios esperando más de un día** sin que nadie haya escrito nada. Compara con el plazo que
+  el equipo ha acordado.
+- **Revisiones de tres líneas tras días de espera.** Suele significar que el cambio era grande,
+  que el autor no tenía forma de saber qué había que cambiar, o que el revisor llegó tarde.
+- **Los mismos revisores de siempre.** Si una persona aparece en todas las revisiones, la cola
+  vive en su agenda.
+- **Ramas que no cierran.** Cuando un cambio lleva semanas abierto, la integración se encarece y
+  el siguiente trabajo se apoya en algo que no existe todavía en el tronco.
+
+Para confirmarlo, mide tres tiempos: desde que se abre el cambio hasta la primera respuesta, desde
+la primera respuesta hasta la aprobación y el tamaño mediano de los cambios. Con esos datos, el
+equipo sabe si el problema es la espera, la conversación o el tamaño.
+
+## Cuándo la revisión previa no compensa
+
+La revisión antes de fusionar tiene un coste real. En algunos casos su valor marginal es bajo y
+conviene cambiar de modelo.
+
+**Sí conviene reducirla cuando:**
+
+- El cambio se ha escrito en pareja o en grupo, y la persona que lo revisa ha estado presente
+  durante su diseño. La segunda lectura aporta menos, porque el conocimiento ya está compartido.
+- El cambio es mecánico (un renombrado, una actualización de versión, código repetitivo) y lo
+  cubren pruebas fuertes y contratos que alguien ha validado. El artículo sobre
+  [código generado por IA](/docs/codigo-generado-por-ia) desarrolla este criterio para el código
+  producido por modelos.
+- El cambio está detrás de un flag de funcionalidad, con reversión probada y dueño claro.
+
+**No la reduzcas cuando:**
+
+- Toca pagos, permisos, autenticación o datos personales.
+- Cambia un contrato público o una migración de datos que no se puede deshacer fácilmente.
+- El autor no puede explicar qué cambia, por qué y cómo se verificó.
+
+### Qué la sustituye
+
+Cuando se quita la aprobación previa en un área, no se elimina el control: se mueve después de la
+fusión. La revisión posterior funciona con tres piezas:
+
+1. **Muestreo.** Un porcentaje de los cambios fusionados se revisa después, con un plazo
+   acordado. El muestreo detecta tendencias, no cada defecto.
+2. **Rutas sensibles.** Las rutas de código críticas siguen exigiendo aprobación previa, con
+   dueños declarados por carpeta o módulo.
+3. **Reversión rápida.** Sin una forma probada de deshacer el cambio, la revisión posterior no
+   protege nada. Por eso depende de la disciplina de entrega, no solo del proceso de revisión.
+
+## Errores frecuentes
+
+- **Aprobar por tamaño o por cansancio.** Un cambio enorme aprobado sin leerlo no es una revisión;
+  es una aprobación de trámite.
+- **Usar la revisión para discutir estilo.** Si el formateador no está en el CI, el equipo paga
+  cada día con comentarios que una máquina podría hacer.
+- **Bloquear con preferencias.** Un bloqueo por un matiz trivial frena el cambio y desgasta la
+  relación entre autor y revisor.
+- **Acumular revisiones en pocas personas.** La cola se resuelve con rotación y límites, no con
+  revisores más rápidos.
+- **Abrir cambios grandes para «revisar todo junto».** Eso reparte la misma carga en un solo
+  momento y lo hace imposible de leer.
+- **Medir la velocidad sin medir la calidad.** Si el tiempo de revisión baja y aumentan las
+  reversiones o los incidentes, la cola no se ha resuelto: se ha trasladado.
+
+## Checklist
+
+- [ ] El cambio tiene un propósito y, si mezcla refactor y comportamiento, está partido.
+- [ ] El tamaño es revisable en una sola sesión concentrada.
+- [ ] Formato, estilo, tipos y pruebas los comprueba el CI, no el revisor.
+- [ ] El equipo tiene un plazo de respuesta acordado y visible.
+- [ ] Los revisores rotan y ninguna persona acumula más revisiones pendientes que el límite acordado.
+- [ ] Cada comentario indica su tipo y si bloquea la fusión.
+- [ ] Los comentarios explican el porqué y dicen qué se espera del autor.
+- [ ] Hay medidas de espera hasta la primera respuesta, hasta la aprobación y del tamaño de los cambios.
+- [ ] Las rutas sensibles conservan aprobación previa con dueños declarados.
+- [ ] Si se sustituye la revisión previa, existe muestreo posterior y una reversión probada.
+
+## Fuentes
+
+- Google, [guía de revisión de código: cambios pequeños (CL)](https://google.github.io/eng-practices/review/developer/small-cls.html) (_eng-practices_).
+- Google, [guía del revisor: velocidad de respuesta](https://google.github.io/eng-practices/review/reviewer/speed.html) (_eng-practices_).
+- Google, [guía del revisor: qué revisar](https://google.github.io/eng-practices/review/reviewer/looking-for.html) (_eng-practices_).
+- Google, [guía del revisor: estándar de aprobación](https://google.github.io/eng-practices/review/reviewer/standard.html) (_eng-practices_).
+- SmartBear, [buenas prácticas de revisión de código entre pares](https://smartbear.com/learn/code-review/best-practices-for-peer-code-review/), que resume el estudio de revisiones de 2006.
+- Conventional Comments, [especificación de etiquetas y decoraciones](https://conventionalcomments.org/).
+- Caitlin Sadowski, Emma Söderberg, Luke Church, Michal Sipko y Alberto Bacchelli, [Modern Code Review: A Case Study at Google](https://research.google/pubs/modern-code-review-a-case-study-at-google/) (ICSE-SEIP, 2018), sobre la práctica de revisión en Google.

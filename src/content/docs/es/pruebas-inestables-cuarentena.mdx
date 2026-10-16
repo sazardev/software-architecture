@@ -1,0 +1,135 @@
+---
+title: 'Pruebas inestables: cuarentena y coste'
+description: 'Cómo detectar pruebas inestables, cuándo ponerlas en cuarentena sin esconderlas y cuándo reejecutarlas. El coste real es que el equipo deja de creer el rojo.'
+category: practicas
+tags:
+  - pruebas
+  - cuarentena
+  - fiabilidad
+  - integracion-continua
+  - mantenimiento
+order: 28
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 130
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Una prueba que alterna sin cambios pasa a cuarentena visible, con dueño y fecha'
+---
+
+# Pruebas inestables: cuarentena y coste
+
+Una prueba inestable falla algunas veces sin que el código haya cambiado. Parece un problema menor: se reejecuta, pasa y el equipo sigue. El problema de fondo no es el tiempo perdido en reejecuciones, sino el hábito que crea. Cuando un fallo se trata como ruido, el día que aparece un fallo real nadie lo distingue del ruido. Este artículo explica cómo detectar pruebas inestables, qué hacer con ellas mientras se arreglan y cuándo conviene no reejecutarlas.
+
+## Qué es una prueba inestable
+
+Una prueba es inestable (en inglés, _flaky_) cuando da resultados distintos sobre el mismo código y en el mismo entorno. La definición importa por lo que excluye. Un fallo que se repite siempre, aunque sea incómodo, es un defecto. Una prueba que pasa y falla sin cambios es una prueba que no mide con fiabilidad.
+
+La distinción cambia la respuesta. El defecto se corrige en el código. La inestabilidad se corrige en la prueba, en el entorno o en la forma de esperar a que algo ocurra.
+
+## El coste que no aparece en el panel
+
+El coste es doble. El directo es tiempo: cada reejecución consume minutos de runner, retrasa la fusión y obliga a alguien a leer el log para decidir si el fallo es real. El indirecto es mayor. Un equipo que ha reejecutado una prueba decenas de veces aprende que el rojo no significa nada. Entonces empieza a fusionar con rojo o a reejecutar sin mirar.
+
+En 2016, el equipo del Google Testing Blog reconoció en los comentarios de su artículo sobre pruebas inestables que no lleva un recuento preciso de cuántas veces esas pruebas esconden errores reales. Lo que se pierde en silencio no se puede medir, y por eso la política de gestión importa más que la herramienta.
+
+## Causas típicas
+
+Las causas se repiten más de lo que parece. Casi todas tienen la misma forma: la prueba depende de algo que no controla.
+
+- **Tiempo y orden.** Comparaciones con el reloj del sistema, esperas fijas («espera 500 ms») y pruebas que solo pasan si se ejecutan en cierto orden.
+- **Estado compartido.** Dos pruebas que escriben en la misma base de datos o en el mismo fichero temporal, y que se pisan cuando corren en paralelo.
+- **Red y servicios externos.** Llamadas reales a APIs de terceros, a DNS o a colas que responden lento de vez en cuando.
+- **Concurrencia.** Hilos o procesos que llegan en un orden que el autor no previó.
+- **Recursos del runner.** Un agente de CI con poca memoria, poca CPU o disco lleno, que ralentiza la prueba hasta superar un tiempo límite.
+
+Ante cada prueba inestable conviene preguntar qué entrada no controla: el reloj, el orden de ejecución, otra prueba, la red o la carga de la máquina. La respuesta casi siempre apunta al arreglo.
+
+## Cómo detectarlas
+
+Detectar exige datos, no intuición. Tres prácticas bastan para empezar.
+
+1. **Registro de resultados por prueba.** Guardar cada veredicto con su nombre, commit, agente y duración, no solo el resultado global del pipeline. Sin ese histórico no se sabe qué prueba falla a veces.
+2. **Reejecución controlada.** Ejecutar la prueba sospechosa varias veces sobre el mismo commit y en un entorno limpio. Si cambia de veredicto sin tocar el código, es inestable. Conviene hacerlo en una tarea aparte, no en la que decide la fusión.
+3. **Tasa de fallo sin cambios.** Medir cuántas veces falla cada prueba en commits que no tocan su código. Una prueba que falla en ramas ajenas a ella es sospechosa. Una que falla solo cuando se modifica su módulo probablemente detecta un defecto real.
+
+## Cuarentena: sacar sin esconder
+
+Una cuarentena saca una prueba inestable del bloqueo de fusión sin borrarla ni ocultarla. Tiene tres condiciones.
+
+- **Fuera del bloqueo.** Su fallo no impide fusionar. El equipo deja de pagar el coste de su ruido mientras se arregla.
+- **Visible.** Sigue ejecutándose y su resultado aparece en un panel o en un informe. Una cuarentena invisible es un borrado con otro nombre.
+- **Con dueño y fecha límite.** Cada prueba tiene un responsable y un plazo para arreglarla, reescribirla o eliminarla. Sin fecha, la cuarentena se convierte en un cementerio.
+
+Los metadatos pueden ser tan simples como esto. La forma es ilustrativa, no una herramienta concreta.
+
+```yaml
+# pruebas/cuarentena.yaml (forma ilustrativa)
+- prueba: pedidos.checkout.spec
+  dueno: equipo-pagos
+  desde: 2026-10-01
+  vence: 2026-10-29
+  motivo: espera fija contra el servicio de stock
+```
+
+El campo `motivo` es el que más se olvida y el que más ayuda. Deja escrito por qué se sospecha de la prueba y facilita el arreglo.
+
+## Reejecutar: cuándo sí y cuándo no
+
+Reejecutar automáticamente una prueba fallida es una herramienta, no una solución. Reejecutar oculta la causa: la prueba pasa en el tercer intento y el problema desaparece del registro.
+
+Tiene sentido cuando el fallo viene de algo externo y transitorio que el equipo no controla, como la descarga fallida de una dependencia, y cuando la reejecución queda registrada. No tiene sentido para ocultar pruebas que fallan por su propio diseño, ni para pasar de rojo a verde sin dejar rastro. En los comentarios de su artículo de 2016, el equipo del Google Testing Blog explica que su mecanismo de reejecución solo se aplica a pruebas marcadas como inestables o cuando alguien lo pide expresamente. La reejecución es una decisión visible, no un reflejo.
+
+Regla práctica: si una reejecución cambia el veredicto, el equipo debe saberlo y la prueba debe quedar anotada.
+
+## Arreglar, reescribir o borrar
+
+Una prueba que lleva tiempo en cuarentena exige una decisión. Tres criterios orientan la elección.
+
+- **Arreglar** si protege un comportamiento que importa y el fallo tiene una causa identificable, como una espera fija que debe sustituirse por una condición observable.
+- **Reescribir** si protege algo importante pero está construida sobre estado compartido, red real o tiempos. Suele ser más estable probar la regla de negocio en una prueba unitaria y la frontera entre servicios en un contrato, como se describe en [estrategia de pruebas: pirámide y contratos](/docs/estrategia-de-pruebas-contratos).
+- **Borrar** si nadie sabe qué protege, si el comportamiento ya no existe o si otra prueba más estable cubre la misma comprobación. Borrar una prueba es una decisión legítima y debe quedar en el historial.
+
+## Métricas
+
+Tres métricas bastan para gobernar la cuarentena.
+
+- **Número de pruebas en cuarentena.** Una cifra que sube sin control indica que la cuarentena se usa como vertedero.
+- **Antigüedad.** Cuántos días lleva cada prueba en cuarentena. Lo que supera su plazo debe escalarse.
+- **Tiempo perdido en reejecuciones.** Minutos de runner y de espera consumidos por reejecuciones, por semana.
+
+Estas métricas no sirven para señalar culpables. Sirven para decidir cuánto esfuerzo dedicar a los arreglos y si el problema es puntual o estructural.
+
+## Calidad del pipeline y confianza
+
+Un pipeline solo sirve si el equipo cree en su veredicto. Cada prueba inestable erosiona esa confianza un poco. Primero se reejecuta, luego se ignora el rojo de una prueba concreta y, con el tiempo, se ignoran rojos en general.
+
+Esta erosión depende también de cómo se organizan las capas del pipeline. Las pruebas rápidas y deterministas deben bloquear la fusión. Las lentas o frágiles pueden informar sin bloquear, pero nunca deben quedarse sin dueño.
+
+## Cuándo sí y cuándo no
+
+La cuarentena sí procede cuando la prueba es inestable, su causa no es evidente y el bloqueo cuesta más que el riesgo de no verla durante unos días.
+
+No procede cuando la prueba falla de forma consistente. Eso es un defecto y debe bloquear. Tampoco sustituye al arreglo: una cuarentena sin plazo es el mismo problema con mejor aspecto.
+
+## Errores frecuentes
+
+- **Reejecutar hasta que pase.** Un verde obtenido así no demuestra nada si no se conserva el rojo anterior.
+- **Cuarentena sin dueño.** Nadie la revisa y crece.
+- **Esperas fijas como arreglo.** Sustituyen una carrera por otra, más lenta.
+- **Pruebas con datos compartidos.** Generan fallos que se atribuyen a la red o al azar.
+- **Medir solo el resultado global.** Sin registro por prueba, la inestabilidad no se ve.
+
+## Checklist
+
+- [ ] ¿Cada prueba tiene un registro de resultados propio?
+- [ ] ¿Las pruebas inestables salen del bloqueo, pero siguen visibles?
+- [ ] ¿Cada prueba en cuarentena tiene dueño, motivo y fecha límite?
+- [ ] ¿La reejecución automática deja rastro del primer resultado?
+- [ ] ¿Se revisan cada semana la antigüedad y el número de pruebas en cuarentena?
+- [ ] ¿Las pruebas que fallan de forma consistente bloquean la fusión?
+
+## Fuentes
+
+- Google Testing Blog, «Flaky Tests at Google and How We Mitigate Them», 27 de mayo de 2016. https://testing.googleblog.com/2016/05/flaky-tests-at-google-and-how-we.html (consultado; el cuerpo del artículo no fue legible en la consulta, las afirmaciones se toman de las respuestas del equipo en los comentarios).

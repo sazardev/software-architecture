@@ -1,0 +1,206 @@
+---
+title: 'Merge queues: keeping main green'
+description: 'Two changes can pass their tests separately and still break main when combined. A merge queue tests them together, in order, before they land.'
+category: practicas
+tags:
+  - colas-de-fusion
+  - merge-queue
+  - integracion-continua
+  - pruebas
+  - trunk-based-development
+order: 24
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 110
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'A row of changes entering the queue; the one that fails leaves before reaching main'
+---
+
+# Merge queues: keeping main green
+
+A change that passes every test on its branch proves one thing: that it works on the base the
+branch had when it was tested. The problem comes later. When it merges, main has already moved,
+because other changes landed in the meantime. A **merge queue** closes that gap: it takes approved
+changes, tests each one against the main it will land on, and integrates it only if that test
+passes.
+
+This article explains what problem a queue solves, how it works, what it costs, and what it does
+not do. The thesis is simple: a queue does not replace good tests or review, but it stops two
+changes that are each correct on their own from breaking, together, the branch everyone uses.
+
+## Green apart, broken together
+
+An illustrative example (a hypothetical, with no real data): change A renames the function
+`calcularTarifa` to `tarifa`. Change B, opened in parallel from the same base, adds a new call to
+`calcularTarifa`. Both pass CI on their branches, because each is consistent with the base it saw.
+When the second one merges, main does not compile.
+
+No test failed because no test saw the combination. GitLab's documentation describes the same
+mechanism: a _merged results pipeline_ tests a change against the target branch, so two changes
+that pass separately can still conflict once both are merged.
+
+The problem grows with time. The distance between a branch's base and main increases every day the
+branch lives, so it gets worse with long-lived branches and with large teams where main moves
+several times a day. The [cost of integrating late](/docs/ramas-y-entrega-continua#the-cost-of-integrating-late)
+is covered in another article; here it matters as the cause.
+
+## What a queue solves and what it does not
+
+A queue guarantees that what enters main is what was tested, on the base it had when it entered.
+It removes breakage caused by combining changes that were approved at the same time, and the race
+between two almost simultaneous merges.
+
+It does not solve:
+
+- **Insufficient tests.** If the suite does not cover a behavior, the queue lets it through green.
+- **Errors that appear only in production**, such as those that depend on load, real data or
+  configuration.
+- **Design or review problems.** The queue validates the result; it does not decide whether the
+  change should exist.
+
+A queue multiplies the value of good tests but does not replace them. With weak tests, the queue
+gives you a green main that is broken.
+
+## How it works
+
+The basic flow is the same across the implementations I checked:
+
+1. The author approves the change and adds it to the queue.
+2. The queue creates a temporary branch with the current main plus the changes ahead of it.
+3. CI runs on that temporary branch.
+4. If the change passes and is first, it lands. If it passes but there are changes ahead, it waits
+   for them to land in order.
+5. If it fails, it leaves the queue and the changes behind it are rebuilt without it.
+
+GitHub describes the first step this way: the queue checks each pull request «when applied to the
+latest version of the target branch and any pull requests already in the queue». GitLab, instead,
+runs pipelines in parallel: with changes A, B and C queued, one pipeline tests A, another A + B and
+another A + B + C. If B fails, C is rebuilt on A + C.
+
+A batch groups several changes into one run. It saves runs, but when the batch fails you must find
+which change caused it, and the usual approach is to split it and test the halves again. Mergify, an
+external service, describes its batches with that same goal: reducing CI cost and time.
+
+| Approach                 | What it tests                              | Cost                               | Good fit                                  |
+| ------------------------ | ------------------------------------------ | ---------------------------------- | ----------------------------------------- |
+| CI on the branch only    | The base the branch had when it started    | Low                                | Small teams, lightly contested main       |
+| Serial queue             | Current base + changes ahead, one at a time | High wait                          | Moderate volume, fast tests               |
+| Parallel queue           | Several combinations at once               | More compute, less wait            | Many changes, expensive tests             |
+| Batch queue              | Several changes in one run                 | Fewer runs, harder diagnosis       | Small changes and costly tests            |
+
+## The cost: more runs and more waiting
+
+Each entry in the queue consumes a full CI run, and when one fails, the runs of the changes behind
+it repeat. A queue does not make CI cheaper; it changes where you pay. Instead of testing once per
+branch, you test once per combination.
+
+Uber describes a related problem in its SubmitQueue system. Its earlier design aborted builds in
+progress when newer changes looked more likely to pass, and it estimates that this affected 40–65 %
+of builds across large monorepos. Its later evolution speculates on the outcome of all pending
+changes and prunes that search with conflict analysis, so independent changes are tested in
+parallel. The practical lesson does not depend on its architecture: every discarded run is cost
+paid without a result.
+
+To balance it, tune four levers:
+
+- **Concurrency and batch size.** More parallelism lowers waiting time and raises compute. GitHub
+  allows between 1 and 100 simultaneous builds; GitLab defaults to 20 parallel pipelines per train.
+  Set the value from data on queue time and cost, not by intuition.
+- **Fast tests in the queue.** The queue can run the subset that covers the touched modules and the
+  smoke tests. The full suite can run on the branch before queueing. If you move it after the merge,
+  you accept a window in which main may fail: a conscious decision, not a detail.
+- **Priority.** A fix for main must be able to jump the line. GitHub allows it, but warns that
+  moving a change to the top rebuilds the ones in progress, which can slow the queue.
+- **Impact-based test selection.** Running only what a change affects reduces the cost per entry.
+  It requires knowing what depends on what, which is another reason to keep module boundaries clear.
+
+## Relation to frequent integration and small changes
+
+A queue does not replace integrating early. With changes that live for weeks, the queue expels more
+and rebuilds more, and the cost grows each cycle. Small changes are easy to test, review and expel:
+if one fails, the retry is cheap and does not hold up the others for hours.
+
+The queue works as a safety net. The base practice is still integrating daily, with short-lived
+branches, and using flags to decouple deployment from release. If the queue is what you rely on
+most, the signal is that your branches live too long.
+
+## If your platform has no native queue
+
+I checked the state of the most common options on 15 October 2026:
+
+- **GitHub** has native queues. They require enabling the "Require merge queue" protection rule on
+  the base branch and having CI workflows trigger on the `merge_group` event too. Without that
+  trigger, the required check is not reported and the merge is blocked:
+
+```yaml
+on:
+  pull_request:
+  merge_group:
+```
+
+- **GitLab** has native _merge trains_ per project. They allow bypass, although you can enforce their
+  use for all users or with an owner override.
+- **Bors (bors-ng)** is being phased out: its page says the public instance is being retired in
+  favor of GitHub merge queues, and it offers self-hosting. For a new project I would not choose it.
+- **Mergify** is an external service, not GitHub's queue, with batches and speculative checks. It
+  makes sense if your forge has no queue or you need its rules.
+- **A homegrown queue** is viable but delicate. It may only merge a change that is up to date with
+  main and that passed the test on that base. Without mutual exclusion (one merge at a time) or
+  without checking that main did not move during the test, the guarantee breaks. Think about the
+  cost of maintaining it before writing it.
+
+## Common mistakes
+
+- **Using the queue to replace review.** The queue validates that a change works integrated. It does
+  not replace design or security review.
+- **Queue tests slower than branch tests.** The author waits longer with no earlier feedback, and the
+  queue becomes the bottleneck. Keep a fast subset in the queue and leave the full suite on the
+  branch.
+- **Undeclared dependencies.** If B needs A and the queue does not know it, B is expelled in a chain
+  or, worse, lands broken when no test covers the relationship. Declare them or merge the changes
+  together.
+- **Retrying without reading the cause.** An expulsion from a flaky test and one from a real conflict
+  need different actions. Blind retries hide both.
+- **Bypass as a habit.** Skipping the queue "just this once" reopens the gap the queue closes. Limit
+  bypass and audit it.
+- **Huge batches.** One failure blocks the whole batch, and diagnosis takes longer the bigger it is.
+
+## Metrics
+
+These metrics measure the health of the queue. They are tracking criteria, not universal thresholds:
+measure your baseline for a few weeks before setting targets.
+
+- **Time in queue**, at the 50th and 90th percentiles: how long a change waits from entry to landing.
+- **Expulsion rate by cause**: real failure, flaky test or conflict.
+- **Retry time** after an expulsion.
+- **Main breakages per period**: times main was red or stopped compiling. The goal is zero; the
+  useful signal is the trend.
+
+## When yes and when no
+
+A queue earns its cost when there is a monorepo or many teams touching the same modules, when main
+is what gets deployed, and when a broken main blocks everyone.
+
+It does not pay off, at least yet, in a small team with few changes a day and tests that take
+seconds: the cost and friction exceed what it prevents. If main is not deployed and does not block
+anyone, the benefit is smaller, and it may be enough to integrate early and watch the branch.
+
+## Checklist
+
+- [ ] main is changed only through the queue (branch protection).
+- [ ] Required tests also run on the queue event.
+- [ ] Concurrency and batch size are set and reviewed with data.
+- [ ] Queue tests are not slower than branch tests.
+- [ ] Dependencies between changes are declared.
+- [ ] Each expulsion is classified by cause.
+- [ ] Bypass is restricted and audited.
+
+## Sources
+
+- GitHub Docs, [Managing a merge queue](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue).
+- GitLab Docs, [Merge trains](https://docs.gitlab.com/ci/pipelines/merge_trains/).
+- Uber, [Slashing CI costs at Uber](https://www.uber.com/us/en/blog/slashing-ci-costs-at-uber/).
+- Bors (bors-ng), [bors.tech](https://bors.tech/).
+- Mergify, [Merge queue](https://docs.mergify.com/merge-queue/).

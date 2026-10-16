@@ -1,0 +1,187 @@
+---
+title: 'Pipeline de CI por capas: lo barato primero'
+description: 'Cómo ordenar un pipeline de integración continua en capas de coste creciente, para que un error trivial se detecte en segundos y no al final.'
+category: practicas
+tags:
+  - integracion-continua
+  - pipeline
+  - pruebas
+  - entrega-continua
+order: 21
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 100
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Cuatro capas de coste creciente: un fallo barato detiene el cambio antes'
+---
+
+# Pipeline de CI por capas: lo barato primero
+
+Un pipeline de integración continua (CI) es la secuencia de comprobaciones que se ejecuta cada
+vez que alguien propone un cambio. Casi todos los equipos tienen uno. Menos tienen un orden
+deliberado. Cuando el orden es fortuito, un error de formato espera a que terminen las pruebas de
+sistema, y quien lo cometió se entera tarde y sin saber qué lo causó.
+
+La tesis de este artículo es simple: **ordena las comprobaciones en capas de coste creciente y
+ejecuta cada capa solo si la anterior ha pasado.** Así, lo que cuesta segundos se comprueba en
+segundos, y lo que cuesta minutos solo se paga cuando ya merece la pena.
+
+## Qué es una capa
+
+Una capa es un conjunto de comprobaciones con un coste parecido: cuánto tardan, qué recursos
+usan y qué tipo de fallo producen. Cada capa actúa como filtro. Si falla, el pipeline se detiene y
+las capas siguientes no se ejecutan. El cambio no llega a la fase cara mientras tenga un fallo
+barato por resolver.
+
+El criterio para asignar una comprobación a una capa no es su importancia, sino dos preguntas:
+cuánto tarda y qué señal da cuando falla. Una prueba importante pero lenta puede estar en una capa
+alta sin dejar de ser importante.
+
+## Las cuatro capas
+
+### Capa 0: validaciones instantáneas
+
+Comprobaciones que no compilan nada ni levantan servicios: formato, estructura de ficheros,
+esquemas de configuración y de contenido, y lint sin información de tipos. Tardan segundos y
+fallan con un mensaje que dice qué corregir.
+
+En este repositorio, `bun run format:check` y `bun run audit` cumplen ese papel: validan el formato
+y el frontmatter de los artículos sin construir la aplicación.
+
+### Capa 1: unitarias y análisis estático
+
+Pruebas unitarias y comprobación de tipos. Necesitan compilar el código, pero no infraestructura
+externa. Aquí también viven las reglas de arquitectura expresadas como análisis estático, como las
+[comprobaciones de arquitectura en el CI](/docs/fitness-en-el-ci#un-ejemplo-real): un import
+prohibido se detecta sin ejecutar nada más.
+
+### Capa 2: integración y contratos
+
+Pruebas que cruzan una frontera real, como una base de datos, una cola de mensajes o otro servicio
+representado mediante un contrato. Son más lentas porque levantan dependencias, así que conviene
+que solo corran cuando las capas 0 y 1 han pasado. Los contratos entre servicios encajan aquí; su
+funcionamiento se explica en la [estrategia de pruebas](/docs/estrategia-de-pruebas-contratos#donde-encaja-el-contrato).
+
+### Capa 3: sistema y entornos
+
+Pruebas de extremo a extremo, despliegue a un entorno de prueba y pruebas de carga cuando el
+proyecto las necesita. Es la capa más cara y la más frágil, porque puede fallar por causas ajenas
+al cambio: la red, los datos de prueba o un servicio vecino.
+
+No todos los proyectos la necesitan. Si un servicio no tiene entorno de prueba ni requisitos de
+carga, esta capa puede no existir.
+
+## Dónde corre cada capa y qué bloquea
+
+Cuándo corre una capa y si su resultado bloquea la fusión (*merge*) en la rama principal son dos
+decisiones separadas. Este es el criterio que proponemos:
+
+| Capa | Cuándo corre                                  | Bloquea la fusión                     |
+| ---- | --------------------------------------------- | ------------------------------------- |
+| 0    | En cada cambio                                | Sí                                    |
+| 1    | En cada cambio                                | Sí                                    |
+| 2    | En cada cambio que toque una frontera         | Sí, si es determinista                |
+| 3    | Al fusionar en la rama principal, o de noche  | Solo los escenarios críticos          |
+
+La regla práctica es **bloquear solo lo determinista.** Una prueba que a veces falla sin que el
+código haya cambiado (inestable, o *flaky* en inglés) no debe bloquear, porque enseña al equipo a
+reintentar sin investigar. Esas pruebas se sacan de la vía de bloqueo, se informan y se arreglan
+con un responsable asignado.
+
+Las pruebas de carga y de sistema largas suelen ser informativas: avisan de una regresión, pero su
+resultado no siempre debe decidir si un cambio entra.
+
+## Dependencias y paralelismo
+
+Dentro de una capa, los trabajos que no dependen unos de otros pueden ejecutarse en paralelo.
+Entre capas, la dependencia debe ser explícita. En GitHub Actions, la clave `needs` indica qué
+trabajos deben terminar antes de empezar otro:
+
+```yaml
+jobs:
+  capa-0:
+    # formato, lint y auditoría de contenido
+  capa-1:
+    needs: capa-0
+    # pruebas unitarias y análisis estático
+  capa-2:
+    needs: capa-1
+    # integración y contratos
+```
+
+La documentación de GitHub indica que, por defecto, si un trabajo del que depende otro falla o se
+omite, los trabajos dependientes también se omiten. Ese es el mecanismo que queremos: el fallo de
+una capa detiene las siguientes sin que nadie lo gestione a mano. Si una capa debe ejecutarse aun
+cuando la anterior falle, por ejemplo para publicar un informe, hay que declararlo con
+`if: always()`.
+
+El paralelismo tiene dos límites. El primero es el número de trabajos que el plan o los *runners*
+permiten a la vez. El segundo son las dependencias que obligan a esperar. Un pipeline con muchos
+trabajos paralelos que instalan cada uno las mismas dependencias no es más rápido: solo gasta más
+cómputo y produce más ruido. Conviene mirar el camino crítico, es decir, la cadena de trabajos que
+fija el tiempo total, y no la suma de todos.
+
+## Señales de un pipeline mal ordenado
+
+- **Esperas largas para errores triviales.** Un fallo de formato tarda lo que tarda la capa más
+  lenta. Es la señal principal.
+- **Pruebas duplicadas.** La misma regla se comprueba en una prueba unitaria, en otra de
+  integración y en una de extremo a extremo. Cada duplicado añade tiempo y una falsa sensación de
+  cobertura.
+- **Trabajos que nadie mira.** Pasos informativos sin responsable que siempre quedan en amarillo
+  o en verde por costumbre. Si nadie actúa sobre su resultado, quítalos o asígnales un dueño.
+- **Pruebas de interfaz como primera línea.** Martin Fowler advierte que las pruebas a través de la
+  interfaz son lentas, alargan los tiempos de construcción y son frágiles y caras de escribir. Por
+  eso ocupan la cima de su pirámide y no la base.
+
+## Medir el pipeline
+
+Dos números bastan para empezar:
+
+- **Tiempo hasta la primera señal de fallo:** desde que se sube el cambio hasta el primer error.
+  Mide la calidad del orden. Con capas bien hechas, los errores triviales aparecen en segundos.
+- **Tiempo total:** desde el cambio hasta el resultado final. Mide el coste completo y la espera de
+  quien espera la fusión.
+
+Un tercer dato es útil: cuántas veces falla cada capa y cuántas de esas veces el fallo se debe a una
+prueba inestable. Si la capa 3 falla a menudo y casi nunca por un defecto real, su valor es bajo y
+conviene revisarla antes de añadir más pruebas.
+
+Estos números también alimentan el tiempo de entrega de cambios que DORA define como el tiempo que
+un cambio tarda desde que se confirma en el control de versiones hasta que llega a producción.
+
+## Cuándo sí y cuándo no
+
+Conviene ordenar en capas cuando el pipeline tarda varios minutos en dar su primer resultado, cuando
+llegan tarde errores triviales o cuando el equipo espera más tiempo del que trabaja.
+
+No hace falta cuando el proyecto es pequeño y el pipeline completo tarda poco. Un único trabajo
+secuencial es más simple y suele bastar. Las capas añaden configuración que hay que mantener, y esa
+carga solo se justifica si el orden ahorra tiempo de verdad.
+
+## Errores frecuentes
+
+- **Poner lo lento primero** por comodidad. El orden de los trabajos en el fichero no define el
+  orden de ejecución: sin dependencias declaradas, los trabajos no se esperan unos a otros.
+- **Bloquear con pruebas inestables.** Enseña a reintentar en lugar de investigar.
+- **Repetir la misma comprobación en varias capas** sin decidir cuál es la fuente de verdad.
+- **Crear capas sin responsable.** Cada capa necesita a alguien que responda cuando falla.
+- **Medir solo el tiempo total.** Oculta el coste de la espera hasta el primer error.
+
+## Checklist
+
+- [ ] Cada comprobación está en una capa según su coste y la señal que da al fallar.
+- [ ] La capa 0 termina en segundos y su mensaje indica qué corregir.
+- [ ] Las capas dependen unas de otras con `needs`, y el fallo detiene las siguientes.
+- [ ] Solo bloquean las pruebas deterministas; las inestables tienen un responsable.
+- [ ] Ninguna regla se comprueba en tres capas sin un motivo escrito.
+- [ ] Se miden el tiempo hasta la primera señal de fallo y el tiempo total.
+- [ ] Cada capa lenta tiene una razón para ejecutarse en ese momento.
+
+## Fuentes
+
+- GitHub Docs, [Using jobs in a workflow](https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow): `needs`, omisión de trabajos dependientes y `always()`.
+- Martin Fowler, [TestPyramid](https://martinfowler.com/bliki/TestPyramid.html): pirámide de pruebas, coste y fragilidad de las pruebas de interfaz.
+- DORA, [DORA metrics](https://dora.dev/guides/dora-metrics-four-keys/): definición de tiempo de entrega de cambios.

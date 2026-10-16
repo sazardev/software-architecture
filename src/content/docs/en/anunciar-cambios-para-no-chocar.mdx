@@ -1,0 +1,221 @@
+---
+title: 'Announcing changes to avoid collisions between teams'
+description: 'Clear ownership, short intent notices with an expiry, and brief reservations: three cheap tools so two teams do not step on the same module.'
+category: decisiones
+tags:
+  - coordinacion
+  - propiedad-del-codigo
+  - contratos
+  - cambios-compatibles
+  - equipos
+order: 12
+roadmap:
+  id: liderazgo
+  stage: equipos
+  step: 70
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Two paths over one module: the notice and the reservation keep them from crossing'
+---
+
+# Announcing changes to avoid collisions between teams
+
+Imagine two teams touching the same module in the same week, each unaware of the other. The first
+one finds the collision when merging: conflicts in lines it did not write and that nobody fully
+understands. The second finds it later, when its fix undoes a change it did not know about. The
+cost is not in the code. It is in the time someone spends reconstructing what happened and deciding
+who gets to decide.
+
+The thesis of this article is simple: most of these collisions are avoided with three very cheap
+tools. The first is **clear ownership**: every area of the system has a visible owning team in the
+repository. The second is an **intent notice**: a short message, with an expiry date, published
+before touching a shared area. The third is **light, explicit reservations**: short-lived holds,
+never open-ended. Two rules complement them: change contracts by adding before removing, and keep a
+small, rule-based coordination channel.
+
+## Where the collision comes from
+
+The collision is a coordination problem, not a technical one. It appears when the boundary between
+teams does not match the boundary in the code, so every change crosses lines nobody announces. The
+[law of Conway](/docs/ley-de-conway-team-topologies#the-inverse-conway-maneuver) explains why that
+mismatch tends to happen. Here we care about the daily cost, which usually shows up in three forms:
+
+- **Merge conflicts.** Two branches edit the same lines. They are resolved by hand, with little
+  context, and it is easy to pick the wrong version.
+- **Changes that overwrite each other.** One team assumes a behaviour that the other has just
+  changed. The error appears far from the change that caused it, and it takes time to locate.
+- **Blind fixes.** Someone repairs a bug without knowing whether the behaviour was intentional. The
+  "fix" undoes someone else's decision and the problem returns in another form.
+
+The asymmetry of costs justifies the approach. A two-line notice costs minutes; the collision it
+prevents can cost days of reconstruction. That is why the tools here are light: they do not try to
+stop work, they make it visible in time.
+
+## Clear ownership
+
+An owned module answers a basic question: who decides. Without that answer, any change looks
+allowed, and in practice everyone shares the review and nobody actually does it.
+
+Three elements are enough to start:
+
+- **An owners file**, versioned with the code, that maps each path to a team. On GitHub it is called
+  `CODEOWNERS`; other platforms have equivalents. The shape matters more than the tool:
+
+```text
+/src/payments/        team-payments
+/src/catalog/         team-catalog
+/contracts/events/    team-orders  architecture
+```
+
+- **Mandatory review by owners** for changes in their paths. This way the notice reaches the people
+  who can decide, not only the people who happen to be nearby.
+- **An explicit owner for shared contracts** (schemas, APIs, file formats). This is where a
+  collision costs the most, because the change affects consumers who are not in the conversation.
+  The article on [event ownership](/docs/contratos-de-eventos-versionados#ownership-of-the-event)
+  develops this.
+
+A design criterion: the owner is a **team**, not a person. People change roles, and ownership
+assigned to someone who has left leaves the area without a responsible party.
+
+## Intent notices
+
+A notice is a short, visible message published **before** starting a change that touches a shared
+area. Its purpose is to let the other team react while doing so is still cheap. It answers five
+questions:
+
+| Field           | Question it answers                             |
+| --------------- | ----------------------------------------------- |
+| What            | What changes: behaviour, contract or structure? |
+| Where           | Which paths, tables or contracts are touched?   |
+| How long        | How long will the area be in flux?              |
+| Who is affected | Which teams or consumers must react?            |
+| Expires         | Until when is the notice valid?                 |
+
+The last two fields are the ones usually missing, and they prevent the most typical problem: an old
+notice that keeps blocking an area that is already free. A notice with an expiry can be ignored
+without guilt once it lapses, and the team that published it must remove or renew it.
+
+Illustrative example (an assumption, not a real case): the payments team announces that it will
+change how amounts are rounded in `/src/payments/`, that it will take two days, that billing is
+affected, and that the notice expires on Friday. With that information, billing can plan its work
+instead of discovering the change in the next merge.
+
+The notice goes somewhere everyone involved can read: a channel or an issue labelled by area, not a
+private message. A private message does not coordinate anything, because nobody else hears about it.
+
+## Light, explicit reservations
+
+A reservation declares that an area is in use for a short period. It is not a technical lock and
+does not block access to the repository: it is a visible agreement that the organization respects.
+Its rules are few and deliberate:
+
+- **Always with an end date.** An open-ended reservation becomes a bottleneck, and because nobody
+  releases it, it ends up doing more harm than the problem it solved.
+- **With an owner and a reason.** Anyone can ask about it and the owner answers. Without a reason,
+  there is no way to judge whether it still needs to exist.
+- **Released when the work ends.** And if it expires, the area is free again without asking.
+- **Only when needed.** A reservation is the strongest of the three tools. Use it for work that
+  cannot be mixed in, such as a data migration or the rewrite of a contract. For everything else, the
+  notice is enough.
+
+The word "light" matters. A lock prevents; a reservation coordinates. If reservations start being
+used to prevent rather than coordinate, they begin to replace the conversation between teams, and
+that is an organizational problem that a rule does not fix.
+
+## When to announce and when not to
+
+Announce when at least one of these conditions holds:
+
+- The change crosses an ownership boundary, that is, it touches paths owned by another team.
+- It changes a contract: an API, an event, a schema or a file format.
+- It occupies a shared area for more than a day (an illustrative threshold, a judgement call).
+- It is hard to reverse.
+
+Do not announce when the change stays inside your own module, when it is a one-line fix with no
+effect on other teams, or when it already goes through a review that notifies owners, such as an
+[RFC](/docs/rfc-y-revisiones-de-arquitectura#criteria-for-what-goes-to-review). A change that goes
+through an RFC is already announced in the RFC.
+
+Excess notices are noise, and noise has a concrete effect: if everything is announced, nobody reads
+the channel, and on the day the notice matters it gets lost among the others. A working rule that
+helps: if the notice would not change what the other team does that week, it does not need to be
+published.
+
+## Changes that break contracts
+
+When a change is incompatible, a notice is not enough: the way the change is made has to change.
+The most widely used technique is **parallel change**, also called "expand and contract". Martin
+Fowler describes it in 2014 with three phases
+([Fowler, "ParallelChange"](https://martinfowler.com/bliki/ParallelChange.html)):
+
+| Phase    | What happens                                                                   |
+| -------- | ------------------------------------------------------------------------------ |
+| Expand   | The new form is added next to the old one. Both work for a while.              |
+| Migrate  | Consumers move to the new form, one by one. This is usually the longest phase. |
+| Contract | When nobody uses the old form any more, it is removed.                         |
+
+The order is the key: first add, then move consumption, and only at the end remove. Removing before
+migrating breaks whoever still reads the old form, and that is the most serious collision of all.
+
+The migration phase needs a **deprecation notice**, which announces that the old form is going to be
+retired. For HTTP APIs there is a standard header: `Deprecation`, defined in RFC 9745, indicates from
+when the resource is deprecated without changing its behaviour. The `Sunset` header, which that same
+RFC references, indicates when it will stop responding. For events there is no standard equivalent,
+so the notice goes through the channel and through a consumption metric, as the article on
+[versioned event contracts](/docs/contratos-de-eventos-versionados#deprecation-double-publishing-and-measured-retirement)
+describes.
+
+## A small channel with rules
+
+Coordination needs a place, but it does not have to be a permanent meeting. A small channel with
+rules is usually enough:
+
+- **One channel per domain or per contract**, not one general channel for the whole company. A
+  channel that everyone reads ends up read by no one.
+- **A fixed format for notices**, with the five fields from the table above.
+- **Who answers for each area** and within what time frame, agreed in writing.
+- **Meetings only when needed.** They are called when two notices collide and cannot be settled in
+  writing. They are not the default mechanism, because every meeting has a cost paid in everyone's
+  time. This fits the [interaction modes](/docs/ley-de-conway-team-topologies#three-interaction-modes)
+  of Team Topologies: intensive collaboration is reserved for what needs it.
+
+## Signs that coordination is missing
+
+There are recurring symptoms that show the tools above are not working:
+
+- Repeated merge conflicts in the same paths.
+- Two teams building the same thing, because neither knew the other was doing it.
+- Reverts of other teams' changes made without talking to the owner of the area.
+- Nobody knows whom to ask about a shared contract.
+
+Our own judgement, not a rule: if one of these signs appears regularly over a quarter, first review
+the ownership boundaries. Often the problem is not a lack of notices, but that the owner of an area
+does not match the person who changes it.
+
+## Common mistakes
+
+- **Ownership by person, not by team.** When the person changes role, the area has no one
+  responsible and changes start landing without review.
+- **Notices without an expiry.** They pile up, block free areas and end up ignored.
+- **Open-ended reservations.** They create bottlenecks that nobody dares to release.
+- **Announcing after changing.** The notice no longer coordinates anything; it only reports what
+  happened.
+- **Removing before migrating.** It breaks consumers that still depend on the old form.
+- **Turning everything into a meeting.** Teams stop writing their decisions down, and coordination
+  depends on who happens to be in the room.
+
+## Checklist
+
+- [ ] Every shared path has an owning team, versioned in the repository.
+- [ ] Changes in another team's paths require a review from its owner.
+- [ ] Shared contracts have an explicit owner and a history.
+- [ ] Each notice states what changes, where, how long, who is affected and when it expires.
+- [ ] Every reservation has an owner, a reason and an end date.
+- [ ] Contracts change by expand and contract, with a deprecation notice.
+- [ ] There is a channel per domain with a notice format and a response time.
+- [ ] Signs of missing coordination are reviewed periodically.
+
+## Sources
+
+- Martin Fowler, [«ParallelChange»](https://martinfowler.com/bliki/ParallelChange.html), 13 May 2014. Describes the expand, migrate and contract pattern.
+- RFC 9745, [«The Deprecation HTTP Response Header Field»](https://www.rfc-editor.org/rfc/rfc9745). Defines the `Deprecation` header and references the `Sunset` header (RFC 8594).

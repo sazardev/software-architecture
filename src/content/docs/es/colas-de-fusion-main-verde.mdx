@@ -1,0 +1,212 @@
+---
+title: 'Colas de fusión: que main siempre esté verde'
+description: 'Dos cambios pueden pasar sus pruebas por separado y romper main al combinarse. Una cola de fusión los prueba juntos, en orden, antes de integrarlos.'
+category: practicas
+tags:
+  - colas-de-fusion
+  - merge-queue
+  - integracion-continua
+  - pruebas
+  - trunk-based-development
+order: 24
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 110
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Una fila de cambios que entran en cola; el que falla sale antes de llegar a main'
+---
+
+# Colas de fusión: que main siempre esté verde
+
+Un cambio que pasa todas las pruebas en su rama demuestra una cosa: que funciona sobre la base
+que tenía esa rama cuando se probó. El problema aparece después. Cuando se fusiona, main ya es
+otro, porque otros cambios han entrado mientras tanto. Una **cola de fusión** (_merge queue_)
+cierra esa brecha: recibe los cambios aprobados, prueba cada uno sobre el main que tendrá al
+integrarse y solo lo integra si esa prueba pasa.
+
+Este artículo explica qué problema resuelve una cola, cómo funciona, qué cuesta y qué no hace.
+La tesis es sencilla: la cola no sustituye a las buenas pruebas ni a la revisión, pero evita que
+dos cambios correctos por separado rompan juntos la rama que todos usan.
+
+## Verde por separado, roto al combinar
+
+Un ejemplo ilustrativo (supuesto, sin datos reales): el cambio A renombra la función
+`calcularTarifa` a `tarifa`. El cambio B, abierto en paralelo desde la misma base, añade una
+llamada nueva a `calcularTarifa`. Ambos pasan la CI en su rama, porque cada uno es coherente con
+la base que vio. Al fusionar el segundo, main no compila.
+
+Ninguna prueba falló porque ninguna vio la combinación. La documentación de GitLab describe el
+mismo mecanismo: una _pipeline de resultados fusionados_ prueba un cambio contra la rama destino
+y, por eso, dos cambios que pasan por separado pueden seguir en conflicto cuando se fusionan los
+dos.
+
+El problema crece con el tiempo. La distancia entre la base de una rama y main aumenta cada día
+que la rama vive, así que se agrava con ramas largas y con equipos grandes donde main cambia
+varias veces al día. El [coste de integrar tarde](/docs/ramas-y-entrega-continua#el-coste-de-integrar-tarde)
+se trata en otro artículo; aquí importa como causa.
+
+## Qué resuelve y qué no
+
+Una cola garantiza que lo que entra en main es lo que se probó, sobre la base que tenía en el
+momento de entrar. Elimina la rotura por combinación entre cambios aprobados a la vez y la carrera
+entre dos fusiones casi simultáneas.
+
+No resuelve:
+
+- **Pruebas insuficientes.** Si la suite no cubre un comportamiento, la cola lo deja pasar en
+  verde.
+- **Errores que solo aparecen en producción**, como los que dependen de carga, datos reales o
+  configuración.
+- **Problemas de diseño o de revisión.** La cola valida el resultado; no decide si el cambio
+  debería existir.
+
+La cola multiplica el valor de las buenas pruebas, pero no las sustituye. Con pruebas malas, la
+cola te da un main verde y roto.
+
+## Cómo funciona
+
+El flujo básico es el mismo en las implementaciones que conozco:
+
+1. El autor aprueba el cambio y lo añade a la cola.
+2. La cola crea una rama temporal con la base actual de main más los cambios que van delante.
+3. La CI se ejecuta sobre esa rama temporal.
+4. Si el cambio pasa y es el primero, se integra. Si pasa pero hay cambios delante, espera a que
+   estos se integren en orden.
+5. Si falla, sale de la cola y los cambios que iban detrás se reconstruyen sin él.
+
+GitHub describe el primer paso así: la cola comprueba cada _pull request_ «cuando se aplica a la
+última versión de la rama destino y a los pull requests que ya están en la cola». GitLab, en
+cambio, lanza las pipelines en paralelo: con los cambios A, B y C en la cola, una prueba A, otra
+A + B y otra A + B + C. Si B falla, C se reconstruye sobre A + C.
+
+Un lote agrupa varios cambios en una sola ejecución. Ahorra ejecuciones, pero si el lote falla hay
+que averiguar qué cambio lo causó, y lo habitual es dividirlo y volver a probar las mitades. Mergify,
+un servicio externo, describe sus lotes con ese mismo objetivo: reducir coste y tiempo de CI.
+
+| Enfoque                                     | Qué prueba                              | Coste                              | Cuándo encaja                             |
+| ------------------------------------------- | --------------------------------------- | ---------------------------------- | ----------------------------------------- |
+| Solo CI en la rama                          | La base que tenía la rama al empezar    | Bajo                               | Equipos pequeños, main poco disputado     |
+| Cola en serie                               | Base actual + cambios delante, uno a uno | Espera alta                        | Volumen moderado, pruebas rápidas         |
+| Cola con pruebas en paralelo                | Varias combinaciones a la vez           | Más cómputo, menos espera          | Muchos cambios, pruebas caras de repetir  |
+| Cola por lotes                              | Varios cambios en una ejecución         | Menos ejecuciones, diagnóstico peor | Cambios pequeños y pruebas costosas       |
+
+## El coste: más ejecuciones y más espera
+
+Cada entrada en la cola consume una ejecución completa de la CI, y cuando una falla, las ejecuciones
+de los cambios de detrás se repiten. La cola no hace la CI más barata: cambia dónde se paga. En
+lugar de probar una vez por rama, se prueba una vez por combinación.
+
+Uber describe un problema relacionado en su sistema SubmitQueue. Su diseño anterior abortaba
+builds en curso al llegar cambios que parecían más probables de superar la prueba, y estima que
+eso afectaba a un 40–65 % de los builds en monorepos grandes. Su evolución especula sobre el
+resultado de todos los cambios pendientes y poda esa búsqueda con análisis de conflictos, de modo
+que los cambios independientes se prueban en paralelo. La lección práctica no depende de su
+arquitectura: cada ejecución descartada es coste pagado sin resultado.
+
+Para equilibrarlo, conviene ajustar cuatro palancas:
+
+- **Concurrencia y tamaño de lote.** Más paralelismo baja la espera y sube el cómputo. GitHub
+  permite configurar entre 1 y 100 ejecuciones simultáneas; GitLab usa 20 pipelines en paralelo
+  por defecto. Ajusta el valor con datos de tiempo en cola y de coste, no por intuición.
+- **Pruebas rápidas en la cola.** La cola puede ejecutar el subconjunto que cubre los módulos
+  tocados y las pruebas de humo. La suite completa puede correr en la rama antes de la cola. Si la
+  trasladas después de la fusión, aceptas un intervalo en el que main puede fallar: es una decisión
+  consciente, no un detalle.
+- **Prioridad.** Un arreglo de main debe poder saltar la fila. GitHub lo permite, pero advierte que
+  adelantar un cambio hace reconstruir los que están en curso, lo que puede ralentizar la cola.
+- **Selección de pruebas por impacto.** Ejecutar solo lo afectado por el cambio reduce el coste por
+  entrada. Requiere saber qué depende de qué, que es otra razón para mantener límites de módulo
+  claros.
+
+## Relación con la integración frecuente y los cambios pequeños
+
+Una cola no sustituye a integrar pronto. Con cambios de semanas, la cola expulsa más y reconstruye
+más, y el coste aumenta en cada ciclo. Los cambios pequeños son fáciles de probar, de revisar y de
+expulsar: si uno falla, el reintento es barato y no arrastra a los demás durante horas.
+
+La cola funciona como red de seguridad. La práctica de base sigue siendo integrar a diario, con
+ramas de vida corta, y usar flags para desacoplar el despliegue de la liberación. Si la cola es lo
+que más se usa, la señal es que las ramas viven demasiado.
+
+## Si tu plataforma no tiene cola nativa
+
+Verifiqué el estado de las opciones más habituales el 15 de octubre de 2026:
+
+- **GitHub** tiene colas nativas. Requieren activar la regla de protección «Require merge queue» en
+  la rama base y que los flujos de CI se disparen también con el evento `merge_group`. Sin ese
+  disparador, el check requerido no se reporta y la fusión se bloquea:
+
+```yaml
+on:
+  pull_request:
+  merge_group:
+```
+
+- **GitLab** tiene _merge trains_ nativos por proyecto. Admiten bypass, aunque puedes forzar su uso
+  para todos los usuarios o con excepción de propietarios.
+- **Bors (bors-ng)** está en retirada: su página indica que la instancia pública se retira en favor
+  de las colas de GitHub, y ofrece alojarlo uno mismo. Para un proyecto nuevo no lo elegiría.
+- **Mergify** es un servicio externo, no la cola de GitHub, con lotes y pruebas especulativas. Tiene
+  sentido si tu forge no ofrece cola o si necesitas sus reglas.
+- **Una cola propia** es viable, pero delicada. Solo puede fusionar un cambio que esté al día con
+  main y que haya pasado la prueba sobre esa base. Sin exclusión (una fusión a la vez) o sin
+  comprobar que main no avanzó durante la prueba, la garantía se rompe. Piensa en el coste de
+  mantenerla antes de escribirla.
+
+## Errores frecuentes
+
+- **Usar la cola para sustituir la revisión.** La cola valida que el cambio funciona integrado. No
+  reemplaza la revisión de diseño ni la de seguridad.
+- **Pruebas de cola más lentas que las de la rama.** El autor espera más y sin feedback previo, y
+  la cola se convierte en cuello de botella. Mantén en la cola un subconjunto rápido y deja la
+  suite completa en la rama.
+- **Dependencias no declaradas.** Si B necesita A y la cola no lo sabe, B se expulsa en cadena o,
+  peor, se integra roto cuando ninguna prueba cubre la relación. Decláralas o fusiona los cambios
+  juntos.
+- **Reintentar sin leer la causa.** Una expulsión por prueba inestable y otra por conflicto real
+  piden acciones distintas. Reintentar a ciegas oculta ambas.
+- **Bypass como costumbre.** Saltarse la cola «solo esta vez» reabre la brecha que la cola cierra.
+  Limita el bypass y audítalo.
+- **Lotes enormes.** Un fallo bloquea a todo el lote y el diagnóstico tarda más cuanto más grande
+  es.
+
+## Métricas
+
+Estas métricas miden la salud de la cola. Son criterios de seguimiento, no umbrales universales:
+mide tu línea base durante unas semanas antes de fijar objetivos.
+
+- **Tiempo en cola**, en percentiles 50 y 90: cuánto espera un cambio desde que entra hasta que se
+  integra.
+- **Tasa de expulsión por causa**: fallo real, prueba inestable o conflicto.
+- **Tiempo de reintento** tras una expulsión.
+- **Roturas de main por periodo**: veces que main quedó en rojo o dejó de compilar. El objetivo es
+  cero; lo útil es la tendencia.
+
+## Cuándo sí y cuándo no
+
+Una cola merece su coste cuando hay un monorepo o muchos equipos que tocan los mismos módulos, cuando
+main es lo que se despliega y cuando una rotura de main bloquea a todos.
+
+No compensa, al menos todavía, en un equipo pequeño con pocos cambios al día y pruebas que tardan
+segundos: el coste y la fricción superan lo que evita. Si main no se despliega ni bloquea a nadie,
+el beneficio es menor, y puede bastar con integrar pronto y vigilar la rama.
+
+## Checklist
+
+- [ ] main solo se modifica a través de la cola (protección de rama).
+- [ ] Las pruebas requeridas se ejecutan también en el evento de la cola.
+- [ ] Concurrencia y tamaño de lote definidos y revisados con datos.
+- [ ] Las pruebas de la cola no son más lentas que las de la rama.
+- [ ] Las dependencias entre cambios están declaradas.
+- [ ] Cada expulsión se clasifica por causa.
+- [ ] El bypass está restringido y auditado.
+
+## Fuentes
+
+- GitHub Docs, [Managing a merge queue](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue).
+- GitLab Docs, [Merge trains](https://docs.gitlab.com/ci/pipelines/merge_trains/).
+- Uber, [Slashing CI costs at Uber](https://www.uber.com/us/en/blog/slashing-ci-costs-at-uber/).
+- Bors (bors-ng), [bors.tech](https://bors.tech/).
+- Mergify, [Merge queue](https://docs.mergify.com/merge-queue/).

@@ -1,0 +1,226 @@
+---
+title: 'Pruebas por impacto: correr solo lo que cambia'
+description: 'Cómo ejecutar solo las pruebas que puede afectar un cambio: grafo de dependencias, riesgo de falsos negativos y qué medir para confiar en la selección.'
+category: practicas
+tags:
+  - pruebas
+  - ci
+  - grafo-de-dependencias
+  - monorepo
+  - rendimiento-del-ci
+order: 22
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 90
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Solo se ejecutan las pruebas que alcanza el cambio'
+---
+
+# Pruebas por impacto: correr solo lo que cambia
+
+En un repositorio pequeño, ejecutar toda la suite en cada cambio cuesta segundos. En uno grande
+cuesta horas de máquina, colas de espera en el CI y un equipo que empieza a fusionar sin esperar
+el resultado. El problema no es la suite en sí: es que la mayoría de las pruebas no tienen nada
+que ver con el cambio que se está revisando.
+
+La tesis de este artículo es que **la selección por impacto reduce ese coste si se hace con
+cuidado**: se ejecutan solo las pruebas que pueden verse afectadas por el cambio, y se acepta
+a cambio un riesgo concreto, que una prueba afectada no se ejecute. Ese riesgo no se elimina,
+se gestiona con una ejecución completa en momentos definidos. Sin esa red de seguridad, la
+selección es una apuesta.
+
+<Callout tone="info" title="Sobre las cifras">
+  Las afirmaciones sobre herramientas y estudios citan su fuente en la sección final. Los números de
+  ejemplo en este texto son supuestos ilustrativos, no mediciones de un proyecto real.
+</Callout>
+
+## Qué significa «impacto»
+
+Un cambio tiene impacto sobre una prueba cuando el resultado de esa prueba puede cambiar por
+culpa del cambio. Dicho así, es una relación entre archivos: la prueba depende, directa o
+indirectamente, de algo que se ha modificado.
+
+La selección por impacto convierte esa relación en una lista de pruebas. Es distinta de dos
+prácticas cercanas. Ejecutar todo siempre es lo más seguro y lo más caro. Ejecutar solo las
+pruebas del paquete modificado es barato, pero omite cualquier prueba de otro paquete que importe
+el código cambiado. La selección por impacto busca el punto medio: sigue las dependencias para
+llegar a todas las pruebas afectadas y ninguna más.
+
+## Cómo se calcula el impacto
+
+La lista de pruebas afectadas sale de tres fuentes de información. Cada una cubre un tipo de
+cambio distinto, y la herramienta que uses debe cubrir las tres o documentar cuáles no cubre.
+
+### Grafo de dependencias entre módulos
+
+Es la fuente principal. Un grafo indica qué módulo importa a cuál. Si cambia un módulo, se marcan
+los que dependen de él, después los que dependen de esos, y así hasta el final. Las pruebas
+asociadas a todos los módulos marcados forman el conjunto afectado.
+
+Nx describe este mecanismo con precisión: Git identifica los archivos cambiados, el grafo de
+proyectos asigna cada archivo a su proyecto y después se añaden los proyectos que dependen de los
+modificados. Por defecto, Nx ejecuta **todas las tareas** de cada proyecto afectado. Solo con la
+opción `NX_LEGACY_AFFECTED=false` la selección baja a nivel de tarea, según las entradas que el
+cambio alcanza. La granularidad importa: un proyecto muy grande convierte cualquier cambio en una
+ejecución casi completa.
+
+El punto débil del grafo es la **dependencia dinámica**. Jest lo indica de forma explícita: su
+selección por cambios «requiere un grafo de dependencias estático (es decir, sin `require`
+dinámicos)» (traducción propia). Un módulo que se carga con una ruta calculada en tiempo de ejecución no aparece en el
+grafo, y su prueba no se selecciona.
+
+### Dependencias externas
+
+Un cambio en una librería de terceros, o en el archivo de versiones que la fija, afecta a todo lo
+que la usa. Aquí el grafo de módulos no basta, porque el cambio no está dentro del repositorio.
+La práctica habitual es tratar el archivo de bloqueo como una entrada global: si cambia, se
+ejecuta todo, o se marcan los paquetes que usan esa dependencia concreta. Nx hace por defecto lo
+primero (`"all"`), y ofrece una opción más fina (`"auto"`) que no es la predeterminada.
+
+### Configuración de build y de CI
+
+Un cambio en la configuración del compilador, en el empaquetador o en la propia definición del
+pipeline puede alterar cualquier resultado sin tocar una sola línea de código de aplicación.
+Estos archivos deben figurar en la lista de entradas globales, no tratarse como cambios
+locales. Si no, la selección los ignora y el pipeline deja de probar lo que de verdad ha cambiado.
+
+Un escenario hipotético: se cambia la opción de transpilación del compilador y todas las
+pruebas parecen pasar, porque la selección solo ejecutó las del módulo editado. El fallo aparece
+días después en producción, en un módulo que nadie tocó.
+
+## Herramientas que ya lo hacen
+
+No hace falta construir un sistema propio para empezar. Estas herramientas implementan alguna forma
+de selección, cada una con su propia noción de «afectado»:
+
+- **Nx** calcula proyectos afectados con `affected` a partir del grafo de proyectos y de Git,
+  con base y cabeza configurables (`--base` y `--head`). Recomienda como base el último commit
+  correcto de `main`, para que la selección incluya todo lo que no se ha validado aún.
+- **Jest** ofrece `-o` (cambios sin confirmar) y `--changedSince=<rama>` (cambios desde una rama),
+  que siguen las importaciones desde los archivos cambiados.
+- **Vitest** tiene `--changed [since]`, que ejecuta las pruebas afectadas por los archivos
+  cambiados. Su documentación indica que, con la opción experimental `recordDependencies`, el
+  historial de módulos cargados sustituye al grafo estático, y que **un archivo de prueba sin
+  registro siempre se ejecuta**.
+- **pytest-testmon** para Python (con `pytest --testmon`) guarda una base de dependencias (`.testmondata`) y vuelve a
+  ejecutar solo las pruebas afectadas por cambios recientes.
+- **Filtros de ruta del CI.** GitHub Actions permite `paths` y `paths-ignore` para decidir si un
+  flujo se lanza. Es una selección a nivel de flujo, no de prueba, y tiene una consecuencia que
+  conviene conocer: si un flujo se omite por el filtro, sus comprobaciones quedan en estado
+  «Pending», y si son obligatorias bloquean la fusión. Además, si el diff tiene más de 3.000 archivos
+  y los que coinciden con el filtro no están entre los primeros 3.000 devueltos, el flujo no se lanza.
+
+Un caso de referencia es el sistema de Facebook: Machalica y coautores, en «Predictive Test
+Selection» (arXiv, 2018), describen una selección predictiva que aprende de resultados históricos
+de pruebas. Según el resumen, redujo a la mitad el coste de infraestructura de las pruebas y
+mantuvo informado a los desarrolladores de más del 95 % de los fallos individuales y del 99,9 %
+de los cambios defectuosos. El mismo trabajo tiene en cuenta la inestabilidad de las pruebas.
+Es un enfoque distinto al grafo, que requiere un histórico de resultados, pero muestra que la pregunta de qué
+probar puede responderse con datos.
+
+## El riesgo: falsos negativos
+
+Un **falso negativo**, en este contexto, es una prueba afectada por el cambio que no se ejecuta.
+El resultado es un pipeline en verde que no ha visto el fallo. Es el único error que la selección
+introduce y que la suite completa no tendría.
+
+Hay tres causas típicas: dependencias dinámicas que el grafo no ve, entradas globales mal
+declaradas (configuración, datos de prueba compartidos, variables de entorno) y pruebas que
+dependen de estado que cambia entre ejecuciones.
+
+La mitigación no es evitar la selección, sino acotar cuándo puede fallar sin aviso:
+
+- **Ejecución completa en la fusión a `main`.** La selección decide qué se ejecuta en la
+  revisión; antes de integrar, la suite completa valida el resultado combinado. Es la red de
+  seguridad más importante.
+- **Ejecución completa periódica**, por ejemplo cada noche. Detecta fallos que la selección
+  dejó pasar y que no han bloqueado ninguna fusión.
+- **Registro de falsos negativos.** Cada fallo encontrado por la ejecución completa y no por la
+  selección se documenta, con su causa. Esa lista dice qué entradas faltan en el grafo.
+
+Estos ritmos son criterios de diseño que propongo, no un estándar de la industria. Lo que sí
+muestra la investigación de Google es que los fallos tienden a aparecer en pruebas cercanas al
+código modificado, y que el código cambiado por más de tres desarrolladores falla con más
+frecuencia. El estudio es de 2017 (Memon y coautores, ICSE) y solo he consultado su resumen, así
+que no extraigo cifras de él. Sirve como recordatorio de que la selección debe priorizar bien
+lo cercano y no omitirlo.
+
+## Requisitos previos de las pruebas
+
+La selección solo funciona si las pruebas son **aisladas, sin estado compartido y con sus
+dependencias explícitas**. Si una prueba lee una base de datos que otra modifica, el resultado
+depende del orden, no del cambio, y ninguna selección puede predecirlo.
+
+Antes de implantar la selección, revisa:
+
+- Que cada prueba crea sus propios datos y no depende de los de otra.
+- Que las dependencias se importan de forma estática, o que el uso de `require` dinámico está
+  documentado y acotado.
+- Que las variables de entorno, los relojes y los generadores aleatorios se fijan en la prueba.
+- Que existe una forma de ejecutar la suite completa con un solo comando.
+
+Si estas condiciones no se cumplen, el primer trabajo no es la selección. Es limpiar las pruebas,
+porque una selección sobre pruebas inestables solo acelera la confusión.
+
+## Qué medir
+
+Sin medición, la selección es una opinión. Tres indicadores bastan para empezar:
+
+- **Porcentaje de pruebas evitadas** por cambio, en mediana, no solo en promedio. Un promedio
+  alto puede esconder cambios en módulos centrales que ejecutan casi todo.
+- **Falsos negativos detectados** por la ejecución completa, con su causa. El objetivo es que
+  tiendan a cero, no que sean nulos desde el primer día.
+- **Tiempo de espera del CI** antes y después, medido desde que se abre el pull request hasta que
+  el resultado está disponible.
+
+Un ejemplo ilustrativo: si la mediana de tiempo baja de 40 a 12 minutos, pero aparecen dos falsos
+negativos al mes que llegan a `main`, la selección ahorra tiempo y cuesta incidencias. El balance
+depende de lo que cueste una incidencia en ese sistema, y esa cifra la debe dar el equipo.
+
+## Cuándo sí y cuándo no
+
+**Compensa** cuando la suite tarda lo suficiente como para que el equipo espere o evite
+ejecutarla; cuando hay muchos paquetes con dependencias claras entre sí; y cuando el
+repositorio tiene un dueño para el grafo y para las entradas globales.
+
+**No compensa** en proyectos pequeños, donde la suite completa cabe en la pausa de un café y el
+riesgo de omitir una prueba supera el ahorro. Tampoco cuando las pruebas son muy rápidas, porque
+el coste de calcular el impacto y de gestionar sus excepciones puede superar el de ejecutarlas
+todas. Y no conviene con pruebas inestables: primero se estabilizan.
+
+## Errores frecuentes
+
+- **Tratar la selección como sustituto de la suite completa.** Sin ejecución completa en `main`,
+  el riesgo se acumula sin que nadie lo vea.
+- **Omitir las entradas globales.** Configuración de build, versiones de dependencias y datos
+  compartidos deben forzar ejecuciones amplias.
+- **Confiar en el grafo sin medir sus huecos.** Las dependencias dinámicas y los accesos por
+  cadenas de texto no aparecen en él.
+- **Acumular excepciones.** Cada regla especial para «no ejecutar esta prueba» debe tener un
+  motivo escrito y una fecha de revisión, como las reglas de [fitness en el CI](/docs/fitness-en-el-ci#cuando-la-regla-estorba).
+- **Mezclar la selección con una mala estructura de módulos.** Si todo importa todo, el grafo es
+  un nudo y casi cualquier cambio afecta a casi todo. La forma del árbol decide cuánto ahorro es
+  posible, como se explica en
+  [arquitectura de archivos para repos grandes](/docs/arquitectura-de-archivos-repos-grandes#por-qué-la-disposición-afecta-a-la-caché-y-al-build-incremental).
+
+## Checklist
+
+- [ ] Hay una ejecución completa obligatoria en la fusión a `main`.
+- [ ] Existe una ejecución completa periódica con su propio registro de resultados.
+- [ ] Las entradas globales (configuración de build, lockfile, datos compartidos) están listadas.
+- [ ] Las pruebas son aisladas, no comparten estado y fijan su entorno.
+- [ ] Se conoce qué dependencias dinámicas o accesos por cadena no ve la herramienta.
+- [ ] Se miden el porcentaje de pruebas evitadas, los falsos negativos y el tiempo del CI.
+- [ ] Cada excepción de la selección tiene motivo y responsable.
+
+## Fuentes
+
+- Nx, «Affected» (documentación de CI): <https://nx.dev/docs/features/ci-features/affected>
+- Jest, referencia de la CLI (`--onlyChanged`, `--changedSince`): <https://jestjs.io/docs/cli>
+- Vitest, referencia de la CLI (`--changed`) y `experimental.recordDependencies`: <https://vitest.dev/guide/cli>
+- GitHub Docs, sintaxis de flujos de trabajo (`on.<evento>.paths`): <https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions>
+- pytest-testmon, repositorio del proyecto: <https://github.com/tarpas/pytest-testmon>
+- Machalica, Samylkin, Porth y Chandra, «Predictive Test Selection» (arXiv:1810.05286): <https://arxiv.org/abs/1810.05286>
+- Memon y coautores, «Taming Google-Scale Continuous Testing» (ICSE 2017), solo resumen: <https://research.google/pubs/taming-google-scale-continuous-testing/>

@@ -1,0 +1,285 @@
+---
+title: 'Pipelines sin desperdiciar cómputo'
+description: 'Cómo frenar el coste de CI que crece sin decisión: cancelar lo obsoleto, limitar la concurrencia, ajustar runners, filtrar rutas y caducar cachés.'
+category: practicas
+tags:
+  - ci-cd
+  - costes-de-ci
+  - runners
+  - cancelacion-de-ejecuciones
+  - cache
+order: 27
+roadmap:
+  id: entrega
+  stage: entrega
+  step: 120
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Varias ejecuciones apiladas en una rama: solo la más reciente sigue activa'
+---
+
+# Pipelines sin desperdiciar cómputo
+
+Nadie decide que el pipeline cueste más cada mes. Ocurre por acumulación: un trabajo
+duplicado por cada `push`, una batería de pruebas que nadie revisó desde hace un año, un
+runner grande porque alguien lo copió de otro proyecto y una caché que nunca se borra. Cada
+pieza cuesta poco. La suma aparece en la factura cuando ya es difícil de explicar.
+
+La tesis de este artículo es sencilla: **el coste de CI es un atributo de diseño del pipeline,
+no un detalle de facturación.** Cada valor por defecto (cuándo se ejecuta, qué ejecuta, en qué
+máquina y cuánto tiempo guarda) es una decisión, y conviene tomarla de forma explícita. Las
+medidas que siguen son baratas de aplicar y casi siempre se pagan solas.
+
+## Dónde se va el cómputo
+
+Antes de optimizar conviene saber qué se desperdicia. Hay cinco fuentes habituales:
+
+| Fuente                          | Síntoma                                                             |
+| ------------------------------- | ------------------------------------------------------------------- |
+| Ejecuciones obsoletas           | Varias ejecuciones completas para commits que ya nadie va a revisar |
+| Pruebas irrelevantes            | La batería completa corre por un cambio de documentación            |
+| Trabajos en espera              | Colas largas por límites de concurrencia mal definidos              |
+| Runners sobredimensionados      | Máquinas grandes para tareas que caben en una pequeña               |
+| Cachés y artefactos sin caducar | Almacenamiento y restauraciones lentas de datos que ya no sirven    |
+
+Para dimensionar el problema basta una cuenta. Supongamos, **a modo ilustrativo**, un pipeline
+de 20 minutos que se lanza 1 000 veces al mes en un runner Linux estándar. A la tarifa pública
+de GitHub Actions para ese runner, 0,006 USD por minuto, la factura mensual de ese pipeline sería
+de 120 USD. Si la mitad de esas ejecuciones son obsoletas o innecesarias, la mitad de esa cifra
+no aporta nada. La cifra exacta depende de su plan y de su proveedor; lo que importa es el
+método: **multiplicar minutos por tarifa y por número de ejecuciones**, y repetirlo por
+pipeline.
+
+## Cancelar lo obsoleto
+
+Una ejecución para un commit que ya tiene un sucesor en la misma rama solo tiene valor si alguien
+lee su resultado. Casi nunca ocurre. Cancelarla libera el runner para lo que sí importa y acorta
+la cola de los demás equipos.
+
+En **GitHub Actions**, la clave `concurrency` agrupa ejecuciones. Por defecto, una ejecución
+pendiente en el mismo grupo se cancela cuando llega otra, pero una ya en marcha **no** se cancela
+hasta que se activa `cancel-in-progress` ([docs de concurrencia](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)).
+La forma habitual para pull requests es esta:
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+```
+
+Dos detalles importan. `github.head_ref` solo se rellena en eventos de pull request. En un `push`
+a la rama principal la clave cae en `github.run_id`, único por ejecución, así que cada ejecución
+es independiente y no se cancela la anterior. Eso
+es lo que queremos: **una ejecución que ya está desplegando no debe cancelarse a mitad**. Y la
+cancelación se aplica a la validación (compilar, probar, analizar), no a las etapas con efectos
+laterales como migrar una base de datos o desplegar.
+
+En **GitLab CI**, el mismo comportamiento se controla con `workflow:auto_cancel` y con la palabra
+clave `interruptible` de cada trabajo. El valor por defecto, `conservative`, cancela el pipeline
+solo si ningún trabajo no interrumpible ha empezado
+([docs de GitLab CI/CD](https://docs.gitlab.com/ci/yaml/#workflowauto_cancelon_new_commit)):
+
+```yaml
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+```
+
+El criterio es el mismo en ambas herramientas: **marque como cancelable solo lo que no tiene
+efectos fuera del runner.** Una cancelación mal situada deja un despliegue a medias, que es
+peor que pagar un minuto de más.
+
+## Concurrencia y límites
+
+La concurrencia tiene dos niveles y conviene decidir ambos:
+
+- **Por rama o por cambio.** Es el caso anterior: una ejecución vigente por pull request.
+- **Por recurso compartido.** Un despliegue a un entorno, una base de datos de pruebas o una
+  cuenta de nube con cuota. Aquí se quiere serialización, no cancelación: que espere en lugar de
+  matar al que está en marcha.
+
+En GitHub, `queue: max` permite que hasta 100 ejecuciones esperen en el mismo grupo, y cuando la
+cola está llena las adicionales se cancelan. Esta opción no puede combinarse con
+`cancel-in-progress: true`, porque la validación lo rechaza
+([docs de concurrencia](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)).
+Es decir: para despliegues en serie sirve; para validación por cambio, la cancelación es la
+opción correcta.
+
+El límite por equipo es una decisión de gobierno más que técnica: cuántos trabajos simultáneos
+puede consumir un equipo en horas punta. Sin ese límite, un equipo con una tarea masiva bloquea a
+los demás. Con él, el coste y la espera se reparten de forma explícita.
+
+## Tamaño del runner según el trabajo
+
+Un runner mayor cuesta más por minuto. Eso no es malo en sí: si un trabajo tarda la mitad en una
+máquina que cuesta el doble, el coste es el mismo y el feedback llega antes. Lo que sí es malo es
+el tamaño por defecto, que nadie revisa.
+
+Las tarifas públicas de los runners estándar de GitHub Actions para un runner de dos núcleos son
+0,006 USD por minuto en Linux, 0,010 USD en Windows y 0,062 USD en macOS
+([precios de Actions](https://docs.github.com/en/billing/reference/actions-minute-multipliers)).
+Como referencia, la diferencia entre sistemas operativos es grande: un trabajo que no necesita
+macOS no debería ejecutarse en macOS. No he verificado aquí las tarifas de los runners mayores,
+así que no las cito.
+
+El criterio práctico es medir antes de cambiar: el tiempo por paso y la utilización de la
+máquina. Un análisis estático rara vez necesita más capacidad que una compilación. Mover solo
+los trabajos que saturan la máquina a un tamaño mayor suele ser más barato que subir todo el
+pipeline.
+
+## Filtros por ruta sin romper la fusión
+
+No ejecutar lo que no cambia es la medida más tentadora y la más peligrosa. GitHub lo documenta
+con claridad: si un workflow se omite por un filtro `paths`, sus comprobaciones quedan en
+estado «pendiente», y una comprobación requerida en pendiente **bloquea la fusión**
+([sintaxis de workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)).
+El filtro a nivel de workflow, por tanto, rompe la fusión justo cuando más se necesita.
+
+El patrón más sano separa tres cosas:
+
+1. Un trabajo ligero que decide qué ha cambiado, a partir de las rutas del commit.
+2. Las pruebas pesadas condicionadas a esa decisión, dentro del mismo workflow.
+3. Una comprobación final, siempre presente, que es la que se exige para fusionar.
+
+El riesgo está en el mapa de rutas. Si el mapa olvida una dependencia compartida, un fichero de
+bloqueo de dependencias o la propia configuración de CI, el resultado es un «verde» falso: la
+fusión pasa sin que nadie haya probado el cambio. Por eso el mapa debe revisarse como código, y
+los cambios en él deben disparar la batería completa.
+
+## Lo caro, fuera del camino de cada cambio
+
+Las pruebas de carga, los análisis de seguridad completos y las pruebas de mutación son caros y
+rara vez fallan por un cambio concreto. Ejecutarlos en cada commit paga ese coste mil veces para
+detectar un problema una vez.
+
+Una alternativa razonable es programarlos:
+
+- **Tras la fusión** en la rama principal, para detectar en minutos y no en semanas.
+- **En horario nocturno o semanal**, para barridos completos.
+- **Antes de un candidato a versión**, como puerta de liberación.
+
+GitHub Actions ejecuta los `schedule` solo sobre la rama por defecto, con un intervalo mínimo de
+cinco minutos; en horas de alta carga pueden retrasarse e incluso descartarse trabajos en cola, y
+en repositorios públicos se desactivan tras 60 días sin actividad
+([eventos que disparan workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)).
+Un barrido nocturno es útil, pero no debe ser la única defensa: su retraso es la ventana de
+exposición que el equipo acepta.
+
+## Caché y artefactos con caducidad
+
+Las cachés de dependencias aceleran el pipeline y también consumen almacenamiento. GitHub
+documenta un límite por defecto de 10 GB por repositorio, elimina las entradas no usadas durante más
+de 7 días y, al superar el límite, borra primero las menos usadas recientemente
+([caché de dependencias](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching)).
+Eso fija dos reglas de diseño:
+
+- **La clave de caché debe cambiar solo cuando cambian las dependencias**, por ejemplo con un hash
+  del fichero de bloqueo. Una clave que incluye el número de ejecución nunca se reutiliza.
+- **Los artefactos necesitan una retención explícita.** Lo que se guarda para depurar un fallo
+  reciente no debe conservarse durante meses por inercia.
+
+Hay un efecto secundario que conviene vigilar: si el límite es ajustado, la caché de la rama
+principal puede expulsar la de una rama de trabajo, y viceversa. Si eso ocurre, el síntoma es una
+caché fría y tiempos irregulares, no un error. Basta con medir la tasa de aciertos.
+
+## Cómo medir
+
+Sin métricas, cada optimización es una opinión. Tres indicadores bastan para empezar:
+
+- **Minutos de cómputo por fusión.** Suma de minutos de todos los trabajos desde que se abre el
+  pull request hasta que se fusiona. Es la cifra que mejor relaciona coste y trabajo entregado.
+- **Porcentaje de ejecuciones canceladas.** Indica si la cancelación funciona. Una cifra muy baja
+  en equipos con muchos commits sugiere que la configuración no se aplica. Una cifra muy alta
+  puede indicar cambios que llegan demasiado fragmentados, no un problema de CI.
+- **Tiempo en cola.** Diferencia entre que un trabajo se solicita y que empieza a ejecutarse. Si
+  crece, el problema es de concurrencia o de capacidad, no de código.
+
+Añadiría una cuarta métrica que no es de coste sino de experiencia: **el tiempo hasta el primer
+fallo útil**. Si una optimización ahorra minutos pero retrasa la señal que el desarrollador
+necesita, ha empeorado el sistema.
+
+## Lo que ahorrar demasiado rompe
+
+Cada ahorro tiene un coste en garantías. Conviene escribirlo antes de aplicarlo:
+
+- **Puntos ciegos de seguridad.** Un filtro de rutas que omite el análisis de dependencias en
+  cambios «solo de documentación» puede dejar pasar una dependencia vulnerable que llega en otro
+  fichero.
+- **Puntos ciegos de calidad.** Cancelar ejecuciones obsoletas oculta fallos de commits
+  intermedios. Está bien siempre que la última ejecución sea la que bloquea la fusión, y nunca
+  debe tratarse una ejecución cancelada como si hubiera pasado.
+- **Reintentos que enmascaran fallos.** Reejecutar hasta que una prueba inestable pase reduce el
+  coste inmediato y aumenta la deuda sobre la confianza en la batería.
+
+La regla es que **cada reducción declare qué comprobación se debilita y quién la acepta**. Si la
+respuesta es «nadie», la reducción no se aplica.
+
+## Relación con el coste en la nube
+
+Los minutos de CI forman parte de la factura de la plataforma, junto con los runners
+autohospedados, que consumen cómputo de nube. Por eso el etiquetado y la atribución de la sección
+de costes se aplican también aquí. Un gasto de CI sin dueño es igual de opaco que un recurso sin
+etiquetas. Véase [FinOps: el costo como atributo de arquitectura](/docs/finops-costo-como-atributo)
+para el marco de unit economics y [Costes por equipo y funcionalidad](/docs/costes-por-equipo-y-funcionalidad)
+para la asignación por equipo y las alertas de presupuesto.
+
+Esta práctica también se alinea con la estrategia de ramas: integrar pronto reduce las ejecuciones
+duplicadas, porque hay menos commits que cancelar. Véase
+[Ramas y entrega continua](/docs/ramas-y-entrega-continua) y, para las comprobaciones que sí deben
+correr en cada cambio, [Fitness functions en el CI](/docs/fitness-en-el-ci).
+
+## Cuándo sí y cuándo no
+
+**Sí aplique estas medidas cuando:**
+
+- El pipeline supera los minutos que el equipo puede explicar, o la factura de CI crece más rápido
+  que el número de fusiones.
+- Hay colas largas en horas punta y ejecuciones que nadie consulta.
+- Existen trabajos caros que corren en cada commit sin necesidad.
+
+**No las priorice cuando:**
+
+- El pipeline es rápido y barato en relación con el valor que protege. Optimizar aquí tiene un
+  retorno pequeño y un riesgo de debilitar garantías.
+- Todavía no hay métricas. Primero se mide; después se decide.
+- La optimización exige reducir pruebas sin que exista una alternativa que las cubra en otro punto.
+
+## Errores frecuentes
+
+- **Cancelar despliegues.** La cancelación se aplica a la validación, no a las etapas con efectos.
+- **Filtrar rutas a nivel de workflow en una comprobación requerida.** Deja la fusión bloqueada.
+- **Mapas de rutas incompletos.** Una dependencia compartida olvidada produce verdes falsos.
+- **Runners grandes por defecto.** Se copian de un proyecto y nunca se revisan.
+- **Claves de caché que nunca se reutilizan.** Pagan almacenamiento sin acelerar nada.
+- **Ahorrar sin registrar qué garantía se pierde.** Dentro de seis meses nadie sabrá por qué el
+  análisis de seguridad corre solo de noche.
+
+## Checklist
+
+- [ ] Cada workflow cancela las ejecuciones obsoletas de validación, y nunca de despliegue.
+- [ ] Los recursos compartidos tienen concurrencia por cola, no por cancelación.
+- [ ] Ningún filtro de rutas omite una comprobación que se exige para fusionar.
+- [ ] El mapa de rutas incluye dependencias compartidas, bloqueos y la propia configuración de CI.
+- [ ] Las pruebas caras se programan tras la fusión, en horario nocturno o antes de liberar.
+- [ ] Los runners tienen tamaño justificado por medición, no por defecto.
+- [ ] Las cachés usan claves que cambian con las dependencias y tienen caducidad.
+- [ ] Los artefactos tienen retención explícita.
+- [ ] Se miden minutos por fusión, porcentaje de cancelación y tiempo en cola.
+- [ ] Cada reducción de garantías tiene un responsable que la acepta por escrito.
+
+## Fuentes
+
+- GitHub Docs, «Control concurrency of workflows and jobs»:
+  <https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency>
+- GitHub Docs, «Workflow syntax for GitHub Actions»:
+  <https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax>
+- GitHub Docs, «Events that trigger workflows»:
+  <https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows>
+- GitHub Docs, «Contexts» (`github.head_ref` y `github.run_id`):
+  <https://docs.github.com/en/actions/reference/workflows-and-actions/contexts>
+- GitHub Docs, «Dependency caching»:
+  <https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching>
+- GitHub Docs, «Actions billing» (tarifas por minuto de runners estándar):
+  <https://docs.github.com/en/billing/reference/actions-minute-multipliers>
+- GitLab Docs, «CI/CD YAML syntax reference» (`workflow:auto_cancel` e `interruptible`):
+  <https://docs.gitlab.com/ci/yaml/>

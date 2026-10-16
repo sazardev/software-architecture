@@ -1,0 +1,218 @@
+---
+title: 'Impact-based testing: run only what changes'
+description: 'How to run only the tests a change can affect: dependency graph, the risk of false negatives, and what to measure to trust the selection.'
+category: practicas
+tags:
+  - pruebas
+  - ci
+  - grafo-de-dependencias
+  - monorepo
+  - rendimiento-del-ci
+order: 22
+roadmap:
+  id: entrega
+  stage: codigo
+  step: 90
+publishedAt: 2026-10-15
+updatedAt: 2026-10-15
+figureCaption: 'Only the tests the change reaches run'
+---
+
+# Impact-based testing: run only what changes
+
+In a small repository, running the whole suite on every change takes seconds. In a large one it
+costs hours of machine time, queues in CI, and a team that starts merging without waiting for the
+result. The problem is not the suite itself. It is that most tests have nothing to do with the
+change under review.
+
+The thesis of this article is that **impact-based selection reduces that cost if it is done
+carefully**: you run only the tests that a change can affect, and you accept one concrete risk in
+return, that an affected test does not run. That risk is not removed. It is managed with a full run
+at defined moments. Without that safety net, selection is a bet.
+
+<Callout tone="info" title="About the numbers">
+  Claims about tools and studies cite their source in the final section. Numbers in examples are
+  illustrative assumptions, not measurements from a real project.
+</Callout>
+
+## What "impact" means
+
+A change has an impact on a test when the test's result can change because of that change. Put
+simply, it is a relation between files: the test depends, directly or indirectly, on something that
+was modified.
+
+Impact-based selection turns that relation into a list of tests. It differs from two nearby
+practices. Running everything always is the safest and the most expensive option. Running only the
+tests of the modified package is cheap, but it skips any test in another package that imports the
+changed code. Impact-based selection looks for the middle ground: it follows dependencies to reach
+every affected test and no unaffected ones.
+
+## How impact is calculated
+
+The list of affected tests comes from three sources of information. Each covers a different kind of
+change, and the tool you use should cover all three or document which it does not.
+
+### Dependency graph between modules
+
+This is the main source. A graph records which module imports which. When a module changes, the
+modules that depend on it are marked, then the modules that depend on those, until there are no
+more. The tests associated with all marked modules form the affected set.
+
+Nx describes this mechanism precisely: Git identifies the changed files, the project graph assigns
+each file to its project, and the projects that depend on the modified ones are added. By default,
+Nx runs **every task** of each affected project. Only with `NX_LEGACY_AFFECTED=false` does the
+selection drop to the task level, based on the inputs the change reaches. Granularity matters: a very
+large project turns any change into an almost complete run.
+
+The weak point of the graph is **dynamic dependencies**. Jest states it explicitly: its
+change-based selection «requires a static dependency graph (ie. no dynamic requires)». A module
+loaded through a path computed at runtime does not appear in the graph, and its test is not selected.
+
+### External dependencies
+
+A change in a third-party library, or in the file that pins its version, affects everything that
+uses it. Here the module graph is not enough, because the change lives outside the repository. The
+usual practice is to treat the lock file as a global input: if it changes, run everything, or mark
+the packages that use that specific dependency. Nx does the first by default (`"all"`) and offers a
+finer option (`"auto"`) that is not the default.
+
+### Build and CI configuration
+
+A change to the compiler configuration, the bundler or the pipeline definition itself can alter any
+result without touching a single line of application code. These files belong in the list of global
+inputs, not treated as local changes. Otherwise the selection ignores them and the pipeline stops
+testing what really changed.
+
+A hypothetical scenario: you change a transpilation option in the compiler and every test seems to
+pass, because the selection ran only the tests of the edited module. The failure appears days later
+in production, in a module nobody touched.
+
+## Tools that already do it
+
+You do not need to build your own system to start. These tools implement some form of selection,
+each with its own notion of "affected":
+
+- **Nx** computes affected projects with `affected`, from the project graph and Git, with
+  configurable base and head (`--base` and `--head`). It recommends the latest successful commit on
+  `main` as the base, so the selection includes everything not yet validated.
+- **Jest** offers `-o` (uncommitted changes) and `--changedSince=<branch>` (changes since a branch),
+  which follow imports from the changed files.
+- **Vitest** has `--changed [since]`, which runs the tests affected by changed files. Its
+  documentation says that, with the experimental option `recordDependencies`, recorded module loads
+  replace the static graph, and that **a test file without a record always runs**.
+- **pytest-testmon** for Python (with `pytest --testmon`) stores a dependency database
+  (`.testmondata`) and reruns only the tests affected by recent changes.
+- **CI path filters.** GitHub Actions supports `paths` and `paths-ignore` to decide whether a
+  workflow starts. It is a selection at workflow level, not test level, and it has a consequence to
+  know: when a workflow is skipped by the filter, its checks stay in «Pending», and if they are
+  required they block the merge. Also, if the diff has more than 3,000 files and the matching ones
+  are not among the first 3,000 returned, the workflow does not run.
+
+A reference case is Facebook's system. Machalica and co-authors, in «Predictive Test Selection»
+(arXiv, 2018), describe a predictive selection that learns from historical test outcomes. According
+to the abstract, it halved the infrastructure cost of testing, while still reporting over 95% of
+individual test failures and over 99.9% of faulty changes to developers. The same work accounts for
+flaky tests. It is a different approach from the graph, one that requires a history of results, but
+it shows that the question of what to test can be answered with data.
+
+## The risk: false negatives
+
+A **false negative**, in this context, is an affected test that does not run. The result is a green
+pipeline that never saw the failure. It is the only error the selection introduces that the full
+suite would not have.
+
+There are three typical causes: dynamic dependencies the graph cannot see, global inputs that were not
+declared (configuration, shared test data, environment variables), and tests that depend on state
+that changes between runs.
+
+The mitigation is not to avoid selection, but to bound when it can fail silently:
+
+- **Full run on merge to `main`.** Selection decides what runs during review; before integration, the
+  full suite validates the combined result. This is the most important safety net.
+- **Periodic full run**, for example nightly. It catches failures selection let through that did not
+  block any merge.
+- **A false-negative log.** Every failure found by the full run and missed by selection is recorded
+  with its cause. That list tells you which inputs are missing from the graph.
+
+These cadences are design criteria I propose, not an industry standard. What Google's research does
+show is that failures tend to appear in tests close to the modified code, and that code changed by
+more than three developers breaks more often. The study is from 2017 (Memon and co-authors, ICSE)
+and I consulted only its abstract, so I take no figures from it. It is a reminder that selection
+must prioritize what is nearby and must not skip it.
+
+## Prerequisites for the tests
+
+Selection only works if tests are **isolated, free of shared state and have explicit dependencies**.
+If one test reads a database that another test modifies, the result depends on order, not on the
+change, and no selection can predict it.
+
+Before adopting selection, check:
+
+- Each test creates its own data and does not depend on another test's data.
+- Dependencies are imported statically, or the use of dynamic `require` is documented and limited.
+- Environment variables, clocks and random generators are fixed inside the test.
+- There is a way to run the full suite with a single command.
+
+If these conditions are not met, the first job is not selection. It is cleaning up the tests, because
+selection over unstable tests only speeds up the confusion.
+
+## What to measure
+
+Without measurement, selection is an opinion. Three indicators are enough to start:
+
+- **Percentage of tests avoided** per change, as a median, not only an average. A high average can
+  hide changes in central modules that run almost everything.
+- **False negatives detected** by the full run, with their cause. The goal is for them to trend
+  toward zero, not to be zero from day one.
+- **CI waiting time** before and after, measured from opening the pull request until the result is
+  available.
+
+An illustrative example: if the median time drops from 40 to 12 minutes, but two false negatives a
+month reach `main`, selection saves time and costs incidents. The balance depends on what an incident
+costs in that system, and the team must provide that number.
+
+## When to use it and when not to
+
+It **pays off** when the suite takes long enough that the team waits for it or avoids running it;
+when there are many packages with clear dependencies between them; and when the repository has an
+owner for the graph and for the global inputs.
+
+It **does not pay off** in small projects, where the full suite fits in a coffee break and the risk
+of skipping a test outweighs the saving. Nor when tests are very fast, because the cost of computing
+impact and managing its exceptions can exceed the cost of running everything. And not with flaky tests:
+stabilize them first.
+
+## Common mistakes
+
+- **Treating selection as a replacement for the full suite.** Without a full run on `main`, the risk
+  accumulates unseen.
+- **Leaving out global inputs.** Build configuration, dependency versions and shared data must force
+  broad runs.
+- **Trusting the graph without measuring its gaps.** Dynamic dependencies and access by string paths
+  do not appear in it.
+- **Accumulating exceptions.** Every special rule for «do not run this test» needs a written reason and
+  a review date, as with the rules in [fitness functions in CI](/docs/fitness-en-el-ci#when-the-rule-gets-in-the-way).
+- **Combining selection with a poor module structure.** If everything imports everything, the graph is
+  a knot and almost any change affects almost everything. The shape of the tree decides how much saving
+  is possible, as explained in
+  [file architecture for large repos](/docs/arquitectura-de-archivos-repos-grandes#why-layout-affects-caching-and-incremental-builds).
+
+## Checklist
+
+- [ ] A full run is mandatory on merge to `main`.
+- [ ] A periodic full run exists, with its own record of results.
+- [ ] Global inputs (build configuration, lock file, shared data) are listed.
+- [ ] Tests are isolated, share no state and fix their environment.
+- [ ] You know which dynamic dependencies or string-path accesses the tool cannot see.
+- [ ] You measure the percentage of tests avoided, false negatives and CI time.
+- [ ] Every selection exception has a reason and an owner.
+
+## Sources
+
+- Nx, "Affected" (CI documentation): <https://nx.dev/docs/features/ci-features/affected>
+- Jest, CLI reference (`--onlyChanged`, `--changedSince`): <https://jestjs.io/docs/cli>
+- Vitest, CLI reference (`--changed`) and `experimental.recordDependencies`: <https://vitest.dev/guide/cli>
+- GitHub Docs, workflow syntax (`on.<event>.paths`): <https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions>
+- pytest-testmon, project repository: <https://github.com/tarpas/pytest-testmon>
+- Machalica, Samylkin, Porth and Chandra, "Predictive Test Selection" (arXiv:1810.05286): <https://arxiv.org/abs/1810.05286>
+- Memon and co-authors, "Taming Google-Scale Continuous Testing" (ICSE 2017), abstract only: <https://research.google/pubs/taming-google-scale-continuous-testing/>
